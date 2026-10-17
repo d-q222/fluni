@@ -149,7 +149,8 @@ final class BuildingHeatTests: XCTestCase {
         XCTAssertEqual(b.reading("bld_232805707", at: t("2026-01-05T00:00:00")), .init(people: 450, expectedSick: 9, heat: 0.235, high: false))
         XCTAssertEqual(b.buildings["bld_232805707"]?.name, "Jerry")
         XCTAssertEqual(b.buildings["bld_232805707"]?.lat, 37.4210814)
-        XCTAssertEqual(b.buildings["bld_232805707"]?.radius, 40)
+        // radius_m column (added 8d3673b): Jerry's row ends in ",27", not the 40 m default.
+        XCTAssertEqual(b.buildings["bld_232805707"]?.radius, 27)
         // 2026-01-08T15:15:00,bld_232805707,Jerry,...,100,64.20,0.628,1
         XCTAssertEqual(b.reading("bld_232805707", at: t("2026-01-08T15:20:00")), .init(people: 100, expectedSick: 64.2, heat: 0.628, high: true))
         // 2026-01-08T15:15:00,bld_232841883,Encina Commons,...,250,38.50,0.487,0
