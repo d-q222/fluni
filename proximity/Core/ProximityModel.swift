@@ -49,6 +49,8 @@ final class ProximityModel: ObservableObject {
     private var byID: [String: PeerState] = [:]
     private var linkIDs: [MCPeerID: String] = [:]
     private var myFix: CLLocation?
+    /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
+    @Published private(set) var lastFix: CLLocation?
     private var lastTick = Date()
     private var lastRotation = Date()
     private var lastSummary = Date.distantPast
@@ -323,6 +325,7 @@ final class ProximityModel: ObservableObject {
     private func ownFix(_ fix: CLLocation) {
         guard !isPaused else { return }
         myFix = fix
+        lastFix = fix
         if sharesLocationWithPeers { link.send(fixWire(fix)) }
         for id in byID.keys { refreshGPS(id) }
     }

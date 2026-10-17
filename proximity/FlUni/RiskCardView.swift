@@ -64,13 +64,14 @@ struct PSickDemoSheet: View {
                     TextField("Run name", text: $runID).textInputAutocapitalization(.never).autocorrectionDisabled()
                         .font(.footnote.monospaced())
                     Button(store.loading ? "Loading\u{2026}" : "Load from the laptop") {
-                        PSickLoader.runID = runID
+                        SimClock.shared.runID = runID
                         Task { await store.reload() }
                     }.disabled(store.loading)
                     if !store.status.isEmpty { Text(store.status).font(.footnote).foregroundStyle(Theme.ink2) }
                 } header: { Text("Model output") } footer: {
                     Text("Read from the same laptop as the map.")
                 }
+                PretendSection()
                 if let feed = store.feed, let range = feed.timeRange {
                     Section("Play as") {
                         NavigationLink {
@@ -117,5 +118,43 @@ private struct AgentList: View {
         .foregroundStyle(Theme.ink)
         .searchable(text: $query, prompt: "Search students")
         .navigationTitle("Student")
+    }
+}
+
+/// Demo only: act as if standing in a building, for the walk-in warning (GPS is ignored for it).
+private struct PretendSection: View {
+    @ObservedObject private var monitor = WalkInMonitor.shared
+    @ObservedObject private var heat = BuildingHeatStore.shared
+
+    var body: some View {
+        Section {
+            NavigationLink {
+                BuildingPicker(buildings: heat.heat?.mappable ?? [], selection: $monitor.pretend)
+            } label: {
+                LabeledContent("Pretend I'm at\u{2026}", value: monitor.pretend.flatMap { heat.heat?.buildings[$0]?.name } ?? "Real location")
+            }
+        } footer: { Text("Changes the walk-in warning only. Nothing else uses it.") }
+    }
+}
+
+private struct BuildingPicker: View {
+    let buildings: [BuildingHeat.Building]
+    @Binding var selection: String?
+    @State private var query = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let shown = query.isEmpty ? buildings : buildings.filter { $0.name.localizedCaseInsensitiveContains(query) }
+        List {
+            Button("My real location") { selection = nil; dismiss() }
+            ForEach(shown, id: \.id) { b in
+                Button { selection = b.id; dismiss() } label: {
+                    HStack { Text(b.name); Spacer(); if b.id == selection { Image(systemName: "checkmark") } }
+                }
+            }
+        }
+        .foregroundStyle(Theme.ink)
+        .searchable(text: $query, prompt: "Search buildings")
+        .navigationTitle("Pretend I'm at\u{2026}")
     }
 }

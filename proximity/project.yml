@@ -41,6 +41,9 @@ targets:
       properties:
         <<: *radioInfo
         CFBundleDisplayName: FlUni
+        NSLocationWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
+        UIBackgroundModes: [location]
 
   # Test harness: same Core, developer view first, obeys test launch arguments. tools/ drive it.
   FluniProx:
