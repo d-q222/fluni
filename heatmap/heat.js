@@ -26,23 +26,31 @@ const LUT = (() => {
   }
   return lut;
 })();
+const LUT32 = new Uint32Array(LUT.buffer); // one RGBA pixel per entry, same byte order as ImageData
 
 // Draw the grid onto a canvas (one pixel per cell). vmax is fixed across frames, so a colour means
 // the same thing at every moment. Colour follows √(value / vmax) so a lone sick person still shows;
 // the legend's midpoint is therefore vmax / 4. minPeople hides cells with fewer than that many
 // people within ~1σ.
+// Runs every frame, so the canvas size (setting it clears and reallocates) and the pixel buffer are
+// kept between calls, and pixels are written whole (no per-pixel subarray).
 export function paint(grid, canvas, vmax, { minPeople = 0 } = {}) {
-  canvas.width = grid.nx;
-  canvas.height = grid.ny;
+  if (canvas.width !== grid.nx) canvas.width = grid.nx;
+  if (canvas.height !== grid.ny) canvas.height = grid.ny;
   const ctx = canvas.getContext('2d');
-  const img = ctx.createImageData(grid.nx, grid.ny);
-  const peopleScale = 2 * Math.PI * grid.sigmaM * grid.sigmaM;
-  for (let i = 0; i < grid.heat.length; i++) {
-    if (grid.people[i] * peopleScale < minPeople) continue;
-    const t = Math.sqrt(Math.min(1, grid.heat[i] / vmax));
-    if (t < 0.02) continue;
-    const k = Math.round(t * 255) * 4;
-    img.data.set(LUT.subarray(k, k + 4), i * 4);
+  if (canvas.img?.width !== grid.nx || canvas.img?.height !== grid.ny) {
+    canvas.img = ctx.createImageData(grid.nx, grid.ny);
+    canvas.px = new Uint32Array(canvas.img.data.buffer);
   }
-  ctx.putImageData(img, 0, 0);
+  const px = canvas.px, { heat, people } = grid;
+  px.fill(0);
+  const peopleScale = 2 * Math.PI * grid.sigmaM * grid.sigmaM;
+  for (let i = 0; i < heat.length; i++) {
+    if (!(heat[i] > 0)) continue; // t would be 0 (or NaN): transparent; most of the grid is empty
+    if (people[i] * peopleScale < minPeople) continue;
+    const t = Math.sqrt(Math.min(1, heat[i] / vmax));
+    if (t < 0.02) continue;
+    px[i] = LUT32[Math.round(t * 255)];
+  }
+  ctx.putImageData(canvas.img, 0, 0);
 }
