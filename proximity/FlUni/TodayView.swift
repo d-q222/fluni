@@ -13,6 +13,7 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    PausedBanner(model: model)
                     statusCard
                     riskCard
                     minutesCard
