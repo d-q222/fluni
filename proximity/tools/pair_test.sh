@@ -105,7 +105,7 @@ diagnose() {  # raw-log -> prints a one-line reason
 }
 launch() {  # phone label args...   (runs as a background job = its own process group)
   local p=$1 label=$2; shift 2
-  xcrun devicectl device process launch --device "$p" --console --terminate-existing "$BUNDLE" "$@" 2>&1 \
+  xcrun devicectl device process launch --device "$p" --console --terminate-existing "$BUNDLE" -- "$@" 2>&1 \
     | tee "$TMP/$label.raw" | grep --line-buffered '\[fluni\]' | sed -u "s/^/[$label] /" || true
 }
 

@@ -51,7 +51,7 @@ def run_cycle(ph, scenario, config, hold, out_path):
         else:
             risk = ["-risk", "none"]
         p = subprocess.Popen(["xcrun", "devicectl", "device", "process", "launch", "--device", udid, "--console",
-                              "--terminate-existing", BUNDLE] + risk + common,
+                              "--terminate-existing", BUNDLE, "--"] + risk + common,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
         procs.append(p)
         threading.Thread(target=reader, args=(LABELS[i], p), daemon=True).start()
