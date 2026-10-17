@@ -184,11 +184,17 @@ struct CampusMapView: View {
 
     /// Buildings with data right now, busiest first.
     static func rows(_ heat: BuildingHeat?, _ snap: BuildingHeat.Snapshot?) -> [Row] {
-        (heat?.mappable ?? []).compactMap { b in
-            guard let r = snap?.readings[b.id] else { return nil }
-            return (r.heat, Row(id: b.id, name: b.name, tier: r.tier, people: Int(r.people.rounded()), sick: Int(r.expectedSick.rounded())))
+        var out: [(heat: Double, row: Row)] = []
+        for b in heat?.mappable ?? [] {
+            guard let r = snap?.readings[b.id] else { continue }
+            let row = Row(id: b.id, name: b.name, tier: r.tier, people: Int(r.people.rounded()), sick: Int(r.expectedSick.rounded()))
+            out.append((r.heat, row))
         }
-        .sorted { $0.0 != $1.0 ? $0.0 > $1.0 : $0.1.name < $1.1.name }.map(\.1)
+        out.sort { (x, y) -> Bool in
+            if x.heat != y.heat { return x.heat > y.heat }
+            return x.row.name < y.row.name
+        }
+        return out.map { $0.row }
     }
 
     /// Same words as the web map's `advice`.
