@@ -8,7 +8,8 @@ struct WalkInBanner: View {
     var body: some View {
         Group {
             if let b = monitor.banner {
-                HStack(spacing: 10) {
+                // Ink is the only text colour that passes on the peach box (8.6; ink-2 is 4.2, fire-ink 4.4).
+                HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "building.2.crop.circle").font(.title3).accessibilityHidden(true)
                     Text(WalkInWarning.message(for: b.name)).font(.fluni(.subheadline, weight: .semibold))
                     Spacer(minLength: 0)

@@ -13,14 +13,21 @@ struct AlwaysLocationCard: View {
     var body: some View {
         if watcher.status == .authorizedWhenInUse && !dismissed {
             VStack(alignment: .leading, spacing: 8) {
-                Label("Get warned even when FlUni is closed", systemImage: "bell.badge").font(.fluni(.subheadline, weight: .semibold))
-                Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                Text("On the next screen, choose \u{201C}Change to Always Allow\u{201D}.").font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                HStack {
-                    Button("Not now") { dismissed = true }.frame(minHeight: 44)
-                    Spacer()
-                    Button("Turn on") { dismissed = true; watcher.requestAlways() }
-                        .font(.fluni(.subheadline, weight: .semibold)).frame(minHeight: 44)
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Get warned even when FlUni is closed", systemImage: "bell.badge").font(.fluni(.subheadline, weight: .semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                    Text("On the next screen, choose \u{201C}Change to Always Allow\u{201D}.").font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                }
+                .accessibilityElement(children: .combine)
+                let notNow = Button("Not now") { dismissed = true }.frame(minHeight: 44)
+                let turnOn = Button("Turn on warnings") { dismissed = true; watcher.requestAlways() }
+                    .font(.fluni(.subheadline, weight: .semibold)).frame(minHeight: 44)
+                    .accessibilityHint("Shows the iPhone location prompt")
+                // Side by side, or stacked when large text would squeeze them.
+                ViewThatFits(in: .horizontal) {
+                    HStack { notNow; Spacer(); turnOn }
+                    VStack(alignment: .leading, spacing: 0) { turnOn; notNow }
                 }.font(.fluni(.subheadline))
             }
             .foregroundStyle(Theme.ink)
@@ -36,19 +43,25 @@ struct BackgroundWarningsSection: View {
 
     var body: some View {
         Section {
-            LabeledContent("Warnings when closed", value: watcher.canWatchInBackground ? "On" : "Off")
+            // The default value colour is system grey (3.3:1 on surface); ink-2 is 7.0.
+            LabeledContent("Warnings when closed") { Text(watcher.canWatchInBackground ? "On" : "Off").foregroundStyle(Theme.ink2) }
             if watcher.status == .authorizedWhenInUse {
-                Button("Turn on\u{2026}") { watcher.requestAlways() }
+                Button("Turn on warnings when closed") { watcher.requestAlways() }
+                    .frame(minHeight: 44)
+                    .accessibilityHint("Shows the iPhone location prompt")
             }
             if !watcher.canWatchInBackground {
-                Button("Open iOS Settings") { if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) } }
+                Button("Open iPhone Settings") { if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) } }
+                    .frame(minHeight: 44)
+                    .accessibilityHint("Opens the iPhone Settings app, where you can change location permission")
             }
         } header: {
-            Text("Building warnings")
+            Text("Building warnings").foregroundStyle(Theme.ink2)
         } footer: {
             Text(watcher.canWatchInBackground
                  ? AlwaysLocationCopy.promise
-                 : "Warnings still work while FlUni is open. To get them when it's closed, open iOS Settings, choose Location, and pick Always. " + AlwaysLocationCopy.promise)
+                 : "Warnings still work while FlUni is open. To get them when it's closed, open iPhone Settings, choose Location, and pick Always. " + AlwaysLocationCopy.promise)
+                .foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
