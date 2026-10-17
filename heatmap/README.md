@@ -151,6 +151,9 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 - `motion.js`: footpath router and per-agent interpolation.
 - `diffuse.js`: heat field (binning plus a fast blur, kept inside buildings).
 - `masks.js`: rasterizes building outlines onto the heat grid.
+- `loader.js`: streaming CSV loader (gunzips on the fly, keeps only the columns the adapter uses).
+  A 7,000-agent day peaks at ~0.44 GB instead of ~4.9 GB. 14-day runs still need a compact format:
+  see ROADMAP D1.
 - `aggregate.js`: per-building and per-room totals, the only input to the user map.
 - `forecast.js`: predictive mode and backtest.
 - `buildings.js`: the building-fill layer for the user map.

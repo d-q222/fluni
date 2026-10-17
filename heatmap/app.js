@@ -2,6 +2,7 @@ import { paint, HEAT_STOPS } from './heat.js';
 import { DiffusionField } from './diffuse.js';
 import { rasterizeBuildings } from './masks.js';
 import { AerosolField, buildWalls } from './aerosol.js';
+import { loadCsv } from './loader.js';
 import { Router, buildTracks, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -126,21 +127,10 @@ function toFrames(rows, fields, buildingNames) {
 // Guard: the sim's own `t` is a step index, not seconds; COLUMNS prefers its ISO `timestamp`.
 const toMs = (t) => (Number.isFinite(Number(t)) ? Number(t) * 1000 : Date.parse(t));
 
-// Fetch a CSV, gunzipping in the browser if needed (the sim ships timeline.csv.gz).
-async function fetchCsv(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  let bytes = new Uint8Array(await res.arrayBuffer());
-  if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
-    bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-  }
-  return Papa.parse(new TextDecoder().decode(bytes), { header: true, skipEmptyLines: true });
-}
-
 // Room outlines for the airflow mode (map/rooms.csv next to the timeline): ids in order + WKT polygons.
 async function loadRooms(dataUrl) {
   try {
-    const { data } = await fetchCsv(new URL('map/rooms.csv', new URL(dataUrl, location.href)));
+    const { data } = await loadCsv(new URL('map/rooms.csv', new URL(dataUrl, location.href)), ['room_id', 'polygon_wkt']);
     const rows = data.filter((r) => r.room_id && r.polygon_wkt);
     return { index: new Map(rows.map((r, i) => [r.room_id, i])), wkts: rows.map((r) => r.polygon_wkt) };
   } catch {
@@ -151,7 +141,7 @@ async function loadRooms(dataUrl) {
 // The sim keeps building names next to the timeline in map/buildings.csv (location_id → name).
 async function loadBuildingNames(dataUrl) {
   try {
-    const { data } = await fetchCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)));
+    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name']);
     return new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
   } catch {
     return new Map();
@@ -268,7 +258,8 @@ const $ = (id) => document.getElementById(id);
 async function main() {
   let res, dataUrl;
   for (dataUrl of DATA_URLS) {
-    try { res = await fetchCsv(dataUrl); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
+    // Streamed, gunzipped on the fly, keeping only columns the adapter knows: a 7,000-agent day fits.
+    try { res = await loadCsv(dataUrl, Object.values(COLUMNS).flat()); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
   }
   if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
   const [paths, buildingNames, outlines, rooms] = await Promise.all([
@@ -277,7 +268,7 @@ async function main() {
     fetch('../sim/data/osm/buildings.geojson').then((r) => r.json()).catch(() => null),
     loadRooms(dataUrl),
   ]);
-  const data = toFrames(res.data, res.meta.fields, buildingNames);
+  const data = toFrames(res.data, res.fields, buildingNames);
   const { frames, times } = data;
   const tracks = buildTracks(data.samples);
   const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
