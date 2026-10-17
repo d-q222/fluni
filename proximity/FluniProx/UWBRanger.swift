@@ -15,6 +15,8 @@ final class UWBRanger: NSObject, NISessionDelegate {
     private var sessions: [MCPeerID: NISession] = [:]
     private var peerTokens: [MCPeerID: NIDiscoveryToken] = [:]
     private var active: Set<MCPeerID> = []  // linked peers; a delayed restart checks this
+    private var myTokenData: [MCPeerID: Data] = [:]
+    private var peerTokenData: [MCPeerID: Data] = [:]
 
     func start(for peer: MCPeerID) {
         guard Self.isSupported else { onState?("not supported on this device"); return }
@@ -26,6 +28,7 @@ final class UWBRanger: NSObject, NISessionDelegate {
         guard let token = s.discoveryToken,
               let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
         else { return }
+        myTokenData[peer] = data
         onToken?(peer, data)
         if let theirs = peerTokens[peer] { run(s, theirs) }
     }
@@ -33,14 +36,22 @@ final class UWBRanger: NSObject, NISessionDelegate {
     func receive(tokenData: Data, from peer: MCPeerID) {
         guard let token = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NIDiscoveryToken.self, from: tokenData)
         else { return }
+        let isNew = peerTokenData[peer] != tokenData
         peerTokens[peer] = token
-        if let s = sessions[peer] { run(s, token) }
+        peerTokenData[peer] = tokenData
+        guard let s = sessions[peer] else { return }
+        run(s, token)
+        // The peer has a new token, so it restarted and may have forgotten ours: send it again.
+        // Terminates because an unchanged token does not trigger a reply.
+        if isNew, let mine = myTokenData[peer] { onToken?(peer, mine) }
     }
 
     func stop(for peer: MCPeerID) {
         active.remove(peer)
         sessions.removeValue(forKey: peer)?.invalidate()
         peerTokens.removeValue(forKey: peer)
+        peerTokenData.removeValue(forKey: peer)
+        myTokenData.removeValue(forKey: peer)
     }
 
     private func run(_ s: NISession, _ token: NIDiscoveryToken) {
@@ -58,16 +69,25 @@ final class UWBRanger: NSObject, NISessionDelegate {
     }
 
     func session(_ s: NISession, didRemove objects: [NINearbyObject], reason: NINearbyObject.RemovalReason) {
+        guard let peer = peer(of: s) else { return }
+        if reason == .peerEnded {
+            // The peer ended its session, so our copy of its token is dead. Wait for its new token
+            // (receive() re-runs) and re-send ours in case it restarted without it.
+            onState?("peer ended")
+            if let mine = myTokenData[peer] { onToken?(peer, mine) }
+            return
+        }
         // Timeout = peer briefly out of range; re-run so ranging resumes when it's back.
-        guard reason == .timeout, let peer = peer(of: s), let t = peerTokens[peer] else { return }
+        guard let t = peerTokens[peer] else { return }
         run(s, t)
     }
 
     func sessionWasSuspended(_ s: NISession) { onState?("suspended") }
 
     func sessionSuspensionEnded(_ s: NISession) {
-        guard let peer = peer(of: s), let t = peerTokens[peer] else { return }
-        run(s, t)
+        guard let peer = peer(of: s) else { return }
+        if let mine = myTokenData[peer] { onToken?(peer, mine) }  // the peer may have restarted meanwhile
+        if let t = peerTokens[peer] { run(s, t) }
     }
 
     func session(_ s: NISession, didInvalidateWith error: Error) {
