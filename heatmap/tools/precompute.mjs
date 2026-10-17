@@ -441,6 +441,37 @@ const json = JSON.stringify(totals);
 const gzJson = gzipSync(json, { level: 9 });
 writeFileSync(join(outDir, 'totals.json.gz'), gzJson);
 
+// ---------- 4b. building_heat.csv (phones; docs/building-heat-format.md) ----------
+
+// The user map's building totals as snapshots every HEAT_EVERY_MIN, for the phone's walk-in warning.
+// heat uses the map's own colour scale (√ of expected sick over buildingScaleMax), so a building the
+// map shows dark is one the phone warns about: high = past the legend's midpoint (heat ≥ 0.5).
+const HEAT_EVERY_MIN = 15;
+const peaks = steps.map((st) => Math.max(0, ...st.sp.map((x) => x * scale))).sort((a, b) => a - b);
+const heatMax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+const where = new Map();
+if (existsSync(bFile)) for (const b of parseCsv(readFileSync(bFile, 'utf8'))) where.set(b.location_id, [b.lat, b.lon]);
+const pad2 = (x) => String(x).padStart(2, '0');
+const isoLocal = (ms) => {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
+};
+const csvField = (x) => (/[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x);
+const heatRows = ['t_iso,building_id,name,lat,lon,people,expected_sick,heat,high'];
+let nextSnap = -Infinity;
+steps.forEach((st, i) => {
+  if (!st.b.length || times[i] < nextSnap) return;
+  nextSnap = times[i] + HEAT_EVERY_MIN * 60000;
+  st.b.forEach((bi, k) => {
+    const people = st.n[k] * scale, sick = st.sp[k] * scale, b = buildings[bi];
+    if (people < MIN_PEOPLE) return; // hidden on the map too
+    const heat = Math.min(1, Math.sqrt(sick / heatMax)), [lat = '', lon = ''] = where.get(b.id) || [];
+    heatRows.push([isoLocal(times[i]), b.id, csvField(b.name), lat, lon, people, sick.toFixed(2), heat.toFixed(3), heat >= 0.5 ? 1 : 0].join(','));
+  });
+});
+writeFileSync(join(outDir, 'building_heat.csv'), heatRows.join('\n') + '\n');
+console.log(`building_heat.csv: ${heatRows.length - 1} rows, every ${HEAT_EVERY_MIN} min; colour max ${heatMax.toFixed(1)} expected sick`);
+
 // ---------- 5. summary ----------
 
 const tlSize = statSync(tlFile).size;

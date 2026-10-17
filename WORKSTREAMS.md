@@ -73,6 +73,12 @@ Claim a row before you start. Update the status as you go. Agents should name th
   student app) and FluniProx (the test harness), sharing `Core/` (sensing/maths) and `SharedUI/`. The
   harness stays with the product so tests hit the shipping code. Later step: move `Core/` into a Swift package.
 
+- **2026-10-17 — Phones read building heat from a file (the same totals as the user map).** The heat
+  map writes `heatmap/out/<run>/building_heat.csv` (15-min snapshots of building totals, a 0–1 heat on
+  the map's colour scale, and a `high` flag; see [docs/building-heat-format.md](docs/building-heat-format.md)).
+  The phone uses it for the walk-in warning (PRD 2.2). It's covered by "user map sees totals only" and
+  "totals are precomputed": no people or positions.
+
 ## Requests
 
 - **design pass → proximity app and probability model (proposal, please confirm):** the heat map

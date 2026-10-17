@@ -185,6 +185,9 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
   (building totals and hourly forecasts). Usage: `node heatmap/tools/precompute.mjs
   sim/runs/<run> --out <dir>`. It is validated against the in-browser `aggregate.js` and
   `forecast.js` (identical results), and handles 7,000 agents × 14 days in about 80 s.
+  It also writes `building_heat.csv` for the phones' walk-in warning
+  ([docs/building-heat-format.md](../docs/building-heat-format.md)); the committed ones are in
+  `heatmap/out/<run>/`.
 - `loader.js`: streaming CSV loader (gunzips on the fly, keeps only the columns the adapter uses).
   A 7,000-agent day peaks at ~0.44 GB instead of ~4.9 GB. 14-day runs still need a compact format:
   see ROADMAP D1.
