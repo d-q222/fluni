@@ -40,7 +40,7 @@ enum PSickLoader {
             if feed.agents.isEmpty { throw Failure(message: "The model output file is empty.") }
             return feed
         } catch let f as Failure { throw f } catch {
-            throw Failure(message: "That file isn't a P(sick) file, so it was ignored.")
+            throw Failure(message: "That isn't a model output file, so it was ignored.")
         }
     }
 

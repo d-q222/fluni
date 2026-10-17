@@ -8,6 +8,8 @@ struct MeView: View {
     @State private var blocked: String?
     @State private var showDeveloper = false
 
+    @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = 36
+
     private enum Choice: CaseIterable { case fine, symptoms, positive, negative }
 
     private struct Option {
@@ -20,9 +22,9 @@ struct MeView: View {
     private func option(_ c: Choice) -> Option {
         switch c {
         case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", icon: "face.smiling", tint: Theme.sage)
-        case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Their exposure time counts half.", icon: "thermometer.medium", tint: Theme.sun)
+        case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Time near you counts half toward their close contact.", icon: "thermometer.medium", tint: Theme.sun)
         case .positive: return Option(title: "I tested positive", detail: "Phones near you see: contagious, and may alert their owners.", icon: "cross.case", tint: Theme.fire)
-        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative isn't conclusive.", icon: "checkmark.shield", tint: Theme.sage)
+        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative test isn't conclusive.", icon: "checkmark.shield", tint: Theme.sage)
         }
     }
 
@@ -44,6 +46,7 @@ struct MeView: View {
                     }
                     if model.myRisk != .none { AtHomeCard(model: model, store: store) }
                     Text("How are you doing?").font(.fluni(.title3, weight: .bold)).foregroundStyle(Theme.ink)
+                        .accessibilityAddTraits(.isHeader)
                     ForEach(Choice.allCases, id: \.self) { row($0) }
                     since
                     Text("Only your status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes are shared with phones nearby. Symptoms, test details and dates stay on this phone. No name, no location.")
@@ -55,6 +58,7 @@ struct MeView: View {
                     Button { showDeveloper = true } label: {
                         Text("Developer tools").font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
                     }
+                    .accessibilityHint("For testing. Not needed day to day.")
                     .frame(maxWidth: .infinity)
                 }
                 .padding(16)
@@ -63,7 +67,7 @@ struct MeView: View {
             .navigationTitle("Me")
             .sheet(isPresented: $showDeveloper) { DeveloperView(model: model) }
             .sheet(item: $sheet) { ReportSheet(kind: $0, model: model, store: store) }
-            .alert("Not yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
+            .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: { Text(blocked ?? "") }
             .onAppear { store.reconcile(with: model) }
@@ -76,7 +80,7 @@ struct MeView: View {
         case .fine:
             guard model.myRisk != .none else { return }
             do { try store.feelFine(model: model) } catch {
-                blocked = "You tested positive, so you stay marked contagious until your \(IsolationPolicy.days) days are up and you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours. The At home card will ask you then."
+                blocked = "You tested positive, so you stay marked contagious until your \(IsolationPolicy.days) days are up and you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours. The At home card will check in with you then."
             }
         case .symptoms: sheet = .symptoms
         case .positive: sheet = .positive
@@ -89,7 +93,7 @@ struct MeView: View {
         let selected = selected(c)
         return Button { tap(c) } label: {
             HStack(spacing: 12) {
-                Image(systemName: o.icon).font(.title3).frame(width: 36, height: 36)
+                Image(systemName: o.icon).font(.title3).frame(width: iconSize, height: iconSize)
                     .background(o.tint.opacity(0.45), in: Circle()).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(o.title).font(.fluni(.body, weight: .semibold))
@@ -106,6 +110,7 @@ struct MeView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
+        .accessibilityHint(c == .fine ? "Sets your status to healthy" : "Opens a short form")
     }
 
     @ViewBuilder private var since: some View {
@@ -113,7 +118,7 @@ struct MeView: View {
             Text("Status set \(at.formatted(date: .abbreviated, time: .shortened))")
                 .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
         } else {
-            Text("You haven't set a status yet; phones near you see \"healthy\".")
+            Text("You haven't set a status yet. Phones near you see \"healthy\".")
                 .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
         }
     }

@@ -32,7 +32,7 @@ struct SettingsView: View {
             Button("Delete my data", role: .destructive) { deleteEverything() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This clears your saved status, exposure history, map address and setup. FlUni will start over as if just installed.")
+            Text("This clears your saved status, recent contacts, map address and setup. FlUni will start over as if it were just installed.")
         }
     }
 
@@ -59,8 +59,8 @@ struct SettingsView: View {
             Text("Detection")
         } footer: {
             Text(model.isPaused
-                 ? "While paused, FlUni doesn't broadcast, scan, or count exposure, so it can't warn you either."
-                 : "Pausing stops all Bluetooth, ultra wideband and location use and saves battery.")
+                 ? "While paused, FlUni doesn't share your status, look for nearby phones or count close-contact time, so it can't warn you either."
+                 : "Pausing stops FlUni's use of Bluetooth, precise distance sensing and location, and saves battery.")
         }
         .listRowBackground(Theme.surface)
     }
@@ -75,7 +75,7 @@ struct SettingsView: View {
                 Label("A status with 3 levels: healthy, possibly sick, or contagious", systemImage: "circle.lefthalf.filled")
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("Never shared").font(.fluni(.subheadline, weight: .semibold))
+                Text("Never shared").font(.fluni(.subheadline, weight: .semibold)).accessibilityAddTraits(.isHeader)
                 Text("Your name, phone number, device name, account, or any history. Your location is used on this phone and goes only to a phone next to you, never to a server. Matching happens on your phone.")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
@@ -90,13 +90,14 @@ struct SettingsView: View {
     private var notificationsSection: some View {
         Section {
             LabeledContent("Alerts", value: notificationText)
-            Button("Open iOS Settings") {
+            Button("Open iPhone Settings") {
                 if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) }
             }
+            .accessibilityHint("Opens the iPhone Settings app, where you can change notification permission")
         } header: {
             Text("Notifications")
         } footer: {
-            Text("FlUni uses notifications to tell you about a nearby or close contact.")
+            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact.")
         }
         .listRowBackground(Theme.surface)
     }
@@ -121,6 +122,8 @@ struct SettingsView: View {
             TextField("http://…", text: $heatmapURL)
                 .keyboardType(.URL).textContentType(.URL)
                 .textInputAutocapitalization(.never).autocorrectionDisabled()
+                .accessibilityLabel("Map address")
+                .frame(minHeight: 44)
         } header: {
             Text("Map address")
         } footer: {

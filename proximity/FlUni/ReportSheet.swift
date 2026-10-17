@@ -27,7 +27,8 @@ struct ReportSheet: View {
                     case .positive: testBody(question: "When did you test?")
                     case .negative: testBody(question: "When did you test?")
                     }
-                    if let error { Text(error).font(.fluni(.footnote)).foregroundStyle(Theme.fireInk) }
+                    if let error { Text(error).font(.fluni(.footnote)).foregroundStyle(Theme.fireInk)
+                        .accessibilityLabel("Problem: \(error)") }
                 }
                 .padding(16)
             }
@@ -35,11 +36,11 @@ struct ReportSheet: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
-            .confirmationDialog("Share that you tested positive?", isPresented: $confirmPositive, titleVisibility: .visible) {
-                Button("Yes, I tested positive", role: .destructive) { submit() }
+            .confirmationDialog("Tell nearby phones you tested positive?", isPresented: $confirmPositive, titleVisibility: .visible) {
+                Button("Share that I tested positive", role: .destructive) { submit() }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("FlUni phones near you will see \"contagious\" (nothing else about you) and may warn their owners. Staying home is the best thing you can do now.")
+                Text("FlUni phones near you will see \"contagious\" (nothing else about you) and may alert their owners. Staying home is the best thing you can do now.")
             }
         }
     }
@@ -56,6 +57,7 @@ struct ReportSheet: View {
 
     @ViewBuilder private var symptomsBody: some View {
         Text("What are you feeling?").font(.fluni(.headline)).foregroundStyle(Theme.ink)
+            .accessibilityAddTraits(.isHeader)
         VStack(spacing: 8) {
             ForEach(Symptom.allCases, id: \.self) { s in
                 let on = picked.contains(s)
@@ -76,16 +78,18 @@ struct ReportSheet: View {
         DatePicker("When did it start?", selection: $date, in: ...Date(), displayedComponents: .date)
             .font(.fluni(.body)).foregroundStyle(Theme.ink)
             .frame(minHeight: 44)
-        sharedBox("Any one symptom is enough. Phones near you will only see \"possibly sick\". Your symptoms, the date and your name are never shared; they stay on this phone.")
+        sharedBox("Any one symptom is enough. Phones near you will only see \"possibly sick\". Your symptoms, the date and your name are never shared. They stay on this phone.")
         Button("Set status to possibly sick") { submit() }
             .buttonStyle(PrimaryButtonStyle(fill: Theme.sun))
             .disabled(picked.isEmpty).opacity(picked.isEmpty ? 0.5 : 1)
+            .accessibilityHint(picked.isEmpty ? "Pick at least one symptom first" : "Shares \"possibly sick\" with phones near you")
     }
 
     // MARK: tests
 
     @ViewBuilder private func testBody(question: String) -> some View {
-        Text("Which test?").font(.fluni(.headline)).foregroundStyle(Theme.ink)
+        Text("Which test did you take?").font(.fluni(.headline)).foregroundStyle(Theme.ink)
+            .accessibilityAddTraits(.isHeader)
         Picker("Test type", selection: $test) {
             ForEach(TestKind.allCases, id: \.self) { Text($0.label).tag($0) }
         }
@@ -94,9 +98,10 @@ struct ReportSheet: View {
             .font(.fluni(.body)).foregroundStyle(Theme.ink)
             .frame(minHeight: 44)
         if kind == .positive {
-            sharedBox("Phones near you will see \"contagious\" and may warn their owners. The test type and date are never shared; they stay on this phone. A test is more reliable than symptoms alone, so nearby phones treat it as a stronger signal.")
-            Button("Continue") { confirmPositive = true }
-                .buttonStyle(PrimaryButtonStyle(fill: Theme.fire))
+            sharedBox("Phones near you will see \"contagious\" and may warn their owners. The test type and date are never shared. They stay on this phone. A test is more reliable than symptoms alone, so nearby phones treat it as a stronger signal.")
+            Button("Review and share") { confirmPositive = true }
+                .buttonStyle(PrimaryButtonStyle(fill: Theme.fireInk, text: Theme.paper))
+                .accessibilityHint("Asks you to confirm before anything is shared")
         } else {
             sharedBox(negativeNote)
             Button("Save negative result") { submit() }
@@ -106,7 +111,7 @@ struct ReportSheet: View {
 
     private var negativeNote: String {
         switch model.myRisk {
-        case .possible: return "This sets you back to healthy. A single rapid negative isn't conclusive, especially in the first days: if you still feel sick, test again in 1 to 2 days or visit Vaden."
+        case .possible: return "This sets you back to healthy. A single rapid negative test isn't conclusive, especially in the first days. If you still feel sick, test again in 1 to 2 days or visit Vaden."
         case .contagious: return "You tested positive earlier, so a negative test won't clear your status. It changes once your isolation period is over."
         case .none: return "You're already shown as healthy, so nothing changes. Nothing about the test is shared."
         }
@@ -118,6 +123,7 @@ struct ReportSheet: View {
             Text(text).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
         }
         .card(fill: Theme.surface2)
+        .accessibilityElement(children: .combine)
     }
 
     private func submit() {
@@ -133,7 +139,7 @@ struct ReportSheet: View {
         } catch ReportError.noSymptoms {
             error = "Pick at least one symptom."
         } catch {
-            self.error = "Couldn't save that. Try again."
+            self.error = "Couldn't save that. Please try again."
         }
     }
 }
