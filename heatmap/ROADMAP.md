@@ -15,6 +15,7 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 |---|---|---|---|---|
 | D1 | ~~Load the sim's output~~ **Done** for the mock run (gzip, sim columns, building names). Still to do: the full run's size (~7,500 agents × 14 days), which needs preprocessing or Parquet | M | full sim run | The full run loads in under 5 s |
 | D2 | ~~Smooth movement on a sim-time clock~~ **Done**: footpath walking, see README | — | — | — |
+| D7 | ~~Better heat diffusion~~ **Done**: heat stays inside buildings, lingers about 30 min after people leave, and scales to 7,000 agents (`diffuse.js`, `masks.js`). Follow-up: `HeatGrid` in `heat.js` is now unused and can be removed once the design pass merges | — | — | — |
 | D3 | Rescale the heat for ~10 agents (σ, colour-scale maximum) | S | D1 | One sick agent in a room shows a clear blob, and the legend still makes sense |
 | D4 | Fill building outlines by expected infected, and click a building for its count | M | `data/stanford_buildings.json`; CSV building names | Clicking a building shows its numbers |
 | D5 | Show the predictive layer (U4) in the demo, with what actually happened overlaid afterwards | M | U4 | Scrub to a time: the forecast for +1 h appears next to the actual result |

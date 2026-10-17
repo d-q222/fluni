@@ -76,7 +76,16 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   same as concentration × average P(sick). The colour scale is fixed across all timestamps, so a
   colour means the same thing at every moment. It is a square-root scale, so the legend's middle
   label is a quarter of its maximum.
-- **Heat → "Room-level (demo)"**: fine detail (σ = 18 m), presenter only.
+- **Heat → "Room-level (demo)"**: fine detail (σ = 18 m), presenter only. How the heat spreads
+  (`diffuse.js`, `masks.js`):
+  - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
+    streets. Outdoors, it spreads freely.
+  - Heat lingers. Each frame blends the last hour of positions (6 snapshots, 10 minutes apart,
+    weighted e^(−age/30 min)), so a room's heat builds up while people stay and fades after they
+    leave.
+  - People are first binned into the grid, then the grid is smoothed with three box blurs (≈ a
+    Gaussian). The cost depends on grid size, not on the number of agents, which is what the
+    7,000-agent run needs.
 - **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
   people shown.
 - **Dots (demo only)**: one per agent. Colour by the app's estimate of P(sick), or by the
@@ -127,6 +136,8 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 - `heat.js`: heat grid in metres plus colouring. No map library, so it can move to Google Maps.
 - `motion.js`: footpath router and per-agent interpolation.
+- `diffuse.js`: heat field (binning plus a fast blur, kept inside buildings).
+- `masks.js`: rasterizes building outlines onto the heat grid.
 - `aggregate.js`: per-building and per-room totals, the only input to the user map.
 - `forecast.js`: predictive mode and backtest.
 - `buildings.js`: the building-fill layer for the user map.

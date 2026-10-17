@@ -1,4 +1,6 @@
-import { HeatGrid, paint, HEAT_STOPS } from './heat.js';
+import { paint, HEAT_STOPS } from './heat.js';
+import { DiffusionField } from './diffuse.js';
+import { rasterizeBuildings } from './masks.js';
 import { Router, buildTracks, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -6,6 +8,15 @@ import { BuildingTotalsLayer } from './buildings.js';
 
 // Room-level heat for the presenter; coarse, privacy-masked heat for what real users see.
 const DEMO = { cellM: 3, sigmaM: 18 };
+// Heat lingers after people leave, like air in a room: each heat frame blends the last hour of
+// positions, recent ones weighted most. Weights sum to 1, so a crowd's heat builds up while they
+// stay and fades over ~tauMin after they go.
+const MEMORY = { stepMin: 10, steps: 6, tauMin: 30 };
+const MEMORY_W = (() => {
+  const w = Array.from({ length: MEMORY.steps }, (_, k) => Math.exp((-k * MEMORY.stepMin) / MEMORY.tauMin));
+  const sum = w.reduce((a, b) => a + b, 0);
+  return w.map((x) => x / sum);
+})();
 // The user-facing map sees only per-building totals. Small runs (the mock has 10 agents) are scaled
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
@@ -191,14 +202,19 @@ function firstMove(tracks, t0) {
   return Number.isFinite(first) ? first : t0;
 }
 
-// Fixed colour scale shared by every frame: the 90th percentile of per-frame peaks (sampled), so a
+// Fixed colour scale shared by every frame: the 90th percentile of peaks at ~60 sampled times, so a
 // single extreme moment doesn't wash out the rest. Anything above it shows as the darkest colour.
-function globalMax(grid, frames, sigmaM) {
-  const step = Math.max(1, Math.floor(frames.length / 60));
+function scaleMax(heatAt, times) {
+  const step = Math.max(1, Math.floor(times.length / 60));
   const peaks = [];
-  for (let i = 0; i < frames.length; i += step) peaks.push(grid.compute(frames[i], sigmaM).max());
+  for (let i = 0; i < times.length; i += step) peaks.push(heatAt(times[i]).max());
   peaks.sort((a, b) => a - b);
   return peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+}
+
+// Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
+function* asPoints(states) {
+  for (const s of states) yield { lat: s.lat, lon: s.lon, p: s.p, indoor: Boolean(s.buildingId) };
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -248,13 +264,28 @@ async function main() {
   const sw = [bounds.south, bounds.west], ne = [bounds.north, bounds.east];
   const t0 = times[0], t1 = times[times.length - 1];
 
-  const demoGrid = new HeatGrid(bounds, DEMO.cellM);
+  // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
+  const probe = new DiffusionField(bounds, DEMO.cellM);
+  const mask = outlines ? rasterizeBuildings(outlines, probe).inside : null;
+  const field = new DiffusionField(bounds, DEMO.cellM, { mask });
+  const statesAt = (t) => {
+    const out = [];
+    for (const track of tracks.values()) { const st = stateAt(track, t, router); if (st) out.push(st); }
+    return out;
+  };
+  const heatAt = (t, nowStates = null) => {
+    field.clear();
+    MEMORY_W.forEach((w, k) => {
+      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000)), w);
+    });
+    return field.diffuse(DEMO.sigmaM);
+  };
   // Everything the user-facing map gets is computed here, from totals only.
   const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
   const totals = buildTotals(frames, times, { scale });
   const forecaster = buildForecaster(frames, times, { scale });
   const backtestRate = forecaster.backtest(60).rate;
-  const vmax = { demo: globalMax(demoGrid, frames, DEMO.sigmaM), public: buildingScaleMax(totals) };
+  const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals) };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
@@ -382,7 +413,7 @@ async function main() {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
       }
-      if (view !== 'public') paint(demoGrid.compute(current.values(), DEMO.sigmaM), heatLayer.canvas, vmax.demo);
+      if (view !== 'public') paint(heatAt(now, current.values()), heatLayer.canvas, vmax.demo);
       lastHeat = realNow;
       heatDirty = false;
     }
