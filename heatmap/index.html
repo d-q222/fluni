@@ -179,10 +179,10 @@
     }
     /* ---------- hand-drawn containers (Lisa's Procreate box, assets/containers/) ----------
        9-slice border image: corners and the hatched left/bottom edges keep their shape, the middle
-       stretches. Used on presenter-side panels only; the phone keeps flat cards like the iOS app.
+       stretches. Used on the presenter panels and the phone's cards.
        paper = her box with a cream fill (data sits on it); peach = her original colours, used for
        the "presenter only" bar so it reads as not part of the app. */
-    .drawn, .legend, .mathpanel, .presenter {
+    .drawn, .legend, .mathpanel, .presenter, .screen .risk, .screen .alert, #ph-map {
       border-style: solid; border-width: 9px 8px 21px 17px;
       border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch;
       background: none !important; box-shadow: none !important; border-radius: 0 !important;
@@ -191,6 +191,17 @@
     .legend { padding: 4px 8px 2px 6px; }
     .presenter { border-image-source: url("assets/containers/box-peach.png"); padding: 4px 4px 2px 8px; color: var(--ink);
       flex-wrap: wrap; row-gap: 6px; }
+    /* Phone cards. The tier colour moves from the old left stripe to a dot before the label,
+       since the drawn box now owns the border. The alert uses the peach box (warm = warning),
+       with charcoal text for contrast on peach. */
+    .screen .risk { border-left-width: 17px; padding: 6px 8px 4px 4px; }
+    .risk .label::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+      margin-right: 6px; vertical-align: 0; background: var(--ink-3); }
+    .risk[data-tier="low"] .label::before { background: var(--sage); }
+    .risk[data-tier="elevated"] .label::before { background: var(--sun); box-shadow: 0 0 0 1px rgba(51,36,28,.25); }
+    .risk[data-tier="high"] .label::before { background: var(--fire); }
+    .screen .alert { border-image-source: url("assets/containers/box-peach.png"); color: var(--ink); padding: 4px 6px 2px 4px; }
+    #ph-map { border-radius: 0; }
     .presenter > span { flex: 1 1 100%; }               /* status on its own line, buttons below, right-aligned */
     .presenter > span + button { margin-left: auto; }
     .presenter button { background: rgba(255, 250, 241, 0.7); }
