@@ -87,10 +87,7 @@ final class WalkInMonitor: ObservableObject {
     }
 
     private func post(_ b: BuildingHeat.Building) {
-        let c = UNMutableNotificationContent()
-        c.title = "FlUni"
-        c.body = WalkInWarning.message(for: b.name)
-        c.sound = .default
+        let c = AppNotifications.content(kind: .building, buildingID: b.id, buildingName: b.name)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "walkin-\(b.id)", content: c, trigger: nil))
     }
 }

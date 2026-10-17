@@ -436,10 +436,7 @@ final class ProximityModel: ObservableObject {
 
     private func notify(_ level: AlertLevel) {
         UINotificationFeedbackGenerator().notificationOccurred(level == .closeContact ? .error : .warning)
-        let c = UNMutableNotificationContent()
-        c.title = Advice.title(level)
-        c.body = Advice.body(level).joined(separator: " ")
-        c.sound = .default
+        let c = AppNotifications.content(kind: level == .closeContact ? .closeContact : .nearby)  // category + userInfo + neutral text
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil))
     }
 }
