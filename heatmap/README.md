@@ -24,6 +24,8 @@ URL options, which can be combined:
 - `?at=200`: open at a moment, in minutes from the start of the data.
 - `?agent=A0008`: open with that agent's phone showing. Handy for demo scenes.
 - `?view=public`: open on the user-facing map. Add `&horizon=60` (or 120 or 180) for a forecast.
+- `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
+  instead of the app's estimate. This is the same as choosing "Colour: true status (sim)".
 
 Demo scenes on the sim's mock run:
 

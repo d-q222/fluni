@@ -213,8 +213,11 @@ function scaleMax(heatAt, times) {
 }
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
-function* asPoints(states) {
-  for (const s of states) yield { lat: s.lat, lon: s.lon, p: s.p, indoor: Boolean(s.buildingId) };
+// truth = heat from who is actually infectious (sim), instead of the app's estimate.
+function* asPoints(states, truth) {
+  for (const s of states) {
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(Boolean(s.infectious)) : s.p, indoor: Boolean(s.buildingId) };
+  }
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -273,10 +276,10 @@ async function main() {
     for (const track of tracks.values()) { const st = stateAt(track, t, router); if (st) out.push(st); }
     return out;
   };
-  const heatAt = (t, nowStates = null) => {
+  const heatAt = (t, nowStates = null, truth = false) => {
     field.clear();
     MEMORY_W.forEach((w, k) => {
-      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000)), w);
+      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000), truth), w);
     });
     return field.diffuse(DEMO.sigmaM);
   };
@@ -285,7 +288,14 @@ async function main() {
   const totals = buildTotals(frames, times, { scale });
   const forecaster = buildForecaster(frames, times, { scale });
   const backtestRate = forecaster.backtest(60).rate;
-  const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals) };
+  const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
+  // "True status (sim)" colouring also switches the demo heat to actual infections.
+  const truthMode = () => data.hasTruth && $('dot-mode').value === 'truth';
+  const demoScale = () => {
+    if (!truthMode()) return vmax.demo;
+    if (vmax.truth === null) vmax.truth = scaleMax((t) => heatAt(t, null, true), times); // computed on first use
+    return vmax.truth;
+  };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
@@ -413,7 +423,7 @@ async function main() {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
       }
-      if (view !== 'public') paint(heatAt(now, current.values()), heatLayer.canvas, vmax.demo);
+      if (view !== 'public') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
       lastHeat = realNow;
       heatDirty = false;
     }
@@ -465,11 +475,12 @@ async function main() {
     $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
     // Colour scale is √, so the midpoint is a quarter of the maximum.
     const unit = v === 'public' ? 1 : 1000; // public: sick people per building; demo: per 1,000 m²
-    $('vmid').textContent = (vmax[v] * unit / 4).toFixed(1);
-    $('vmax').textContent = `${(vmax[v] * unit).toFixed(1)}+`;
+    const top = v === 'public' ? vmax.public : demoScale();
+    $('vmid').textContent = (top * unit / 4).toFixed(1);
+    $('vmax').textContent = `${(top * unit).toFixed(1)}+`;
     document.querySelector('.legend h2').innerHTML = v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : 'Expected infected <span>per 1,000 m²</span>';
+      : truthMode() ? 'Actually infectious <span>per 1,000 m² (sim truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
     const showDots = $('show-dots').checked && v === 'demo';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
@@ -502,6 +513,7 @@ async function main() {
   const params = new URLSearchParams(location.search);
   if (params.get('view')) $('view').value = params.get('view');
   if (params.get('horizon')) horizon.value = params.get('horizon');
+  if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
   document.querySelector('#phone .screen .fine').textContent =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
