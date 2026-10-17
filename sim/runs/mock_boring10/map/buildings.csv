@@ -1,0 +1,7 @@
+location_id,osm_id,name,type,lat,lon,floors,area_m2,capacity,ventilation_ach,indoor,entrance_sources
+bld_232805657,way/232805657,Branner Hall,dorm,37.425475,-122.1628462,3,3034,50,2.0,True,estimated
+bld_333374283,way/333374283,Arrillaga Family Dining Commons,dining,37.4254186,-122.1641041,2,1902,400,4.0,True,fallback
+bld_232841892,way/232841892,Hewlett Teaching Center,lecture_hall,37.4290155,-122.172886,2,1532,300,5.0,True,estimated
+bld_232841885,way/232841885,Gates Computer Science,classroom,37.4301256,-122.1734401,5,3060,20,4.0,True,osm
+bld_232805685,way/232805685,Lathrop Library,library,37.4292098,-122.1673282,4,5415,120,3.0,True,estimated
+bld_26250731,way/26250731,Vaden Health Center,health_center,37.4220058,-122.1636339,2,1735,3,6.0,True,estimated

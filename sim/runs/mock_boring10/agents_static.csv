@@ -1,0 +1,11 @@
+agent_id,archetype,class_year,home_dorm,home_room_id,class_schedule,friend_group_id,team_id,transport_mode,mask_propensity,compliance,honesty,has_app,shares_location,sickness_behavior_profile
+A0000,homebody,2026,Branner Hall,bld_232805657_f2_201,SEC_MWF_01|SEC_TTH_01,FG00,,walk,0.1,0.8,0.9,True,True,visit_vaden_then_isolate
+A0001,homebody,2027,Branner Hall,bld_232805657_f2_201,SEC_MWF_01|SEC_TTH_01,FG00,,walk,0.1,0.8,0.9,True,True,visit_vaden_then_isolate
+A0002,homebody,2028,Branner Hall,bld_232805657_f2_202,SEC_MWF_01|SEC_TTH_01,FG00,,bike,0.1,0.8,0.9,True,True,visit_vaden_then_isolate
+A0003,homebody,2029,Branner Hall,bld_232805657_f2_202,SEC_MWF_01|SEC_TTH_01,FG00,,walk,0.1,0.8,0.9,True,False,visit_vaden_then_isolate
+A0004,homebody,2026,Branner Hall,bld_232805657_f2_203,SEC_MWF_01|SEC_TTH_01,FG00,,walk,0.1,0.8,0.9,True,False,visit_vaden_then_isolate
+A0005,homebody,2027,Branner Hall,bld_232805657_f2_203,SEC_MWF_01|SEC_TTH_01,FG01,,walk,0.1,0.8,0.9,True,False,visit_vaden_then_isolate
+A0006,homebody,2028,Branner Hall,bld_232805657_f2_204,SEC_MWF_01|SEC_TTH_01,FG01,,walk,0.1,0.8,0.9,False,False,visit_vaden_then_isolate
+A0007,homebody,2029,Branner Hall,bld_232805657_f2_204,SEC_MWF_01|SEC_TTH_01,FG01,,bike,0.1,0.8,0.9,False,False,visit_vaden_then_isolate
+A0008,homebody,2026,Branner Hall,bld_232805657_f2_205,SEC_MWF_01|SEC_TTH_01,FG01,,walk,0.1,0.8,0.9,False,False,visit_vaden_then_isolate
+A0009,homebody,2027,Branner Hall,bld_232805657_f2_205,SEC_MWF_01|SEC_TTH_01,FG01,,walk,0.1,0.8,0.9,False,False,visit_vaden_then_isolate

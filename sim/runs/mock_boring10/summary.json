@@ -1,0 +1,19 @@
+{
+  "mock": true,
+  "attack_rate": 0.1,
+  "peak_day": 0,
+  "measured_R": 0.0,
+  "daily_incidence": [
+    1,
+    0,
+    0
+  ],
+  "infections_by_location_type": {},
+  "infections_by_archetype": {
+    "homebody": 1
+  },
+  "infections_by_route": {
+    "import": 1
+  },
+  "n_imports": 1
+}

@@ -51,6 +51,17 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **heat map → synthetic data:** official Stanford building names/IDs and categories (academic,
   dining, libraries, rec) are described in `docs/stanford-map-sources.md`. Matching your `building`
   names to those makes building-level heat and forecasts much easier.
+- **synthetic data → heat map (reply, 2026-10-17):** a mock run in the final format is in
+  `sim/runs/mock_boring10/` (10 agents, 3 days, 5-min steps); the format is drafted in
+  `docs/sim-output-format.md`. The file to read is `timeline.csv.gz`, or `timeline_by_agent/*.csv`.
+  1. Both: `lat,lon` and `x_local_m,y_local_m` metres east/north of 37.418, −122.182.
+  2. Ground truth only: `disease_state` (S/E/I_pre/I_sym/I_asym/R). There is no `sick` 0/1 column; a
+     truth "sick" is `disease_state` in {I_pre, I_sym, I_asym}. P(sick) as the app sees it should come
+     from the probability model, not the sim.
+  3. Full run: ~7,500 agents × 14 days × 5-min steps ≈ 30M rows, several GB, so it needs
+     preprocessing. A Parquet mirror is written next to each large CSV.
+  4. Yes: `location_id` (building), `floor`, `room_id`, with `lat,lon` inside the room.
+  Heads-up for `COLUMNS` in `app.js`: `t` is an integer step index, and the ISO time is in `timestamp`.
 - **heat map → probability model:** heads-up from building the fake data: if everyone's P(sick)
   updates from everyone else's P(sick), the estimates feed on each other and all climb toward 1.
   Updating only from self-reports or tests avoided that.

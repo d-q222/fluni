@@ -1,0 +1,29 @@
+{
+  "run_id": "mock_boring10",
+  "mock": true,
+  "seed": 42,
+  "n_agents": 10,
+  "days": 3,
+  "step_min": 5,
+  "start": "2026-01-05T00:00:00",
+  "disease": "influenza",
+  "intervention": "none",
+  "archetype_fractions": {
+    "homebody": 1.0
+  },
+  "map_version": "stanford_osm (local extract)",
+  "code_version": "mock-0.1",
+  "local_frame": {
+    "origin_lat": 37.418,
+    "origin_lon": -122.182,
+    "units": "m",
+    "x": "east",
+    "y": "north"
+  },
+  "distance_tiers": {
+    "1": "<1 m",
+    "2": "1-2 m",
+    "3": "2-5 m",
+    "4": "same room, >=5 m"
+  }
+}

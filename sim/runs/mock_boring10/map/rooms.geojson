@@ -1,0 +1,456 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f2_201",
+    "location_id": "bld_232805657",
+    "floor": 2,
+    "room_type": "dorm_double",
+    "capacity": 2,
+    "area_m2": 18.0,
+    "volume_m3": 54.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1629593,
+       37.4254569
+      ],
+      [
+       -122.1629084,
+       37.4254569
+      ],
+      [
+       -122.1629084,
+       37.4254931
+      ],
+      [
+       -122.1629593,
+       37.4254931
+      ],
+      [
+       -122.1629593,
+       37.4254569
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f2_202",
+    "location_id": "bld_232805657",
+    "floor": 2,
+    "room_type": "dorm_double",
+    "capacity": 2,
+    "area_m2": 18.0,
+    "volume_m3": 54.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1628971,
+       37.4254569
+      ],
+      [
+       -122.1628462,
+       37.4254569
+      ],
+      [
+       -122.1628462,
+       37.4254931
+      ],
+      [
+       -122.1628971,
+       37.4254931
+      ],
+      [
+       -122.1628971,
+       37.4254569
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f2_203",
+    "location_id": "bld_232805657",
+    "floor": 2,
+    "room_type": "dorm_double",
+    "capacity": 2,
+    "area_m2": 18.0,
+    "volume_m3": 54.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1628349,
+       37.4254569
+      ],
+      [
+       -122.162784,
+       37.4254569
+      ],
+      [
+       -122.162784,
+       37.4254931
+      ],
+      [
+       -122.1628349,
+       37.4254931
+      ],
+      [
+       -122.1628349,
+       37.4254569
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f2_204",
+    "location_id": "bld_232805657",
+    "floor": 2,
+    "room_type": "dorm_double",
+    "capacity": 2,
+    "area_m2": 18.0,
+    "volume_m3": 54.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1627727,
+       37.4254569
+      ],
+      [
+       -122.1627218,
+       37.4254569
+      ],
+      [
+       -122.1627218,
+       37.4254931
+      ],
+      [
+       -122.1627727,
+       37.4254931
+      ],
+      [
+       -122.1627727,
+       37.4254569
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f2_205",
+    "location_id": "bld_232805657",
+    "floor": 2,
+    "room_type": "dorm_double",
+    "capacity": 2,
+    "area_m2": 18.0,
+    "volume_m3": 54.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1627105,
+       37.4254569
+      ],
+      [
+       -122.1626596,
+       37.4254569
+      ],
+      [
+       -122.1626596,
+       37.4254931
+      ],
+      [
+       -122.1627105,
+       37.4254931
+      ],
+      [
+       -122.1627105,
+       37.4254569
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805657_f1_lobby",
+    "location_id": "bld_232805657",
+    "floor": 1,
+    "room_type": "lobby",
+    "capacity": 40,
+    "area_m2": 80,
+    "volume_m3": 240.0,
+    "ventilation_ach": 2.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1629593,
+       37.4254388
+      ],
+      [
+       -122.1628462,
+       37.4254388
+      ],
+      [
+       -122.1628462,
+       37.4255112
+      ],
+      [
+       -122.1629593,
+       37.4255112
+      ],
+      [
+       -122.1629593,
+       37.4254388
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_333374283_f1_main",
+    "location_id": "bld_333374283",
+    "floor": 1,
+    "room_type": "dining_room",
+    "capacity": 400,
+    "area_m2": 600,
+    "volume_m3": 2400.0,
+    "ventilation_ach": 4.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1642172,
+       37.4253281
+      ],
+      [
+       -122.1638779,
+       37.4253281
+      ],
+      [
+       -122.1638779,
+       37.4255091
+      ],
+      [
+       -122.1642172,
+       37.4255091
+      ],
+      [
+       -122.1642172,
+       37.4253281
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232841892_f1_200",
+    "location_id": "bld_232841892",
+    "floor": 1,
+    "room_type": "lecture_hall",
+    "capacity": 300,
+    "area_m2": 300,
+    "volume_m3": 1800.0,
+    "ventilation_ach": 5.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1729991,
+       37.4289477
+      ],
+      [
+       -122.1727729,
+       37.4289477
+      ],
+      [
+       -122.1727729,
+       37.4290833
+      ],
+      [
+       -122.1729991,
+       37.4290833
+      ],
+      [
+       -122.1729991,
+       37.4289477
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232841885_f1_104",
+    "location_id": "bld_232841885",
+    "floor": 1,
+    "room_type": "seminar",
+    "capacity": 20,
+    "area_m2": 48,
+    "volume_m3": 144.0,
+    "ventilation_ach": 4.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1735532,
+       37.4300985
+      ],
+      [
+       -122.1734627,
+       37.4300985
+      ],
+      [
+       -122.1734627,
+       37.4301527
+      ],
+      [
+       -122.1735532,
+       37.4301527
+      ],
+      [
+       -122.1735532,
+       37.4300985
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_232805685_f2_read",
+    "location_id": "bld_232805685",
+    "floor": 2,
+    "room_type": "reading_room",
+    "capacity": 120,
+    "area_m2": 240,
+    "volume_m3": 720.0,
+    "ventilation_ach": 3.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.1674413,
+       37.4291555
+      ],
+      [
+       -122.1672151,
+       37.4291555
+      ],
+      [
+       -122.1672151,
+       37.4292641
+      ],
+      [
+       -122.1674413,
+       37.4292641
+      ],
+      [
+       -122.1674413,
+       37.4291555
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "room_id": "bld_26250731_f1_exam",
+    "location_id": "bld_26250731",
+    "floor": 1,
+    "room_type": "exam_room",
+    "capacity": 3,
+    "area_m2": 12,
+    "volume_m3": 36.0,
+    "ventilation_ach": 6.0,
+    "source": "procedural"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -122.163747,
+       37.4219922
+      ],
+      [
+       -122.1637018,
+       37.4219922
+      ],
+      [
+       -122.1637018,
+       37.4220194
+      ],
+      [
+       -122.163747,
+       37.4220194
+      ],
+      [
+       -122.163747,
+       37.4219922
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}
