@@ -57,6 +57,15 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — GPS alone doesn't count as close contact.** Indoors GPS is ±10–30 m, so GPS-only
   evidence with error > 10 m never adds close-contact minutes (it still feeds the distance estimate).
 
+- **2026-10-17 — Phones get P(sick) from a model output file (Option A).** The model writes
+  `model/out/<run>/p_sick.csv` (change points: `agent_id, t_iso, p_sick`; see
+  [docs/p-sick-format.md](docs/p-sick-format.md)), served from the laptop with the heat map. The iOS app
+  reads it instead of porting `model/infer.js`. Its own on-device estimate stays, labelled as an estimate.
+- **2026-10-17 — Altruistic = stays home when sick.** Defined by the sim's
+  `sickness_behavior_profile`: `stay_home` and `visit_vaden_then_isolate` are altruistic, `carry_on`
+  (has the flu and still goes out) is not. Already simulated; the demo's "Why this %?" panel shows it
+  to the presenter.
+
 ## Requests
 
 - **heat map → synthetic data:** to start, a small sample CSV (~50 agents, ~20 timestamps) would let

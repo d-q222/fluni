@@ -1,15 +1,16 @@
 // Run the infection probability model on a sim run folder and print what it concluded.
-// Usage: node model/cli.mjs <run_dir> [out.csv]   (out.csv defaults to <tmpdir>/p_sick.csv)
+// Usage: node model/cli.mjs <run_dir> [out.csv]   (out.csv defaults to model/out/<run>/p_sick.csv;
+// format in docs/p-sick-format.md)
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { inferRisk } from './infer.js';
 
 const dir = process.argv[2];
 if (!dir) { console.error('usage: node model/cli.mjs <run_dir> [out.csv]'); process.exit(1); }
-const out = process.argv[3] || join(tmpdir(), 'p_sick.csv');
+const out = process.argv[3] || join(dirname(fileURLToPath(import.meta.url)), 'out', basename(dir.replace(/\/$/, '')), 'p_sick.csv');
 
 // Plain CSV (no quoted commas in these files); numbers stay strings except where converted below.
 function parseCsv(text) {
@@ -72,5 +73,6 @@ if (!risk.flags.length) console.log('  none');
 
 const lines = ['agent_id,t_iso,p_sick'];
 for (const [id, cs] of risk.changes) for (const c of cs) lines.push(`${id},${iso(c.tMs)},${c.p.toFixed(4)}`);
+mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, lines.join('\n') + '\n');
 console.log(`\nwrote ${out} (${lines.length - 1} change points)`);

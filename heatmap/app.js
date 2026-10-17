@@ -170,7 +170,7 @@ async function loadModel(dataUrl, agentIds) {
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
     const risk = inferRisk({ contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
-    const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location'])
+    const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
     return { risk, contacts: contacts.data, startMs, stepMs, traits };
   } catch (err) {

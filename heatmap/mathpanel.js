@@ -181,8 +181,12 @@ function flagList(flags, formatTime) {
 function traitBox(t) {
   const n = (x) => num(Number(x), 2);
   const yes = (x) => String(x).toLowerCase() === 'true';
+  // Altruistic = stays home when sick (WORKSTREAMS decision); carry_on goes out anyway.
+  const sickPlan = t.sickness_behavior_profile;
+  const altruism = !sickPlan ? '' : sickPlan === 'carry_on' ? 'Not altruistic: keeps going out when sick. '
+    : `Altruistic: ${sickPlan === 'stay_home' ? 'stays home' : 'visits Vaden, then isolates'} when sick. `;
   return el('p', { class: 'mp-truth' }, [
-    el('b', { text: 'Presenter only (sim truth): ' }),
+    el('b', { text: 'Presenter only (sim truth): ' }), altruism,
     `${t.archetype || 'student'}, honesty ${n(t.honesty)}, compliance ${n(t.compliance)}, `
       + `${yes(t.has_app) ? 'has the app' : 'no app'}, ${yes(t.shares_location) ? 'shares location' : 'location private'}.`,
   ]);
