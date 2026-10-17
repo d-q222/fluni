@@ -65,34 +65,43 @@ struct PSickDemoSheet: View {
             Form {
                 Section {
                     TextField("Run name", text: $runID).textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .font(.footnote.monospaced())
+                        .font(.footnote.monospaced()).frame(minHeight: 44)
+                        .accessibilityLabel("Run name")
                     Button(store.loading ? "Loading\u{2026}" : "Load from the laptop") {
                         SimClock.shared.runID = runID
                         Task { await store.reload() }
-                    }.disabled(store.loading)
+                    }.disabled(store.loading).frame(minHeight: 44)
                     if !store.status.isEmpty { Text(store.status).font(.footnote).foregroundStyle(Theme.ink2) }
-                } header: { Text("Model output") } footer: {
-                    Text("Read from the same laptop as the map.")
+                } header: { Text("Model output").foregroundStyle(Theme.ink2) } footer: {
+                    Text("Read from the same laptop as the map.").foregroundStyle(Theme.ink2)
                 }
                 PretendSection()
                 if let feed = store.feed, let range = feed.timeRange {
-                    Section("Play as") {
+                    Section {
                         NavigationLink {
                             AgentList(agents: feed.agents, selection: $store.agent)
                         } label: {
-                            LabeledContent("Student", value: store.agent.isEmpty ? "None" : store.agent)
+                            LabeledContent("Student") { Text(store.agent.isEmpty ? "None" : store.agent).foregroundStyle(Theme.ink2) }
                         }
-                    }
+                    } header: { Text("Play as").foregroundStyle(Theme.ink2) }
                     if !store.agent.isEmpty {
                         Section {
-                            Text(PSickFeed.clockText(store.simTime)).monospacedDigit()
+                            // The slider speaks the time as its value, so the visible text is not read twice.
+                            Text(PSickFeed.clockText(store.simTime)).monospacedDigit().accessibilityHidden(true)
                             Slider(value: $store.simTime, in: range.lowerBound...range.upperBound, step: 60)
                                 .disabled(store.follow)
+                                .frame(minHeight: 44)
+                                .accessibilityLabel("Simulated time")
+                                .accessibilityValue(PSickFeed.clockText(store.simTime))
+                                .accessibilityHint(store.follow ? "Turn off Follow the map to move the time yourself" : "Swipe up or down to move one minute")
                             Toggle("Follow the map (2 simulated minutes per second)", isOn: $store.follow)
-                        } header: { Text("Simulated time") }
+                                .frame(minHeight: 44)
+                        } header: { Text("Simulated time").foregroundStyle(Theme.ink2) }
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.paper)
             .navigationTitle("Demo")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
@@ -112,10 +121,12 @@ private struct AgentList: View {
         let shown = query.isEmpty ? agents : agents.filter { $0.localizedCaseInsensitiveContains(query) }
         List {
             Button("None, use this phone only") { selection = ""; dismiss() }
+                .accessibilityAddTraits(selection.isEmpty ? .isSelected : [])
             ForEach(shown, id: \.self) { a in
                 Button { selection = a; dismiss() } label: {
-                    HStack { Text(a).monospacedDigit(); Spacer(); if a == selection { Image(systemName: "checkmark") } }
+                    HStack { Text(a).monospacedDigit(); Spacer(); if a == selection { Image(systemName: "checkmark").accessibilityHidden(true) } }
                 }
+                .accessibilityAddTraits(a == selection ? .isSelected : [])
             }
         }
         .foregroundStyle(Theme.ink)
@@ -134,9 +145,11 @@ private struct PretendSection: View {
             NavigationLink {
                 BuildingPicker(buildings: heat.heat?.mappable ?? [], selection: $monitor.pretend)
             } label: {
-                LabeledContent("Pretend I'm at\u{2026}", value: monitor.pretend.flatMap { heat.heat?.buildings[$0]?.name } ?? "Real location")
+                LabeledContent("Pretend I'm at\u{2026}") {
+                    Text(monitor.pretend.flatMap { heat.heat?.buildings[$0]?.name } ?? "Real location").foregroundStyle(Theme.ink2)
+                }
             }
-        } footer: { Text("Changes the walk-in warning only. Nothing else uses it.") }
+        } footer: { Text("Changes the walk-in warning only. Nothing else uses it.").foregroundStyle(Theme.ink2) }
     }
 }
 
@@ -150,10 +163,12 @@ private struct BuildingPicker: View {
         let shown = query.isEmpty ? buildings : buildings.filter { $0.name.localizedCaseInsensitiveContains(query) }
         List {
             Button("My real location") { selection = nil; dismiss() }
+                .accessibilityAddTraits(selection == nil ? .isSelected : [])
             ForEach(shown, id: \.id) { b in
                 Button { selection = b.id; dismiss() } label: {
-                    HStack { Text(b.name); Spacer(); if b.id == selection { Image(systemName: "checkmark") } }
+                    HStack { Text(b.name); Spacer(); if b.id == selection { Image(systemName: "checkmark").accessibilityHidden(true) } }
                 }
+                .accessibilityAddTraits(b.id == selection ? .isSelected : [])
             }
         }
         .foregroundStyle(Theme.ink)
