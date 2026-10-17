@@ -6,6 +6,7 @@ struct TodayView: View {
     @ObservedObject var model: ProximityModel
     @State private var showHow = false
     @State private var showCalc = false
+    @State private var showCloseContact = false
 
     private var level: AlertLevel { model.exposure.level }
 
@@ -13,10 +14,12 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    if level == .nearby { NearbyBanner().transition(.opacity) }
                     statusCard
                     riskCard
                     minutesCard
                     nearbyCard
+                    ExposureHistorySection(store: model.exposureHistory)
                     Button { showHow = true } label: {
                         Label("How this works and what's shared", systemImage: "info.circle")
                             .font(.fluni(.subheadline, weight: .semibold))
@@ -29,6 +32,10 @@ struct TodayView: View {
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(.default, value: level)
+            .onChange(of: level) { old, new in
+                if new == .closeContact && old < .closeContact { showCloseContact = true }
+            }
+            .fullScreenCover(isPresented: $showCloseContact) { CloseContactSheet { showCloseContact = false } }
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
         }
