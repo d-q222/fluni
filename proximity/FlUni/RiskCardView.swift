@@ -54,9 +54,10 @@ struct PSickDemoSheet: View {
                 }
                 if let feed = store.feed, let range = feed.timeRange {
                     Section("Pretend to be") {
-                        Picker("Student", selection: $store.agent) {
-                            Text("None (this phone only)").tag("")
-                            ForEach(feed.agents, id: \.self) { Text($0).tag($0) }
+                        NavigationLink {
+                            AgentList(agents: feed.agents, selection: $store.agent)
+                        } label: {
+                            LabeledContent("Student", value: store.agent.isEmpty ? "None" : store.agent)
                         }
                     }
                     if !store.agent.isEmpty {
@@ -74,5 +75,28 @@ struct PSickDemoSheet: View {
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .task { if store.feed == nil { await store.reload() } }
         }
+    }
+}
+
+/// Searchable list, so a 500-agent run is usable.
+private struct AgentList: View {
+    let agents: [String]
+    @Binding var selection: String
+    @State private var query = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let shown = query.isEmpty ? agents : agents.filter { $0.localizedCaseInsensitiveContains(query) }
+        List {
+            Button("None (this phone only)") { selection = ""; dismiss() }
+            ForEach(shown, id: \.self) { a in
+                Button { selection = a; dismiss() } label: {
+                    HStack { Text(a).monospacedDigit(); Spacer(); if a == selection { Image(systemName: "checkmark") } }
+                }
+            }
+        }
+        .foregroundStyle(Theme.ink)
+        .searchable(text: $query, prompt: "Search agent id")
+        .navigationTitle("Student")
     }
 }
