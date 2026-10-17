@@ -31,6 +31,15 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — Design pass may edit `heatmap/`.** @lisaazheng and @d-q222 agreed the design pass
   can change styling, layout and assets in `heatmap/` directly. It goes through a PR on `design-pass`
   so it doesn't collide with in-progress heat map work.
+- **2026-10-17 — User map sees totals only.** The in-app (user-facing) heat map is drawn only from
+  per-building and per-room totals (people, expected sick). It never receives agent positions or
+  properties. The presenter's demo map can see everything.
+- **2026-10-17 — Population scaling (temporary).** Each simulated agent stands for 50 people on the
+  user map (and in its "fewer than 5 people" rule), labelled on screen, until the full sim has
+  enough agents.
+- **2026-10-17 — Walk-in warning is room-level.** Demo proof of concept: the phone also alerts when
+  the person right next to you is actually sick (sim truth, labelled as demo-only). Privacy
+  hardening is deferred for now.
 
 ## Requests
 
