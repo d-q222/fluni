@@ -1,0 +1,181 @@
+import SwiftUI
+import UserNotifications
+
+/// Detection on/off, what is shared, notifications, the map address, deleting local data, and About.
+struct SettingsView: View {
+    @ObservedObject var model: ProximityModel
+    @AppStorage("heatmapURL") private var heatmapURL = ""
+    @AppStorage("hasOnboarded") private var hasOnboarded = true
+    @State private var notificationStatus: UNAuthorizationStatus?
+    @State private var confirmDelete = false
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        Form {
+            detectionSection
+            sharedSection
+            notificationsSection
+            mapSection
+            dataSection
+            aboutSection
+        }
+        .scrollContentBackground(.hidden)
+        .background(Theme.paper)
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await refreshNotifications() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await refreshNotifications() } }
+        }
+        .confirmationDialog("Delete all data on this phone?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete my data", role: .destructive) { deleteEverything() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This clears your saved status, exposure history, map address and setup. FlUni will start over as if just installed.")
+        }
+    }
+
+    // MARK: Detection
+
+    private var detectionSection: some View {
+        Section {
+            Toggle("Detection", isOn: Binding(
+                get: { !model.isPaused },
+                set: { on in if on { model.resume() } else { model.pause(.untilResumed) } }))
+            if let p = model.pauseState {
+                Label("Paused \(PauseSchedule.describe(p, calendar: .current, now: Date()))", systemImage: "pause.circle")
+                    .foregroundStyle(Theme.ink)
+                Button("Turn detection back on") { model.resume() }
+            }
+            Menu {
+                Button("For 1 hour") { model.pause(.oneHour) }
+                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until I turn it back on") { model.pause(.untilResumed) }
+            } label: {
+                Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
+            }
+        } header: {
+            Text("Detection")
+        } footer: {
+            Text(model.isPaused
+                 ? "While paused, FlUni doesn't broadcast, scan, or count exposure, so it can't warn you either."
+                 : "Pausing stops all Bluetooth, ultra wideband and location use and saves battery.")
+        }
+        .listRowBackground(Theme.surface)
+    }
+
+    // MARK: What is shared
+
+    private var sharedSection: some View {
+        Section("What FlUni shares") {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Phones within Bluetooth range see exactly two things:").font(.fluni(.subheadline))
+                Label("A random ID that changes every 15 minutes", systemImage: "arrow.triangle.2.circlepath")
+                Label("A status with 3 levels: healthy, possibly sick, or contagious", systemImage: "circle.lefthalf.filled")
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Never shared").font(.fluni(.subheadline, weight: .semibold))
+                Text("Your name, phone number, device name, account, or any history. Your location is used on this phone and goes only to a phone next to you, never to a server. Matching happens on your phone.")
+                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            }
+        }
+        .font(.fluni(.footnote))
+        .foregroundStyle(Theme.ink)
+        .listRowBackground(Theme.surface)
+    }
+
+    // MARK: Notifications
+
+    private var notificationsSection: some View {
+        Section {
+            LabeledContent("Alerts", value: notificationText)
+            Button("Open iOS Settings") {
+                if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) }
+            }
+        } header: {
+            Text("Notifications")
+        } footer: {
+            Text("FlUni uses notifications to tell you about a nearby or close contact.")
+        }
+        .listRowBackground(Theme.surface)
+    }
+
+    private var notificationText: String {
+        switch notificationStatus {
+        case .authorized, .provisional, .ephemeral: return "On"
+        case .denied: return "Off"
+        case .notDetermined: return "Not asked yet"
+        default: return "Checking"
+        }
+    }
+
+    private func refreshNotifications() async {
+        notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    // MARK: Map
+
+    private var mapSection: some View {
+        Section {
+            TextField("http://…", text: $heatmapURL)
+                .keyboardType(.URL).textContentType(.URL)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+        } header: {
+            Text("Map address")
+        } footer: {
+            Text("Where the Map tab loads the campus heat map from.")
+        }
+        .listRowBackground(Theme.surface)
+    }
+
+    // MARK: Delete
+
+    private var dataSection: some View {
+        Section {
+            Button("Delete my data", role: .destructive) { confirmDelete = true }
+        } footer: {
+            Text("Removes everything FlUni saved on this phone. Nothing is stored on a server.")
+        }
+        .listRowBackground(Theme.surface)
+    }
+
+    private func deleteEverything() {
+        hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
+        heatmapURL = ""
+        Self.eraseLocalData()
+        model.forgetEverything()
+    }
+
+    /// Deletes the contents of Application Support (exposure history and anything else saved there)
+    /// and the app's whole UserDefaults domain (status, map address, onboarding, pause).
+    static func eraseLocalData(fileManager fm: FileManager = .default, defaults: UserDefaults = .standard,
+                               domain: String? = Bundle.main.bundleIdentifier) {
+        if let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first,
+           let items = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+            for item in items { try? fm.removeItem(at: item) }
+        }
+        if let domain { defaults.removePersistentDomain(forName: domain) }
+        defaults.synchronize()
+    }
+
+    // MARK: About
+
+    private var aboutSection: some View {
+        Section("About") {
+            LabeledContent("Version", value: Self.version)
+            Text("Palette and illustrations: Lisa Zheng (lisaazheng)")
+            Text("Map data © OpenStreetMap contributors")
+        }
+        .font(.fluni(.footnote))
+        .foregroundStyle(Theme.ink)
+        .listRowBackground(Theme.surface)
+    }
+
+    private static var version: String {
+        let i = Bundle.main.infoDictionary
+        let v = i?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let b = i?["CFBundleVersion"] as? String
+        return b.map { "\(v) (\($0))" } ?? v
+    }
+}
