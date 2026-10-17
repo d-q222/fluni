@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DeveloperView: View {
     @ObservedObject var model: ProximityModel
+    /// False when this is the harness's main screen rather than a sheet in FlUni.
+    var showsDone = true
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -16,7 +18,7 @@ struct DeveloperView: View {
             }
             .navigationTitle("Developer")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { if showsDone { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } } }
             .animation(.default, value: model.exposure.level)
         }
     }

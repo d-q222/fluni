@@ -2,14 +2,14 @@ import SwiftUI
 import UserNotifications
 
 @main
-struct FluniProxApp: App {
+/// FlUni, the student app. The test harness (Harness/) shares Core/ and SharedUI/ with it.
+struct FlUniApp: App {
     @UIApplicationDelegateAdaptor private var delegate: AppDelegate
     @StateObject private var model = ProximityModel()
     @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var started = false
 
-    /// Test launches (Mac tools) and the unit-test host never see onboarding.
-    private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isTestLaunch && !LaunchMode.isUnitTestHost }
+    private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
 
     var body: some Scene {
         WindowGroup {
@@ -38,20 +38,7 @@ struct FluniProxApp: App {
         // Unit tests run inside this app; don't start radios there.
         guard !started, !LaunchMode.isUnitTestHost else { return }
         started = true
+        model.acceptsLaunchArguments = false  // the product ignores test launch arguments
         model.start()
-    }
-}
-
-/// Shows alert banners even while the app is open (it usually is, during the demo).
-final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    func application(_ app: UIApplication,
-                     didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        UNUserNotificationCenter.current().delegate = self
-        return true
-    }
-
-    func userNotificationCenter(_ c: UNUserNotificationCenter, willPresent n: UNNotification,
-                                withCompletionHandler done: @escaping (UNNotificationPresentationOptions) -> Void) {
-        done([.banner, .sound])
     }
 }

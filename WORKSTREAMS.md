@@ -8,7 +8,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
 | Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`. See `sim/README.md`. |
-| Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones; now turning the test app into the user app | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
+| Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones. One project, two apps: **FlUni** (student app) + **FluniProx** (test harness), sharing `Core/`; building out FlUni | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 
 ## Decisions
@@ -65,6 +65,10 @@ Claim a row before you start. Update the status as you go. Agents should name th
   `sickness_behavior_profile`: `stay_home` and `visit_vaden_then_isolate` are altruistic, `carry_on`
   (has the flu and still goes out) is not. Already simulated; the demo's "Why this %?" panel shows it
   to the presenter.
+
+- **2026-10-17 — FlUni app structure.** One Xcode project in `proximity/` with two targets: FlUni (the
+  student app) and FluniProx (the test harness), sharing `Core/` (sensing/maths) and `SharedUI/`. The
+  harness stays with the product so tests hit the shipping code. Later step: move `Core/` into a Swift package.
 
 ## Requests
 

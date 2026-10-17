@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fluni</string>
+	<string>FluniProx</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,18 +26,18 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Detects nearby Fluni phones by Bluetooth to estimate distance.</string>
+	<string>Detects nearby FlUni phones by Bluetooth to estimate distance.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_fluni-prox._tcp</string>
 		<string>_fluni-prox._udp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Links to nearby Fluni phones to exchange ranging tokens and status.</string>
+	<string>Links to nearby FlUni phones to exchange ranging tokens and status.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used as a fallback distance estimate to nearby Fluni phones.</string>
+	<string>Used as a fallback distance estimate to nearby FlUni phones.</string>
 	<key>NSNearbyInteractionUsageDescription</key>
-	<string>Measures precise distance to nearby Fluni phones with ultra wideband.</string>
+	<string>Measures precise distance to nearby FlUni phones with ultra wideband.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

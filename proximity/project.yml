@@ -8,37 +8,57 @@ settings:
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: ${FLUNI_TEAM}
     CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    GENERATE_INFOPLIST_FILE: YES
+
+# Both apps use the radios, so they share these Info.plist keys. The Bonjour service is the same,
+# so FlUni and harness phones see each other.
+x-radio-info: &radioInfo
+  UIUserInterfaceStyle: Light
+  UILaunchScreen: {}
+  UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+  NSBluetoothAlwaysUsageDescription: Detects nearby FlUni phones by Bluetooth to estimate distance.
+  NSNearbyInteractionUsageDescription: Measures precise distance to nearby FlUni phones with ultra wideband.
+  NSLocalNetworkUsageDescription: Links to nearby FlUni phones to exchange ranging tokens and status.
+  NSLocationWhenInUseUsageDescription: Used as a fallback distance estimate to nearby FlUni phones.
+  NSBonjourServices: [_fluni-prox._tcp, _fluni-prox._udp]
+  NSAppTransportSecurity:
+    NSAllowsLocalNetworking: true
+
 targets:
+  # The student app. Core/ = sensing and maths (no SwiftUI), SharedUI/ = views both apps use.
+  FlUni:
+    type: application
+    platform: iOS
+    sources: [Core, SharedUI, FlUni]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fluni.app
+        PRODUCT_NAME: FlUni
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: FlUni/Info.plist
+      properties:
+        <<: *radioInfo
+        CFBundleDisplayName: FlUni
+
+  # Test harness: same Core, developer view first, obeys test launch arguments. tools/ drive it.
   FluniProx:
     type: application
     platform: iOS
-    sources: [FluniProx]
+    sources: [Core, SharedUI, Harness]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fluni.proxtest
-        TARGETED_DEVICE_FAMILY: "1"
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        GENERATE_INFOPLIST_FILE: YES
     info:
-      path: FluniProx/Info.plist
+      path: Harness/Info.plist
       properties:
-        CFBundleDisplayName: Fluni
-        UIUserInterfaceStyle: Light
-        UILaunchScreen: {}
-        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        NSBluetoothAlwaysUsageDescription: Detects nearby Fluni phones by Bluetooth to estimate distance.
-        NSNearbyInteractionUsageDescription: Measures precise distance to nearby Fluni phones with ultra wideband.
-        NSLocalNetworkUsageDescription: Links to nearby Fluni phones to exchange ranging tokens and status.
-        NSLocationWhenInUseUsageDescription: Used as a fallback distance estimate to nearby Fluni phones.
-        NSBonjourServices: [_fluni-prox._tcp, _fluni-prox._udp]
-        NSAppTransportSecurity:
-          NSAllowsLocalNetworking: true
+        <<: *radioInfo
+        CFBundleDisplayName: FluniProx
+
   FluniProxTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [FluniProxTests]
+    sources: [Tests]
     dependencies:
       - target: FluniProx
-    settings:
-      base:
-        GENERATE_INFOPLIST_FILE: YES

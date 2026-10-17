@@ -101,7 +101,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func restoreSavedStatus() {
-        guard !LaunchMode.isTestLaunch else { return }
+        guard !(acceptsLaunchArguments && LaunchMode.isTestLaunch) else { return }
         let d = UserDefaults.standard
         if let r = Risk(rawValue: d.integer(forKey: "savedStatus")), let at = d.object(forKey: "savedStatusAt") as? Date {
             myRisk = r
@@ -114,9 +114,17 @@ final class ProximityModel: ObservableObject {
         notifiedLevel = .none
     }
 
+    /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
+    /// false so a stray argument can never change what a student sees.
+    var acceptsLaunchArguments = true
+
     /// Lets tests drive the phones from the Mac, e.g.
     ///   devicectl ... launch --console com.fluni.proxtest -risk contagious -speed 60 -sources UWB,BLE
     private func applyLaunchArguments() {
+        guard acceptsLaunchArguments else {
+            log("start risk=\(myRisk) speed=\(speed) product build: launch arguments ignored")
+            return
+        }
         let d = UserDefaults.standard
         if let r = d.string(forKey: "risk"), let risk = Risk.allCases.first(where: { "\($0)" == r }) { myRisk = risk }
         if d.double(forKey: "speed") > 0 { speed = d.double(forKey: "speed") }
