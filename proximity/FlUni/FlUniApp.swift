@@ -11,6 +11,8 @@ struct FlUniApp: App {
     @State private var showCloseContact = false
     @Environment(\.scenePhase) private var phase
 
+    init() { BuildingWatcher.shared.start() }  // iOS may relaunch the app for a building entry
+
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
 
     var body: some Scene {
@@ -22,7 +24,7 @@ struct FlUniApp: App {
                     TabView {
                         TodayView(model: model)
                             .tabItem { Label("Today", systemImage: "sun.max") }
-                        HeatmapView()
+                        CampusMapView()
                             .tabItem { Label("Map", systemImage: "map") }
                         MeView(model: model)
                             .tabItem { Label("Me", systemImage: "person.crop.circle") }
