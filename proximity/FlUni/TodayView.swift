@@ -6,7 +6,6 @@ struct TodayView: View {
     @ObservedObject var model: ProximityModel
     @State private var showHow = false
     @State private var showCalc = false
-    @State private var showCloseContact = false
 
     private var level: AlertLevel { model.exposure.level }
 
@@ -32,10 +31,6 @@ struct TodayView: View {
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(.default, value: level)
-            .onChange(of: level) { old, new in
-                if new == .closeContact && old < .closeContact { showCloseContact = true }
-            }
-            .fullScreenCover(isPresented: $showCloseContact) { CloseContactSheet { showCloseContact = false } }
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
         }

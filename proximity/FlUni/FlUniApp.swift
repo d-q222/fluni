@@ -8,6 +8,8 @@ struct FlUniApp: App {
     @StateObject private var model = ProximityModel()
     @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var started = false
+    @State private var showCloseContact = false
+    @Environment(\.scenePhase) private var phase
 
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
 
@@ -27,10 +29,17 @@ struct FlUniApp: App {
                     }
                     .tint(Theme.ink)
                     .onAppear(perform: startOnce)
+                    // At the tab level so the close-contact moment shows whichever tab is open.
+                    .onChange(of: model.exposure.level) { old, new in
+                        if new == .closeContact && old < .closeContact { showCloseContact = true }
+                    }
+                    .fullScreenCover(isPresented: $showCloseContact) { CloseContactSheet { showCloseContact = false } }
                 }
             }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
+            // The app may be killed in the background: save an exposure that is still going on.
+            .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.finishOngoing() } }
         }
     }
 
