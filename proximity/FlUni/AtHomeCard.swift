@@ -1,0 +1,100 @@
+import SwiftUI
+
+/// Shown on the Me tab while the user is possibly sick or contagious: which day of isolation it is,
+/// what to do, and a gentle daily check-in. It only ever asks; it never changes the status by itself.
+struct AtHomeCard: View {
+    @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
+    @State private var blocked: String?
+
+    var body: some View {
+        let now = Date()
+        let r = store.record
+        let rep = store.reporter
+        let phase = rep.phase(r, now: now)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("At home", systemImage: "house.fill").font(.fluni(.headline))
+                Spacer()
+                if case .inProgress(let day, _) = phase {
+                    Text("Day \(day) of \(IsolationPolicy.days)").font(.fluni(.subheadline, weight: .semibold))
+                }
+            }
+            .foregroundStyle(Theme.ink)
+            header(phase)
+            if case .periodOver(let feverFree) = phase {
+                periodOver(feverFree: feverFree)
+            } else if rep.checkInDue(r, now: now) {
+                checkIn
+            }
+            steps
+        }
+        .card(fill: Theme.surface2)
+        .accessibilityElement(children: .contain)
+        .alert("Not yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(blocked ?? "") }
+    }
+
+    @ViewBuilder private func header(_ phase: IsolationPhase) -> some View {
+        switch phase {
+        case .inProgress(let day, let last):
+            ProgressView(value: Double(min(day, IsolationPolicy.days)), total: Double(IsolationPolicy.days))
+                .tint(Theme.ink2).accessibilityHidden(true)
+            Text("Stay home through \(last.formatted(.dateTime.weekday(.wide).month().day())), and until you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours without fever-reducing medicine. Day 0 is the day your symptoms started or you tested positive.")
+                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+        case .periodOver, .notIsolating:
+            EmptyView()
+        }
+    }
+
+    private func periodOver(feverFree: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if feverFree {
+                Text("Your \(IsolationPolicy.days) days are up. How are you?").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink)
+                Text("Your status stays as it is until you update it.").font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                Button("I feel better, set me to healthy") {
+                    do { try store.feelFine(model: model) } catch { blocked = "Keep resting a little longer." }
+                }.buttonStyle(PrimaryButtonStyle())
+                Button("I'm still sick") { store.checkIn(stillSymptomatic: true, hasFever: false, model: model) }
+                    .buttonStyle(.bordered).tint(Theme.ink).frame(minHeight: 44)
+            } else {
+                Text("You had a fever in the last \(Int(IsolationPolicy.feverFreeHours)) hours.").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink)
+                Text("Stay home until it has been gone for a full day without fever-reducing medicine, then you can update your status.")
+                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            }
+        }
+    }
+
+    private var checkIn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Still have symptoms?").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink)
+            Button("Yes, still sick") { store.checkIn(stillSymptomatic: true, hasFever: false, model: model) }
+                .buttonStyle(.bordered).tint(Theme.ink).frame(minHeight: 44)
+            Button("Yes, and I have a fever") { store.checkIn(stillSymptomatic: true, hasFever: true, model: model) }
+                .buttonStyle(.bordered).tint(Theme.ink).frame(minHeight: 44)
+            Button("No, I feel better") { store.checkIn(stillSymptomatic: false, hasFever: false, model: model) }
+                .buttonStyle(.bordered).tint(Theme.ink).frame(minHeight: 44)
+        }
+    }
+
+    private var steps: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("What to do").font(.fluni(.subheadline, weight: .semibold)).foregroundStyle(Theme.ink)
+            ForEach(AtHomeCard.advice, id: \.self) { line in
+                HStack(alignment: .top, spacing: 8) {
+                    Text("•").accessibilityHidden(true)
+                    Text(line).fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            }
+        }
+    }
+
+    static let advice = [
+        "Tell your RA and your professors that you're sick and staying home.",
+        "Use Vaden Health Center for testing and care; call ahead rather than walking in.",
+        "If you have to go out, wear a mask and keep it short.",
+        "Skip the dining halls: ask a friend to bring food, or order takeout.",
+    ]
+}
