@@ -28,6 +28,8 @@ struct HeatmapView: View {
                                         .foregroundStyle(Theme.ink)
                                     Button("Retry") { loadError = nil; reloads += 1 }
                                         .buttonStyle(.borderedProminent).tint(Theme.ink)
+                                        .frame(minHeight: 44)
+                                        .accessibilityHint("Tries to load the map again")
                                 }
                                 .padding(12)
                                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radius))
@@ -39,7 +41,7 @@ struct HeatmapView: View {
                     ContentUnavailableView {
                         Label("No heat map yet", systemImage: "map")
                     } description: {
-                        Text("On the laptop, in the fluni folder, run `python3 -m http.server 8000`, then enter http://<laptop>.local:8000/heatmap/?embed=app below. If .local doesn't resolve, use the laptop's IP address.")
+                        Text("On the laptop, in the fluni folder, run `python3 -m http.server 8000`. Then enter http://<laptop>.local:8000/heatmap/?embed=app below. If that doesn't work, use the laptop's IP address instead of .local.")
                     }
                 }
             }
@@ -51,8 +53,10 @@ struct HeatmapView: View {
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityLabel("Map address")
                         .onSubmit(load)
-                    Button("Load", action: load)
+                    Button("Load map", action: load)
+                        .frame(minWidth: 44, minHeight: 44)
                 }
                 .padding(8)
                 .background(.bar)
@@ -61,7 +65,8 @@ struct HeatmapView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { editing.toggle() } label: { Image(systemName: "gearshape") }
-                        .accessibilityLabel("Map address")
+                        .accessibilityLabel("Change map address")
+                        .accessibilityHint("Shows a field for where the map loads from")
                 }
             }
             .navigationTitle("Map")

@@ -119,3 +119,26 @@ Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagi
 - Free Apple developer teams sign builds for 7 days; reinstall after that.
 - Privacy: in a room with just two people, the risk bit identifies the sick one. Acceptable for the
   demo, but it needs a fix (anonymity threshold or server-side matching) before real use.
+
+## Accessibility & copy
+
+Conventions for anything user-facing in `FlUni/` (the Developer screen is exempt from the plain-English rule).
+
+- **Tone:** calm, specific, actionable; short sentences. No jargon outside Developer: say "precise distance
+  sensing", not UWB; "weighted minutes", not dose.
+- **Terms, used the same everywhere:** "close contact", "someone with symptoms" / "someone who tested
+  positive", "detection" (on/off/paused), "FlUni" (exact capitalisation). The three shared statuses are always
+  "healthy", "possibly sick", "contagious".
+- **Buttons are verbs** ("Set my status to healthy", "Resume detection"). Alert titles say what happened.
+- **VoiceOver:** every icon-only control has a label; decorative icons are `accessibilityHidden`; related text
+  is combined into one element; headings carry `.isHeader`; buttons that open something have a hint.
+  Progress reads as a sentence ("Close-contact time, 7 of 15 minutes").
+- **Dynamic Type:** no fixed heights. Rows that would truncate use `ViewThatFits` (side by side, else stacked);
+  icon sizes use `@ScaledMetric`; onboarding scrolls instead of clipping.
+- **Tap targets:** at least 44 x 44 pt (`minHeight: 44`).
+- **Contrast:** body text 4.5:1, large text and icons 3:1. The computed ratios for every pair are in the
+  comment at the top of `Theme.swift`. Use ink / ink-2 / fire-ink on tints; ink-3 only on paper or surface-2;
+  never fire, ember or sage as text or as the only mark of a progress bar.
+- **Risk tiers** colour the risk card via `RiskEstimate.band` (sage / sun / fire); the band is also stated in
+  words ("Low.", "Elevated.", "High.") so colour is never the only cue.
+- **Reduce Motion:** animations check `accessibilityReduceMotion` and switch to instant changes.

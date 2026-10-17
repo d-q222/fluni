@@ -38,6 +38,8 @@ struct FlUniApp: App {
             }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
+            // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
+            .tint(Theme.ink)
             // The app may be killed in the background: save an exposure that is still going on.
             .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.finishOngoing() } }
         }

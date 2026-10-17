@@ -3,6 +3,25 @@ import SwiftUI
 /// "Campfire" palette and shape tokens, from Lisa Zheng's (lisaazheng) heat map design pass.
 /// The app is forced to light mode (see FluniProxApp): the palette is defined and contrast-checked
 /// on warm paper only, and a status colour that changes meaning in a dark variant is worse than none.
+///
+/// Contrast (WCAG 2.x), every foreground/background pair the apps use. Body text needs 4.5, large text
+/// and icons/graphics 3. Tints are the token at the opacity the views use, over paper/surface.
+///
+///   foreground   paper  surface surface2  sage45% sun50% fire22%  fire    sage    sun
+///   ink          13.6   14.3    12.5      10.5    11.6   10.8     4.47*   7.3     9.9
+///   ink-2         6.6    7.0     6.1       5.1     5.6    5.3     2.2     3.6     4.8
+///   ink-3         5.2    5.5     4.8       4.0*    4.5*   4.2*    1.7     2.8     3.8
+///   fire-ink      6.9    7.3     6.3       5.3     5.9    5.5     2.3     3.7     5.0
+///   white         1.1    1.0     1.2       1.4     1.3    1.4     3.3     2.0     1.5
+///
+/// Failures found and fixed (old -> new):
+///   - ink on fire (the "Review and share" button fill): 4.47 -> paper text on fire-ink fill, 6.9.
+///   - ember / sage progress bar on surface (graphic, needs 3): 2.3 / 2.0 -> ink-2 on surface 7.0.
+///   - system-blue Done/Cancel/links on paper: ~3.8 -> ink (13.6), via .tint(Theme.ink) in FlUniApp.
+///   - ink-3 is used only on paper (5.2) and on surface2 (4.8); never on a tinted fill. Don't add it to
+///     sage/sun/fire tints (starred cells fail).
+///   - Risk card tiers (sage / sun / fire tint) use ink or fire-ink for text, ink-2 for notes (all >= 5.1).
+///   * = below 4.5 for body text; do not use that pair.
 enum Theme {
     static let sage = Color(hex: 0xacbc8b)      // healthy
     static let sun = Color(hex: 0xebd187)
@@ -51,10 +70,11 @@ extension View {
 
 struct PrimaryButtonStyle: ButtonStyle {
     var fill: Color = Theme.sage
+    var text: Color = Theme.ink
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.fluni(.headline))
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(text)
             .frame(maxWidth: .infinity, minHeight: 48)
             .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
             .opacity(configuration.isPressed ? 0.8 : 1)
