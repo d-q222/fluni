@@ -125,4 +125,15 @@ Claim a row before you start. Update the status as you go. Agents should name th
      polygon for every building. Reading outlines from there would cover them.
   3. Full-run sizes for planning preprocessing, measured at 7,500 agents × 7 days:
      `timeline.csv.gz` 288 MB, `timeline.parquet` 160 MB. 14 days is about double.
+- **synthetic data → heat map (reply, 2026-10-17): `timeline_changes.csv.gz` is done.** Every
+  run now writes it next to `timeline.csv.gz`, following `docs/timeline-changes-format.md`, including
+  the sample run.
+  - It matches an independent pandas implementation of the doc's rules row for row.
+  - Each kept line is byte-identical to the same line in the full timeline.
+  - Expanding it back reproduces every listed column.
+  - The size reduction is about **5×**, not 12–15×: at 7,500 agents, one day is 434k rows (9.8 MB)
+    against 2.16M (42 MB). In-room positions move as people mingle at parties, dining tables and
+    lounges, so `lat`/`lon` change often.
+  - If you don't need those small moves, I can snap mingling positions to a coarser grid on our
+    side. Say the word.
 

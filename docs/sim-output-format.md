@@ -64,7 +64,8 @@ mirror with the same columns. Booleans are `True`/`False`; missing values are em
   n_rooms, source, footprint_wkt`; `map/rooms.csv` + `x0, y0, x1, y1, layout, indoor`;
   `map/entrances.csv` + `x_local_m, y_local_m`; `schedule/sections.csv` + `kind, location_id`;
   `schedule/events.csv` + `name`; `summary.json` has extra keys after the listed ones.
-- Extra files: `timeline.parquet`, `contacts.parquet`, `room_exposure.parquet` (same columns),
+- Extra files: `timeline_changes.csv.gz` (compact timeline, [timeline-changes-format.md](timeline-changes-format.md)),
+  `timeline.parquet`, `contacts.parquet`, `room_exposure.parquet` (same columns),
   `map/paths.geojson` (footpath network), `map/entry_points.csv` (where commuters enter campus).
 
 ## Size (full run)
