@@ -8,7 +8,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
 | Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`. See `sim/README.md`. |
-| Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: claimed, planning | PRD Functionality 1. Native iOS app for the live two-phone demo: detection by UWB (Nearby Interaction), Bluetooth LE and GPS; builds exposure minutes, and gives a close-contact alert with advice after ~15 min near a contagious phone. |
+| Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones; now turning the test app into the user app | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 
 ## Decisions
@@ -49,6 +49,13 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — Demo phone alerts follow the proximity app.** 6 ft distance; an immediate heads-up;
   a close-contact alert at 15 weighted minutes in 24 h (contagious 1, possibly sick 0.5). Added on
   the heat map phone: a retroactive "exposure notice" for contacts who later report sick.
+
+- **2026-10-17 — Proximity broadcast (privacy).** Live alerts: each phone advertises only a random ID
+  (rotates every 15 min) + a 3-level risk (healthy / possibly sick / contagious) over Bluetooth; all
+  matching is on the phone, no server. Known cost: in a 1-on-1 room the risk bit identifies the sick
+  person. Revisit (anonymity threshold or server-side matching) before real users.
+- **2026-10-17 — GPS alone doesn't count as close contact.** Indoors GPS is ±10–30 m, so GPS-only
+  evidence with error > 10 m never adds close-contact minutes (it still feeds the distance estimate).
 
 ## Requests
 
@@ -136,4 +143,5 @@ Claim a row before you start. Update the status as you go. Agents should name th
     lounges, so `lat`/`lon` change often.
   - If you don't need those small moves, I can snap mingling positions to a coarser grid on our
     side. Say the word.
-
+- **proximity → heat map:** an `?embed=app` mode for the app's Heat map tab (full-screen user map, no
+  presenter controls, works at ~390 pt wide under a tab bar). Already asked via the heat map session.

@@ -24,3 +24,4 @@ Each workstream lives in its own top-level directory, created by its owner (see 
 |------|----------|
 | `docs/` | PRD, shared notes, data contracts |
 | `heatmap/` | Campus infection heat map |
+| `proximity/` | iOS app: live proximity alerts (Bluetooth + UWB + GPS) and the user heat map |
