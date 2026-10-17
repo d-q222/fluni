@@ -58,10 +58,16 @@ Demo scenes on the sim's mock run:
 - **Phone alerts:**
   - The person next to you (≤ 6 ft) is actually sick. This is a demo proof of concept and uses the
     sim's true status.
-  - Someone the app thinks is risky (P ≥ 50%) is within 6 ft (1.83 m) in the same room. This uses
-    the same distance as the proximity app. The proximity app also alerts after 15 cumulative
-    minutes; this demo phone alerts immediately.
-  - **Walk-in warning:** you're in a room where the others add up to ≥ 0.5 expected sick people.
+  - **Heads-up:** someone the app thinks may be sick (P ≥ 50%) is within 6 ft (1.83 m) in the same
+    room right now.
+  - **Close contact:** the same rule as the proximity app, i.e. 15 weighted minutes within 6 ft in
+    the last 24 h. Contagious contacts (P ≥ 90%) weigh 1, possibly sick ones (P ≥ 50%) weigh 0.5,
+    using each contact's risk as the app knew it at the time. Contacts come from the sim's
+    `contacts.csv`, standing in for phone detections.
+  - **Exposure notice** (retroactive): 15+ minutes within 6 ft in the last 3 days of someone who has
+    *since* reported sick. On the mock this is the one that fires, because A0003 reports only after
+    the exposures.
+  - **Walk-in warning:** you're in a room where the others add up to ≥ 1 expected sick person.
     It reads room totals only.
 
 ## Movement
@@ -88,9 +94,10 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
     streets. Outdoors, it spreads freely.
-  - Heat lingers. Each frame blends the last hour of positions (6 snapshots, 10 minutes apart,
-    weighted e^(−age/30 min)), so a room's heat builds up while people stay and fades after they
-    leave.
+  - Heat is mostly the present. Current positions get full weight, plus a faint trail over the last
+    30 minutes (3 snapshots, 10 minutes apart, 35% × e^(−age/15 min)), so a room still reads warm
+    just after people leave without lagging behind moving dots. The heat is recomputed every frame
+    while that costs under 8 ms, and backs off on big runs.
   - **Airflow heat (experimental)** (`aerosol.js`): an evolving field instead of a snapshot.
     Infectious people emit into their room; the air mixes within the room, leaks through doors
     (walls sit on cell faces, with one door per ~8 m), and is ventilated away (τ 30 min indoors,

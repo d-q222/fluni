@@ -9,17 +9,14 @@ import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
 
-// Room-level heat for the presenter; coarse, privacy-masked heat for what real users see.
+// Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
-// Heat lingers after people leave, like air in a room: each heat frame blends the last hour of
-// positions, recent ones weighted most. Weights sum to 1, so a crowd's heat builds up while they
-// stay and fades over ~tauMin after they go.
-const MEMORY = { stepMin: 10, steps: 6, tauMin: 30 };
-const MEMORY_W = (() => {
-  const w = Array.from({ length: MEMORY.steps }, (_, k) => Math.exp((-k * MEMORY.stepMin) / MEMORY.tauMin));
-  const sum = w.reduce((a, b) => a + b, 0);
-  return w.map((x) => x / sum);
-})();
+// Heat is mostly the present: current positions at full weight, plus a faint trail of where people
+// were over the last half hour, so a room still reads warm just after people leave. (An hour-long
+// average made the heat lag far behind moving dots.)
+const MEMORY = { stepMin: 10, steps: 4, tauMin: 15, trail: 0.35 };
+const MEMORY_W = Array.from({ length: MEMORY.steps },
+  (_, k) => (k === 0 ? 1 : MEMORY.trail * Math.exp((-k * MEMORY.stepMin) / MEMORY.tauMin)));
 // The user-facing map sees only per-building totals. Small runs (the mock has 10 agents) are scaled
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
@@ -28,11 +25,17 @@ const MIN_PEOPLE = 4;
 const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
-const ROOM_HOT = 0.5;       // walk-in warning when others in the room add up to ≥ this many expected sick
+const ROOM_HOT = 1;         // walk-in warning when the others in the room add up to ≥ 1 expected sick person
 const RISKY = 0.5;          // P(sick) at which the app treats someone as risky for proximity alerts
 const NEARBY_M = 1.83;      // 6 ft, matching the proximity app (proximity/README.md)
 const PAD_M = 120;          // grid margin around the data
-const HEAT_EVERY_MS = 100;   // heat is recomputed at most this often; dots move every frame
+const HEAT_BUDGET_MS = 8;   // recompute heat every frame while it costs less than this, else back off
+// Phone exposure clock, matching the proximity app: minutes within 6 ft of a risky person over the
+// last 24 h, weighted 1 for contagious and 0.5 for possibly sick; close-contact alert at 15 min.
+const CLOSE_CONTACT_MIN = 15;
+const EXPOSURE_WINDOW_MS = 24 * 3600000;
+const NOTICE_WINDOW_MS = 3 * 24 * 3600000; // retroactive exposure notice: contacts who later report sick
+const CONTAGIOUS = 0.9;     // P(sick) the app treats as "contagious" (≈ a positive test)
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
@@ -139,9 +142,9 @@ async function loadModel(dataUrl, agentIds) {
       loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s']),
       loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value', 'target_agent_id']),
     ]);
-    return inferRisk({
-      contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start),
-    });
+    const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
+    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs });
+    return { risk, contacts: contacts.data, startMs, stepMs };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
@@ -293,7 +296,7 @@ async function main() {
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
   const model = data.beliefFrom === 'column' ? null : await loadModel(dataUrl, [...new Set(data.samples.map((a) => a.id))]);
   if (model) {
-    for (const a of data.samples) a.p = model.pAt(a.id, a.t);
+    for (const a of data.samples) a.p = model.risk.pAt(a.id, a.t);
     data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
   }
   const { frames, times } = data;
@@ -391,7 +394,7 @@ async function main() {
   // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
   // Otherwise start shortly before the first movement, so playback doesn't open on a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
-  let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
+  let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true, heatInterval = 0;
   let phoneMap = null, phoneBuildings = null, phoneYou = null, airflowTruth = false;
 
   function dotFor(id) {
@@ -422,14 +425,47 @@ async function main() {
     return false;
   }
 
-  // What the phone tells this person right now. Proximity uses nearby phones; the walk-in warning
-  // uses room totals only.
+  // Contacts within 6 ft per person, as phones would log them: { tMs, other, min }, by time.
+  const exposureLog = new Map();
+  if (model) {
+    const log = (id, e) => { if (!exposureLog.has(id)) exposureLog.set(id, []); exposureLog.get(id).push(e); };
+    for (const c of model.contacts) {
+      if (Number(c.distance_m) > NEARBY_M) continue;
+      const tMs = model.startMs + Number(c.t) * model.stepMs, min = Number(c.duration_s) / 60;
+      log(c.agent_a, { tMs, other: c.agent_b, min });
+      log(c.agent_b, { tMs, other: c.agent_a, min });
+    }
+    for (const list of exposureLog.values()) list.sort((a, b) => a.tMs - b.tMs);
+  }
+  // Weighted exposure minutes within `windowMs` before t. Live: each contact's risk as the app knew it
+  // at the time. Retro: their risk as known now, i.e. people who have since reported sick.
+  function exposureMinutes(id, t, windowMs, retro) {
+    let total = 0;
+    for (const e of exposureLog.get(id) || []) {
+      if (e.tMs > t) break;
+      if (e.tMs < t - windowMs) continue;
+      const p = model.risk.pAt(e.other, retro ? t : e.tMs);
+      const w = p >= CONTAGIOUS ? 1 : p >= RISKY ? 0.5 : 0;
+      total += w * Math.min(e.min, (t - e.tMs) / 60000);
+    }
+    return total;
+  }
+
+  // What the phone tells this person right now. Proximity uses nearby phones (an immediate heads-up,
+  // then a close-contact alert at 15 weighted minutes); the walk-in warning uses room totals only.
   function phoneAlerts(me) {
     const msgs = [];
     if (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) {
       msgs.push('The person next to you is sick. (Demo: uses the simulation\'s true status.)');
     } else if (someoneNear(me, NEARBY_M, (a) => a.p >= RISKY)) {
-      msgs.push('Someone near you is likely sick. Consider stepping out, or put on a mask.');
+      msgs.push('Heads-up: someone within 6 ft may be sick.');
+    }
+    const live = model ? exposureMinutes(me.id, now, EXPOSURE_WINDOW_MS, false) : 0;
+    const later = model ? exposureMinutes(me.id, now, NOTICE_WINDOW_MS, true) : 0;
+    if (live >= CLOSE_CONTACT_MIN) {
+      msgs.push(`Close contact: about ${Math.round(live)} min within 6 ft of someone who may be sick in the last 24 h. Wear a mask and consider a test at Vaden.`);
+    } else if (later >= CLOSE_CONTACT_MIN) {
+      msgs.push(`Exposure notice: in the last 3 days you spent about ${Math.round(later)} min within 6 ft of someone who has since reported being sick. Watch for symptoms; a test at Vaden is a good idea.`);
     }
     const room = !me.walking && me.room && totalsAt(totals, now).rooms.get(me.room);
     const others = room ? room.expected - me.p : 0;
@@ -477,7 +513,7 @@ async function main() {
       : 'Around campus now';
   }
 
-  // Move every dot to its interpolated position; repaint heat at most every HEAT_EVERY_MS.
+  // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
   function render(realNow) {
     current = new Map();
     for (const [id, track] of tracks) {
@@ -488,8 +524,9 @@ async function main() {
     $('slider').value = (now - t0) / 60000;
 
     const view = $('view').value;
-    const heatDue = heatDirty || realNow - lastHeat >= HEAT_EVERY_MS;
+    const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
     if (heatDue) {
+      const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' ? 'none' : '';
       if (publicLayer) {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
@@ -502,6 +539,8 @@ async function main() {
       } else if (view !== 'public') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
       lastHeat = realNow;
       heatDirty = false;
+      const cost = performance.now() - started;
+      heatInterval = cost <= HEAT_BUDGET_MS ? 0 : Math.min(250, cost * 3); // keep frames smooth on big runs
     }
 
     const showDots = $('show-dots').checked && view !== 'public';
