@@ -1,0 +1,67 @@
+{
+  "priority": {"flex": 0, "meal": 1, "hangout": 2, "study_group": 2, "party": 3, "event": 3,
+               "practice": 4, "lab": 4, "class": 5},
+  "min_fragment_min": 15,
+  "sleep": {
+    "fri_sat_bed_delay_h": 1.0,
+    "min_sleep_h": 5.0,
+    "event_bed_buffer_min": [10, 40],
+    "commit_wake_lead_min": [25, 50],
+    "wake_clip_h": [5.0, 13.0],
+    "bed_clip_h": [21.0, 28.0]
+  },
+  "home_buffer": {"morning_min": [15, 45], "evening_min": [30, 90]},
+  "flex": {
+    "block_min": [60, 180],
+    "gym_min": [60, 90],
+    "outdoor_min": [30, 60],
+    "short_gap_min": 30,
+    "min_remainder_min": 50,
+    "allowed_hours": {"library": [7, 26], "dorm_study": [5, 27], "common_room": [7, 25], "gym": [6, 22],
+                      "outdoor": [7, 19], "lab": [7, 23], "home": [0, 48]},
+    "common_relax_p": 0.5,
+    "library_room_types": ["reading_room", "study_room"],
+    "common_room_types": ["lobby", "lounge", "study_room", "cafe", "generic"],
+    "gym_room_types": ["weight_room"],
+    "outdoor_room_types": ["outdoor_area"],
+    "lab_room_types": ["lab"]
+  },
+  "meals": {
+    "centers_h": [8.0, 12.25, 18.5],
+    "sd_min": [30, 40, 45],
+    "window_h": [[7.0, 11.0], [11.0, 14.5], [17.0, 21.0]],
+    "min_gap_min": 120,
+    "dur_min": [25, 50],
+    "fav_p": 0.7,
+    "breakfast_min_after_wake_min": 10,
+    "breakfast_latest_h": 11.0,
+    "max_shift_min": 90
+  },
+  "events": {
+    "arrive_delay_frac": 0.25,
+    "leave_early_frac": 0.25,
+    "act": {"party": "party", "dorm_hangout": "hangout", "sports_game": "event",
+            "large_event": "event", "study_group": "study_group"}
+  },
+  "athletes": {
+    "practice_start_h": 15.5,
+    "practice_end_h": 18.0,
+    "practice_jitter_min": 10,
+    "lift_start_h": 6.75,
+    "lift_jitter_min": 20,
+    "lift_dur_min": [50, 75]
+  },
+  "labs": {"start_h": 19.0, "end_h": 22.5, "jitter_min": 20, "weekdays_only": true},
+  "classes": {"lab_skip_mult": 0.3},
+  "commuter": {"arrive_sd_h": 0.4, "leave_sd_h": 0.6, "merge_gap_min": 180, "class_lead_min": [15, 35],
+               "class_tail_min": [10, 30], "event_buffer_min": [10, 30]},
+  "defaults": {"evening_lab_p": 0.0, "lift_days_per_week": 0.0},
+  "archetypes": {
+    "studious": {"evening_lab_p": 0.05, "lift_days_per_week": 2.5},
+    "social": {"evening_lab_p": 0.0, "lift_days_per_week": 2.5},
+    "athlete": {"evening_lab_p": 0.0, "lift_days_per_week": 2.5},
+    "stem": {"evening_lab_p": 0.4, "lift_days_per_week": 2.5},
+    "commuter": {"evening_lab_p": 0.0, "lift_days_per_week": 2.5},
+    "homebody": {"evening_lab_p": 0.0, "lift_days_per_week": 2.5}
+  }
+}

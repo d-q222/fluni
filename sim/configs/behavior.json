@@ -1,0 +1,28 @@
+{
+  "mask_context_factor": {
+    "sleep": 0.0, "relax": 0.0, "class": 1.0, "lab": 1.0, "study": 0.9, "eat": 0.1, "practice": 0.05,
+    "gym": 0.4, "party": 0.15, "hangout": 0.1, "event": 0.4, "study_group": 0.9, "outdoor_leisure": 0.1,
+    "commute": 0.2, "off_campus": 0.0, "isolate": 0.0, "health_visit": 1.0, "rest": 0.0, "idle": 0.3,
+    "arrived_early": 0.5
+  },
+  "mask_symptomatic_boost": 2.0,
+  "mask_p_max": 0.98,
+  "room_margin_m": 0.3,
+  "seat_spacing_m": {
+    "lecture_hall": 0.9, "seminar": 1.1, "classroom": 1.0, "exam_room": 1.2, "reading_room": 1.2,
+    "study_room": 1.0, "dining_room": 1.0, "cafe": 1.0, "waiting_room": 1.2, "default": 1.0
+  },
+  "seat_edge_m": 0.5,
+  "seat_retry_rounds": 3,
+  "mingle_sigma_m": 0.6,
+  "mingle_center_margin_m": 1.0,
+  "mingle_resample_p": 0.25,
+  "bed_wall_offset_m": 1.0,
+  "desk_wall_offset_m": 0.6,
+  "bed_acts": ["sleep", "isolate", "rest"],
+  "leave_location_act": "relax",
+  "carry_on_drop_act": "rest",
+  "vaden_overrides_isolation": false,
+  "vaden_min_stay_steps": 2,
+  "vaden_max_extend_steps": 36
+}

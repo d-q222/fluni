@@ -1,0 +1,13 @@
+[
+  {"name": "Green Library", "slug": "green_library", "type": "library", "lat": 37.4268, "lon": -122.1665, "w": 70, "h": 60, "levels": 4},
+  {"name": "Wilbur Dining", "slug": "wilbur_dining", "type": "dining", "lat": 37.4240, "lon": -122.1620, "w": 40, "h": 30, "levels": 1},
+  {"name": "Stern Dining", "slug": "stern_dining", "type": "dining", "lat": 37.4243, "lon": -122.1662, "w": 40, "h": 30, "levels": 1},
+  {"name": "Florence Moore Dining", "slug": "flomo_dining", "type": "dining", "lat": 37.4220, "lon": -122.1717, "w": 40, "h": 30, "levels": 1},
+  {"name": "Main Quad Courtyard", "slug": "main_quad_courtyard", "type": "outdoor", "indoor": false, "lat": 37.42745, "lon": -122.17025, "w": 100, "h": 80},
+  {"name": "White Plaza", "slug": "white_plaza", "type": "outdoor", "indoor": false, "lat": 37.4246, "lon": -122.1698, "w": 70, "h": 40},
+  {"name": "Meyer Green", "slug": "meyer_green", "type": "outdoor", "indoor": false, "lat": 37.4262, "lon": -122.1655, "w": 80, "h": 60},
+  {"name": "The Oval", "slug": "the_oval", "type": "outdoor", "indoor": false, "lat": 37.4295, "lon": -122.1694, "w": 150, "h": 80},
+  {"name": "Engineering Quad", "slug": "engineering_quad", "type": "outdoor", "indoor": false, "lat": 37.4286, "lon": -122.1750, "w": 100, "h": 70},
+  {"name": "Lake Lagunita", "slug": "lake_lagunita", "type": "outdoor", "indoor": false, "lat": 37.4223, "lon": -122.1775, "w": 250, "h": 180},
+  {"name": "Frost Amphitheater", "slug": "frost_amphitheater", "type": "event_venue", "indoor": false, "lat": 37.4307, "lon": -122.1668, "w": 110, "h": 90, "capacity": 8000}
+]

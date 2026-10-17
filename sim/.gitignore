@@ -1,0 +1,5 @@
+.venv
+runs/*
+!runs/mock_boring10/
+!runs/influenza_none_n10_d14_s2_f1f772f6/
+viewer.html

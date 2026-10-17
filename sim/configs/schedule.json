@@ -1,0 +1,109 @@
+{
+  "sections": {
+    "mean_courses_default": 4.0,
+    "min_courses": 3,
+    "max_courses": 5,
+    "capacity_slack": 1.15,
+    "size_mix": [
+      {"name": "seminar", "kind": "seminar", "p": 0.55, "min": 10, "max": 20},
+      {"name": "medium", "kind": "lecture", "p": 0.30, "min": 30, "max": 80},
+      {"name": "large", "kind": "lecture", "p": 0.15, "min": 100, "max": 300}
+    ],
+    "room_types": {
+      "seminar": ["seminar", "classroom"],
+      "medium": ["classroom", "seminar", "lecture_hall"],
+      "large": ["lecture_hall"],
+      "lab": ["lab"]
+    },
+    "fallback_exclude_room_types": ["dorm_single", "dorm_double", "dorm_triple", "dorm_quad", "corridor"],
+    "mwf_frac": 0.5,
+    "mwf_slots": ["09:30", "10:30", "11:30", "13:30", "14:30", "15:30"],
+    "mwf_dur_min": 50,
+    "tth_slots": ["09:00", "10:30", "12:00", "13:30", "15:00", "16:30"],
+    "tth_dur_min": 80,
+    "lab_depts": ["CHEM", "BIO", "PHYSICS", "EE", "ME", "BIOE"],
+    "lab_p": 0.7,
+    "lab_min_size": 30,
+    "lab_section_size": 24,
+    "lab_dur_min": 180,
+    "lab_days": ["M", "T", "W", "Th", "F"],
+    "lab_starts": ["13:30", "14:00"],
+    "courses": {
+      "seminar": ["PWR 1", "PWR 2", "THINK 3", "THINK 12", "COLLEGE 101", "COLLEGE 102", "ENGLISH 10", "HISTORY 50",
+                  "PHIL 80", "CS 181", "MATH 109", "ECON 101", "POLISCI 102", "PSYCH 70", "BIO 82", "CHEM 151",
+                  "ME 104", "EE 191", "ARTHIST 1", "COMM 166", "SOC 118", "AMSTUD 140", "CS 194", "PHYSICS 91",
+                  "LINGUIST 1", "CLASSICS 18", "MUSIC 19", "EARTHSYS 10", "BIOE 141", "STATS 199"],
+      "medium": ["CS 107", "CS 109", "CS 161", "MATH 52", "MATH 53", "MATH 104", "ECON 51", "ECON 52", "PHYSICS 43",
+                 "PHYSICS 45", "CHEM 33", "CHEM 121", "BIO 84", "BIO 86", "EE 102A", "EE 108", "ME 30", "ME 80",
+                 "BIOE 42", "BIOE 80", "STATS 116", "PSYCH 30", "POLISCI 1", "HISTORY 1B", "CS 221", "CS 229"],
+      "large": ["CS 106A", "CS 106B", "MATH 51", "MATH 21", "CHEM 31A", "CHEM 31B", "PHYSICS 41", "BIO 45", "ECON 1",
+                "PSYCH 1", "STATS 60", "EE 100", "ME 101", "BIOE 101", "HUMBIO 2A"]
+    },
+    "archetype_dept_bias": {
+      "stem": {"CHEM": 2.5, "BIO": 2.5, "PHYSICS": 2.5, "EE": 2.5, "ME": 2.5, "BIOE": 2.5, "CS": 2.0, "MATH": 2.0, "STATS": 1.5},
+      "studious": {"MATH": 1.3, "CS": 1.3, "PHIL": 1.3, "HISTORY": 1.3},
+      "athlete": {"COMM": 1.5, "SOC": 1.5, "PSYCH": 1.3},
+      "social": {"ECON": 1.3, "POLISCI": 1.3, "COMM": 1.3}
+    },
+    "max_pick_attempts": 40
+  },
+  "events": {
+    "party": {
+      "weekdays": [3, 4, 5],
+      "parties_per_1000": 4.0,
+      "start_h": 22.0,
+      "start_sd_min": 25,
+      "dur_h": 3.5,
+      "dur_sd_min": 30,
+      "member_p": 0.85,
+      "individual_mult": 0.25,
+      "crowding": 1.0,
+      "min_attendees": 2,
+      "room_types": ["party_room"],
+      "venue_types": ["party_venue"]
+    },
+    "dorm_hangout": {
+      "weekend_weekdays": [4, 5, 6],
+      "weekend_mult": 1.6,
+      "member_p": 0.75,
+      "min_attendees": 2,
+      "bedroom_max": 4,
+      "bedroom_p": 0.6,
+      "start_h": 20.0,
+      "start_jitter_h": 1.5,
+      "dur_h_min": 1.25,
+      "dur_h_max": 3.0,
+      "latest_end_h": 23.5,
+      "lounge_room_types": ["lobby", "lounge"]
+    },
+    "big_events": [
+      {"name": "Men's Basketball vs Arizona", "type": "sports_game", "sport": "mens_basketball", "day": 2, "start_h": 19.0, "dur_h": 2.25, "venue": "Maples Pavilion", "draw_mult": 0.6},
+      {"name": "Football vs Cal", "type": "sports_game", "sport": "football", "day": 5, "start_h": 13.0, "dur_h": 3.5, "venue": "Stanford Stadium", "draw_mult": 1.5},
+      {"name": "Women's Basketball vs UCLA", "type": "sports_game", "sport": "womens_basketball", "day": 6, "start_h": 14.0, "dur_h": 2.25, "venue": "Maples Pavilion", "draw_mult": 0.8},
+      {"name": "Speaker Series Talk", "type": "large_event", "day": 8, "start_h": 18.0, "dur_h": 1.5, "venue": "Memorial Hall", "draw_mult": 0.35},
+      {"name": "Spring Concert", "type": "large_event", "day": 11, "start_h": 19.5, "dur_h": 3.0, "venue": "Frost Amphitheater", "draw_mult": 1.2}
+    ],
+    "big_event_room_types": ["arena", "outdoor_area"],
+    "big_event_member_p": 0.8,
+    "big_event_individual_mult": 0.3,
+    "big_event_crowding": 1.0,
+    "study_group": {
+      "base_rate": 0.25,
+      "exam_days": [9, 10],
+      "exam_lead_days": 3,
+      "exam_mult": 4.0,
+      "no_weekdays": [5],
+      "min_size": 3,
+      "max_size": 6,
+      "afternoon_p": 0.4,
+      "afternoon_window_h": [15.0, 17.0],
+      "evening_window_h": [19.0, 22.0],
+      "dur_h_min": 1.0,
+      "dur_h_max": 2.0,
+      "room_types": ["study_room"],
+      "fallback_room_types": ["lounge", "common_room", "lobby", "reading_room"],
+      "include_labs": false
+    },
+    "exclusive_room_types": ["study_room", "dorm_single", "dorm_double", "dorm_triple", "dorm_quad", "party_room"]
+  }
+}

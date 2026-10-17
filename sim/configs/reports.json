@@ -1,0 +1,37 @@
+{
+  "require_app": true,
+  "isolation_max_days": 10,
+  "pre_visit_carry_on_intensity": 0.6,
+  "vaden": {
+    "open_hours": [[8, 17], [8, 17], [8, 17], [8, 17], [8, 17], [10, 14], null],
+    "delay_h": [1.0, 4.0],
+    "visit_min": [30, 75],
+    "search_days": 8,
+    "test_requires_presence": true,
+    "presence_grace_min": 30
+  },
+  "test": {
+    "sensitivity": 0.7,
+    "specificity": 0.98,
+    "result_delay_h": 4.0,
+    "p_test_non_vaden": 0.0,
+    "non_vaden_delay_h": [2.0, 24.0]
+  },
+  "self_report": {
+    "onset_delay_h": [1.0, 12.0],
+    "positive_delay_min": [5.0, 60.0],
+    "p_report_recovered": 0.5,
+    "recovered_delay_h": [0.0, 24.0],
+    "early_recovered_daily_p": 0.05,
+    "false_sick_daily_p": 0.002,
+    "false_report_clear_p": 0.7,
+    "false_report_clear_days": [1.0, 3.0]
+  },
+  "report_other": {
+    "require_app": true,
+    "severity_threshold": 0.3,
+    "p_per_step": 0.01,
+    "false_p_per_step": 0.00005,
+    "cooldown_days": 3
+  }
+}

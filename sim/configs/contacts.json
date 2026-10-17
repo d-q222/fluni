@@ -1,0 +1,8 @@
+{
+  "radius_m": 5.0,
+  "tiers_m": [1.0, 2.0, 5.0],
+  "same_room_max_capacity": 150,
+  "ground_floor": 1,
+  "floor_separation_m": 1000.0,
+  "outdoor_any_floor": false
+}

@@ -1,0 +1,7 @@
+{
+  "isolation_days": 5,
+  "mask_days": 1,
+  "vaden_visit_min": 45,
+  "self_report_isolate": {"statuses": ["might_be_sick", "tested_positive"]},
+  "symptomatic_isolate_oracle": {}
+}

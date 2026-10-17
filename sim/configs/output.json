@@ -1,0 +1,15 @@
+{
+  "_doc": "Output writer settings. by_agent: write timeline_by_agent/<agent_id>.csv. parquet: write timeline/contacts/room_exposure .parquet mirrors. by_agent_max_open: keep one open file per agent up to this many agents, else buffer in memory (by_agent_buffer_mb) and append. gzip_level: zlib level for .csv.gz (mock used 9; 6 is ~as small and much faster). gzip_threads: parallel deflate workers (output is one standard gzip member, byte-identical for any thread count). chunk_rows: rows formatted per batch (memory bound). R_window_days: override for measured_R eligibility window (null = latent+presym+infectious means from cfg.disease). R_min_agents: below this N the summary carries a note that R is not meaningful.",
+  "by_agent": true,
+  "parquet": true,
+  "by_agent_max_open": 512,
+  "by_agent_buffer_mb": 512,
+  "gzip_level": 6,
+  "gzip_threads": 8,
+  "gzip_block_mb": 8,
+  "chunk_rows": 262144,
+  "parquet_compression": "zstd",
+  "R_window_days": null,
+  "R_min_agents": 200,
+  "R_min_cases": 20
+}
