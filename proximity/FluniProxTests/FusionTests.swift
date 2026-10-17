@@ -51,6 +51,12 @@ final class FusionTests: XCTestCase {
         XCTAssertEqual(Fusion.exposurePClose(fused), Fusion.pClose(fused))
     }
 
+    func testGateHoldsForSeveralGPSReadings() {
+        // Found by mutation review: the gate compared sources == [.gps], so two GPS readings slipped past it.
+        XCTAssertEqual(Fusion.exposurePClose(Estimate(distance: 1, sigma: 25, sources: [.gps, .gps])), 0)
+        XCTAssertFalse(Fusion.isCoarseGPSOnly(Estimate(distance: 1, sigma: 25, sources: [])))
+    }
+
     func testBLECalibrationLearnsFromUWB() {
         // This phone pair actually reads -70 dBm at 1 m, not the -59 default.
         var cal = BLECalibrator()

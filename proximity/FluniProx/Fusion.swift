@@ -69,7 +69,7 @@ enum Fusion {
     }
 
     static func isCoarseGPSOnly(_ e: Estimate) -> Bool {
-        e.sources == [.gps] && e.sigma > maxGPSOnlySigma
+        !e.sources.isEmpty && e.sources.allSatisfy { $0 == .gps } && e.sigma > maxGPSOnlySigma
     }
 
     /// Distance-tier weight for the risk dose, as in model/infer.js: <1 m → 1, 1–2 m → 0.6,
