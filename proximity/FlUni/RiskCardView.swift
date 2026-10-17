@@ -34,7 +34,8 @@ struct RiskCardView: View {
                     Text("Your risk estimate").font(.fluni(.headline))
                     Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
                 }
-                Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
+                // Same number for colour and advice, so they can never disagree.
+                Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.subheadline))
                 Text("Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.")
                     .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
             }

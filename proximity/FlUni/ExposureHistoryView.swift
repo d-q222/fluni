@@ -92,7 +92,7 @@ struct NearbyBanner: View {
             }
         }
         .foregroundStyle(Theme.ink)
-        .card(fill: Theme.sun.opacity(0.5))
+        .card(.peach)  // Lisa's peach box means "heads-up", as in the phone mock-up; ink text for contrast
         .accessibilityElement(children: .combine)
     }
 }

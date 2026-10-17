@@ -70,7 +70,8 @@ struct TodayView: View {
             }
         }
         .foregroundStyle(s.text)
-        .card(fill: s.fill)
+        // All clear: paper box with a sage tint. Alerts: Lisa's peach box (ink text; fire-ink fails on peach).
+        .modifier(StatusBox(level: level, fill: s.fill))
         .accessibilityElement(children: .combine)
     }
 
@@ -81,7 +82,7 @@ struct TodayView: View {
         case .nearby:
             return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
         case .closeContact:
-            return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.fireInk)
+            return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.ink)
         }
     }
 
@@ -195,7 +196,7 @@ struct CalculationSheet: View {
                     block("What counts",
                           "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model vs this phone",
-                          "The campus model is the official number, worked out on the laptop from everyone's contacts, reports and tests. This phone's estimate uses only what this phone detected in the last 24 hours, so the two can differ.",
+                          "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick). This phone's estimate uses only what this phone detected in the last 24 hours, in a simplified form of the same formula, so the two can differ.",
                           store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
@@ -224,5 +225,14 @@ struct CalculationSheet: View {
             }
         }
         .foregroundStyle(Theme.ink)
+    }
+}
+
+/// Paper box with a tint for "all clear"; peach box for alerts.
+private struct StatusBox: ViewModifier {
+    let level: AlertLevel
+    let fill: Color
+    func body(content: Content) -> some View {
+        if level == .none { content.card(fill: fill) } else { content.card(.peach) }
     }
 }
