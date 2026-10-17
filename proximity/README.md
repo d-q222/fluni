@@ -38,6 +38,7 @@ pass (`heatmap/assets/people/tissue.png`); the app icon is derived from that tis
 `Theme.swift`. The app is forced to light mode (the palette is only defined and contrast-checked on warm
 paper). Type is the system rounded font so Dynamic Type works; Hanken Grotesk (the web font) isn't
 bundled because its variable weights can't be verified here without running the app.
+Credits: hand-drawn containers (`heatmap/assets/containers`): Lisa Zheng.
 
 ## How it works
 
