@@ -52,20 +52,66 @@ extension Font {
     }
 }
 
-/// A flat card: surface fill, hairline border, 12 pt corners.
+/// Lisa's hand-drawn containers (heatmap/assets/containers), used as 9-slice images like the web's
+/// `border-image: ... 34 30 80 64 fill / 9px 8px 21px 17px`. The PNGs are 960x579 px and used at scale 4
+/// (240x144.75 pt), so the web's slice insets in image px become points by /4: top 34 -> 8.5,
+/// trailing 30 -> 7.5, bottom 80 -> 20, leading 64 -> 16 (the web draws them at 9/8/21/17 css px, so
+/// 4x gives the same border weight within a point).
+///
+/// Interior fills (sampled): paper fffbf4, peach ecbba0. Contrast of text on them:
+///   paper: ink 14.4, ink-2 7.0, ink-3 5.6, fire-ink 7.3   (all pass 4.5)
+///   peach: ink 8.6 (use ink only), ink-2 4.2*, ink-3 3.3*, fire-ink 4.4*   (* fail body text)
+/// Under Increase Contrast or Differentiate Without Color the drawn box is replaced by a flat card
+/// with a 1 pt ink border (14.3:1 / 8.6:1 text).
+enum CardStyle {
+    case paper, peach
+    /// The harness target has no asset catalog, so it gets the flat card.
+    var available: Bool { UIImage(named: self == .paper ? "BoxPaper" : "BoxPeach") != nil }
+    /// actool rejects a "4x" scale, so the PNG sits in the catalog unscaled and is re-wrapped at scale 4 here.
+    var image: Image {
+        let name = self == .paper ? "BoxPaper" : "BoxPeach"
+        guard let ui = UIImage(named: name), let cg = ui.cgImage else { return Image(name) }
+        return Image(uiImage: UIImage(cgImage: cg, scale: 4, orientation: .up))
+    }
+    var flat: Color { self == .paper ? Theme.surface : Color(hex: 0xecbba0) }
+}
+
+/// A card drawn as Lisa's hand-drawn box. `fill` tints the inside of the box (risk tiers etc.).
 struct Card: ViewModifier {
-    var fill: Color = Theme.surface
+    var style: CardStyle = .paper
+    var fill: Color? = nil
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
+
+    private static let cap = EdgeInsets(top: 8.5, leading: 16, bottom: 20, trailing: 7.5)
+    private static let pad: CGFloat = 6   // breathing room inside the drawn edge
+
     func body(content: Content) -> some View {
-        content
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
-            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.hairline, lineWidth: 1))
+        if contrast == .increased || differentiate || !style.available {
+            content
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(fill ?? style.flat, in: RoundedRectangle(cornerRadius: Theme.radius))
+                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.ink, lineWidth: 1))
+        } else {
+            let c = Self.cap, p = Self.pad
+            content
+                .padding(EdgeInsets(top: c.top + p, leading: c.leading + p, bottom: c.bottom + p, trailing: c.trailing + p))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background {
+                    ZStack {
+                        style.image.resizable(capInsets: c, resizingMode: .stretch)
+                        if let fill {
+                            RoundedRectangle(cornerRadius: 6).fill(fill).padding(c)
+                        }
+                    }
+                }
+        }
     }
 }
 
 extension View {
-    func card(fill: Color = Theme.surface) -> some View { modifier(Card(fill: fill)) }
+    func card(_ style: CardStyle = .paper, fill: Color? = nil) -> some View { modifier(Card(style: style, fill: fill)) }
 }
 
 struct PrimaryButtonStyle: ButtonStyle {
