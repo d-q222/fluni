@@ -96,12 +96,25 @@ private struct HeatWebView: UIViewRepresentable {
     let url: URL
     @Binding var error: String?
 
-    func makeCoordinator() -> Coordinator { Coordinator(error: $error) }
+    func makeCoordinator() -> Coordinator { Coordinator(base: url, error: $error) }
 
     func makeUIView(context: Context) -> WKWebView {
-        let v = WKWebView()
+        let conf = WKWebViewConfiguration()
+        conf.preferences.javaScriptCanOpenWindowsAutomatically = false  // no window.open
+        // The page never gets the phone's location: geolocation always reports "denied".
+        let deny = WKUserScript(source: """
+            (function () {
+              var denied = function (ok, fail) { if (fail) { fail({ code: 1, message: 'denied', PERMISSION_DENIED: 1 }); } };
+              try { Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition: denied, watchPosition: function (a, f) { denied(a, f); return 0; }, clearWatch: function () {} } }); } catch (e) {}
+            })();
+            """, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        conf.userContentController.addUserScript(deny)
+        let v = WKWebView(frame: .zero, configuration: conf)
+        #if DEBUG
         v.isInspectable = true  // Safari → Develop → <iPhone> shows the page's console
+        #endif
         v.navigationDelegate = context.coordinator
+        v.uiDelegate = context.coordinator
         v.load(URLRequest(url: url))
         return v
     }
@@ -109,9 +122,24 @@ private struct HeatWebView: UIViewRepresentable {
     func updateUIView(_ v: WKWebView, context: Context) {}
 
     /// Load failures used to be silent; show them and log them for the Mac console.
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         @Binding var error: String?
-        init(error: Binding<String?>) { _error = error }
+        let base: URL
+        init(base: URL, error: Binding<String?>) { self.base = base; _error = error }
+
+        /// Only the configured host and port; everything else is cancelled and opened nowhere.
+        func webView(_ w: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            decisionHandler(WebPolicy.allows(action.request.url, base: base) ? .allow : .cancel)
+        }
+
+        /// No pop-ups and no new windows (target=_blank, window.open).
+        func webView(_ w: WKWebView, createWebViewWith c: WKWebViewConfiguration, for a: WKNavigationAction, windowFeatures f: WKWindowFeatures) -> WKWebView? { nil }
+
+        func webView(_ w: WKWebView, requestMediaCapturePermissionFor o: WKSecurityOrigin, initiatedByFrame f: WKFrameInfo,
+                     type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) { decisionHandler(.deny) }
+
+        func webView(_ w: WKWebView, requestDeviceOrientationAndMotionPermissionFor o: WKSecurityOrigin, initiatedByFrame f: WKFrameInfo,
+                     decisionHandler: @escaping (WKPermissionDecision) -> Void) { decisionHandler(.deny) }
 
         func webView(_ w: WKWebView, didFailProvisionalNavigation n: WKNavigation!, withError e: Error) { report(e) }
         func webView(_ w: WKWebView, didFail n: WKNavigation!, withError e: Error) { report(e) }
