@@ -6,7 +6,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 |------------|-----------|-------|--------|-------|
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
-| Synthetic agent data | _TBD_ | _teammate, please claim_ | Not started | Agent positions over time + infection probability. The heat map consumes this. |
+| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: mock run in the final format is up; full simulator being built | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. See `sim/README.md`. |
 | Proximity alerts (phone) | _TBD_ | _unclaimed_ | Not started | PRD Functionality 1 |
 | Infection probability model | _TBD_ | _unclaimed_ | Not started | PRD Functionality 3 |
 
