@@ -73,6 +73,21 @@ const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">Op
 // estimated risk, so the middle of the scale is a clear yellow instead of a muddy green-red mix.
 const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk: [[172, 188, 139], [235, 209, 135], [219, 108, 89]] };
 
+// People are drawn as @lisaazheng's hand-drawn tissue (assets/people/tissue.png) on a round badge in
+// their risk colour. It's still a canvas circle marker underneath, so clicks, tooltips and speed are
+// unchanged; only the drawing step adds the image. Until the image loads, the plain badge shows.
+const PERSON = { radius: 9, img: new Image(), size: 22, onload: null };
+PERSON.img.onload = () => PERSON.onload && PERSON.onload();
+PERSON.img.src = 'assets/people/tissue.png';
+const PersonMarker = L.CircleMarker.extend({
+  _updatePath() {
+    this._renderer._updateCircle(this);
+    const ctx = this._renderer._ctx, p = this._point, s = PERSON.size;
+    if (!ctx || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
+  },
+});
+
 // ---------- CSV adapter: the only place that knows column names ----------
 
 const COLUMNS = {
@@ -512,7 +527,8 @@ async function main() {
   }
   const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
   const dotLayer = L.layerGroup().addTo(map);
-  const dots = new Map(); // agent id -> circle marker
+  const dots = new Map(); // agent id -> person marker
+  PERSON.onload = () => { for (const m of dots.values()) if (m._map) m.redraw(); };
   let current = new Map(); // agent id -> interpolated state at the current time
 
   // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
@@ -534,8 +550,8 @@ async function main() {
 
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
-    const m = L.circleMarker([0, 0], {
-      renderer: dotRenderer, radius: 5, weight: 2, color: COLORS.ring, fillOpacity: 1,
+    const m = new PersonMarker([0, 0], {
+      renderer: dotRenderer, radius: PERSON.radius, weight: 2, color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
