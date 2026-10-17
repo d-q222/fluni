@@ -30,6 +30,10 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
+Every run also writes `timeline_changes.csv.gz`, the compact timeline the heat map asked for
+([docs/timeline-changes-format.md](../docs/timeline-changes-format.md)): only rows where something
+changes plus the last row of each stay. It's about 5× smaller than `timeline.csv.gz`.
+
 ## Sample run
 
 `runs/influenza_none_n10_d14_s2_f1f772f6/` is a real 10-agent, 14-day run (one dorm plus one

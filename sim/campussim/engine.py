@@ -14,7 +14,7 @@ from .config import ROOT, code_version, config_hash
 from .contacts import contacts_frame, find_contacts
 from .disease import Disease, infections_frame, room_exposure_frame
 from .interventions import REGISTRY, apply_actions, build_observable
-from .output import RunWriter, timeline_frame
+from .output import RunWriter, TimelineChanges, timeline_frame
 from .plans import build_plans
 from .population import build_population
 from .reports import Reports, reports_frame
@@ -98,6 +98,7 @@ def run(cfg, external_provider=None, quiet=False):
 
     N = pop.N
     buf = {k: np.empty((spd, N), dtype=dt) for k, dt in BUFFER_FIELDS.items()}
+    changes = TimelineChanges(writer, N, T)
     contact_frames, exposure_frames = [], []
     no_action = np.full(N, None, dtype=object)
 
@@ -134,8 +135,9 @@ def run(cfg, external_provider=None, quiet=False):
         if k == spd - 1 or t == T - 1:
             t0 = t - k
             day_buf = {n: a[: k + 1] for n, a in buf.items()}
-            writer.append("timeline", timeline_frame(t0, t + 1, day_buf, campus, pop, events, sections,
-                                                     timestamps))
+            day_frame = timeline_frame(t0, t + 1, day_buf, campus, pop, events, sections, timestamps)
+            writer.append("timeline", day_frame)
+            changes.add(day_frame)
             if contact_frames:
                 writer.append("contacts", pd.concat(contact_frames, ignore_index=True))
             writer.append("room_exposure", pd.concat(exposure_frames, ignore_index=True))
@@ -149,6 +151,7 @@ def run(cfg, external_provider=None, quiet=False):
     writer.write_table("reports_tests.csv", reports_frame(rep.events, pop))
     summary = compute_summary(cfg, campus, pop, inf_df, T)
     writer.write_json("summary.json", summary)
+    changes.close()
     writer.close()
     log(f"wrote {run_dir}")
     print(f"attack_rate={summary.get('attack_rate')} peak_day={summary.get('peak_day')} "

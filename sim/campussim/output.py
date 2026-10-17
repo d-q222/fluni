@@ -56,8 +56,13 @@ STREAM_SCHEMAS = {
     "room_exposure": [("t", "int", "int32"), ("room_id", "str", "string"), ("occupants", "int", "int32"),
                       ("infectious_occupants", "int", "int32"), ("quanta_concentration", 6, "float64")],
 }
-STREAM_SORT = {"timeline": ["t", "agent_id"], "contacts": ["t", "agent_a", "agent_b"],
-               "room_exposure": ["t", "room_id"]}
+STREAM_SCHEMAS["timeline_changes"] = STREAM_SCHEMAS["timeline"]
+STREAM_SORT = {"timeline": ["t", "agent_id"], "timeline_changes": ["t", "agent_id"],
+               "contacts": ["t", "agent_a", "agent_b"], "room_exposure": ["t", "room_id"]}
+NO_PARQUET_STREAMS = {"timeline_changes"}  # docs/timeline-changes-format.md asks for csv.gz only
+# docs/timeline-changes-format.md: a row is kept when any of these differ from the agent's previous row
+CHANGE_COLUMNS = ["lat", "lon", "location_id", "room_id", "floor", "indoor", "off_map", "moving",
+                  "disease_state", "self_reported_status", "test_status", "isolating", "activity"]
 TABLE_SORT = {"infections.csv": ["t", "infectee_id"], "reports_tests.csv": ["t", "agent_id"]}
 
 _EMPTY = np.array([""], dtype=object)
@@ -421,7 +426,7 @@ class RunWriter:
                               block_bytes=int(self.ocfg["gzip_block_mb"] * (1 << 20)))
         st["gz"].write((_header([c for c, _, _ in schema]) + "\r\n").encode())
         st["pq"] = None
-        if self.ocfg["parquet"]:
+        if self.ocfg["parquet"] and name not in NO_PARQUET_STREAMS:
             import pyarrow as pa
             import pyarrow.parquet as pq
             fields = [pa.field(c, _pa_type(ty)) for c, _, ty in schema]
@@ -668,3 +673,62 @@ def timeline_frame(t0, t1, buffers, campus, pop, events, sections, step_timestam
         "intervention_action": action,
     }
     return pd.DataFrame(cols, columns=TIMELINE_COLUMNS, copy=False)
+
+
+# ----------------------------------------------------------------------------- compact timeline
+def _neq(a, b):
+    """Elementwise a != b with missing == missing."""
+    out = a != b
+    na = pd.isna(a) & pd.isna(b)
+    return out & ~na
+
+
+class TimelineChanges:
+    """timeline_changes.csv.gz (docs/timeline-changes-format.md): an agent's row is kept if it is the
+    agent's first or last row, differs from its previous row in CHANGE_COLUMNS, or the next row does
+    (the last row of a stay). Fed the same day frames as the timeline; the last step of each frame is
+    held back until the next frame shows whether it ends a stay."""
+
+    def __init__(self, writer, n_agents, n_steps):
+        self.w, self.N, self.T = writer, n_agents, n_steps
+        self.prev = None          # CHANGE_COLUMNS values of the last step seen, each (N,)
+        self.pending = None       # last step's rows, waiting for the next frame
+        self.pending_keep = None
+
+    def add(self, df):
+        N = self.N
+        steps = len(df) // N
+        if steps * N != len(df):
+            raise ValueError("timeline frame must hold every agent at every step")
+        # compare at written precision: frames hold unrounded floats that may print identically
+        vals = [(np.round(df[c].to_numpy(dtype=float), ROUND_RULES[c]) if c in ROUND_RULES
+                 else df[c].to_numpy()).reshape(steps, N) for c in CHANGE_COLUMNS]
+        changed = np.zeros((steps, N), dtype=bool)  # differs from the agent's previous row
+        for k, v in enumerate(vals):
+            changed[1:] |= _neq(v[1:], v[:-1])
+            if self.prev is not None:
+                changed[0] |= _neq(v[0], self.prev[k])
+        if self.prev is None:
+            changed[0] = True  # first row
+        keep = changed.copy()
+        keep[:-1] |= changed[1:]  # last row of a stay
+        t = df["t"].to_numpy().reshape(steps, N)[:, 0]
+        keep[t == self.T - 1] = True  # last row
+        parts = []
+        if self.pending is not None:
+            parts.append(self.pending[self.pending_keep | changed[0]])
+        parts.append(df.iloc[: (steps - 1) * N][keep[:-1].ravel()])
+        last = df.iloc[(steps - 1) * N:]
+        if t[-1] == self.T - 1:
+            parts.append(last[keep[-1]])
+            self.pending = None
+        else:
+            # copy: frame columns may be views of the engine's day buffers, which get reused
+            self.pending, self.pending_keep = last.copy(deep=True), keep[-1]
+        self.prev = [v[-1].copy() for v in vals]
+        self.w.append("timeline_changes", pd.concat(parts, ignore_index=True))
+
+    def close(self):
+        if self.pending is not None:  # run ended mid-frame: these are every agent's last rows
+            self.w.append("timeline_changes", self.pending)
+            self.pending = None
