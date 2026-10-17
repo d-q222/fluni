@@ -1,6 +1,7 @@
 import { paint, HEAT_STOPS } from './heat.js';
 import { DiffusionField } from './diffuse.js';
 import { rasterizeBuildings } from './masks.js';
+import { AerosolField, buildWalls } from './aerosol.js';
 import { Router, buildTracks, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -23,10 +24,10 @@ const SMALL_RUN_SCALE = 50;
 const SMALL_RUN_AGENTS = 500;
 const MIN_PEOPLE = 4;       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
-const ADJACENT_M = 2;       // "the person next to you" (demo proof of concept, uses sim truth)
+const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
 const ROOM_HOT = 0.5;       // walk-in warning when others in the room add up to ≥ this many expected sick
 const RISKY = 0.5;          // P(sick) at which the app treats someone as risky for proximity alerts
-const NEARBY_M = 3;         // ~10 ft; the PRD's "within N feet" (N still to be decided)
+const NEARBY_M = 1.83;      // 6 ft, matching the proximity app (proximity/README.md)
 const PAD_M = 120;          // grid margin around the data
 const HEAT_EVERY_MS = 100;   // heat is recomputed at most this often; dots move every frame
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
@@ -82,6 +83,9 @@ function toFrames(rows, fields, buildingNames) {
   }
   const beliefFrom = col.p ? 'column' : col.reported || col.test ? 'reports' : col.sick ? 'truth' : null;
   if (!beliefFrom) throw new Error('CSV needs a p_sick, self-report/test, or sick column');
+  if (col.t === lower.t && lower.disease_state) {
+    throw new Error('sim CSV without a "timestamp" column: its "t" is a step index, not a time');
+  }
   if (beliefFrom !== 'column') console.warn(`No p_sick column: estimating it from ${beliefFrom}.`);
 
   const byTime = new Map();
@@ -118,6 +122,7 @@ function toFrames(rows, fields, buildingNames) {
 }
 
 // ISO timestamps → epoch ms. Plain numbers are taken as seconds since the start of the simulation.
+// Guard: the sim's own `t` is a step index, not seconds; COLUMNS prefers its ISO `timestamp`.
 const toMs = (t) => (Number.isFinite(Number(t)) ? Number(t) * 1000 : Date.parse(t));
 
 // Fetch a CSV, gunzipping in the browser if needed (the sim ships timeline.csv.gz).
@@ -129,6 +134,17 @@ async function fetchCsv(url) {
     bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
   }
   return Papa.parse(new TextDecoder().decode(bytes), { header: true, skipEmptyLines: true });
+}
+
+// Room outlines for the airflow mode (map/rooms.csv next to the timeline): ids in order + WKT polygons.
+async function loadRooms(dataUrl) {
+  try {
+    const { data } = await fetchCsv(new URL('map/rooms.csv', new URL(dataUrl, location.href)));
+    const rows = data.filter((r) => r.room_id && r.polygon_wkt);
+    return { index: new Map(rows.map((r, i) => [r.room_id, i])), wkts: rows.map((r) => r.polygon_wkt) };
+  } catch {
+    return { index: new Map(), wkts: [] };
+  }
 }
 
 // The sim keeps building names next to the timeline in map/buildings.csv (location_id → name).
@@ -254,10 +270,11 @@ async function main() {
     try { res = await fetchCsv(dataUrl); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
   }
   if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
-  const [paths, buildingNames, outlines] = await Promise.all([
+  const [paths, buildingNames, outlines, rooms] = await Promise.all([
     fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
     loadBuildingNames(dataUrl),
     fetch('../sim/data/osm/buildings.geojson').then((r) => r.json()).catch(() => null),
+    loadRooms(dataUrl),
   ]);
   const data = toFrames(res.data, res.meta.fields, buildingNames);
   const { frames, times } = data;
@@ -288,6 +305,32 @@ async function main() {
   const totals = buildTotals(frames, times, { scale });
   const forecaster = buildForecaster(frames, times, { scale });
   const backtestRate = forecaster.backtest(60).rate;
+  // Airflow (experimental): infectious air that builds up in rooms, leaks through doors and is
+  // ventilated away (aerosol.js). Stateful, so it steps forward with the clock; a backward scrub or a
+  // big jump resets it and warms it up over the previous AIRFLOW_WARMUP_MS.
+  const AIRFLOW_WARMUP_MS = 90 * 60000, AIRFLOW_STEP_MS = 10 * 60000;
+  let aero = null, aeroT = null, aeroMax = 1e-9;
+  const airSources = function* (states, truth) {
+    for (const st of states) {
+      const rate = truth ? Number(Boolean(st.infectious)) : st.p;
+      if (rate > 0) yield { lat: st.lat, lon: st.lon, rate, room: st.walking ? undefined : rooms.index.get(st.room) };
+    }
+  };
+  const airflowAt = (t, nowStates, truth) => {
+    if (!aero) {
+      const walls = outlines ? buildWalls(probe, outlines, rooms.wkts) : null;
+      aero = new AerosolField(bounds, DEMO.cellM, walls ? { faces: walls.faces, indoor: walls.indoor, region: walls.region } : {});
+    }
+    if (aeroT === null || t < aeroT || t - aeroT > 3 * 3600000) { aero.reset(); aeroT = t - AIRFLOW_WARMUP_MS; }
+    while (aeroT < t) {
+      const dt = Math.min(AIRFLOW_STEP_MS, t - aeroT);
+      aeroT += dt;
+      aero.step(dt / 1000, airSources(aeroT === t && nowStates ? nowStates : statesAt(aeroT), truth));
+    }
+    aeroMax = Math.max(aeroMax, aero.max()); // relative scale: the strongest seen so far
+    return aero;
+  };
+
   const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
   // "True status (sim)" colouring also switches the demo heat to actual infections.
   const truthMode = () => data.hasTruth && $('dot-mode').value === 'truth';
@@ -307,6 +350,10 @@ async function main() {
     fitted = true;
     map.fitBounds([sw, ne]);
     map.setMinZoom(map.getZoom() - 1);
+    // ?zoom=19 (with ?agent=…) opens close up on that person, e.g. to watch airflow in their room.
+    const zoom = Number(new URLSearchParams(location.search).get('zoom'));
+    const me = selected && current.get(selected);
+    if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines) : null; // shown in "What users see"
@@ -320,7 +367,7 @@ async function main() {
   // Otherwise start shortly before the first movement, so playback doesn't open on a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
   let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
-  let phoneMap = null, phoneBuildings = null, phoneYou = null;
+  let phoneMap = null, phoneBuildings = null, phoneYou = null, airflowTruth = false;
 
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
@@ -423,12 +470,16 @@ async function main() {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
       }
-      if (view !== 'public') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
+      if (view === 'airflow') {
+        const st = [...current.values()];
+        paint(airflowAt(now, st, truthMode()), heatLayer.canvas, aeroMax);
+        if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
+      } else if (view !== 'public') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
       lastHeat = realNow;
       heatDirty = false;
     }
 
-    const showDots = $('show-dots').checked && view === 'demo';
+    const showDots = $('show-dots').checked && view !== 'public';
     const mode = $('dot-mode').value;
     for (const [id, m] of dots) if (!showDots || !current.has(id)) dotLayer.removeLayer(m);
     if (showDots) {
@@ -476,12 +527,14 @@ async function main() {
     // Colour scale is √, so the midpoint is a quarter of the maximum.
     const unit = v === 'public' ? 1 : 1000; // public: sick people per building; demo: per 1,000 m²
     const top = v === 'public' ? vmax.public : demoScale();
-    $('vmid').textContent = (top * unit / 4).toFixed(1);
-    $('vmax').textContent = `${(top * unit).toFixed(1)}+`;
-    document.querySelector('.legend h2').innerHTML = v === 'public'
+    $('vmid').textContent = v === 'airflow' ? '' : (top * unit / 4).toFixed(1);
+    $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${(top * unit).toFixed(1)}+`;
+    document.querySelector('.legend h2').innerHTML = v === 'airflow'
+      ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
+      : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
       : truthMode() ? 'Actually infectious <span>per 1,000 m² (sim truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
-    const showDots = $('show-dots').checked && v === 'demo';
+    const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
@@ -505,6 +558,9 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
+  // Experimental airflow heat (aerosol.js); added here so the page markup stays the design pass's.
+  $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
+
   // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
   const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
   horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));

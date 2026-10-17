@@ -24,6 +24,9 @@ URL options, which can be combined:
 - `?at=200`: open at a moment, in minutes from the start of the data.
 - `?agent=A0008`: open with that agent's phone showing. Handy for demo scenes.
 - `?view=public`: open on the user-facing map. Add `&horizon=60` (or 120 or 180) for a forecast.
+- `?zoom=19` (with `?agent=`): open close up on that person. Useful with
+  `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
+  roommate's air fill a Branner dorm room and leak into the corridor.
 - `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
   instead of the app's estimate. This is the same as choosing "Colour: true status (sim)".
 
@@ -44,7 +47,8 @@ Demo scenes on the sim's mock run:
   - In small runs (under 500 agents, like the 10-agent mock), each agent stands for 50 people.
     Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*` in `app.js`.
   - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
-    (`MIN_PEOPLE`).
+    (`MIN_PEOPLE`). The rule applies to the scaled count, so in ×50 small runs it never hides
+    anything.
   - **Forecast** ("In 1 / 2 / 3 hours", from `forecast.js`):
     - Method: each person's habits (building per 30-minute slot, learned from the *other* days)
       × their current P(sick), summed per building.
@@ -52,9 +56,11 @@ Demo scenes on the sim's mock run:
     - A backtest on past days reports how often the actual value landed in the range. That rate is
       shown on the phone; it's 64% on the mock run, below the nominal 80%.
 - **Phone alerts:**
-  - The person next to you (≤ 2 m) is actually sick. This is a demo proof of concept and uses the
+  - The person next to you (≤ 6 ft) is actually sick. This is a demo proof of concept and uses the
     sim's true status.
-  - Someone the app thinks is risky (P ≥ 50%) is within 3 m in the same room.
+  - Someone the app thinks is risky (P ≥ 50%) is within 6 ft (1.83 m) in the same room. This uses
+    the same distance as the proximity app. The proximity app also alerts after 15 cumulative
+    minutes; this demo phone alerts immediately.
   - **Walk-in warning:** you're in a room where the others add up to ≥ 0.5 expected sick people.
     It reads room totals only.
 
@@ -85,6 +91,11 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   - Heat lingers. Each frame blends the last hour of positions (6 snapshots, 10 minutes apart,
     weighted e^(−age/30 min)), so a room's heat builds up while people stay and fades after they
     leave.
+  - **Airflow heat (experimental)** (`aerosol.js`): an evolving field instead of a snapshot.
+    Infectious people emit into their room; the air mixes within the room, leaks through doors
+    (walls sit on cell faces, with one door per ~8 m), and is ventilated away (τ 30 min indoors,
+    5 min outdoors). It steps forward with the clock. On a jump or a backward scrub it re-warms
+    over the previous 90 min. The scale is relative ("strongest so far"). Zoom in to see rooms.
   - People are first binned into the grid, then the grid is smoothed with three box blurs (≈ a
     Gaussian). The cost depends on grid size, not on the number of agents, which is what the
     7,000-agent run needs.
