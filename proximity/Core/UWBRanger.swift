@@ -54,6 +54,17 @@ final class UWBRanger: NSObject, NISessionDelegate {
         myTokenData.removeValue(forKey: peer)
     }
 
+    /// Ends every session and forgets every token. Safe to call twice.
+    func stopAll() {
+        active.removeAll()
+        let old = sessions
+        sessions.removeAll()  // first, so the invalidation callbacks find no peer and do nothing
+        old.values.forEach { $0.invalidate() }
+        peerTokens.removeAll()
+        peerTokenData.removeAll()
+        myTokenData.removeAll()
+    }
+
     private func run(_ s: NISession, _ token: NIDiscoveryToken) {
         s.run(NINearbyPeerConfiguration(peerToken: token))
         onState?("ranging")

@@ -51,12 +51,15 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     private var tick: Timer?
     private var lastDiscoveryRestart = Date()
     private var totalFailures = 0
+    private var started = false
+    private var paused = false
 
     var connectedPeers: [MCPeerID] { slots.filter { $0.value.state == .connected }.map(\.key) }
 
     private func log(_ s: String) { print("[fluni] \(s)"); fflush(stdout) }
 
     func start() {
+        started = true
         advertiser.delegate = self
         browser.delegate = self
         advertiser.startAdvertisingPeer()
@@ -66,6 +69,30 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in self?.restartDiscovery("foreground") }
         #endif
+    }
+
+    /// Stops advertising and browsing and drops every connection. Safe to call twice. No callbacks
+    /// fire for the dropped peers; the caller clears its own per-peer state.
+    func stop() {
+        paused = true
+        tick?.invalidate()
+        tick = nil
+        advertiser.stopAdvertisingPeer()
+        browser.stopBrowsingForPeers()
+        for slot in slots.values { slot.session.delegate = nil; slot.session.disconnect() }
+        slots.removeAll()
+        found.removeAll()
+    }
+
+    /// Starts again after stop() (or for the first time, if the app launched paused).
+    func resume() {
+        paused = false
+        guard started else { start(); return }
+        guard tick == nil else { return }
+        lastDiscoveryRestart = .distantPast
+        advertiser.startAdvertisingPeer()
+        browser.startBrowsingForPeers()
+        tick = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.maintain() }
     }
 
     func send(_ w: Wire, to peers: [MCPeerID]? = nil) {
@@ -82,6 +109,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     // nothing arrived, it invites too (glare is resolved in the invitation handler).
     func browser(_ b: MCNearbyServiceBrowser, foundPeer peer: MCPeerID, withDiscoveryInfo info: [String: String]?) {
         DispatchQueue.main.async {
+            guard !self.paused else { return }
             if self.found[peer] == nil { self.found[peer] = Date() }
             self.maintain()
         }
@@ -103,7 +131,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     }
 
     private func restartDiscovery(_ why: String) {
-        guard Date().timeIntervalSince(lastDiscoveryRestart) > 3 else { return }
+        guard !paused, Date().timeIntervalSince(lastDiscoveryRestart) > 3 else { return }
         lastDiscoveryRestart = Date()
         log("link discovery restart (\(why))")
         advertiser.stopAdvertisingPeer()
@@ -154,6 +182,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
 
     /// Every 2 s: expire stuck attempts and (re)invite found peers that aren't linked.
     private func maintain() {
+        guard !paused else { return }
         let now = Date()
         for (peer, slot) in slots where slot.state == .connecting
             && now.timeIntervalSince(slot.since) > inviteTimeout + 5 {
@@ -168,6 +197,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     func advertiser(_ a: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peer: MCPeerID,
                     withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         DispatchQueue.main.async {
+            if self.paused { invitationHandler(false, nil); return }
             // Glare (both inviting): the smaller name's invite wins. Otherwise always accept, also
             // over an existing session: the sender only re-invites once it considers the old one dead.
             if self.slots[peer]?.state == .connecting, self.me.displayName < peer.displayName {

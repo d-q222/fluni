@@ -6,6 +6,20 @@ final class GPSRanger: NSObject, CLLocationManagerDelegate {
     var onState: ((String) -> Void)?
 
     private let manager = CLLocationManager()
+    private var paused = false
+
+    /// Stops location updates. Safe to call twice.
+    func stop() {
+        paused = true
+        manager.stopUpdatingLocation()
+    }
+
+    /// Starts again after stop() (or for the first time, if the app launched paused).
+    func resume() {
+        paused = false
+        start()
+        locationManagerDidChangeAuthorization(manager)  // report the state again; it may not change on its own
+    }
 
     func start() {
         manager.delegate = self
@@ -27,14 +41,14 @@ final class GPSRanger: NSObject, CLLocationManagerDelegate {
         switch m.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             onState?(m.accuracyAuthorization == .fullAccuracy ? "on" : "on (approximate only)")
-            m.startUpdatingLocation()
+            if !paused { m.startUpdatingLocation() }
         case .denied, .restricted: onState?("not allowed")
         default: onState?("asking")
         }
     }
 
     func locationManager(_ m: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let fix = locations.last, fix.horizontalAccuracy >= 0 else { return }
+        guard !paused, let fix = locations.last, fix.horizontalAccuracy >= 0 else { return }
         onFix?(fix)
     }
 
