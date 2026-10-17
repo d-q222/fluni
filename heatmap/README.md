@@ -12,8 +12,25 @@ cd heatmap
 python3 -m http.server 8765
 ```
 
-Open http://localhost:8765. To load another CSV: http://localhost:8765/?data=path/to/agents.csv
-(the path is relative to `heatmap/`).
+Open http://localhost:8765. URL options, which can be combined:
+
+- `?data=path/to/agents.csv`: load another CSV (relative to `heatmap/`).
+- `?at=200`: open at a moment, in minutes from the start of the data.
+- `?agent=a018`: open with that agent's phone showing. Handy for demo scenes.
+
+## Movement
+
+Dots move continuously, with no jumps between CSV rows (`motion.js`):
+
+- Between two samples at the same place, the agent stays put.
+- When the place changes, the agent leaves as soon as the earlier sample ends. They walk at
+  1.35 m/s along Stanford's real footpaths (an OpenStreetMap walkway graph, A* routing), then wait
+  until the next sample.
+- Samples 2 minutes apart or less are interpolated directly, since fine-grained data already traces
+  the path.
+- P(sick) changes smoothly between samples.
+- Overnight stretches with no samples at all are skipped during playback.
+- The playback speed is in simulated minutes per real second.
 
 ## What's on screen
 
@@ -61,7 +78,10 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 ## Files
 
 - `heat.js`: heat grid in metres plus colouring. No map library, so it can move to Google Maps.
-- `app.js`: CSV adapter, Leaflet map, playback, dots, agent phone view.
+- `motion.js`: footpath router and per-agent interpolation.
+- `app.js`: CSV adapter, Leaflet map, playback clock, dots, agent phone view.
+- `data/stanford_paths.json`: walkway graph (`tools/fetch_paths.py`, © OpenStreetMap contributors, ODbL).
+- [ROADMAP.md](ROADMAP.md): what's left, including the user-facing map and predictive mode.
 - `index.html`: layout and styles.
 
 Base map (**tentative**, may switch to Google Maps): OpenStreetMap tiles via Leaflet, greyed with CSS

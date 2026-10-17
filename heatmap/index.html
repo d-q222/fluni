@@ -4,93 +4,195 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fluni Heat Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
-      --surface: #fcfcfb; --page: #f9f9f7; --ink: #0b0b0b; --ink-2: #52514e; --line: #e4e3df;
-      --healthy: #2a78d6; --infected: #d03b3b; --warn-bg: #fff4e5; --warn-ink: #7a3d00;
+      /* Warm-tinted neutrals; colour is reserved for the data (heat + dots). */
+      --paper: #f6f5f1;
+      --surface: #fdfcfa;
+      --surface-2: #f0eee9;
+      --ink: #23211d;
+      --ink-2: #5c5850;
+      --ink-3: #6f6a61;
+      --hairline: rgba(35, 33, 29, 0.09);
+      --focus: #3f6fb5;
+      --healthy: #2a78d6;
+      --infected: #d03b3b;
+      --alert-bg: #fbefe4;
+      --alert-ink: #7c3a12;
+      --shadow: 0 1px 2px rgba(35, 33, 29, 0.06), 0 8px 24px -6px rgba(35, 33, 29, 0.14);
+      --radius: 12px;
+      --font: "Hanken Grotesk", system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    html, body { margin: 0; height: 100%; background: var(--page); color: var(--ink);
-      font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
-    body { display: grid; grid-template-rows: auto 1fr; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr);
+      background: var(--paper); color: var(--ink);
+      font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: rgba(63, 111, 181, 0.18); }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+    .icon { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75;
+      stroke-linecap: round; stroke-linejoin: round; }
 
-    header.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 16px;
-      background: var(--surface); border-bottom: 1px solid var(--line); }
-    header.bar h1 { font-size: 16px; margin: 0 8px 0 0; }
-    .playback { display: flex; align-items: center; gap: 8px; flex: 1 1 360px; }
-    .playback input[type=range] { flex: 1; }
-    #time { min-width: 150px; font-variant-numeric: tabular-nums; }
-    label { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
-    button, select { font: inherit; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px;
-      background: #fff; color: var(--ink); cursor: pointer; }
+    /* ---------- header ---------- */
+    header.bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+      padding: 10px 16px; background: var(--surface); box-shadow: 0 1px 0 var(--hairline);
+      position: relative; z-index: 1000;
+    }
+    .brand { display: flex; align-items: baseline; gap: 8px; margin-right: 4px; }
+    .brand h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+    .brand span { color: var(--ink-3); font-size: 13px; }
 
+    .playback { display: flex; align-items: center; gap: 10px; flex: 1 1 380px; min-width: 0; }
+    .play {
+      display: grid; place-items: center; width: 32px; height: 32px; flex: none;
+      border: 0; border-radius: 50%; background: var(--ink); color: var(--surface); cursor: pointer;
+      transition: transform 120ms ease-out, background 120ms ease-out;
+    }
+    .play:hover { background: #3a3731; }
+    .play:active { transform: scale(0.94); }
+    .play .icon { fill: currentColor; stroke-width: 0; width: 14px; height: 14px; }
+    .play .i-pause { display: none; }
+    .play[data-playing="true"] .i-play { display: none; }
+    .play[data-playing="true"] .i-pause { display: block; }
+    #time { font-variant-numeric: tabular-nums; color: var(--ink-2); min-width: 128px; white-space: nowrap; }
+
+    input[type=range] { flex: 1; min-width: 80px; accent-color: var(--ink); height: 20px; cursor: pointer; }
+
+    .options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    select, .toggle {
+      font: inherit; font-size: 13px; color: var(--ink); height: 30px; border: 0; border-radius: 999px;
+      background-color: var(--surface-2); cursor: pointer; transition: background-color 120ms ease-out;
+    }
+    select {
+      appearance: none; padding: 0 28px 0 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c5850' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 11px center;
+    }
+    select:hover, .toggle:hover { background-color: #e7e4dd; }
+    select:disabled { opacity: 0.5; cursor: default; }
+    .toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px 0 10px; }
+    .toggle input { accent-color: var(--ink); margin: 0; }
+
+    /* ---------- map ---------- */
     main { position: relative; min-height: 0; }
-    #map { position: absolute; inset: 0; }
-    .muted-tiles { filter: grayscale(1) brightness(1.06) contrast(0.85); } /* quiet base map so heat reads */
+    #map { position: absolute; inset: 0; background: var(--surface-2); font-family: var(--font); }
     .heat-canvas { position: absolute; pointer-events: none; image-rendering: auto; }
-
-    .legend { position: absolute; left: 12px; bottom: 24px; z-index: 500; width: 260px; padding: 10px 12px;
-      background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; }
-    .legend h2 { font-size: 12px; margin: 0 0 4px; }
-    .ramp { height: 10px; border-radius: 2px; }
-    .ramp-labels { display: flex; justify-content: space-between; color: var(--ink-2); margin-top: 2px; }
-    .key { display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--ink-2); }
-    .swatch { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--surface);
-      box-shadow: 0 0 0 1px var(--line); flex: none; }
-    .legend .fine { margin: 8px 0 0; color: var(--ink-2); }
+    .muted-tiles { filter: grayscale(1) brightness(1.06) contrast(0.85) sepia(0.08); } /* quiet base map so heat reads */
+    .leaflet-bar { border: 0 !important; box-shadow: var(--shadow) !important; border-radius: 10px !important; overflow: hidden; }
+    .leaflet-bar a { color: var(--ink-2) !important; border-color: var(--hairline) !important; }
+    .leaflet-tooltip { font: 12px/1.4 var(--font); color: var(--ink); border: 0; border-radius: 8px;
+      box-shadow: var(--shadow); padding: 6px 9px; }
+    .leaflet-tooltip b { font-weight: 600; }
+    .leaflet-control-attribution { font-size: 12px; background: rgba(253, 252, 250, 0.8) !important; }
 
     #status { position: absolute; inset: 0; display: grid; place-items: center; z-index: 900;
-      background: var(--page); color: var(--ink-2); }
+      background: var(--paper); color: var(--ink-2); }
 
-    /* The selected agent's phone: what the app would show them. */
-    #phone { position: absolute; top: 12px; right: 12px; z-index: 600; width: 300px; max-height: calc(100% - 24px);
-      display: flex; flex-direction: column; gap: 8px; }
-    .phone-frame { background: var(--surface); border: 8px solid #1f1f1e; border-radius: 28px; padding: 14px 12px;
-      display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; }
-    .phone-top { display: flex; justify-content: space-between; font-weight: 600; }
-    .phone-top span { font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-    .alert { background: var(--warn-bg); color: var(--warn-ink); border-radius: 10px; padding: 8px 10px; }
-    .risk strong { font-size: 28px; display: block; font-variant-numeric: tabular-nums; }
-    .risk p { margin: 2px 0 0; color: var(--ink-2); }
-    #ph-map { height: 220px; border-radius: 10px; }
-    .phone-frame .fine { margin: 0; font-size: 11px; color: var(--ink-2); }
-    .presenter { background: var(--surface); border: 1px dashed var(--ink-2); border-radius: 8px; padding: 8px 10px;
-      font-size: 12px; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-
-    @media (max-width: 640px) {
-      #phone { left: 12px; right: 12px; width: auto; }
-      .legend { width: auto; right: 12px; }
+    /* ---------- legend ---------- */
+    .legend {
+      position: absolute; left: 16px; bottom: 28px; z-index: 500; width: 248px; padding: 12px 14px 13px;
+      background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); font-size: 12px;
     }
+    .legend h2 { font-size: 12px; font-weight: 600; margin: 0 0 7px; }
+    .legend h2 span { font-weight: 400; color: var(--ink-3); }
+    .ramp { height: 8px; border-radius: 4px; }
+    .ramp-labels { display: flex; justify-content: space-between; color: var(--ink-3); margin-top: 4px;
+      font-variant-numeric: tabular-nums; }
+    #dot-legend:not(:empty) { margin-top: 12px; padding-top: 10px; box-shadow: 0 -1px 0 var(--hairline); }
+    .key { display: flex; align-items: center; gap: 7px; margin-top: 5px; color: var(--ink-2); }
+    .key:first-child { margin-top: 0; }
+    .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--hairline); }
+    .legend .fine { margin: 10px 0 0; color: var(--ink-3); line-height: 1.4; }
+
+    /* ---------- the selected agent's phone ---------- */
+    #phone { position: absolute; top: 16px; right: 16px; z-index: 1100; width: 296px; max-height: calc(100% - 32px);
+      display: flex; flex-direction: column; gap: 10px; }
+    .phone-frame {
+      background: var(--surface); border-radius: 34px; padding: 6px; min-height: 0; overflow: hidden;
+      box-shadow: 0 0 0 6px #2b2925, 0 2px 4px rgba(35, 33, 29, 0.12), 0 24px 48px -12px rgba(35, 33, 29, 0.35);
+      display: flex; flex-direction: column; margin: 6px;
+    }
+    .screen { display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 14px; overflow: auto; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
+      font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .status-bar i { width: 72px; height: 20px; border-radius: 999px; background: #2b2925; }
+    .app-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+    .app-title .mark { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+      background: var(--ink); color: var(--surface); }
+    .app-title .mark .icon { width: 13px; height: 13px; }
+    .alert { display: flex; gap: 10px; align-items: flex-start; background: var(--alert-bg); color: var(--alert-ink);
+      border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.4; }
+    .alert .icon { margin-top: 1px; }
+    .risk { background: var(--surface-2); border-radius: 16px; padding: 12px 14px; }
+    .risk .label { font-size: 12px; color: var(--ink-2); }
+    .risk strong { display: block; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15;
+      font-variant-numeric: tabular-nums; margin-top: 2px; }
+    .risk p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
+    .ph-section { font-size: 12px; font-weight: 600; color: var(--ink-2); margin: 2px 0 -4px; }
+    #ph-map { height: 200px; border-radius: 16px; overflow: hidden; flex: none; }
+    .screen .fine { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+    .presenter { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      background: var(--surface); border-radius: 999px; padding: 4px 4px 4px 14px; box-shadow: var(--shadow);
+      font-size: 12px; color: var(--ink-2); }
+    .presenter b { color: var(--ink); font-weight: 600; }
+    .presenter button { font: inherit; font-size: 12px; height: 26px; padding: 0 12px; border: 0; border-radius: 999px;
+      background: var(--surface-2); color: var(--ink); cursor: pointer; }
+    .presenter button:hover { background: #e7e4dd; }
+
+    @media (max-width: 720px) {
+      header.bar { gap: 8px 12px; padding: 10px 12px; }
+      .brand span { display: none; }
+      .playback { order: 3; flex-basis: 100%; gap: 8px; }
+      #time { min-width: 0; font-size: 13px; }
+      .options { flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .options > * { flex: none; }
+      #phone { left: 12px; right: 12px; top: 12px; width: auto; }
+      .legend { left: 12px; right: 12px; width: auto; bottom: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-play" viewBox="0 0 16 16"><path d="M4.5 2.8v10.4a.6.6 0 0 0 .9.5l8.3-5.2a.6.6 0 0 0 0-1L5.4 2.3a.6.6 0 0 0-.9.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 1.8 1.5 13.2h13L8 1.8z"/><path d="M8 6.3v3.2"/><path d="M8 11.6v.1"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 16 16"><path d="M1.5 8.5h3l1.5-4 3 8 1.5-4h4"/></symbol>
+  </svg>
+
   <header class="bar">
-    <h1>Fluni · Stanford heat map</h1>
+    <div class="brand"><h1>Fluni</h1><span>Stanford heat map</span></div>
     <div class="playback">
-      <button id="play" aria-label="Play">▶</button>
-      <input id="slider" type="range" min="0" max="0" value="0" aria-label="Time">
+      <button id="play" class="play" aria-label="Play" data-playing="false">
+        <svg class="icon i-play"><use href="#i-play"/></svg><svg class="icon i-pause"><use href="#i-pause"/></svg>
+      </button>
       <span id="time"></span>
+      <input id="slider" type="range" min="0" max="0" value="0" aria-label="Time">
       <select id="speed" aria-label="Playback speed">
-        <option value="1">1×</option><option value="4" selected>4×</option><option value="10">10×</option>
+        <option value="0">2 min/s</option><option value="1" selected>10 min/s</option><option value="2">30 min/s</option><option value="3">1 h/s</option>
       </select>
     </div>
-    <label>Heat
-      <select id="view">
-        <option value="demo">Room-level (demo)</option>
+    <div class="options">
+      <select id="view" aria-label="Heat map detail">
+        <option value="demo">Room-level heat (demo)</option>
         <option value="public">What users see</option>
       </select>
-    </label>
-    <label><input id="show-dots" type="checkbox" checked> People (demo only)</label>
-    <label>Dot colour
-      <select id="dot-mode">
-        <option value="risk">App's estimate</option>
-        <option value="truth">True status (sim)</option>
+      <label class="toggle"><input id="show-dots" type="checkbox" checked> People</label>
+      <select id="dot-mode" aria-label="Colour people by">
+        <option value="risk">Colour: app's estimate</option>
+        <option value="truth">Colour: true status (sim)</option>
       </select>
-    </label>
+    </div>
   </header>
 
   <main>
@@ -98,21 +200,31 @@
     <div id="status">Loading agent data…</div>
 
     <section class="legend" aria-label="Legend">
-      <h2>Expected infected people per 1,000 m²</h2>
+      <h2>Expected infected <span>per 1,000 m²</span></h2>
       <div class="ramp" id="ramp"></div>
       <div class="ramp-labels"><span>0</span><span id="vmid"></span><span id="vmax"></span></div>
       <div id="dot-legend"></div>
-      <p class="fine">This may be inaccurate: not everyone shares their status with the app. Click a person
-        to see what their app shows.</p>
+      <p class="fine">May be incomplete: not everyone shares their status. Click a person to see their app.</p>
     </section>
 
     <aside id="phone" hidden aria-label="Selected agent's app">
       <div class="phone-frame">
-        <div class="phone-top">Fluni <span id="ph-time"></span></div>
-        <div class="alert" id="ph-alert" hidden>⚠ Someone near you is likely sick. Consider leaving, or put on a mask.</div>
-        <div class="risk">Your estimated chance of being sick<strong id="ph-risk"></strong><p id="ph-advice"></p></div>
-        <div id="ph-map"></div>
-        <p class="fine">Live campus heat map. Busy areas only; it may be incomplete because not everyone shares their status.</p>
+        <div class="status-bar"><span id="ph-time"></span><i></i><span>5G</span></div>
+        <div class="screen">
+          <div class="app-title"><span class="mark"><svg class="icon"><use href="#i-pulse"/></svg></span>Fluni</div>
+          <div class="alert" id="ph-alert" hidden>
+            <svg class="icon"><use href="#i-alert"/></svg>
+            <span>Someone near you is likely sick. Consider stepping out, or put on a mask.</span>
+          </div>
+          <div class="risk">
+            <div class="label">Your chance of being sick</div>
+            <strong id="ph-risk"></strong>
+            <p id="ph-advice"></p>
+          </div>
+          <div class="ph-section">Around campus now</div>
+          <div id="ph-map"></div>
+          <p class="fine">Busy areas only. May be incomplete because not everyone shares their status.</p>
+        </div>
       </div>
       <div class="presenter"><span>Presenter only: <b id="ph-truth"></b></span><button id="ph-close">Close</button></div>
     </aside>

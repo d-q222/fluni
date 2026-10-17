@@ -1,4 +1,5 @@
 import { HeatGrid, paint, HEAT_STOPS } from './heat.js';
+import { Router, buildTracks, stateAt } from './motion.js';
 
 // Room-level heat for the presenter; coarse, privacy-masked heat for what real users see.
 const DEMO = { cellM: 3, sigmaM: 18 };
@@ -6,6 +7,9 @@ const PUBLIC = { cellM: 8, sigmaM: 35, minPeople: 5 };
 const RISKY = 0.5;          // P(sick) at which the app treats someone as risky for proximity alerts
 const NEARBY_M = 3;         // ~10 ft; the PRD's "within N feet" (N still to be decided)
 const PAD_M = 120;          // grid margin around the data
+const HEAT_EVERY_MS = 100;   // heat is recomputed at most this often; dots move every frame
+const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
+const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/fake_agents.csv';
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -49,13 +53,20 @@ function toFrames(rows, fields) {
     };
     if (!Number.isFinite(a.lat) || !Number.isFinite(a.lon)) continue;
     const t = r[col.t];
+    a.t = toMs(t);
     if (!byTime.has(t)) byTime.set(t, []);
     byTime.get(t).push(a);
   }
-  const key = (t) => (Number.isFinite(Number(t)) ? Number(t) : Date.parse(t));
-  const times = [...byTime.keys()].sort((a, b) => key(a) - key(b));
-  return { times, frames: times.map((t) => byTime.get(t)), hasTruth: Boolean(col.sick), hasRoom: Boolean(col.room) };
+  const times = [...byTime.keys()].sort((a, b) => toMs(a) - toMs(b));
+  const frames = times.map((t) => byTime.get(t));
+  return {
+    frames, times: times.map(toMs), samples: frames.flat(), numericTime: Number.isFinite(Number(times[0])),
+    hasTruth: Boolean(col.sick), hasRoom: Boolean(col.room),
+  };
 }
+
+// ISO timestamps → epoch ms. Plain numbers are taken as seconds since the start of the simulation.
+const toMs = (t) => (Number.isFinite(Number(t)) ? Number(t) * 1000 : Date.parse(t));
 
 function loadCsv(url) {
   return new Promise((resolve, reject) =>
@@ -138,10 +149,12 @@ function advice(p) {
   return 'Low. No action needed.';
 }
 
-function formatTime(t) {
-  const d = new Date(t);
-  if (Number.isNaN(d.getTime())) return String(t);
-  return d.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+function formatTime(ms, numeric) {
+  if (numeric) {
+    const m = Math.floor(ms / 60000);
+    return `Day ${Math.floor(m / 1440) + 1}, ${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  }
+  return new Date(ms).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 const pct = (p) => `${Math.round(p * 100)}%`;
@@ -152,11 +165,17 @@ const mPerDegLon = (lat) => 111320 * Math.cos((lat * Math.PI) / 180);
 const $ = (id) => document.getElementById(id);
 
 async function main() {
-  const res = await loadCsv(DATA_URL);
+  const [res, paths] = await Promise.all([
+    loadCsv(DATA_URL),
+    fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
+  ]);
   const data = toFrames(res.data, res.meta.fields);
-  const { times, frames } = data;
+  const { frames, times } = data;
+  const tracks = buildTracks(data.samples);
+  const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
   const bounds = dataBounds(frames);
   const sw = [bounds.south, bounds.west], ne = [bounds.north, bounds.east];
+  const t0 = times[0], t1 = times[times.length - 1];
 
   const demoGrid = new HeatGrid(bounds, DEMO.cellM);
   const publicGrid = new HeatGrid(bounds, PUBLIC.cellM);
@@ -177,9 +196,11 @@ async function main() {
   const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
   const dotLayer = L.layerGroup().addTo(map);
   const dots = new Map(); // agent id -> circle marker
-  let current = new Map(); // agent id -> agent row in the current frame
+  let current = new Map(); // agent id -> interpolated state at the current time
 
-  let frameIndex = 0, selected = null, timer = null;
+  // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
+  const at = Number(new URLSearchParams(location.search).get('at'));
+  let now = at ? Math.min(t1, t0 + at * 60000) : t0, playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
   let phoneMap = null, phoneHeat = null, phoneYou = null;
 
   function dotFor(id) {
@@ -189,7 +210,8 @@ async function main() {
     });
     m.bindTooltip(() => {
       const a = current.get(id);
-      const where = [a.building, a.room && `room ${a.room}`].filter(Boolean).join(', ');
+      if (!a) return id;
+      const where = a.walking ? 'walking' : [a.building, a.room && `room ${a.room}`].filter(Boolean).join(', ');
       const truth = a.sick === null ? '' : ` · ${a.sick ? 'infected' : 'healthy'} (sim)`;
       return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${pct(a.p)}${truth}`;
     });
@@ -199,65 +221,100 @@ async function main() {
   }
 
   // What this agent's phone could know: its own estimate, risky people nearby, and the public heat map.
+  // Indoors, walls block (same room only); outdoors, distance alone.
   function riskyNearby(me) {
     for (const a of current.values()) {
       if (a.id === me.id || a.p < RISKY) continue;
-      if (data.hasRoom && (a.building !== me.building || a.room !== me.room)) continue; // walls block
+      if (data.hasRoom && !me.walking && (a.building !== me.building || a.room !== me.room)) continue;
       const dy = (a.lat - me.lat) * 110574, dx = (a.lon - me.lon) * mPerDegLon(me.lat);
       if (Math.hypot(dx, dy) <= NEARBY_M) return true;
     }
     return false;
   }
 
-  function renderPhone() {
+  function renderPhone(withHeat) {
     const me = selected && current.get(selected);
     if (!me) { $('phone').hidden = true; return; }
     $('phone').hidden = false;
-    $('ph-time').textContent = formatTime(times[frameIndex]);
+    $('ph-time').textContent = data.numericTime
+      ? formatTime(now, true).split(', ')[1]
+      : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
     $('ph-alert').hidden = !riskyNearby(me);
     $('ph-risk').textContent = pct(me.p);
     $('ph-advice').textContent = advice(me.p);
-    $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${me.building ? ` · ${me.building}` : ''}`;
+    const where = me.walking ? 'walking' : me.building;
+    $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
 
     if (!phoneMap) {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
       phoneHeat = new CanvasLayer([sw, ne]).addTo(phoneMap);
       phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: '#fff', fillColor: COLORS.healthy, fillOpacity: 1 }).addTo(phoneMap);
       phoneMap.setView([me.lat, me.lon], 16);
+      withHeat = true;
     }
     phoneYou.setLatLng([me.lat, me.lon]);
-    paint(publicGrid.compute(current.values(), PUBLIC.sigmaM), phoneHeat.canvas, vmax.public, PUBLIC);
+    if (withHeat) paint(publicGrid.compute(current.values(), PUBLIC.sigmaM), phoneHeat.canvas, vmax.public, PUBLIC);
   }
 
-  function render() {
-    const frame = frames[frameIndex];
-    current = new Map(frame.map((a) => [a.id, a]));
-    $('time').textContent = formatTime(times[frameIndex]);
-    $('slider').value = frameIndex;
+  // Move every dot to its interpolated position; repaint heat at most every HEAT_EVERY_MS.
+  function render(realNow) {
+    current = new Map();
+    for (const [id, track] of tracks) {
+      const s = stateAt(track, now, router);
+      if (s) current.set(id, s);
+    }
+    $('time').textContent = formatTime(now, data.numericTime);
+    $('slider').value = (now - t0) / 60000;
 
     const view = $('view').value;
-    if (view === 'public') paint(publicGrid.compute(frame, PUBLIC.sigmaM), heatLayer.canvas, vmax.public, PUBLIC);
-    else paint(demoGrid.compute(frame, DEMO.sigmaM), heatLayer.canvas, vmax.demo);
+    const heatDue = heatDirty || realNow - lastHeat >= HEAT_EVERY_MS;
+    if (heatDue) {
+      const pts = current.values();
+      if (view === 'public') paint(publicGrid.compute(pts, PUBLIC.sigmaM), heatLayer.canvas, vmax.public, PUBLIC);
+      else paint(demoGrid.compute(pts, DEMO.sigmaM), heatLayer.canvas, vmax.demo);
+      lastHeat = realNow;
+      heatDirty = false;
+    }
 
     const showDots = $('show-dots').checked && view === 'demo';
     const mode = $('dot-mode').value;
-    for (const [id, m] of dots) if (!current.has(id)) dotLayer.removeLayer(m);
-    for (const a of frame) {
-      const m = dotFor(a.id);
-      if (!showDots) { dotLayer.removeLayer(m); continue; }
-      m.setLatLng([a.lat, a.lon]).setStyle({ fillColor: dotColor(a, mode) });
-      dotLayer.addLayer(m);
+    for (const [id, m] of dots) if (!showDots || !current.has(id)) dotLayer.removeLayer(m);
+    if (showDots) {
+      for (const a of current.values()) {
+        const m = dotFor(a.id);
+        m.setLatLng([a.lat, a.lon]).setStyle({ fillColor: dotColor(a, mode) });
+        if (!dotLayer.hasLayer(m)) dotLayer.addLayer(m);
+      }
     }
-    renderPhone();
+    renderPhone(heatDue);
+  }
+
+  // Jump over stretches where nobody has a sample (e.g. 23:00 → 07:00).
+  function skipQuietGap(t) {
+    let i = times.findIndex((x) => x > t);
+    if (i > 0 && times[i] - times[i - 1] > QUIET_GAP_MS) return times[i];
+    return t;
+  }
+
+  let lastFrame = performance.now();
+  function tick(realNow) {
+    const dt = realNow - lastFrame;
+    lastFrame = realNow;
+    if (playing) {
+      now = skipQuietGap(now + dt * SPEEDS[$('speed').value] * 60);
+      if (now >= t1) { now = t1; setPlaying(false); }
+      render(realNow);
+    }
+    requestAnimationFrame(tick);
   }
 
   function select(id) {
     selected = id;
-    renderPhone();
+    renderPhone(true);
     if (phoneMap) {
       phoneMap.invalidateSize();
       const me = current.get(id);
-      phoneMap.setView([me.lat, me.lon], 16);
+      if (me) phoneMap.setView([me.lat, me.lon], 16);
     }
   }
 
@@ -275,33 +332,34 @@ async function main() {
   }
 
   function setPlaying(on) {
-    clearInterval(timer);
-    timer = null;
-    $('play').textContent = on ? '❚❚' : '▶';
+    playing = on;
+    $('play').dataset.playing = on;
     $('play').setAttribute('aria-label', on ? 'Pause' : 'Play');
-    if (!on) return;
-    timer = setInterval(() => {
-      if (frameIndex >= frames.length - 1) return setPlaying(false);
-      frameIndex++;
-      render();
-    }, 1000 / Number($('speed').value));
   }
 
-  $('slider').max = frames.length - 1;
-  $('slider').addEventListener('input', (e) => { frameIndex = Number(e.target.value); render(); });
-  $('play').addEventListener('click', () => {
-    if (!timer && frameIndex >= frames.length - 1) frameIndex = 0;
-    setPlaying(!timer);
+  $('slider').max = (t1 - t0) / 60000;
+  $('slider').addEventListener('input', (e) => {
+    now = t0 + Number(e.target.value) * 60000;
+    heatDirty = true;
+    render(performance.now());
   });
-  $('speed').addEventListener('change', () => timer && setPlaying(true));
-  for (const id of ['view', 'show-dots', 'dot-mode']) $(id).addEventListener('change', () => { renderLegend(); render(); });
+  $('play').addEventListener('click', () => {
+    if (!playing && now >= t1) now = t0;
+    setPlaying(!playing);
+  });
+  for (const id of ['view', 'show-dots', 'dot-mode']) {
+    $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
+  }
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
   $('status').hidden = true;
   renderLegend();
-  render();
-  window.fluni = { data, map, vmax, select }; // console: fluni.select("a018")
+  render(performance.now());
+  requestAnimationFrame(tick);
+  const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
+  if (agentParam) select(agentParam);
+  window.fluni = { data, map, vmax, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
 }
 
 main().catch((err) => {

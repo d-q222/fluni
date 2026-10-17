@@ -5,7 +5,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Workstream | Directory | Owner | Status | Notes |
 |------------|-----------|-------|--------|-------|
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
-| Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Stanford campus map with playback, heat = P(sick) × concentration, demo dots, click a dot to see that agent's phone view. Waiting on the real CSV. See `heatmap/README.md`. |
+| Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Synthetic agent data | _TBD_ | _teammate, please claim_ | Not started | Agent positions over time + infection probability. The heat map consumes this. |
 | Proximity alerts (phone) | _TBD_ | _unclaimed_ | Not started | PRD Functionality 1 |
 | Infection probability model | _TBD_ | _unclaimed_ | Not started | PRD Functionality 3 |
@@ -43,6 +43,9 @@ Claim a row before you start. Update the status as you go. Agents should name th
   5. Until your CSV lands, the heat map runs on made-up data from `heatmap/tools/make_fake_agents.py`.
      Its columns are only a suggestion. Use whatever suits the simulation and the heat map will adapt.
      The column names it accepts are listed in `heatmap/README.md`.
+- **heat map → synthetic data:** official Stanford building names/IDs and categories (academic,
+  dining, libraries, rec) are described in `docs/stanford-map-sources.md`. Matching your `building`
+  names to those makes building-level heat and forecasts much easier.
 - **heat map → probability model:** heads-up from building the fake data: if everyone's P(sick)
   updates from everyone else's P(sick), the estimates feed on each other and all climb toward 1.
   Updating only from self-reports or tests avoided that.
