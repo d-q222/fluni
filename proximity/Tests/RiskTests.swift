@@ -39,8 +39,13 @@ final class RiskTests: XCTestCase {
         XCTAssertEqual(RiskEstimate.percentText(0.004), "<1%")
         XCTAssertEqual(RiskEstimate.percentText(0.2177), "22%")
         XCTAssertEqual(RiskEstimate.band(RiskEstimate.prior), .low)
+        // Shared tiers with the map: elevated from 10%, high from 40%.
+        XCTAssertEqual(RiskEstimate.band(0.0999), .low)
         XCTAssertEqual(RiskEstimate.band(0.10), .elevated)
-        XCTAssertEqual(RiskEstimate.band(0.25), .high)
+        XCTAssertEqual(RiskEstimate.band(0.3999), .elevated)
+        XCTAssertEqual(RiskEstimate.band(0.40), .high)
+        // Contact alone is capped (xMax 0.3, prior 0.02 → at most 31.4%), so only reports can make it high.
+        XCTAssertEqual(RiskEstimate.band(RiskEstimate.probability(dose: 1e9)), .elevated)
     }
 
     func testTierWeightsMatchInferJS() {

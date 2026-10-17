@@ -8,9 +8,10 @@ enum RiskEstimate {
     static let xMax = 0.3
     /// Community baseline (infer.js `prior`).
     static let prior = 0.02
-    /// Band edges on the probability: below `elevatedFrom` is low, from `highFrom` is high.
+    /// The shared risk tiers (heatmap/app.js TIERS, from the design pass): one set for the phone's
+    /// advice, the risk card's colour and the map. Low < 10% (sage), Elevated 10–40% (sun), High ≥ 40% (fire).
     static let elevatedFrom = 0.10
-    static let highFrom = 0.25
+    static let highFrom = 0.40
 
     enum Band { case low, elevated, high }
 
@@ -38,9 +39,10 @@ enum RiskEstimate {
 
     static func summary(_ p: Double) -> String {
         switch band(p) {
-        case .low: return "Low. Little time near anyone who may be contagious."
-        case .elevated: return "Elevated. Keep your distance and watch for symptoms."
-        case .high: return "High. Consider testing if you develop symptoms."
+        // Same words as the map's advice (heatmap/app.js `advice`).
+        case .low: return "Low. No action needed."
+        case .elevated: return "Elevated. Wear a mask in crowded rooms and watch for symptoms."
+        case .high: return "High. Consider getting tested at Vaden and staying home."
         }
     }
 }
