@@ -6,7 +6,9 @@ struct MeView: View {
     @StateObject private var store = SelfReportStore()
     @State private var sheet: ReportKind?
     @State private var blocked: String?
+    #if DEBUG
     @State private var showDeveloper = false
+    #endif
 
     @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = 36
 
@@ -56,18 +58,22 @@ struct MeView: View {
                         Label("Settings", systemImage: "gearshape").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink).frame(minHeight: 44)
                     }
                     .accessibilityIdentifier("settings.row")
+                    #if DEBUG
                     Button { showDeveloper = true } label: {
                         Text("Developer tools").font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
                     }
                     .accessibilityHint("For testing. Not needed day to day.")
                     .accessibilityIdentifier("developer.row")
                     .frame(maxWidth: .infinity)
+                    #endif
                 }
                 .padding(16)
             }
             .background(Theme.paper)
             .navigationTitle("Me")
+            #if DEBUG
             .sheet(isPresented: $showDeveloper) { DeveloperView(model: model) }
+            #endif
             .sheet(item: $sheet) { ReportSheet(kind: $0, model: model, store: store) }
             .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
                 Button("OK", role: .cancel) {}

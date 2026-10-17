@@ -13,11 +13,15 @@ struct FlUniApp: App {
     @Environment(\.scenePhase) private var phase
 
     init() {
-        // Test-only (XCUITest sets these environment variables; launch arguments can't trigger them).
+        #if DEBUG
+        // Test-only (XCUITest sets these environment variables; launch arguments can't trigger them). Debug builds only.
         let env = ProcessInfo.processInfo.environment
         if env["FLUNI_UITEST_RESET"] == "1" { SettingsView.eraseLocalData() }
-        RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
         skipRadios = env["FLUNI_UITEST_NO_RADIOS"] == "1"
+        #else
+        skipRadios = false
+        #endif
+        RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
     }
@@ -73,7 +77,6 @@ struct FlUniApp: App {
         guard !started, !LaunchMode.isUnitTestHost, !skipRadios else { return }
         started = true
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
-        model.sharesLocationWithPeers = false  // privacy promise: precise location never leaves the phone
         model.start()
     }
 }

@@ -64,7 +64,7 @@ final class ProximityModel: ObservableObject {
     private var rotationInterval: TimeInterval = 15 * 60
 
     func start() {
-        UIApplication.shared.isIdleTimerDisabled = true  // keep the screen on during the demo
+        if keepsScreenOn { UIApplication.shared.isIdleTimerDisabled = true }  // harness only
         restoreSavedStatus()
         restorePause()
         applyLaunchArguments()  // first: link settings must be in place before the session exists
@@ -202,7 +202,10 @@ final class ProximityModel: ObservableObject {
     /// GPS-to-GPS ranging needs each phone's fix on the other phone. The harness keeps it for testing;
     /// FlUni turns it off so "your precise location never leaves this phone" is literally true
     /// (indoors GPS was 7–10 m off at 0.5 m anyway, so detection loses next to nothing).
-    var sharesLocationWithPeers = true
+    /// Fails closed: false unless the harness opts in.
+    var sharesLocationWithPeers = false
+    /// Harness only: keep the screen on during link tests. FlUni lets the phone lock.
+    var keepsScreenOn = false
 
     /// Lets tests drive the phones from the Mac, e.g.
     ///   devicectl ... launch --console com.fluni.proxtest -risk contagious -speed 60 -sources UWB,BLE

@@ -21,6 +21,8 @@ struct FluniProxApp: App {
             .onAppear {
                 guard !started, !LaunchMode.isUnitTestHost else { return }
                 started = true
+                model.sharesLocationWithPeers = true  // GPS ranging tests
+                model.keepsScreenOn = true
                 model.start()
             }
         }
