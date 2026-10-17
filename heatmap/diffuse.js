@@ -2,7 +2,7 @@
 // whole grid with three box blurs, which approximate a Gaussian. Cost depends on the grid size,
 // not on how many people there are. Indoor people are blurred separately and divided by the blurred
 // building mask (normalized convolution), so their heat fills the building and never leaks outside.
-// Edges reflect, so no mass is lost at the grid border. The output matches HeatGrid's fields.
+// Edges reflect, so no mass is lost at the grid border. The output has the fields paint() in heat.js expects.
 
 const M_PER_DEG_LAT = 110574;
 

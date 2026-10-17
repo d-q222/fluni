@@ -15,7 +15,7 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 |---|---|---|---|---|
 | D1 | **In progress (Option A)**: the streaming loader is done; `tools/precompute.mjs` writes the compact timeline and `totals.json.gz` (validated). Still to do: the app reading `totals.json.gz` and `timeline_changes.csv.gz` when present, and the sim writing the compact file itself | M | — | The full run opens in under 10 s |
 | D2 | ~~Smooth movement on a sim-time clock~~ **Done**: footpath walking, see README | — | — | — |
-| D7 | ~~Better heat diffusion~~ **Done**: heat stays inside buildings, lingers about 30 min after people leave, and scales to 7,000 agents (`diffuse.js`, `masks.js`). Follow-up: `HeatGrid` in `heat.js` is now unused and can be removed once the design pass merges | — | — | — |
+| D7 | ~~Better heat diffusion~~ **Done**: heat stays inside buildings, lingers about 30 min after people leave, and scales to 7,000 agents (`diffuse.js`, `masks.js`). (The old `HeatGrid` was removed after the design pass merged.) | — | — | — |
 | D3 | Rescale the heat for ~10 agents (σ, colour-scale maximum) | S | D1 | One sick agent in a room shows a clear blob, and the legend still makes sense |
 | D4 | Fill building outlines by expected infected, and click a building for its count | M | `data/stanford_buildings.json`; CSV building names | Clicking a building shows its numbers |
 | D5 | Show the predictive layer (U4) in the demo, with what actually happened overlaid afterwards | M | U4 | Scrub to a time: the forecast for +1 h appears next to the actual result |

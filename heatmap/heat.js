@@ -1,61 +1,6 @@
 // Heat at a point x = Σ p_i · K(x − x_i): the expected number of infected people per m² near x.
-// (Concentration × average P(sick) gives the same sum.) The grid is computed in metres and knows
-// nothing about any map library, so it can be drawn on Leaflet, Google Maps, or a static image.
-
-const M_PER_DEG_LAT = 110574;
-
-export class HeatGrid {
-  constructor(bounds, cellM) {
-    this.bounds = bounds; // { south, west, north, east }
-    this.cellM = cellM;
-    const lat0 = (bounds.south + bounds.north) / 2;
-    this.mPerDegLon = 111320 * Math.cos((lat0 * Math.PI) / 180);
-    this.nx = Math.ceil(((bounds.east - bounds.west) * this.mPerDegLon) / cellM);
-    this.ny = Math.ceil(((bounds.north - bounds.south) * M_PER_DEG_LAT) / cellM);
-    this.heat = new Float32Array(this.nx * this.ny);   // Σ p·K, infected per m²
-    this.people = new Float32Array(this.nx * this.ny); // Σ K, people per m² (for privacy masking)
-  }
-
-  // Fractional column/row of a point. Row 0 is the north edge, so the grid maps straight onto a canvas.
-  cellOf(lat, lon) {
-    return [
-      ((lon - this.bounds.west) * this.mPerDegLon) / this.cellM,
-      ((this.bounds.north - lat) * M_PER_DEG_LAT) / this.cellM,
-    ];
-  }
-
-  // points: [{ lat, lon, p }]. A Gaussian kernel of width sigmaM, cut off at 3σ.
-  compute(points, sigmaM) {
-    this.sigmaM = sigmaM;
-    this.heat.fill(0);
-    this.people.fill(0);
-    const s = sigmaM / this.cellM;
-    const r = Math.ceil(3 * s);
-    const norm = 1 / (2 * Math.PI * sigmaM * sigmaM);
-    for (const pt of points) {
-      const [cx, cy] = this.cellOf(pt.lat, pt.lon);
-      const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(this.nx - 1, Math.ceil(cx + r));
-      const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(this.ny - 1, Math.ceil(cy + r));
-      for (let y = y0; y <= y1; y++) {
-        const dy = y + 0.5 - cy;
-        for (let x = x0; x <= x1; x++) {
-          const dx = x + 0.5 - cx;
-          const k = norm * Math.exp(-(dx * dx + dy * dy) / (2 * s * s));
-          const i = y * this.nx + x;
-          this.heat[i] += pt.p * k;
-          this.people[i] += k;
-        }
-      }
-    }
-    return this;
-  }
-
-  max() {
-    let m = 0;
-    for (const v of this.heat) if (v > m) m = v;
-    return m;
-  }
-}
+// (Concentration × average P(sick) gives the same sum.) diffuse.js builds the grid in metres; this
+// file only colours it, so it can be drawn on Leaflet, Google Maps, or a static image.
 
 // The design palette's campfire colours: sun → ember → fire → charred red. Lightness falls the
 // whole way, so "darker = hotter" still holds for colour-blind viewers and in greyscale. Fades in
