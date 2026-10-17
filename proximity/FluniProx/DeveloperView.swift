@@ -1,7 +1,8 @@
 import SwiftUI
 
-struct ContentView: View {
+struct DeveloperView: View {
     @ObservedObject var model: ProximityModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -13,7 +14,9 @@ struct ContentView: View {
                 demoSection
                 statusSection
             }
-            .navigationTitle("Fluni Prox")
+            .navigationTitle("Developer")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .animation(.default, value: model.exposure.level)
         }
     }
@@ -119,7 +122,7 @@ struct ContentView: View {
                     Text(v)
                 } label: {
                     Label(k, systemImage: "circle.fill")
-                        .labelStyle(DotLabelStyle(color: Self.health(v)))
+                        .labelStyle(DotLabelStyle(color: DeveloperView.health(v)))
                 }
             }
         }

@@ -29,12 +29,14 @@ struct PeerState: Identifiable, Equatable {
 /// Glues the three channels together. All callbacks arrive on the main queue.
 final class ProximityModel: ObservableObject {
     @Published var myRisk = Risk.none { didSet { announce() } }
-    @Published var speed = 60.0
+    @Published var speed = 1.0  // real time; demo/test launches pass -speed
     @Published var enabled: Set<Source> = Set(Source.allCases)
     @Published private(set) var peers: [PeerState] = []
     @Published private(set) var exposure = ExposureTracker()
     @Published private(set) var status: [String: String] = [:]
     @Published private(set) var myID = Data()
+    /// When the user last chose their own status (nil = never). Persisted with the status.
+    @Published private(set) var statusSetAt: Date?
 
     private let ble = BLEBeacon()
     private let link = PeerLink()
@@ -56,6 +58,7 @@ final class ProximityModel: ObservableObject {
 
     func start() {
         UIApplication.shared.isIdleTimerDisabled = true  // keep the screen on during the demo
+        restoreSavedStatus()
         applyLaunchArguments()  // first: link settings must be in place before the session exists
         rotateID()
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -87,6 +90,23 @@ final class ProximityModel: ObservableObject {
     /// @Published fires on every set, even an equal one; skip those.
     private func setStatus(_ k: String, _ v: String) {
         if status[k] != v { status[k] = v }
+    }
+
+    /// The user's own choice in the Me tab (not a launch argument): remembered across launches.
+    func setMyStatus(_ r: Risk) {
+        myRisk = r
+        statusSetAt = Date()
+        UserDefaults.standard.set(r.rawValue, forKey: "savedStatus")
+        UserDefaults.standard.set(statusSetAt, forKey: "savedStatusAt")
+    }
+
+    private func restoreSavedStatus() {
+        guard !LaunchMode.isTestLaunch else { return }
+        let d = UserDefaults.standard
+        if let r = Risk(rawValue: d.integer(forKey: "savedStatus")), let at = d.object(forKey: "savedStatusAt") as? Date {
+            myRisk = r
+            statusSetAt = at
+        }
     }
 
     func resetExposure() {
