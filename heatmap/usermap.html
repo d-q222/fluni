@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FlUni map</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<style>
+  /* The user map for the app: reads only per-building totals. Palette from index.html (Lisa's campfire tokens). */
+  :root {
+    --sun: #ebd187; --ember: #e99569; --fire: #db6c59; --fire-ink: #8e3a28;
+    --paper: #faf4e8; --surface: #fffaf1; --surface-2: #f4ead6; --surface-3: #ecdfc6;
+    --ink: #33241c; --ink-2: #6a5244; --ink-3: #7a6152; --hairline: rgba(51, 36, 28, 0.12);
+    --font: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink);
+    font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+  #map { position: absolute; inset: 0; background: var(--surface-2); font-family: var(--font); outline: 0; }
+  .leaflet-control-attribution { display: none; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 1px 2px rgba(51,36,28,.07), 0 8px 24px -6px rgba(51,36,28,.2);
+    background: var(--surface); color: var(--ink); }
+  .leaflet-popup-content { margin: 9px 12px; font: 13px/1.4 var(--font); }
+  .leaflet-popup-tip { background: var(--surface); }
+  .leaflet-container a.leaflet-popup-close-button { color: var(--ink-3); }
+
+  .chip { position: absolute; z-index: 500; top: calc(10px + env(safe-area-inset-top)); left: calc(10px + env(safe-area-inset-left));
+    right: calc(10px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 5px 5px 5px 12px; background: var(--surface); border-radius: 14px; font-size: 13px;
+    box-shadow: 0 1px 2px rgba(51,36,28,.07), 0 8px 24px -6px rgba(51,36,28,.16); }
+  .chip #time { min-width: 0; font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip #time b { color: var(--ink); font-weight: 600; }
+  .seg { display: flex; flex: none; background: var(--surface-2); border-radius: 999px; padding: 2px; }
+  .seg button { font: inherit; font-size: 13px; color: var(--ink-2); border: 0; background: none; border-radius: 999px;
+    padding: 5px 12px; min-height: 30px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  .seg[hidden] { display: none; }
+
+  .legend { position: absolute; z-index: 500; left: calc(10px + env(safe-area-inset-left)); right: calc(10px + env(safe-area-inset-right));
+    bottom: calc(10px + env(safe-area-inset-bottom)); padding: 4px 8px 2px 6px; font-size: 12px;
+    border-style: solid; border-width: 9px 8px 21px 17px;
+    border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch;
+    filter: drop-shadow(0 6px 10px rgba(51, 36, 28, 0.10)); }
+  .legend h2 { font-size: 12px; font-weight: 600; margin: 0 0 7px; }
+  .legend h2 span { font-weight: 400; color: var(--ink-3); }
+  .ramp { height: 8px; border-radius: 4px; }
+  .ramp-labels { display: flex; justify-content: space-between; color: var(--ink-3); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .legend .fine { margin: 8px 0 0; color: var(--ink-3); line-height: 1.4; font-size: 11px; }
+  #status { position: absolute; z-index: 600; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px;
+    background: var(--paper); color: var(--ink-2); }
+  #status[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div id="map" role="application" aria-label="Campus illness map"></div>
+<div class="chip">
+  <span id="time"></span>
+  <div class="seg" id="horizon" role="group" aria-label="When" hidden>
+    <button type="button" data-h="0" aria-pressed="true">Now</button>
+    <button type="button" data-h="60" aria-pressed="false">In 1 hour</button>
+  </div>
+</div>
+<section class="legend" aria-label="Legend">
+  <h2>Expected sick people <span>per building</span></h2>
+  <div class="ramp" id="ramp"></div>
+  <div class="ramp-labels"><span>0</span><span id="vmid"></span><span id="vmax"></span></div>
+  <p class="fine" id="fine"></p>
+</section>
+<div id="status">Loading the map…</div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="usermap.js"></script>
+</body>
+</html>

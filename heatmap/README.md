@@ -205,3 +205,23 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 Base map (**tentative**, may switch to Google Maps): OpenStreetMap tiles via Leaflet, greyed with CSS
 so the heat stands out. Only the map glue in `app.js` would change; `heat.js` is independent of the map.
+
+## User map for the app
+
+The Swift app's Map tab loads a self-contained, offline copy of the user map: no laptop, no internet.
+
+```
+node heatmap/tools/build_app_bundle.mjs sim/runs/<run> --out heatmap/out/app-bundle
+```
+
+The folder (about 1.4 MB for the default run) holds `index.html` (= `usermap.html`), `usermap.js`,
+`heat.js` (colour stops), `vendor/leaflet/`, the illustrated base map (`assets/trace/`, `assets/containers/`)
+and `data/`: `totals.json.gz` (plus a plain `totals.json` fallback) and `buildings.geojson` (outlines of
+buildings that appear in the totals). Load `index.html?clock=live` from a custom scheme such as
+`fluni://app/index.html?clock=live`; relative URLs only, no network. Other flags: `?at=<minutes from run
+start>` (fixed moment, for screenshots), `?horizon=60` (start on "In 1 hour"). Which moment "live" shows is
+defined in `docs/building-heat-format.md`.
+
+Privacy: only per-building totals (people, expected sick, forecast) go in; never agent ids, positions,
+contacts or the model. Browsers refuse ES modules from `file://`; serve the folder
+(`python3 -m http.server` inside it) or use the app's scheme handler.

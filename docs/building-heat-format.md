@@ -27,3 +27,22 @@ served from the laptop with the rest of the repo, at
   Treat it as "no data", not as safe.
 - P(sick) comes from the probability model (`model/infer.js`), the same values as `p_sick.csv`.
 - A building is only as "high" as the run's own scale: the colour max is per run.
+
+## Which moment is "now"
+
+The user map and the phone's walk-in warning must read the same snapshot, so both use this rule to turn
+the device's clock into a moment in the run:
+
+1. Take the device's current **local** weekday and time of day.
+2. Find the **first run day with the same weekday**, and use that day at the same time of day.
+3. If the run has no such weekday (e.g. a 2-day Mon-Tue run on a Saturday), use run day
+   `daysSinceMonday mod runDays`, where `daysSinceMonday` is 0 for Monday to 6 for Sunday and
+   `runDays` is the number of days the run covers. Same time of day.
+4. Clamp to the run's first and last step.
+
+Run days start at the local midnight of the run's first step (all times are local, as in `t_iso`).
+Then read the snapshot at or before that time: the latest `t_iso ≤ t` in `building_heat.csv`
+(snapshots every **15 minutes**), or the step containing t in the map bundle's `totals.json`
+(**5-minute** steps). The map re-reads as the clock advances (1 s per s). Example: the default run starts
+Monday 2026-01-05, so a Saturday 4:55 pm device shows 2026-01-10 16:55, i.e. the 16:55 step
+(the 16:45 row of `building_heat.csv`).

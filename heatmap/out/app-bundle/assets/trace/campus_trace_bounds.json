@@ -1,0 +1,10 @@
+{
+  "south": 37.417141816,
+  "west": -122.18333498800001,
+  "north": 37.437912484,
+  "east": -122.156459512,
+  "width_px": 4096,
+  "height_px": 3958,
+  "source": "sim/data/osm (the simulator's campus map)",
+  "note": "Draw the hand-drawn campus map on this exact canvas size; it is placed on the map at these bounds. Filled brown outlines are buildings the sim uses for classes, dorms, dining etc.; light outlines are other buildings."
+}
