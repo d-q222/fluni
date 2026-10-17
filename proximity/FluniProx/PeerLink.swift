@@ -1,5 +1,6 @@
 import Foundation
 import MultipeerConnectivity
+import UIKit
 
 /// Message sent over the peer link. One flat struct keeps the wire format obvious.
 struct Wire: Codable {
@@ -14,8 +15,13 @@ struct Wire: Codable {
 }
 
 /// Encrypted local link (Bluetooth + peer-to-peer Wi-Fi) to nearby Fluni phones.
-/// Carries the UWB discovery tokens, GPS fixes and risk status. The display name is random,
-/// never the device name.
+/// Carries the UWB discovery tokens, GPS fixes and risk status. The display name is random per
+/// launch, never the device name.
+///
+/// Robustness design (all state on the main queue): one MCSession per remote peer, created fresh for
+/// every connection attempt, so a half-open or failed handshake can never poison another attempt or
+/// peer. Callbacks from a session that is no longer current are ignored. Invites are tracked (one
+/// pending attempt per peer, with a watchdog) and retried with backoff instead of a fixed 1 s storm.
 final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate {
     static let serviceType = "fluni-prox"
 
@@ -23,71 +29,203 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     var onDisconnected: ((MCPeerID) -> Void)?
     var onMessage: ((MCPeerID, Wire) -> Void)?
 
-    /// Set before first use (launch arguments); the session is created lazily with them.
+    /// Set before first use (launch arguments); sessions are created lazily with them.
     var encryption = MCEncryptionPreference.required
     var inviteTimeout: TimeInterval = 10
 
+    private struct Slot {
+        var session: MCSession
+        var state: MCSessionState = .notConnected
+        var since = Date()          // when `state` was entered
+        var failures = 0            // consecutive attempts that did not reach .connected
+        var nextTry = Date.distantPast
+    }
+
     private let me = MCPeerID(displayName: String(UUID().uuidString.prefix(8)))
-    private lazy var session = MCSession(peer: me, securityIdentity: nil, encryptionPreference: encryption)
     private lazy var advertiser = MCNearbyServiceAdvertiser(peer: me, discoveryInfo: nil, serviceType: Self.serviceType)
     private lazy var browser = MCNearbyServiceBrowser(peer: me, serviceType: Self.serviceType)
-    private var found: Set<MCPeerID> = []
+    private var found: [MCPeerID: Date] = [:]   // peer -> first seen
+    private var slots: [MCPeerID: Slot] = [:]
+    private var tick: Timer?
+    private var lastDiscoveryRestart = Date()
+    private var totalFailures = 0
 
-    var connectedPeers: [MCPeerID] { session.connectedPeers }
+    var connectedPeers: [MCPeerID] { slots.filter { $0.value.state == .connected }.map(\.key) }
+
+    private func log(_ s: String) { print("[fluni] \(s)"); fflush(stdout) }
 
     func start() {
-        session.delegate = self
         advertiser.delegate = self
         browser.delegate = self
         advertiser.startAdvertisingPeer()
         browser.startBrowsingForPeers()
+        tick = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.maintain() }
+        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
+                                               queue: .main) { [weak self] _ in self?.restartDiscovery("foreground") }
     }
 
     func send(_ w: Wire, to peers: [MCPeerID]? = nil) {
-        let targets = peers ?? session.connectedPeers
-        guard !targets.isEmpty, let data = try? JSONEncoder().encode(w) else { return }
-        try? session.send(data, toPeers: targets, with: .reliable)
+        guard let data = try? JSONEncoder().encode(w) else { return }
+        for p in peers ?? connectedPeers {
+            guard let slot = slots[p], slot.state == .connected else { continue }
+            try? slot.session.send(data, toPeers: [p], with: .reliable)
+        }
     }
 
-    // Both phones browse; only the one with the smaller name invites, so they don't race.
+    // MARK: Discovery
+
+    // Both phones browse; the smaller name invites. If the larger one has waited a long time and
+    // nothing arrived, it invites too (glare is resolved in the invitation handler).
     func browser(_ b: MCNearbyServiceBrowser, foundPeer peer: MCPeerID, withDiscoveryInfo info: [String: String]?) {
         DispatchQueue.main.async {
-            self.found.insert(peer)
-            self.invite(peer)
+            if self.found[peer] == nil { self.found[peer] = Date() }
+            self.maintain()
         }
     }
 
     func browser(_ b: MCNearbyServiceBrowser, lostPeer peer: MCPeerID) {
-        DispatchQueue.main.async { self.found.remove(peer) }
+        // Only discovery is lost; an established session is judged by its own state.
+        DispatchQueue.main.async { self.found[peer] = nil }
+    }
+
+    func browser(_ b: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
+        log("link browse failed: \(error.localizedDescription)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.restartDiscovery("browse error") }
+    }
+
+    func advertiser(_ a: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
+        log("link advertise failed: \(error.localizedDescription)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.restartDiscovery("advertise error") }
+    }
+
+    private func restartDiscovery(_ why: String) {
+        guard Date().timeIntervalSince(lastDiscoveryRestart) > 3 else { return }
+        lastDiscoveryRestart = Date()
+        log("link discovery restart (\(why))")
+        advertiser.stopAdvertisingPeer()
+        browser.stopBrowsingForPeers()
+        found.removeAll()  // foundPeer fires again for peers still around
+        advertiser.startAdvertisingPeer()
+        browser.startBrowsingForPeers()
+    }
+
+    // MARK: Attempts
+
+    private func newSession(for peer: MCPeerID) -> MCSession {
+        if let old = slots[peer]?.session { old.delegate = nil; old.disconnect() }
+        let s = MCSession(peer: me, securityIdentity: nil, encryptionPreference: encryption)
+        s.delegate = self
+        return s
+    }
+
+    private func backoff(_ failures: Int) -> TimeInterval {
+        min(8, pow(2, Double(max(0, failures - 1)))) + Double.random(in: 0...0.5)
+    }
+
+    /// Drop a failed or stuck slot and schedule the next attempt.
+    private func fail(_ peer: MCPeerID, _ why: String) {
+        guard var slot = slots[peer] else { return }
+        slot.session.delegate = nil
+        slot.session.disconnect()
+        slot.failures += 1
+        totalFailures += 1
+        slot.nextTry = Date().addingTimeInterval(backoff(slot.failures))
+        slot.state = .notConnected
+        slot.since = Date()
+        slots[peer] = slot
+        log("link attempt failed \(peer.displayName) (\(why)) failures=\(slot.failures)")
+        if totalFailures % 4 == 0 { restartDiscovery("repeated failures") }
     }
 
     private func invite(_ peer: MCPeerID) {
-        guard me.displayName < peer.displayName, found.contains(peer),
-              !session.connectedPeers.contains(peer) else { return }
-        browser.invitePeer(peer, to: session, withContext: nil, timeout: inviteTimeout)
+        guard found[peer] != nil, slots[peer].map({ $0.state == .notConnected && Date() >= $0.nextTry }) ?? true else { return }
+        let failures = slots[peer]?.failures ?? 0
+        var slot = Slot(session: newSession(for: peer))
+        slot.state = .connecting
+        slot.failures = failures
+        slots[peer] = slot
+        log("link connecting \(peer.displayName) (invite, attempt \(failures + 1))")
+        browser.invitePeer(peer, to: slot.session, withContext: nil, timeout: inviteTimeout)
+    }
+
+    /// Every 2 s: expire stuck attempts and (re)invite found peers that aren't linked.
+    private func maintain() {
+        let now = Date()
+        for (peer, slot) in slots where slot.state == .connecting
+            && now.timeIntervalSince(slot.since) > inviteTimeout + 5 {
+            fail(peer, "connecting timeout")
+        }
+        for (peer, seen) in found where (slots[peer]?.state ?? .notConnected) == .notConnected {
+            // The smaller name invites; the larger waits for that, but not forever.
+            if me.displayName < peer.displayName || now.timeIntervalSince(seen) > 20 { invite(peer) }
+        }
     }
 
     func advertiser(_ a: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peer: MCPeerID,
                     withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        invitationHandler(true, session)
+        DispatchQueue.main.async {
+            // Glare (both inviting): the smaller name's invite wins. Otherwise always accept, also
+            // over an existing session: the sender only re-invites once it considers the old one dead.
+            if self.slots[peer]?.state == .connecting, self.me.displayName < peer.displayName {
+                invitationHandler(false, nil); return
+            }
+            var slot = Slot(session: self.newSession(for: peer))
+            slot.state = .connecting
+            slot.failures = self.slots[peer]?.failures ?? 0
+            self.slots[peer] = slot
+            self.log("link connecting \(peer.displayName) (accepted invite)")
+            invitationHandler(true, slot.session)
+        }
+    }
+
+    // MARK: Session
+
+    func session(_ s: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peer: MCPeerID,
+                 certificateHandler: @escaping (Bool) -> Void) {
+        // No identity pinning (peers are anonymous by design). Answering at once avoids handshake stalls.
+        certificateHandler(true)
     }
 
     func session(_ s: MCSession, peer: MCPeerID, didChange state: MCSessionState) {
         DispatchQueue.main.async {
+            // Ignore callbacks from sessions we already replaced.
+            guard var slot = self.slots[peer], slot.session === s else { return }
+            let was = slot.state
             switch state {
-            case .connected: self.onConnected?(peer)
+            case .connected:
+                slot.state = .connected
+                slot.since = Date()
+                slot.failures = 0
+                self.slots[peer] = slot
+                self.log("link up \(peer.displayName)")
+                self.onConnected?(peer)
+            case .connecting:
+                break
             case .notConnected:
-                self.onDisconnected?(peer)
-                // Invites fail on first run (permission prompt) or links drop; keep trying while it's around.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.invite(peer) }
-            default: break
+                if was == .connected {
+                    // Real drop: discard the session, reconnect with a fresh one shortly.
+                    slot.session.delegate = nil
+                    slot.session.disconnect()
+                    slot.state = .notConnected
+                    slot.since = Date()
+                    slot.nextTry = Date().addingTimeInterval(0.5)
+                    self.slots[peer] = slot
+                    self.onDisconnected?(peer)
+                } else {
+                    self.fail(peer, "handshake ended")
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.maintain() }
+            @unknown default: break
             }
         }
     }
 
     func session(_ s: MCSession, didReceive data: Data, fromPeer peer: MCPeerID) {
         guard let w = try? JSONDecoder().decode(Wire.self, from: data) else { return }
-        DispatchQueue.main.async { self.onMessage?(peer, w) }
+        DispatchQueue.main.async {
+            guard self.slots[peer]?.session === s else { return }
+            self.onMessage?(peer, w)
+        }
     }
 
     func session(_ s: MCSession, didReceive stream: InputStream, withName n: String, fromPeer p: MCPeerID) {}
