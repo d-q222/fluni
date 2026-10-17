@@ -1,0 +1,1436 @@
+{
+ "source": "model/infer.js DEFAULTS + heatmap/app.js",
+ "defaults": {
+  "beta": 0.015,
+  "xMax": 0.3,
+  "prior": 0.02,
+  "tierWeight": [
+   1,
+   0.6,
+   0.1,
+   0.02
+  ]
+ },
+ "risk": [
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.034590299188998586,
+   "foldedDose": 1,
+   "foldedP": 0.034590299188998586
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.0908113833980182,
+   "foldedDose": 5,
+   "foldedP": 0.0908113833980182
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.21745410561581047,
+   "foldedDose": 15,
+   "foldedP": 0.21745410561581047
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 45,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 90,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 200,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.028780428802574032,
+   "foldedDose": 0.6,
+   "foldedP": 0.028780428802574032
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.06312246780356201,
+   "foldedDose": 3,
+   "foldedP": 0.06312246780356201
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.14375840654572625,
+   "foldedDose": 9,
+   "foldedP": 0.14375840654572625
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 27,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 54,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 120,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.02146889805104335,
+   "foldedDose": 0.1,
+   "foldedP": 0.02146889805104335
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.02732250627724442,
+   "foldedDose": 0.5,
+   "foldedP": 0.02732250627724442
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.04180378755053038,
+   "foldedDose": 1.5,
+   "foldedP": 0.04180378755053038
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.083966833796293,
+   "foldedDose": 4.5,
+   "foldedP": 0.0839668337962931
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.14375840654572625,
+   "foldedDose": 9,
+   "foldedP": 0.14375840654572625
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.27399814373191644,
+   "foldedDose": 20,
+   "foldedP": 0.27399814373191644
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.020293955904409633,
+   "foldedDose": 0.02,
+   "foldedP": 0.020293955904409633
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.02146889805104335,
+   "foldedDose": 0.1,
+   "foldedP": 0.02146889805104335
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.024400092367020898,
+   "foldedDose": 0.3,
+   "foldedP": 0.024400092367020898
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.03314109800862197,
+   "foldedDose": 0.9,
+   "foldedP": 0.03314109800862197
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.04610598330615001,
+   "foldedDose": 1.8,
+   "foldedP": 0.04610598330615001
+  },
+  {
+   "kind": "single",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.07707075708743627,
+   "foldedDose": 4,
+   "foldedP": 0.07707075708743627
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.0272951495944993,
+   "foldedDose": 0.5,
+   "foldedP": 0.02732250627724442
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.05540569169900911,
+   "foldedDose": 2.5,
+   "foldedP": 0.05606947063359469
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.1187270528079053,
+   "foldedDose": 7.5,
+   "foldedP": 0.12427459983365463
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.2605133539023009,
+   "foldedDose": 22.5,
+   "foldedP": 0.30071906478762767
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 45,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 100,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.02439021440128708,
+   "foldedDose": 0.3,
+   "foldedP": 0.024400092367020898
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.041561233901781014,
+   "foldedDose": 1.5,
+   "foldedP": 0.04180378755053038
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.08187920327286313,
+   "foldedDose": 4.5,
+   "foldedP": 0.0839668337962931
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.1831813626793476,
+   "foldedDose": 13.5,
+   "foldedP": 0.1996472470538514
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.2920195475507589,
+   "foldedDose": 27,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 60,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.020734449025521684,
+   "foldedDose": 0.05,
+   "foldedP": 0.02073472444389335
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.023661253138622218,
+   "foldedDose": 0.25,
+   "foldedP": 0.0236681179802124
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.0309018937752652,
+   "foldedDose": 0.75,
+   "foldedP": 0.030963216280991634
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.05198341689814645,
+   "foldedDose": 2.25,
+   "foldedP": 0.052523085832888006
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.08187920327286313,
+   "foldedDose": 4.5,
+   "foldedP": 0.0839668337962931
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.1469990718659583,
+   "foldedDose": 10,
+   "foldedP": 0.15650618310344333
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 0
+    }
+   ],
+   "exactP": 0.020000000000000018,
+   "foldedDose": 0,
+   "foldedP": 0.020000000000000018
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.02014697795220477,
+   "foldedDose": 0.01,
+   "foldedP": 0.020146988975551228
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.020734449025521684,
+   "foldedDose": 0.05,
+   "foldedP": 0.02073472444389335
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.022200046183510347,
+   "foldedDose": 0.15,
+   "foldedP": 0.02220252123442268
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.026570549004310995,
+   "foldedDose": 0.45,
+   "foldedP": 0.026592724523002986
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 90
+    }
+   ],
+   "exactP": 0.03305299165307507,
+   "foldedDose": 0.9,
+   "foldedP": 0.03314109800862197
+  },
+  {
+   "kind": "single",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.048535378543718144,
+   "foldedDose": 2,
+   "foldedP": 0.048963377122462015
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 15
+    },
+    {
+     "tier": 1,
+     "minutes": 15
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 30,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 15
+    },
+    {
+     "tier": 2,
+     "minutes": 30
+    },
+    {
+     "tier": 3,
+     "minutes": 60
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 39,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 5
+    },
+    {
+     "tier": 1,
+     "minutes": 5
+    },
+    {
+     "tier": 1,
+     "minutes": 5
+    },
+    {
+     "tier": 1,
+     "minutes": 5
+    }
+   ],
+   "exactP": 0.27399814373191655,
+   "foldedDose": 20,
+   "foldedP": 0.27399814373191644
+  },
+  {
+   "kind": "multi",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 15
+    },
+    {
+     "tier": 2,
+     "minutes": 30
+    }
+   ],
+   "exactP": 0.22299067800382777,
+   "foldedDose": 16.5,
+   "foldedP": 0.23486478360529284
+  },
+  {
+   "kind": "multi",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 20
+    },
+    {
+     "tier": 2,
+     "minutes": 20
+    },
+    {
+     "tier": 3,
+     "minutes": 120
+    }
+   ],
+   "exactP": 0.2427554865594399,
+   "foldedDose": 18,
+   "foldedP": 0.2518880955498839
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 4,
+     "minutes": 200
+    },
+    {
+     "tier": 4,
+     "minutes": 200
+    },
+    {
+     "tier": 4,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.1814351928169533,
+   "foldedDose": 12,
+   "foldedP": 0.18143519281695342
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    },
+    {
+     "tier": 1,
+     "minutes": 1
+    }
+   ],
+   "exactP": 0.15650618310344344,
+   "foldedDose": 10,
+   "foldedP": 0.15650618310344333
+  },
+  {
+   "kind": "multi",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 45
+    },
+    {
+     "tier": 1,
+     "minutes": 45
+    },
+    {
+     "tier": 1,
+     "minutes": 45
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 67.5,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 60
+    },
+    {
+     "tier": 1,
+     "minutes": 60
+    }
+   ],
+   "exactP": 0.31400000000000006,
+   "foldedDose": 120,
+   "foldedP": 0.31400000000000006
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 2,
+     "minutes": 10
+    },
+    {
+     "tier": 3,
+     "minutes": 40
+    },
+    {
+     "tier": 4,
+     "minutes": 100
+    },
+    {
+     "tier": 1,
+     "minutes": 3
+    }
+   ],
+   "exactP": 0.21745410561581047,
+   "foldedDose": 15,
+   "foldedP": 0.21745410561581047
+  },
+  {
+   "kind": "multi",
+   "s": 0.5,
+   "contacts": [
+    {
+     "tier": 3,
+     "minutes": 90
+    },
+    {
+     "tier": 4,
+     "minutes": 200
+    }
+   ],
+   "exactP": 0.10861279968456605,
+   "foldedDose": 6.5,
+   "foldedP": 0.11103970527531437
+  },
+  {
+   "kind": "multi",
+   "s": 1,
+   "contacts": [
+    {
+     "tier": 1,
+     "minutes": 8
+    },
+    {
+     "tier": 2,
+     "minutes": 8
+    }
+   ],
+   "exactP": 0.1911992688781513,
+   "foldedDose": 12.8,
+   "foldedP": 0.1911992688781512
+  }
+ ],
+ "tierWeights": [
+  {
+   "distance": 0,
+   "weight": 1
+  },
+  {
+   "distance": 0.5,
+   "weight": 1
+  },
+  {
+   "distance": 0.999,
+   "weight": 1
+  },
+  {
+   "distance": 1,
+   "weight": 0.6
+  },
+  {
+   "distance": 1.5,
+   "weight": 0.6
+  },
+  {
+   "distance": 1.999,
+   "weight": 0.6
+  },
+  {
+   "distance": 2,
+   "weight": 0.1
+  },
+  {
+   "distance": 4.99,
+   "weight": 0.1
+  },
+  {
+   "distance": 5,
+   "weight": 0.02
+  },
+  {
+   "distance": 12,
+   "weight": 0.02
+  }
+ ],
+ "tiers": [
+  {
+   "p": 0,
+   "tier": "low",
+   "advice": "Low. No action needed."
+  },
+  {
+   "p": 0.0999,
+   "tier": "low",
+   "advice": "Low. No action needed."
+  },
+  {
+   "p": 0.1,
+   "tier": "elevated",
+   "advice": "Elevated. Wear a mask in crowded rooms and watch for symptoms."
+  },
+  {
+   "p": 0.3999,
+   "tier": "elevated",
+   "advice": "Elevated. Wear a mask in crowded rooms and watch for symptoms."
+  },
+  {
+   "p": 0.4,
+   "tier": "high",
+   "advice": "High. Consider getting tested at Vaden and staying home."
+  },
+  {
+   "p": 0.9,
+   "tier": "high",
+   "advice": "High. Consider getting tested at Vaden and staying home."
+  },
+  {
+   "p": 1,
+   "tier": "high",
+   "advice": "High. Consider getting tested at Vaden and staying home."
+  }
+ ],
+ "psick": [
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-08T14:34:59",
+   "p": 0.02
+  },
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-07T14:35:00",
+   "p": 0.02
+  },
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-08T14:35:00",
+   "p": 0.0726
+  },
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-08T15:10:00",
+   "p": 0.1593
+  },
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-08T15:09:59",
+   "p": 0.0726
+  },
+  {
+   "agent": "A0000",
+   "t_iso": "2026-01-08T15:10:01",
+   "p": 0.1593
+  },
+  {
+   "agent": "A0005",
+   "t_iso": "2026-01-08T17:05:00",
+   "p": 0.3346
+  },
+  {
+   "agent": "A0005",
+   "t_iso": "2026-01-08T18:05:00",
+   "p": 0.3562
+  },
+  {
+   "agent": "A0005",
+   "t_iso": "2026-01-09T00:15:00",
+   "p": 0.3675
+  },
+  {
+   "agent": "A0005",
+   "t_iso": "2026-02-08T00:15:00",
+   "p": 0.3675
+  },
+  {
+   "agent": "A0009",
+   "t_iso": "2026-01-10T20:40:00",
+   "p": 0.2243
+  },
+  {
+   "agent": "A0009",
+   "t_iso": "2026-01-10T20:45:00",
+   "p": 0.2243
+  },
+  {
+   "agent": "A0009",
+   "t_iso": "2026-01-08T14:34:59",
+   "p": 0.02
+  },
+  {
+   "agent": "nobody",
+   "t_iso": "2026-01-08T14:35:00",
+   "p": 0.02
+  },
+  {
+   "agent": "A0001",
+   "t_iso": "2026-01-08T17:37:36",
+   "p": 0.088
+  },
+  {
+   "agent": "A0002",
+   "t_iso": "2026-01-08T18:57:10",
+   "p": 0.0404
+  },
+  {
+   "agent": "A0003",
+   "t_iso": "2026-01-12T22:33:08",
+   "p": 0.2856
+  },
+  {
+   "agent": "A0004",
+   "t_iso": "2026-01-11T21:53:36",
+   "p": 0.2556
+  },
+  {
+   "agent": "A0006",
+   "t_iso": "2026-01-17T02:03:02",
+   "p": 0.0984
+  },
+  {
+   "agent": "A0007",
+   "t_iso": "2026-01-09T15:43:40",
+   "p": 0.3657
+  }
+ ],
+ "heat": [
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-04T23:59:59",
+   "reading": null
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-05T00:00:00",
+   "reading": {
+    "people": 450,
+    "expectedSick": 9,
+    "heat": 0.235,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-05T00:14:59",
+   "reading": {
+    "people": 450,
+    "expectedSick": 9,
+    "heat": 0.235,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-05T00:22:00",
+   "reading": {
+    "people": 450,
+    "expectedSick": 9,
+    "heat": 0.235,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-18T23:45:00",
+   "reading": {
+    "people": 350,
+    "expectedSick": 128.4,
+    "heat": 0.889,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-23T23:45:00",
+   "reading": {
+    "people": 350,
+    "expectedSick": 128.4,
+    "heat": 0.889,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_unknown",
+   "t_iso": "2026-01-05T00:00:00",
+   "reading": null
+  },
+  {
+   "building": "bld_26250731",
+   "t_iso": "2026-01-05T00:00:00",
+   "reading": null
+  },
+  {
+   "building": "bld_232805762",
+   "t_iso": "2026-01-12T16:06:29",
+   "reading": null
+  },
+  {
+   "building": "bld_255490604",
+   "t_iso": "2026-01-15T23:02:36",
+   "reading": null
+  },
+  {
+   "building": "bld_1169967277",
+   "t_iso": "2026-01-15T09:43:52",
+   "reading": {
+    "people": 50,
+    "expectedSick": 18.29,
+    "heat": 0.335,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_m_stern_dining",
+   "t_iso": "2026-01-06T00:44:01",
+   "reading": null
+  },
+  {
+   "building": "bld_26292291",
+   "t_iso": "2026-01-11T10:32:37",
+   "reading": null
+  },
+  {
+   "building": "bld_232805673",
+   "t_iso": "2026-01-18T10:09:33",
+   "reading": null
+  },
+  {
+   "building": "bld_232805673",
+   "t_iso": "2026-01-18T07:53:26",
+   "reading": null
+  },
+  {
+   "building": "bld_m_wilbur_dining",
+   "t_iso": "2026-01-14T06:50:14",
+   "reading": null
+  },
+  {
+   "building": "bld_232805702",
+   "t_iso": "2026-01-11T23:50:58",
+   "reading": null
+  },
+  {
+   "building": "bld_232715666",
+   "t_iso": "2026-01-10T22:07:25",
+   "reading": null
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-09T01:55:51",
+   "reading": {
+    "people": 400,
+    "expectedSick": 133.56,
+    "heat": 0.906,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_m_green_library",
+   "t_iso": "2026-01-15T17:39:43",
+   "reading": {
+    "people": 50,
+    "expectedSick": 18.44,
+    "heat": 0.337,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-15T03:38:49",
+   "reading": {
+    "people": 450,
+    "expectedSick": 181.74,
+    "heat": 1,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-14T09:34:41",
+   "reading": {
+    "people": 150,
+    "expectedSick": 55.1,
+    "heat": 0.582,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_232805673",
+   "t_iso": "2026-01-17T22:47:04",
+   "reading": {
+    "people": 150,
+    "expectedSick": 45.19,
+    "heat": 0.527,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-11T20:27:37",
+   "reading": {
+    "people": 150,
+    "expectedSick": 73.64,
+    "heat": 0.673,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_m_stern_dining",
+   "t_iso": "2026-01-10T08:32:42",
+   "reading": {
+    "people": 50,
+    "expectedSick": 12.78,
+    "heat": 0.28,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232715571",
+   "t_iso": "2026-01-13T18:01:30",
+   "reading": {
+    "people": 50,
+    "expectedSick": 16.56,
+    "heat": 0.319,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232805707",
+   "t_iso": "2026-01-11T10:15:43",
+   "reading": {
+    "people": 200,
+    "expectedSick": 80.32,
+    "heat": 0.703,
+    "high": true
+   }
+  },
+  {
+   "building": "bld_232805656",
+   "t_iso": "2026-01-07T13:47:01",
+   "reading": {
+    "people": 50,
+    "expectedSick": 1,
+    "heat": 0.078,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232715571",
+   "t_iso": "2026-01-06T08:39:22",
+   "reading": {
+    "people": 50,
+    "expectedSick": 1,
+    "heat": 0.078,
+    "high": false
+   }
+  },
+  {
+   "building": "bld_232715666",
+   "t_iso": "2026-01-15T18:48:52",
+   "reading": {
+    "people": 50,
+    "expectedSick": 18.37,
+    "heat": 0.336,
+    "high": false
+   }
+  }
+ ],
+ "heatQueryCount": 30
+}
