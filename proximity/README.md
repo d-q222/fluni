@@ -1,8 +1,34 @@
 # proximity/ — live two-phone proximity alerts
 
-A SwiftUI test app (iOS 17+) for PRD Functionality 1. Two iPhones find each other, estimate
-distance, and warn the user when they've been near a contagious phone. It is built for the live demo
-and is not a production app.
+A SwiftUI app (iOS 17+) for PRD Functionality 1 (with the heat map and status from Functionality 2-3).
+Phones find each other, estimate distance, and warn the student when they've been near a contagious
+phone. Debug and demo controls live behind a Developer screen.
+
+## What the student sees
+
+- **Onboarding** (first launch only): what the app does, what is and isn't shared, then a "Turn on"
+  step that explains Bluetooth, Nearby Interaction, Location and Notifications and only then starts
+  the radios (so the system prompts come with context). Completion is stored in UserDefaults
+  (`hasOnboarded`).
+- **Today**: a calm status card (all clear / someone nearby may be contagious / close contact) with
+  plain-language advice, close-contact minutes out of 15, and a count of Fluni phones nearby (never
+  IDs or per-person distances). A sheet explains how it works and what is shared.
+- **Map**: the heat map web page (user view, `?embed=app`). The gear button sets its address.
+- **Me**: "I feel fine" / "I have symptoms" / "I tested positive" (with a confirmation), what each
+  shares, and when the status was set. "Developer tools" at the bottom opens the **Developer** screen:
+  per-peer rows with sensor chips and Details, demo speed, source toggles, reset, radio status.
+
+**Test launches skip onboarding.** If any of `-risk -speed -sources -encryption -inviteTimeout -rotate
+-riskAfter -skipOnboarding` is on the command line (as the scripts in `tools/` and `stress.py` pass
+them), the app starts the radios immediately and the `[fluni]` log lines are unchanged. The unit-test
+host (`XCTestConfigurationFilePath`) never starts radios. Default speed is real time; demos pass `-speed 60`.
+
+**Design.** The "campfire" palette (sage, sun, ember, fire, paper, ink) and the hand-drawn tissue
+illustration are by Lisa Zheng ([@lisaazheng](https://github.com/lisaazheng)), from the heat map design
+pass (`heatmap/assets/people/tissue.png`); the app icon is derived from that tissue. Tokens are in
+`Theme.swift`. The app is forced to light mode (the palette is only defined and contrast-checked on warm
+paper). Type is the system rounded font so Dynamic Type works; Hanken Grotesk (the web font) isn't
+bundled because its variable weights can't be verified here without running the app.
 
 ## How it works
 
@@ -28,12 +54,12 @@ contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risk
 within 6 ft, and a **close-contact alert with advice at 15 cumulative minutes** (the CDC rule).
 Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds.
 
-The **Heat map tab** loads the heat map workstream's page (`heatmap/`) over the local network
+The **Map tab** loads the heat map workstream's page (`heatmap/`) over the local network
 rather than copying it:
 
 ```
 cd fluni && python3 -m http.server 8000      # on the laptop
-# in the app, Heat map tab: http://<laptop>.local:8000/heatmap/
+# in the app, Map tab, gear button: http://<laptop>.local:8000/heatmap/?embed=app
 ```
 
 ## Run
@@ -75,7 +101,7 @@ With phones side by side at 60×, B should log `ALERT nearby` within seconds, th
 run `fused` with the phones in different rooms.
 
 Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagious`, `-speed 60`,
-`-sources UWB,BLE,GPS`, `-heatmapURL http://…`.
+`-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`.
 
 ## Limits
 
