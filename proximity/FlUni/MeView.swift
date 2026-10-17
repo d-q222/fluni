@@ -49,6 +49,9 @@ struct MeView: View {
                     Text("Only your status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes are shared with phones nearby. Symptoms, test details and dates stay on this phone. No name, no location.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
                         .padding(.top, 4)
+                    NavigationLink { SettingsView(model: model) } label: {
+                        Label("Settings", systemImage: "gearshape").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink).frame(minHeight: 44)
+                    }
                     Button { showDeveloper = true } label: {
                         Text("Developer tools").font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
                     }
