@@ -52,3 +52,6 @@ the results as order-of-magnitude estimates.
 other.
 
 This is separate from `model/`, which infers P(sick) for every agent from the sim's contact graph.
+
+A second version, which treats symptom-free days after the meeting as evidence, is in
+[`bayes/`](bayes/README.md).

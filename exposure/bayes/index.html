@@ -1,0 +1,343 @@
+<title>Flu Exposure Estimator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: instrument panel. Controls on the left in labelled groups, a sticky readout on the right. Stacks on phones. */
+:root {
+  --bg: #f3f5f6;
+  --panel: #ffffff;
+  --ink: #17242b;
+  --muted: #5b6b73;
+  --line: #d9e0e3;
+  --accent: #0f7c8c;
+  --accent-soft: #d6eef1;
+  --prior: #8a9aa3;
+  --warn: #c2571a;
+  --track: #e3e8ea;
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1619; --panel: #172126; --ink: #e4ecef; --muted: #93a5ad; --line: #2a383f;
+    --accent: #4cc3d2; --accent-soft: #173a40; --prior: #6c7e87; --warn: #f08a4b; --track: #24323a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1619; --panel: #172126; --ink: #e4ecef; --muted: #93a5ad; --line: #2a383f;
+  --accent: #4cc3d2; --accent-soft: #173a40; --prior: #6c7e87; --warn: #f08a4b; --track: #24323a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 24px; }
+header h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 24px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } .readout { position: static !important; order: -1; } }
+
+.controls { display: grid; gap: 16px; }
+fieldset { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; margin: 0; padding: 14px 18px 18px; display: grid; gap: 14px; min-width: 0; }
+legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 6px; margin-left: -6px; }
+.row { display: grid; gap: 4px; }
+.row .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.row label { font-weight: 500; }
+.row output { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap; }
+.row .hint { font-size: 12.5px; color: var(--muted); }
+
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; margin: 0; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(to right, var(--accent) var(--fill, 50%), var(--track) var(--fill, 50%)); }
+input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--track); }
+input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--panel); border: 2px solid var(--accent); margin-top: -7px; }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--panel); border: 2px solid var(--accent); }
+input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--ink); padding: 6px 16px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--panel); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.check { display: flex; gap: 10px; align-items: center; font-weight: 500; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.dim { opacity: 0.4; pointer-events: none; }
+
+.readout { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 18px; }
+.big-label { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.big { font-family: var(--f-display); font-weight: 700; font-size: 64px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.delta { font-family: var(--f-mono); font-size: 13px; color: var(--muted); margin-top: 6px; }
+.delta b { color: var(--warn); font-weight: 500; }
+.bar { height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; display: flex; }
+.bar span { display: block; height: 100%; transition: width .2s; }
+.bar .p { background: var(--prior); }
+.bar .n { background: var(--accent); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 13.5px; }
+dt { color: var(--muted); }
+dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--f-mono); font-size: 10px; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { font: inherit; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--panel); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.log { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.log ol { margin: 0; padding-left: 20px; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+footer { color: var(--muted); font-size: 12.5px; max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Flu Exposure Estimator</h1>
+    <p>Set the details of a meeting with someone who might have flu. The readout updates your chance of having flu using Wells-Riley airborne dose, a viral-shedding curve, humidity effects and incubation timing.</p>
+  </header>
+
+  <div class="grid">
+    <div class="controls">
+      <fieldset>
+        <legend>Before the meeting</legend>
+        <div class="row"><div class="top"><label for="prior">Your previous probability</label><output id="prior-o"></output></div>
+          <input type="range" id="prior" min="0" max="100" step="0.5" value="2">
+          <span class="hint">Your estimate before this meeting. Typical in-season baseline is 1–5%.</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The other person</legend>
+        <div class="row"><div class="top"><label for="pc">Chance they have flu (P)</label><output id="pc-o"></output></div>
+          <input type="range" id="pc" min="0" max="100" step="1" value="50"></div>
+        <div class="row"><div class="top"><label for="stage">Stage of illness</label><output id="stage-o"></output></div>
+          <input type="range" id="stage" min="-3" max="10" step="0.5" value="1">
+          <span class="hint">Days since their symptoms started. Negative means before symptoms.</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The meeting</legend>
+        <div class="row"><div class="top"><label for="dur">Duration</label><output id="dur-o"></output></div>
+          <input type="range" id="dur" min="0" max="1000" step="1" value="560"></div>
+        <div class="row"><div class="top"><label for="dist">Distance between you</label><output id="dist-o"></output></div>
+          <input type="range" id="dist" min="0" max="1000" step="1" value="380"></div>
+        <div class="row"><div class="top"><span style="font-weight:500">Setting</span>
+          <div class="seg" role="group" aria-label="Setting"><button type="button" id="in" aria-pressed="true">Indoors</button><button type="button" id="out" aria-pressed="false">Outdoors</button></div></div></div>
+        <div class="row" id="room-row"><div class="top"><label for="room">Room size</label><output id="room-o"></output></div>
+          <input type="range" id="room" min="0" max="1000" step="1" value="380">
+          <span class="hint">Floor area, 2.5 m ceiling, about 1 air change per hour.</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Weather</legend>
+        <div class="row"><div class="top"><label for="rh">Outdoor relative humidity</label><output id="rh-o"></output></div>
+          <input type="range" id="rh" min="0" max="100" step="1" value="50"></div>
+        <div class="row"><div class="top"><label for="temp">Outdoor temperature</label><output id="temp-o"></output></div>
+          <input type="range" id="temp" min="-20" max="40" step="1" value="5">
+          <span class="hint" id="ah-hint"></span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Since the meeting</legend>
+        <div class="row"><div class="top"><label for="days">Days since the meeting</label><output id="days-o"></output></div>
+          <input type="range" id="days" min="0" max="10" step="0.25" value="0"></div>
+        <label class="check"><input type="checkbox" id="sx"> I already have flu-like symptoms</label>
+      </fieldset>
+    </div>
+
+    <aside class="readout" aria-live="polite">
+      <div>
+        <div class="big-label">Chance you have flu now</div>
+        <div class="big" id="big">–</div>
+        <div class="delta" id="delta"></div>
+      </div>
+      <div>
+        <div class="bar"><span class="p" id="bar-p"></span><span class="n" id="bar-n"></span></div>
+        <div class="legend"><span><i style="background:var(--prior)"></i>Before the meeting</span><span><i style="background:var(--accent)"></i>Added by this meeting</span></div>
+      </div>
+      <div class="chart">
+        <div class="big-label" style="margin-bottom:6px">If you stay symptom-free</div>
+        <svg id="chart" viewBox="0 0 360 150" role="img" aria-label="Probability over days since the meeting"></svg>
+      </div>
+      <dl>
+        <dt>Their relative infectiousness</dt><dd id="d-inf"></dd>
+        <dt>Humidity effect</dt><dd id="d-hum"></dd>
+        <dt>Infectious doses inhaled (if sick)</dt><dd id="d-dose"></dd>
+        <dt>Infection chance if they're sick</dt><dd id="d-pt"></dd>
+        <dt>Infection chance from this meeting</dt><dd id="d-pm"></dd>
+      </dl>
+      <div class="btns">
+        <button class="btn" type="button" id="chain">Use as previous probability</button>
+        <button class="btn ghost" type="button" id="reset">Reset</button>
+      </div>
+      <div class="log" id="log" hidden><span>Meetings so far</span><ol id="log-list"></ol></div>
+    </aside>
+  </div>
+
+  <footer>Estimates only, not medical advice. Airborne emission rates for flu vary about tenfold between studies, so treat the number as a rough guide. Masks, vaccination and surface contact are not modelled. If you have symptoms, a test tells you more than this model can.</footer>
+</div>
+
+<script>
+const C = {
+  quanta: 20, breath: 0.5, ceiling: 2.5, ach: 1.0, dep: 0.3, inact: 0.6,
+  mouth: 0.02, entrain: 0.32, faceFrac: 0.15, outdoorNear: 0.3,
+  a: -180, r0max: 3.52, r0min: 1.12, qRef: 0.005,
+  incMed: 1.4, incDisp: 1.51, pSym: 0.67,
+};
+const SHED = [[-3,0],[-2,.05],[-1,.3],[0,.9],[1,1],[2,.8],[3,.5],[4,.3],[5,.15],[6,.08],[7,.04],[10,0]];
+
+function stageInf(s) {
+  if (s <= SHED[0][0] || s >= SHED[SHED.length-1][0]) return 0;
+  for (let i = 0; i < SHED.length - 1; i++) {
+    const [x0,y0] = SHED[i], [x1,y1] = SHED[i+1];
+    if (s >= x0 && s <= x1) return y0 + (y1-y0)*(s-x0)/(x1-x0);
+  }
+  return 0;
+}
+function specHum(rh, t, p = 1013.25) {
+  const es = 6.112 * Math.exp(17.67*t/(t+243.5)), e = rh/100*es;
+  return 0.622*e/(p - 0.378*e);
+}
+function humMult(rh, t) {
+  const r0 = q => Math.exp(C.a*q + Math.log(C.r0max - C.r0min)) + C.r0min;
+  return r0(specHum(rh, t)) / r0(C.qRef);
+}
+function dose(min, d, area, indoors, inf, hm) {
+  const h = min/60, q = C.quanta*inf*hm;
+  let far = 0;
+  if (indoors) far = q/(area*C.ceiling*(C.ach + C.dep + C.inact))*C.breath*h;
+  const dil = Math.max(1, C.entrain*Math.max(d, 0.1)/C.mouth);
+  let near = C.faceFrac*q/(C.breath*dil)*C.breath*h;
+  if (!indoors) near *= C.outdoorNear;
+  return far + near;
+}
+function erf(x) { // Abramowitz & Stegun 7.1.26
+  const s = Math.sign(x); x = Math.abs(x);
+  const t = 1/(1+0.3275911*x);
+  const y = 1 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592)*t*Math.exp(-x*x);
+  return s*y;
+}
+function incCdf(days) {
+  if (days <= 0) return 0;
+  const mu = Math.log(C.incMed), sg = Math.log(C.incDisp);
+  return 0.5*(1 + erf((Math.log(days) - mu)/(sg*Math.SQRT2)));
+}
+function update(v, daysOverride) {
+  const days = daysOverride ?? v.days;
+  const inf = stageInf(v.stage), hm = humMult(v.rh, v.temp);
+  const dq = dose(v.dur, v.dist, v.room, v.indoors, inf, hm);
+  const pt = 1 - Math.exp(-dq), pm = v.pc*pt;
+  const after = 1 - (1 - v.prior)*(1 - pm);
+  let post = after;
+  if (!v.sx) {
+    const L = 1 - C.pSym*incCdf(days);
+    const nb = (1 - v.prior)*pm*L, ni = (1 - v.prior)*(1 - pm);
+    post = (v.prior + nb)/(v.prior + nb + ni);
+  }
+  return { inf, hm, dq, pt, pm, after, post };
+}
+
+// Log-scale sliders: 0..1000 maps to [lo, hi]
+const logMap = (x, lo, hi) => lo*Math.pow(hi/lo, x/1000);
+const logInv = (v, lo, hi) => Math.round(1000*Math.log(v/lo)/Math.log(hi/lo));
+const $ = id => document.getElementById(id);
+let indoors = true;
+const log = [];
+
+const pct = x => x >= 0.995 ? ">99%" : x < 0.001 ? "<0.1%" : x < 0.1 ? (x*100).toFixed(1)+"%" : Math.round(x*100)+"%";
+const fmtDur = m => m < 60 ? Math.round(m)+" min" : (m/60).toFixed(m < 600 ? 1 : 0)+" h";
+const fmtDist = d => d < 1 ? Math.round(d*100)+" cm" : d.toFixed(d < 10 ? 1 : 0)+" m";
+function fmtStage(s) {
+  const n = s === 0 ? "symptoms began today" : s < 0 ? `${-s} day${s===-1?"":"s"} before symptoms` : `day ${s} of symptoms`;
+  const tag = s < -1 ? "incubating" : s < 0 ? "presymptomatic" : s <= 2 ? "peak" : s <= 5 ? "declining" : "recovering";
+  return `${n} · ${tag}`;
+}
+
+function read() {
+  return {
+    prior: +$("prior").value/100, pc: +$("pc").value/100, stage: +$("stage").value,
+    dur: logMap(+$("dur").value, 1, 600), dist: logMap(+$("dist").value, 0.2, 20),
+    room: logMap(+$("room").value, 5, 1000), indoors,
+    rh: +$("rh").value, temp: +$("temp").value, days: +$("days").value, sx: $("sx").checked,
+  };
+}
+
+function drawChart(v, r) {
+  const W = 360, H = 150, L = 34, R = 10, T = 10, B = 24, w = W-L-R, h = H-T-B;
+  const pts = [];
+  for (let d = 0; d <= 10; d += 0.1) pts.push([d, update(v, d).post]);
+  const ymax = Math.max(0.05, Math.ceil(Math.max(...pts.map(p => p[1]))*10)/10 || 0.1);
+  const X = d => L + d/10*w, Y = p => T + h - p/ymax*h;
+  const line = pts.map((p,i) => (i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join("");
+  const area = line + `L${X(10)} ${Y(0)}L${X(0)} ${Y(0)}Z`;
+  let g = "";
+  for (let i = 0; i <= 4; i++) {
+    const yv = ymax*i/4, y = Y(yv);
+    g += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    g += `<text x="${L-6}" y="${y+3}" text-anchor="end">${Math.round(yv*100)}%</text>`;
+  }
+  for (let d = 0; d <= 10; d += 2) g += `<text x="${X(d)}" y="${H-8}" text-anchor="middle">${d}d</text>`;
+  const pr = Y(v.prior);
+  g += `<line x1="${L}" x2="${W-R}" y1="${pr}" y2="${pr}" stroke="var(--prior)" stroke-dasharray="3 3" stroke-width="1"/>`;
+  g += `<path d="${area}" fill="var(--accent-soft)" stroke="none"/>`;
+  g += `<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  g += `<circle cx="${X(v.days)}" cy="${Y(r.post)}" r="4.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/>`;
+  $("chart").innerHTML = g;
+  $("chart").parentElement.classList.toggle("dim", v.sx);
+}
+
+function render() {
+  const v = read(), r = update(v);
+  $("prior-o").textContent = pct(v.prior);
+  $("pc-o").textContent = Math.round(v.pc*100)+"%";
+  $("stage-o").textContent = fmtStage(v.stage);
+  $("dur-o").textContent = fmtDur(v.dur);
+  $("dist-o").textContent = fmtDist(v.dist);
+  $("room-o").textContent = Math.round(v.room)+" m²";
+  $("rh-o").textContent = v.rh+"%";
+  $("temp-o").textContent = v.temp+" °C";
+  $("days-o").textContent = v.days === 0 ? "today" : v.days+" days";
+  const ah = specHum(v.rh, v.temp)*1000;
+  $("ah-hint").textContent = `Specific humidity ${ah.toFixed(1)} g/kg. Drier air (lower g/kg) helps flu spread.`;
+  $("room-row").classList.toggle("dim", !indoors);
+  document.querySelectorAll("input[type=range]").forEach(el => {
+    el.style.setProperty("--fill", ((el.value - el.min)/(el.max - el.min)*100)+"%");
+  });
+
+  $("big").textContent = pct(r.post);
+  const diff = r.post - v.prior;
+  $("delta").innerHTML = `from ${pct(v.prior)} · <b>${diff >= 0 ? "+" : "−"}${(Math.abs(diff)*100).toFixed(1)} pts</b>`;
+  $("bar-p").style.width = Math.min(v.prior, r.post)*100+"%";
+  $("bar-n").style.width = Math.max(0, r.post - v.prior)*100+"%";
+  $("d-inf").textContent = Math.round(r.inf*100)+"% of peak";
+  $("d-hum").textContent = "×"+r.hm.toFixed(2);
+  $("d-dose").textContent = r.dq.toFixed(3);
+  $("d-pt").textContent = pct(r.pt);
+  $("d-pm").textContent = pct(r.pm);
+  drawChart(v, r);
+  return { v, r };
+}
+
+document.querySelectorAll("input").forEach(el => el.addEventListener("input", render));
+$("in").onclick = () => { indoors = true; $("in").setAttribute("aria-pressed","true"); $("out").setAttribute("aria-pressed","false"); render(); };
+$("out").onclick = () => { indoors = false; $("out").setAttribute("aria-pressed","true"); $("in").setAttribute("aria-pressed","false"); render(); };
+$("chain").onclick = () => {
+  const { v, r } = render();
+  log.push(`${pct(v.prior)} → ${pct(r.post)}  (${fmtDur(v.dur)}, ${fmtDist(v.dist)}, P=${Math.round(v.pc*100)}%)`);
+  $("log-list").innerHTML = log.map(s => `<li>${s}</li>`).join("");
+  $("log").hidden = false;
+  $("prior").value = Math.min(100, Math.round(r.post*200)/2);
+  render();
+};
+$("reset").onclick = () => {
+  const d = { prior: 2, pc: 50, stage: 1, dur: logInv(60,1,600), dist: logInv(1,0.2,20), room: logInv(30,5,1000), rh: 50, temp: 5, days: 0 };
+  for (const k in d) $(k).value = d[k];
+  $("sx").checked = false; $("in").click();
+  log.length = 0; $("log").hidden = true;
+};
+$("reset").click();
+</script>
