@@ -575,6 +575,58 @@ async function main() {
     return aero;
   };
 
+  // Infectious air by room, straight from the simulator: room_exposure.csv.gz has the sim's own
+  // quanta concentration for every occupied room and step (Wells-Riley, with each room's volume and
+  // ventilation). Nothing is re-estimated here; each room is filled with its value. Loaded on first use.
+  const simStart = model ? model.startMs : t0, simStepMs = model ? model.stepMs : (times[1] - times[0]) || 300000;
+  let roomAir = null, roomAirLoading = null;
+  const loadRoomAir = () => (roomAirLoading ||= (async () => {
+    const { data: rows } = await loadCsv(new URL('room_exposure.csv.gz', new URL(dataUrl, location.href)),
+      ['t', 'room_id', 'infectious_occupants', 'quanta_concentration']);
+    const steps = new Map(), lit = new Set(), peak = new Map();
+    for (const r of rows) {
+      const q = Number(r.quanta_concentration), t = Number(r.t);
+      if (!(q > 0)) continue;
+      if (!steps.has(t)) steps.set(t, []);
+      steps.get(t).push([r.room_id, q]);
+      lit.add(r.room_id);
+      peak.set(t, Math.max(peak.get(t) || 0, q));
+    }
+    const peaks = [...peak.values()].sort((a, b) => a - b);
+    const renderer = L.canvas({ padding: 0.2 }), shapes = new Map(), layer = L.layerGroup();
+    for (const id of lit) {
+      const i = rooms.index.get(id);
+      if (i === undefined) continue;
+      const shape = L.geoJSON(wktGeometry(rooms.wkts[i]), { renderer, interactive: false,
+        style: { color: '#a8988a', weight: 0.5, opacity: 0.5, fillOpacity: 0 } });
+      shapes.set(id, shape);
+      layer.addLayer(shape);
+    }
+    roomAir = { steps, shapes, layer, vmax: peaks[Math.floor(0.9 * (peaks.length - 1))] || 1, on: new Set(), shown: null };
+    renderLegend();
+    heatDirty = true;
+    render(performance.now()); // also when paused
+  })().catch((err) => console.warn(`No room exposure for this run (${err.message})`)));
+  const rampColor = (x) => { // HEAT_STOPS at x in 0..1, opaque
+    let k = 1;
+    while (k < HEAT_STOPS.length - 1 && HEAT_STOPS[k][0] < x) k++;
+    const [ta, a] = HEAT_STOPS[k - 1], [tb, b] = HEAT_STOPS[k], f = Math.min(1, Math.max(0, (x - ta) / (tb - ta || 1)));
+    return `rgb(${a.slice(0, 3).map((c, j) => Math.round(c + f * (b[j] - c))).join(',')})`;
+  };
+  function showRoomAir(t) {
+    const k = Math.floor((t - simStart) / simStepMs); // the sim step on screen
+    if (!roomAir || roomAir.shown === k) return;
+    roomAir.shown = k;
+    for (const id of roomAir.on) roomAir.shapes.get(id).setStyle({ fillOpacity: 0 });
+    roomAir.on.clear();
+    for (const [id, q] of roomAir.steps.get(k) || []) {
+      const shape = roomAir.shapes.get(id);
+      if (!shape) continue;
+      shape.setStyle({ fillColor: rampColor(Math.min(1, Math.sqrt(q / roomAir.vmax))), fillOpacity: 0.85 });
+      roomAir.on.add(id);
+    }
+  }
+
   const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
   // "True status (sim)" colouring also switches the demo heat to actual infections.
   const truthMode = () => data.hasTruth && $('dot-mode').value === 'truth';
@@ -783,7 +835,11 @@ async function main() {
     const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
     if (heatDue) {
       const started = performance.now();
-      heatLayer.canvas.style.display = view === 'public' ? 'none' : '';
+      heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
+      if (view === 'airborne') {
+        if (!roomAir) loadRoomAir();
+        else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
+      } else if (roomAir && map.hasLayer(roomAir.layer)) roomAir.layer.remove();
       if (publicLayer) {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
@@ -792,7 +848,7 @@ async function main() {
         const st = [...current.values()];
         paint(airflowAt(now, st, truthMode()), heatLayer.canvas, aeroMax);
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
-      } else if (view !== 'public') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
+      } else if (view !== 'public' && view !== 'airborne') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
       lastHeat = realNow;
       heatDirty = false;
       const cost = performance.now() - started;
@@ -854,7 +910,13 @@ async function main() {
     const top = v === 'public' ? vmax.public : demoScale();
     $('vmid').textContent = v === 'airflow' ? '' : (top * unit / 4).toFixed(1);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${(top * unit).toFixed(1)}+`;
-    document.querySelector('.legend h2').innerHTML = v === 'airflow'
+    if (v === 'airborne') {
+      $('vmid').textContent = roomAir ? (roomAir.vmax / 4).toPrecision(2) : '';
+      $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
+    }
+    document.querySelector('.legend h2').innerHTML = v === 'airborne'
+      ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
+      : v === 'airflow'
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
@@ -890,7 +952,8 @@ async function main() {
     setPlaying(!playing);
   });
   // Experimental airflow heat (aerosol.js); added here so the page markup stays the design pass's.
-  $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
+  $('view').append(new Option('Infectious air by room (sim)', 'airborne'));
+  if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
   // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
   const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
