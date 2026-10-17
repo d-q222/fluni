@@ -4,39 +4,42 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Campus Sim Viewer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
 :root {
-  --bg: #f6f7f9; --panel: rgba(255,255,255,0.96); --ink: #1d2430; --ink2: #4a5566; --muted: #7b8594;
-  --border: #dde1e7; --accent: #2f6fdf; --row: #f1f3f6; --hl: #fff4d6; --shadow: 0 2px 10px rgba(20,30,50,.14);
+  /* Fluni design palette (same as heatmap/index.html): warm paper, charcoal-brown ink. */
+  --bg: #faf4e8; --panel: rgba(255,250,241,0.96); --ink: #33241c; --ink2: #6a5244; --muted: #7a6152;
+  --border: #e6d8bf; --accent: #33241c; --on-accent: #fffaf1; --row: #f4ead6; --hl: #fbeedb; --shadow: 0 1px 2px rgba(51,36,28,.07), 0 8px 24px -6px rgba(51,36,28,.16);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12161c; --panel: rgba(26,31,39,0.96); --ink: #e7ebf1; --ink2: #b4bdca; --muted: #8590a0;
-    --border: #343c49; --accent: #6ea2ff; --row: #20262f; --hl: #3b3420; --shadow: 0 2px 12px rgba(0,0,0,.5);
+    --bg: #1f1813; --panel: rgba(41,32,26,0.96); --ink: #f6ecd9; --ink2: #d6c3a8; --muted: #a8937c;
+    --border: #4a3a2e; --accent: #ebd187; --on-accent: #33241c; --row: #2e241d; --hl: #4a3b22; --shadow: 0 2px 12px rgba(0,0,0,.5);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #12161c; --panel: rgba(26,31,39,0.96); --ink: #e7ebf1; --ink2: #b4bdca; --muted: #8590a0;
-  --border: #343c49; --accent: #6ea2ff; --row: #20262f; --hl: #3b3420; --shadow: 0 2px 12px rgba(0,0,0,.5);
+  --bg: #1f1813; --panel: rgba(41,32,26,0.96); --ink: #f6ecd9; --ink2: #d6c3a8; --muted: #a8937c;
+  --border: #4a3a2e; --accent: #ebd187; --on-accent: #33241c; --row: #2e241d; --hl: #4a3b22; --shadow: 0 2px 12px rgba(0,0,0,.5);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
-  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  font: 13px/1.45 "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 #map { position: absolute; inset: 0; }
 #dots { position: absolute; left: 0; top: 0; pointer-events: none; }
-.card { position: absolute; background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+.card { position: absolute; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: var(--shadow); }
 #bar { left: 12px; right: 352px; bottom: 26px; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
 #bar .row1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #clock { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; min-width: 210px; }
 #clock small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
 button, select { font: inherit; color: var(--ink); background: var(--row); border: 1px solid var(--border);
-  border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+  border-radius: 999px; padding: 3px 10px; cursor: pointer; }
 button:hover, select:hover { border-color: var(--accent); }
-button.play { min-width: 64px; font-weight: 600; background: var(--accent); color: #fff; border-color: var(--accent); }
+button.play { min-width: 64px; font-weight: 600; background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 #scrub { width: 100%; accent-color: var(--accent); margin: 0; }
+input[type=checkbox] { accent-color: var(--accent); }
 .spacer { flex: 1; }
 .lbl { color: var(--muted); font-size: 12px; }
 #side { right: 12px; top: 12px; bottom: 26px; width: 328px; padding: 10px 12px; overflow-y: auto; }
@@ -48,7 +51,7 @@ table.legend td { padding: 2px 2px; }
 table.legend td.n { text-align: right; color: var(--ink2); }
 table.legend th { font-weight: 500; color: var(--muted); font-size: 11px; text-align: right; }
 .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-right: 6px;
-  border: 1px solid rgba(0,0,0,.25); }
+  border: 1px solid rgba(51,36,28,.25); }
 .sq { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
 .ctl { display: grid; grid-template-columns: auto 1fr; gap: 5px 8px; align-items: center; }
 .ctl select { width: 100%; }
@@ -68,7 +71,7 @@ table.kv td { padding: 2px 4px; border-bottom: 1px solid var(--row); vertical-al
 table.kv td:first-child { color: var(--muted); white-space: nowrap; word-break: normal; width: 44%; }
 table.kv tr.chg td:last-child { background: var(--hl); }
 #strip { width: 100%; height: 14px; display: block; border-radius: 3px; cursor: pointer; }
-.pill { display: inline-block; padding: 0 7px; border-radius: 9px; color: #fff; font-size: 11px; font-weight: 600; }
+.pill { display: inline-block; padding: 0 7px; border-radius: 9px; color: #33241c; font-size: 11px; font-weight: 600; }
 .maplibregl-popup-content { background: var(--panel); color: var(--ink); font-size: 12px; padding: 8px 10px; }
 .maplibregl-popup-tip { display: none; }
 .maplibregl-ctrl-attrib { font-size: 11px; }
@@ -147,13 +150,20 @@ table.kv tr.chg td:last-child { background: var(--hl); }
 <script id="run-data" type="application/json">/*__DATA__*/</script>
 <script>
 "use strict";
-const STATE_COLORS = { S: "#7d93ad", E: "#f2b52c", I_pre: "#f07c22", I_sym: "#d62828", I_asym: "#c5359b", R: "#3fa34d" };
+// Fluni palette. Susceptible = sage (the heat map's "healthy"), then sun → ember → fire as the
+// infection progresses; asymptomatic = maroon and recovered = teal, both from Lisa's sketch.
+const STATE_COLORS = { S: "#acbc8b", E: "#ebd187", I_pre: "#e99569", I_sym: "#db6c59", I_asym: "#90524e", R: "#578d80" };
+// People marker shared with the heat map (heatmap/assets/people/tissue.png, 64px), embedded so the
+// viewer still works from file://.
+const TISSUE = new Image(); TISSUE.onload = () => { try { draw(); } catch (e) {} }; TISSUE.src = "data:image/png;base64,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";
+const PILL_LIGHT_TEXT = new Set(["I_asym", "R"]);   // darker pills take cream text
 const TYPE_COLORS = {
-  dorm: "#7fa6d9", classroom: "#e0b04f", lecture_hall: "#d48740", dining: "#6fb86d", library: "#a184cf",
-  gym: "#de7474", lab: "#4fadad", party_venue: "#e070bb", event_venue: "#bf9c62", common_room: "#93bd9b",
-  outdoor: "#a9d27c", health_center: "#f05a5a", admin: "#9aa3ad", other: "#b9ad9f",
+  // Muted tints of the same campfire palette, so building types never look like infection states.
+  dorm: "#8fb0a6", classroom: "#e3c27a", lecture_hall: "#d99a6c", dining: "#a7b97f", library: "#a87a6f",
+  gym: "#cf7a68", lab: "#6f9c90", party_venue: "#c58b9a", event_venue: "#bfa47a", common_room: "#b9c8a6",
+  outdoor: "#c9d6a0", health_center: "#b8574a", admin: "#b3a594", other: "#cfc3b3",
 };
-const ENT_COLORS = { osm: "#1a9850", estimated: "#f39c12", fallback: "#d73027" };
+const ENT_COLORS = { osm: "#578d80", estimated: "#d9a441", fallback: "#db6c59" };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const NULLV = 2000000001;
 
@@ -211,7 +221,7 @@ const trm = COL.transport_mode ? decodeCat(COL.transport_mode) : null;
 const BIKE = dictIndex("transport_mode", "bike");
 // state dict code -> canonical state index
 const stIdx = (COL.disease_state ? COL.disease_state.dict : []).map(s => M.states.indexOf(s));
-const stColor = (COL.disease_state ? COL.disease_state.dict : []).map(s => STATE_COLORS[s] || "#888");
+const stColor = (COL.disease_state ? COL.disease_state.dict : []).map(s => STATE_COLORS[s] || "#a8988a");
 
 // agents_static lookup
 const SC = D.static_cols, archCol = SC.indexOf("archetype");
@@ -232,7 +242,7 @@ const map = new maplibregl.Map({
   style: "https://tiles.openfreemap.org/styles/positron",
 });
 // offline / style fetch failure: fall back to a plain background so overlays still render
-const BLANK_STYLE = { version: 8, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#e8e8e4" } }] };
+const BLANK_STYLE = { version: 8, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#f4ead6" } }] };
 let styleFallback = false;
 map.on("error", e => {
   if (!styleFallback && !map.isStyleLoaded() && !map.getStyle()?.layers?.length) {
@@ -275,33 +285,33 @@ function addOverlays() {
   if (MD.paths && MD.paths.length) {
     map.addSource("paths", { type: "geojson", data: { type: "FeatureCollection", features: MD.paths.map(p => ({ type: "Feature",
       properties: { highway: p[0] }, geometry: { type: "LineString", coordinates: unq(p[1]) } })) } });
-    map.addLayer({ id: "paths", type: "line", source: "paths", paint: { "line-color": "#5b84b8", "line-opacity": 0.45,
+    map.addLayer({ id: "paths", type: "line", source: "paths", paint: { "line-color": "#8aa39b", "line-opacity": 0.55,
       "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.5, 18, 2] } });
   }
   map.addSource("bld", { type: "geojson", data: { type: "FeatureCollection", features: bldFeatures } });
   map.addLayer({ id: "bld-fill", type: "fill", source: "bld", filter: ["!=", ["geometry-type"], "Point"],
     paint: { "fill-color": typeMatch, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 15, 0.55, 19, 0.3] } });
   map.addLayer({ id: "bld-line", type: "line", source: "bld", filter: ["!=", ["geometry-type"], "Point"],
-    paint: { "line-color": "#4d4a45", "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.3, 18, 1.2], "line-opacity": 0.6 } });
+    paint: { "line-color": "#6a5244", "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.3, 18, 1.2], "line-opacity": 0.6 } });
   map.addLayer({ id: "bld-pt", type: "circle", source: "bld", filter: ["==", ["geometry-type"], "Point"],
-    paint: { "circle-color": typeMatch, "circle-radius": 5, "circle-stroke-color": "#4d4a45", "circle-stroke-width": 1, "circle-opacity": 0.7 } });
+    paint: { "circle-color": typeMatch, "circle-radius": 5, "circle-stroke-color": "#6a5244", "circle-stroke-width": 1, "circle-opacity": 0.75 } });
   map.addSource("rooms", { type: "geojson", data: { type: "FeatureCollection", features: roomFeatures } });
   map.addLayer({ id: "rooms-fill", type: "fill", source: "rooms", minzoom: 18,
-    paint: { "fill-color": ["interpolate", ["linear"], ["coalesce", ["feature-state", "occ"], 0], 0, "#ffffff", 1, "#fdd49e", 4, "#fc8d59", 12, "#d7301f"],
+    paint: { "fill-color": ["interpolate", ["linear"], ["coalesce", ["feature-state", "occ"], 0], 0, "#faf4e8", 1, "#ebd187", 4, "#e99569", 12, "#db6c59"],
       "fill-opacity": ["case", [">", ["coalesce", ["feature-state", "occ"], 0], 0], 0.75, 0.35] } });
-  map.addLayer({ id: "rooms-line", type: "line", source: "rooms", minzoom: 18, paint: { "line-color": "#6b665f", "line-width": 0.7 } });
+  map.addLayer({ id: "rooms-line", type: "line", source: "rooms", minzoom: 18, paint: { "line-color": "#7a6152", "line-width": 0.7 } });
   if (MD.entrances && MD.entrances.length) {
     map.addSource("ent", { type: "geojson", data: { type: "FeatureCollection", features: MD.entrances.map(e => ({ type: "Feature",
       properties: { entrance_id: e[0], building_id: e[1], source: e[4] }, geometry: { type: "Point", coordinates: [e[3], e[2]] } })) } });
     map.addLayer({ id: "ent", type: "circle", source: "ent", minzoom: 17, paint: {
       "circle-color": ["match", ["get", "source"], "osm", ENT_COLORS.osm, "estimated", ENT_COLORS.estimated, ENT_COLORS.fallback],
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 17, 2.5, 20, 5], "circle-stroke-color": "#fff", "circle-stroke-width": 1 } });
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 17, 2.5, 20, 5], "circle-stroke-color": "#fffaf1", "circle-stroke-width": 1 } });
   }
   if (MD.entry_points && MD.entry_points.length) {
     map.addSource("entry", { type: "geojson", data: { type: "FeatureCollection", features: MD.entry_points.map(e => ({ type: "Feature",
       properties: { entry_id: e[0], name: e[1] }, geometry: { type: "Point", coordinates: [e[3], e[2]] } })) } });
-    map.addLayer({ id: "entry", type: "circle", source: "entry", paint: { "circle-color": "#222", "circle-radius": 5,
-      "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });
+    map.addLayer({ id: "entry", type: "circle", source: "entry", paint: { "circle-color": "#33241c", "circle-radius": 5,
+      "circle-stroke-color": "#fffaf1", "circle-stroke-width": 2 } });
   }
   // fit to buildings
   const b = new maplibregl.LngLatBounds(); let any = false;
@@ -402,21 +412,24 @@ function draw() {
     const i = k * F + f, moving = mov[i] === MOV_TRUE, bike = moving && trm && trm[i] === BIKE;
     const dim = filtFloor && catStr("floor", flo[i]) !== filtFloor;
     ctx.globalAlpha = dim ? 0.22 : 1;
+    const big = !bike && r >= 4.5 && TISSUE.complete && TISSUE.naturalWidth;   // zoomed in: Lisa's tissue on a badge (bikes stay diamonds)
+    const rr = big ? r * 1.5 : moving ? r * 0.72 : r;
     ctx.beginPath();
     if (bike) { const q = r * 1.05; ctx.moveTo(scrX[k], scrY[k] - q); ctx.lineTo(scrX[k] + q, scrY[k]); ctx.lineTo(scrX[k], scrY[k] + q); ctx.lineTo(scrX[k] - q, scrY[k]); ctx.closePath(); }
-    else ctx.arc(scrX[k], scrY[k], moving ? r * 0.72 : r, 0, 6.2832);
+    else ctx.arc(scrX[k], scrY[k], rr, 0, 6.2832);
     ctx.fillStyle = stColor[st[i]]; ctx.fill();
-    ctx.lineWidth = moving ? 1.4 : 0.8; ctx.strokeStyle = moving ? "#1d2430" : "rgba(255,255,255,0.9)"; ctx.stroke();
+    ctx.lineWidth = big ? 1.6 : moving ? 1.4 : 0.8; ctx.strokeStyle = moving ? "#33241c" : "rgba(255,250,241,0.9)"; ctx.stroke();
+    if (big) { const s = rr * 1.7; ctx.drawImage(TISSUE, scrX[k] - s / 2, scrY[k] - s / 2 - 0.5, s, s); }
   }
   ctx.globalAlpha = 1;
   if (sel >= 0 && trips.length) {   // selected agent's current route
     const t = tripAt(sel, M.frames_t[f] + a * M.stride);
     if (t) { ctx.beginPath(); for (let q = 0; q < t.xs.length; q++) { const p = map.project([t.xs[q], t.ys[q]]); q ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
-      ctx.lineWidth = 2.5; ctx.strokeStyle = t.bike ? "rgba(38,110,200,0.8)" : "rgba(30,30,30,0.6)"; ctx.setLineDash(t.bike ? [] : [5, 4]); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.lineWidth = 2.5; ctx.strokeStyle = t.bike ? "rgba(87,141,128,0.85)" : "rgba(51,36,28,0.6)"; ctx.setLineDash(t.bike ? [] : [5, 4]); ctx.stroke(); ctx.setLineDash([]); }
   }
   if (sel >= 0 && onScr[sel]) {
-    ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.stroke();
-    ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 1.6; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 3; ctx.strokeStyle = "#fffaf1"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 1.6; ctx.strokeStyle = "#33241c"; ctx.stroke();
   }
 }
 function nearestAgent(pt, maxPx) {
@@ -578,7 +591,7 @@ function updateAgentPanel(f) {
   if (sel < 0 || !agentCache) return;
   const cur = rowValues(f), prev = f > 0 ? rowValues(f - 1) : cur;
   const sname = cur.disease_state || "";
-  const pill = document.getElementById("a-state"); pill.textContent = sname; pill.style.background = STATE_COLORS[sname] || "#888";
+  const pill = document.getElementById("a-state"); pill.textContent = sname; pill.style.background = STATE_COLORS[sname] || "#a8988a"; pill.style.color = PILL_LIGHT_TEXT.has(sname) ? "#fffaf1" : "#33241c";
   document.getElementById("a-row").innerHTML = M.columns.map(c => {
     const v = cur[c] ?? "", chg = c !== "t" && c !== "timestamp" && (prev[c] ?? "") !== v;
     return `<tr class="${chg ? "chg" : ""}"><td>${esc(c)}</td><td>${v === "" ? '<span style="color:var(--muted)">—</span>' : esc(v)}</td></tr>`;
@@ -592,13 +605,13 @@ function drawStrip() {
   strip.width = w * dpr; strip.height = h * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const a = agentCache.disease_state, om = agentCache.off_map;
   for (let x = 0; x < w; x++) { const f = Math.min(F - 1, Math.floor(x / w * F));
-    sctx.fillStyle = a ? stColor[a[f]] : "#888"; sctx.fillRect(x, 0, 1, h);
-    if (om && om[f] === OFF_TRUE) { sctx.fillStyle = "rgba(0,0,0,.28)"; sctx.fillRect(x, h - 4, 1, 4); } }
+    sctx.fillStyle = a ? stColor[a[f]] : "#a8988a"; sctx.fillRect(x, 0, 1, h);
+    if (om && om[f] === OFF_TRUE) { sctx.fillStyle = "rgba(51,36,28,.3)"; sctx.fillRect(x, h - 4, 1, 4); } }
   stripImg = sctx.getImageData(0, 0, strip.width, strip.height);
 }
 function drawStripCursor(f) {
   if (!stripImg) return; sctx.putImageData(stripImg, 0, 0);
-  const w = strip.clientWidth, x = (f + 0.5) / F * w; sctx.fillStyle = "#111"; sctx.fillRect(x - 1, 0, 2, 14);
+  const w = strip.clientWidth, x = (f + 0.5) / F * w; sctx.fillStyle = "#33241c"; sctx.fillRect(x - 1, 0, 2, 14);
 }
 strip.onclick = e => { const r = strip.getBoundingClientRect(); setPlaying(false); setFrame(Math.floor((e.clientX - r.left) / r.width * F)); };
 
@@ -619,7 +632,7 @@ function buildEpi() {
 function drawEpi() {
   if (!epiImg) return; ectx.putImageData(epiImg, 0, 0);
   const w = epi.clientWidth, x = (M.frames_t[Math.floor(pos)] + 0.5) / M.n_steps * w;
-  ectx.fillStyle = "#111"; ectx.fillRect(x - 1, 0, 2, 90); ectx.fillStyle = "#fff"; ectx.fillRect(x - 0.5, 0, 1, 90);
+  ectx.fillStyle = "#33241c"; ectx.fillRect(x - 1, 0, 2, 90); ectx.fillStyle = "#fffaf1"; ectx.fillRect(x - 0.5, 0, 1, 90);
 }
 function epiSeek(e) { const r = epi.getBoundingClientRect(), t = (e.clientX - r.left) / r.width * M.n_steps; setPlaying(false); setFrame(Math.round(t / M.stride)); }
 epi.addEventListener("mousedown", e => { epiSeek(e); const mv = ev => epiSeek(ev), up = () => { removeEventListener("mousemove", mv); removeEventListener("mouseup", up); }; addEventListener("mousemove", mv); addEventListener("mouseup", up); });
