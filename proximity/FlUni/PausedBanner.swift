@@ -13,6 +13,7 @@ struct PausedBanner: View {
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
             let resume = Button("Resume detection") { model.resume() }
+                .accessibilityIdentifier("banner.resume")
                 .font(.fluni(.subheadline, weight: .semibold))
                 .frame(minWidth: 44, minHeight: 44)
             ViewThatFits(in: .horizontal) {
@@ -33,6 +34,7 @@ struct PausedBanner: View {
             .foregroundStyle(Theme.ink)
             .card(fill: Theme.sun.opacity(0.5))
             .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("banner.paused")
         }
     }
 }

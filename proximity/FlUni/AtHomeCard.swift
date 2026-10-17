@@ -36,6 +36,7 @@ struct AtHomeCard: View {
         .card(fill: Theme.surface2)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("At home")
+        .accessibilityIdentifier("athome.card")
         .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
             Button("OK", role: .cancel) {}
         } message: { Text(blocked ?? "") }

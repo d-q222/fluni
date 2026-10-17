@@ -11,6 +11,14 @@ struct FlUniApp: App {
     @State private var showCloseContact = false
     @Environment(\.scenePhase) private var phase
 
+    init() {
+        // Test-only (XCUITest sets these environment variables; launch arguments can't trigger them).
+        let env = ProcessInfo.processInfo.environment
+        if env["FLUNI_UITEST_RESET"] == "1" { SettingsView.eraseLocalData() }
+        skipRadios = env["FLUNI_UITEST_NO_RADIOS"] == "1"
+    }
+    private let skipRadios: Bool  // test-only: UI tests never broadcast
+
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
 
     var body: some Scene {
@@ -22,10 +30,13 @@ struct FlUniApp: App {
                     TabView {
                         TodayView(model: model)
                             .tabItem { Label("Today", systemImage: "sun.max") }
+                            .accessibilityIdentifier("tab.today")
                         HeatmapView()
                             .tabItem { Label("Map", systemImage: "map") }
+                            .accessibilityIdentifier("tab.map")
                         MeView(model: model)
                             .tabItem { Label("Me", systemImage: "person.crop.circle") }
+                            .accessibilityIdentifier("tab.me")
                     }
                     .tint(Theme.ink)
                     .onAppear(perform: startOnce)
@@ -47,7 +58,7 @@ struct FlUniApp: App {
 
     private func startOnce() {
         // Unit tests run inside this app; don't start radios there.
-        guard !started, !LaunchMode.isUnitTestHost else { return }
+        guard !started, !LaunchMode.isUnitTestHost, !skipRadios else { return }
         started = true
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
         model.sharesLocationWithPeers = false  // privacy promise: precise location never leaves the phone

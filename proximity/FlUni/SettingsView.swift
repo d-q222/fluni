@@ -55,6 +55,7 @@ struct SettingsView: View {
             } label: {
                 Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
             }
+            .accessibilityIdentifier("settings.pause")
         } header: {
             Text("Detection")
         } footer: {
@@ -137,6 +138,7 @@ struct SettingsView: View {
     private var dataSection: some View {
         Section {
             Button("Delete my data", role: .destructive) { confirmDelete = true }
+                .accessibilityIdentifier("settings.delete")
         } footer: {
             Text("Removes everything FlUni saved on this phone. Nothing is stored on a server.")
         }

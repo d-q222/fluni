@@ -23,6 +23,7 @@ struct OnboardingView: View {
                 else { withAnimation { page += 1 } }
             }
             .buttonStyle(PrimaryButtonStyle())
+            .accessibilityIdentifier(page == 2 ? "onboarding.turnOn" : "onboarding.next")
             .accessibilityHint(page == 2 ? "Starts detection and asks for the permissions above" : "Goes to step \(page + 2) of 3")
             .padding(.horizontal, 20).padding(.bottom, 20)
         }

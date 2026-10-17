@@ -55,10 +55,12 @@ struct MeView: View {
                     NavigationLink { SettingsView(model: model) } label: {
                         Label("Settings", systemImage: "gearshape").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink).frame(minHeight: 44)
                     }
+                    .accessibilityIdentifier("settings.row")
                     Button { showDeveloper = true } label: {
                         Text("Developer tools").font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
                     }
                     .accessibilityHint("For testing. Not needed day to day.")
+                    .accessibilityIdentifier("developer.row")
                     .frame(maxWidth: .infinity)
                 }
                 .padding(16)
@@ -110,6 +112,7 @@ struct MeView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
+        .accessibilityIdentifier("report.\(c)")
         .accessibilityHint(c == .fine ? "Sets your status to healthy" : "Opens a short form")
     }
 
