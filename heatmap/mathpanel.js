@@ -36,6 +36,9 @@ const CSS = `
 .mathpanel li { padding: 2px 0; color: var(--ink-2, #5c5850); }
 .mathpanel li time { color: var(--ink-3, #6f6a61); font-variant-numeric: tabular-nums; margin-right: 6px; }
 .mathpanel .mp-off { color: var(--ink-3, #6f6a61); text-decoration: line-through; }
+.mathpanel .mp-truth { margin: 12px -16px -14px; padding: 10px 16px 12px; border-radius: 0 0 var(--radius, 12px) var(--radius, 12px);
+  background: var(--surface-2, #f0eee9); font-size: 12px; color: var(--ink-2, #5c5850); }
+.mathpanel .mp-truth b { color: var(--ink, #23211d); font-weight: 600; }
 .mathpanel .mp-foot { margin: 14px 0 0; font-size: 11.5px; color: var(--ink-3, #6f6a61); }
 `;
 
@@ -57,7 +60,7 @@ function svg(tag, attrs = {}, text) {
 const sub = (s) => el('sub', { text: s });
 const sup = (s) => el('sup', { text: s });
 
-export function renderMathPanel(container, { agentId, tMs, explain, params, formatTime }) {
+export function renderMathPanel(container, { agentId, tMs, explain, params, formatTime, flags = [], traits }) {
   if (!document.getElementById('mathpanel-style')) {
     document.head.append(el('style', { id: 'mathpanel-style', text: CSS }));
   }
@@ -66,7 +69,9 @@ export function renderMathPanel(container, { agentId, tMs, explain, params, form
 
   const contribs = explain.contributions || [];
   if (!contribs.length) {
-    root.append(el('p', { class: 'mp-note', text: `No risky contacts yet: ${pct(explain.p)} is the community baseline.` }));
+    root.append(el('p', { class: 'mp-note', text: (explain.evidence || []).length
+      ? `No risky contacts on record: ${pct(explain.p)} comes from the evidence below.`
+      : `No risky contacts yet: ${pct(explain.p)} is the community baseline.` }));
   } else {
     root.append(el('h4', { text: 'Contact graph' }), graph(agentId, contribs));
     root.append(el('p', { class: 'mp-key', text: 'Thicker = more minutes. Solid = closer. Red = risk the app knew.' }));
@@ -74,7 +79,9 @@ export function renderMathPanel(container, { agentId, tMs, explain, params, form
   }
 
   root.append(el('h4', { text: 'Evidence on record' }), evidenceList(explain.evidence || [], formatTime));
+  if (flags.length) root.append(el('h4', { text: 'Doesn’t add up' }), flagList(flags, formatTime));
   root.append(el('p', { class: 'mp-foot', text: 'Only what a phone could know: contacts, reports, tests. Never the simulation’s ground truth.' }));
+  if (traits) root.append(traitBox(traits));
   container.replaceChildren(root);
 }
 
@@ -155,4 +162,28 @@ function evidenceList(evidence, formatTime) {
   return el('ul', {}, evidence.map((e) => el('li', e.active === false ? { class: 'mp-off' } : {}, [
     el('time', { text: formatTime(e.tMs) }), what(e), e.active === false ? ' (expired)' : '',
   ])));
+}
+
+// Lie detection (model flags): what the app noticed that doesn't fit, in plain words.
+const FLAG_LABEL = {
+  unexpected_report: 'Reported sick with no risky contact on record',
+  report_other_unsupported: 'Reported someone they weren’t near',
+  suspicious_recovery: 'Claimed recovery too soon; not believed yet',
+  silent_high_risk: 'High risk for hours but hasn’t reported',
+};
+function flagList(flags, formatTime) {
+  return el('ul', {}, flags.map((f) => el('li', { title: f.detail }, [
+    el('time', { text: formatTime(f.tMs) }), FLAG_LABEL[f.kind] || f.kind,
+  ])));
+}
+
+// Presenter only: the simulation's hidden traits for this person, so the audience can check the flags.
+function traitBox(t) {
+  const n = (x) => num(Number(x), 2);
+  const yes = (x) => String(x).toLowerCase() === 'true';
+  return el('p', { class: 'mp-truth' }, [
+    el('b', { text: 'Presenter only (sim truth): ' }),
+    `${t.archetype || 'student'}, honesty ${n(t.honesty)}, compliance ${n(t.compliance)}, `
+      + `${yes(t.has_app) ? 'has the app' : 'no app'}, ${yes(t.shares_location) ? 'shares location' : 'location private'}.`,
+  ]);
 }

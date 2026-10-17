@@ -169,7 +169,10 @@ async function loadModel(dataUrl, agentIds) {
     ]);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
     const risk = inferRisk({ contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs });
-    return { risk, contacts: contacts.data, startMs, stepMs };
+    // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
+    const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location'])
+      .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
+    return { risk, contacts: contacts.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
@@ -572,6 +575,7 @@ async function main() {
     mathKey = key;
     renderMathPanel(mathBox, {
       agentId: selected, tMs: now, explain: model.risk.explain(selected, now), params: model.risk.params,
+      flags: model.risk.flags.filter((f) => f.agentId === selected && f.tMs <= now), traits: model.traits.get(selected),
       formatTime: (ms) => formatTime(ms, data.numericTime),
     });
   }
