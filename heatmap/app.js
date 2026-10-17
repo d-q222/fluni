@@ -3,6 +3,7 @@ import { DiffusionField } from './diffuse.js';
 import { rasterizeBuildings } from './masks.js';
 import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
+import { inferRisk } from '../model/infer.js';
 import { Router, buildTracks, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -126,6 +127,26 @@ function toFrames(rows, fields, buildingNames) {
 // ISO timestamps → epoch ms. Plain numbers are taken as seconds since the start of the simulation.
 // Guard: the sim's own `t` is a step index, not seconds; COLUMNS prefers its ISO `timestamp`.
 const toMs = (t) => (Number.isFinite(Number(t)) ? Number(t) * 1000 : Date.parse(t));
+
+// The probability model (model/infer.js) estimates P(sick) from what a real app could know: contacts
+// as phones detect them, self-reports, reports about others, and tests. It needs the run's
+// config.json, contacts.csv.gz and reports_tests.csv next to the timeline; null if they're missing.
+async function loadModel(dataUrl, agentIds) {
+  try {
+    const base = new URL(dataUrl, location.href);
+    const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
+    const [contacts, reports] = await Promise.all([
+      loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s']),
+      loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value', 'target_agent_id']),
+    ]);
+    return inferRisk({
+      contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start),
+    });
+  } catch (err) {
+    console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
+    return null;
+  }
+}
 
 // Room outlines for the airflow mode (map/rooms.csv next to the timeline): ids in order + WKT polygons.
 async function loadRooms(dataUrl) {
@@ -269,6 +290,12 @@ async function main() {
     loadRooms(dataUrl),
   ]);
   const data = toFrames(res.data, res.fields, buildingNames);
+  // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
+  const model = data.beliefFrom === 'column' ? null : await loadModel(dataUrl, [...new Set(data.samples.map((a) => a.id))]);
+  if (model) {
+    for (const a of data.samples) a.p = model.pAt(a.id, a.t);
+    data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
+  }
   const { frames, times } = data;
   const tracks = buildTracks(data.samples);
   const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
@@ -585,7 +612,7 @@ async function main() {
   requestAnimationFrame(tick);
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
-  window.fluni = { data, map, vmax, totals, forecaster, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
+  window.fluni = { data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
 }
 
 main().catch((err) => {

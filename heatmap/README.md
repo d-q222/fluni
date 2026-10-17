@@ -119,9 +119,13 @@ extend that table.
   - Rows with `off_map` are hidden.
   - `moving` rows are glided through at constant speed.
   - Building names come from `map/buildings.csv`, next to the timeline.
-- **P(sick):** the sim holds only ground truth. Until the probability model ships a `p_sick`, the
-  map estimates it from what a real app could know: a positive test gives 95%, a "might be sick"
-  report gives 60%, and anything else gives 2%. The legend labels this as a placeholder.
+- **P(sick):** the sim holds only ground truth. The map runs the probability model
+  ([model/](../model/README.md)) in the browser on the run's `contacts.csv.gz`,
+  `reports_tests.csv` and `config.json`. The model uses contacts weighted by distance and
+  duration, self-reports, reports about others and tests, plus retroactive contact tracing when
+  someone reports. If those files are missing, it falls back to a labelled placeholder: a positive
+  test gives 95%, a "might be sick" report gives 60%, and anything else gives 2%. A `p_sick` column
+  in the CSV, if present, is used as is.
 
 | Needed | Column (aliases) |
 |---|---|
