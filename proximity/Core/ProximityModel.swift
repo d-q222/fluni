@@ -33,6 +33,9 @@ final class ProximityModel: ObservableObject {
     @Published var enabled: Set<Source> = Set(Source.allCases)
     @Published private(set) var peers: [PeerState] = []
     @Published private(set) var exposure = ExposureTracker()
+    /// True while ContactGuard sees a burst of new risky IDs (likely spoofing); Bluetooth-only alerts are paused.
+    @Published private(set) var unusualSignals = false
+    private var contactGuard = ContactGuard()
     @Published private(set) var status: [String: String] = [:]
     @Published private(set) var myID = Data()
     /// When the user last chose their own status (nil = never). Persisted with the status.
@@ -401,9 +404,9 @@ final class ProximityModel: ObservableObject {
 
         let before = exposure.level
         var e = exposure
-        let ps = Array(byID.values)
-        e.advance(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) },
-                  tiers: ps.map { $0.estimate.map(Fusion.tierWeight) ?? 0 })
+        let ps = contactGuard.apply(now: now, byID.values.map(\.guardInput), log: log)
+        if unusualSignals != contactGuard.flagged { unusualSignals = contactGuard.flagged }
+        e.advance(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, tiers: ps.map(\.tier))
         exposureHistory.record(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, at: now)
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
