@@ -177,6 +177,25 @@
       #phone { left: 12px; right: 12px; top: 12px; width: auto; }
       .legend { left: 12px; right: 12px; width: auto; bottom: 24px; }
     }
+    /* ---------- hand-drawn containers (Lisa's Procreate box, assets/containers/) ----------
+       9-slice border image: corners and the hatched left/bottom edges keep their shape, the middle
+       stretches. Used on presenter-side panels only; the phone keeps flat cards like the iOS app.
+       paper = her box with a cream fill (data sits on it); peach = her original colours, used for
+       the "presenter only" bar so it reads as not part of the app. */
+    .drawn, .legend, .mathpanel, .presenter {
+      border-style: solid; border-width: 9px 8px 21px 17px;
+      border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch;
+      background: none !important; box-shadow: none !important; border-radius: 0 !important;
+      filter: drop-shadow(0 6px 10px rgba(51, 36, 28, 0.10));
+    }
+    .legend { padding: 4px 8px 2px 6px; }
+    .presenter { border-image-source: url("assets/containers/box-peach.png"); padding: 4px 4px 2px 8px; color: var(--ink);
+      flex-wrap: wrap; row-gap: 6px; }
+    .presenter > span { flex: 1 1 100%; }               /* status on its own line, buttons below, right-aligned */
+    .presenter > span + button { margin-left: auto; }
+    .presenter button { background: rgba(255, 250, 241, 0.7); }
+    .presenter button:hover { background: var(--surface); }
+
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
