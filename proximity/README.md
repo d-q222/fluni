@@ -113,6 +113,11 @@ run `fused` with the phones in different rooms.
 Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagious`, `-speed 60`,
 `-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`.
 
+## Demo
+
+Live 5-minute demo on 3 iPhones: [DEMO.md](DEMO.md) (runbook, troubleshooting). `tools/demo_reset.sh` reinstalls FlUni on the
+phones to wipe them between runs (`DRY_RUN=1` previews it).
+
 ## Limits
 
 - Foreground only. iOS hides custom Bluetooth beacons from scanners in the background, and UWB needs
