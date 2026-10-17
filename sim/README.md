@@ -67,6 +67,25 @@ kept because the heat map loads it by default (`heatmap/app.js` DEFAULT_RUN).
 `runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
 cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 
+`runs/influenza_none_n7000_d2_s42_5423d1a4/` is a full-size run: 7,000 agents, 2 days, seed 42,
+default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
+are committed in parts; rebuild them after cloning (see "Large runs in git").
+
+## Large runs in git
+
+`scripts/run_parts.py split runs/<run>` cuts each `.csv.gz` over 40 MB into
+`parts/<name>/part-NNN.csv.gz` on row boundaries. Each part is a standalone gzipped CSV with the
+header, and `parts/manifest.json` records the sha256 of every original and part. After cloning:
+
+```bash
+.venv/bin/python scripts/run_parts.py join runs/influenza_none_n7000_d2_s42_5423d1a4   # ~10 s
+```
+
+This rebuilds `contacts.csv.gz` and `timeline.csv.gz` byte-for-byte (checked against the manifest)
+and regenerates `timeline_by_agent/`. The `.parquet` mirrors aren't committed or rebuilt; rerun the
+sim with the same seed if you need them (output is byte-identical). Add the run's big files to
+`sim/.gitignore` so only the parts are committed.
+
 ## Code
 
 | Module | Does |
