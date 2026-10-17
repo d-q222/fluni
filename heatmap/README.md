@@ -38,7 +38,7 @@ URL options, which can be combined:
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
 - `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
-  instead of the app's estimate. This is the same as choosing "Colour: true status (sim)".
+  instead of the app's estimate. This is the same as choosing "Color: true status (sim)".
 
 Demo scenes on the sim's mock run:
 
@@ -118,10 +118,12 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
     7,000-agent run needs.
 - **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
   people shown.
-- **Dots (demo only)**: one per agent. Colour by the app's estimate of P(sick), or by the
-  simulation's true status.
+- **People (demo only)**: one per agent, drawn as Lisa's hand-drawn tissue on a round badge.
+  The badge colour is the app's estimate of P(sick) in three tiers, the same tiers as the phone's
+  advice: Low under 10% (sage), Elevated 10–40% (yellow), High 40%+ (red). Or colour by the
+  simulation's true status (sage healthy, red infected).
 - **Click a dot** to see that agent's phone: their estimated risk and advice, a proximity alert
-  (someone the app thinks is risky, P ≥ 50%, in the same room within 3 m), and the user map. The dashed box under the phone shows the simulation's truth and is *not* part of the app.
+  (someone the app thinks is risky, P ≥ 50%, within 6 ft; or 15+ minutes of close contact), and the user map. The dashed box under the phone shows the simulation's truth and is *not* part of the app.
   From the console, `fluni.select("a018")` opens a specific agent.
 
 ## Input CSV
@@ -168,7 +170,12 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 ## Files
 
-- `heat.js`: heat grid in metres plus colouring. No map library, so it can move to Google Maps.
+- `heat.js`: heat grid in metres plus colouring.
+- `assets/`: design pass (@lisaazheng). `palette/` is the source swatch for the colours in
+  `index.html` (`--sage`, `--sun`, `--ember`, `--fire`); `people/` is the people marker;
+  `trace/` is the template for the hand-drawn campus map, with the exact bounds it covers.
+  The heat ramp in `heat.js` and the colours in `app.js` (`COLORS`) use the same palette, so
+  change colours in all three places together. No map library, so it can move to Google Maps.
 - `motion.js`: footpath router and per-agent interpolation.
 - `diffuse.js`: heat field (binning plus a fast blur, kept inside buildings).
 - `masks.js`: rasterizes building outlines onto the heat grid.
