@@ -24,11 +24,11 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 
 | # | Task | Size | Depends on | Done when |
 |---|---|---|---|---|
-| U1 | Building-level heat: fill building outlines instead of Gaussian blobs | M | D1 | The phone map shows only building-shaped fills |
-| U2 | Hide buildings with fewer than 5 people, using a real count per building (today's rule is a smoothed density, not a count) | S | U1 | A building with 4 people is grey at every timestamp |
-| U3 | Warn the user on entering a hot building, and always show the "may be inaccurate" disclaimer | S–M | U1 | The selected agent walks into a hot building and the banner appears |
-| U4 | **Predictive mode** (below) | L | p_sick from the probability model, or the CSV | +1/+2/+3 h forecast with a range, and a backtest |
-| U5 | Precompute `public_buildings.json` (t, building, n, expected infected, low, high) with privacy rules applied, and have the user-facing page read only that file | M | D1 | The file contains no agent ids or coordinates |
+| U1 | ~~Building-level fills~~ **Done** (`buildings.js`) | | | |
+| U2 | ~~Real per-building count, hide under 5~~ **Done**: counts come from `aggregate.js`, scaled ×50 for now | | | |
+| U3 | ~~Walk-in warning and disclaimer~~ **Done**: room-level warning, plus a demo-only "the person next to you is sick" alert | | | |
+| U4 | ~~Predictive mode~~ **Done** (`forecast.js`): +1/+2/+3 h, an 80% range, and a backtest (64% coverage on the mock; the ranges are too narrow, so worth revisiting with more days or a correlation-aware model) | | | |
+| U5 | **Partly done**: the user map reads only `aggregate.js` totals in the page. Still to do: a precomputed totals file for the full run, which is too big for the browser | M | full sim run | |
 | U6 | Privacy note: stop counts leaking individuals (e.g. a count going 4 → 5), and never show live per-person movement | S | U5 | A one-paragraph threat note plus a check script |
 
 ## Predictive mode (U4): first version

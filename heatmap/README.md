@@ -22,7 +22,37 @@ URL options, which can be combined:
 - `?data=path/to/timeline.csv[.gz]`: load another run (relative to `heatmap/`), e.g.
   `?data=../sim/runs/<run>/timeline.csv.gz`.
 - `?at=200`: open at a moment, in minutes from the start of the data.
-- `?agent=a018`: open with that agent's phone showing. Handy for demo scenes.
+- `?agent=A0008`: open with that agent's phone showing. Handy for demo scenes.
+- `?view=public`: open on the user-facing map. Add `&horizon=60` (or 120 or 180) for a forecast.
+
+Demo scenes on the sim's mock run:
+
+- `?at=2115&agent=A0008`: Tue 11:15. The person next to A0008 in class is sick.
+- `?at=4200&agent=A0002`: Wed 22:00. A0002 walks back into the dorm room where their reported-sick
+  roommate is isolating, which triggers the walk-in warning.
+- `?view=public&horizon=60&at=2115`: the user-facing map with a forecast for one hour ahead.
+
+## Demo map vs. user map
+
+- **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **User map** (the phone, and "What users see" on the main map): built only from totals in
+  `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
+  - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
+    (`buildings.js`).
+  - Each simulated agent stands for 50 people (`SCALE` in `app.js`) until the sim has more agents.
+  - Buildings with fewer than 5 people are shown as outlines only.
+  - **Forecast** ("In 1 / 2 / 3 hours", from `forecast.js`):
+    - Method: each person's habits (building per 30-minute slot, learned from the *other* days)
+      × their current P(sick), summed per building.
+    - Shown with a dashed outline and an 80% range in the tooltip.
+    - A backtest on past days reports how often the actual value landed in the range. That rate is
+      shown on the phone; it's 64% on the mock run, below the nominal 80%.
+- **Phone alerts:**
+  - The person next to you (≤ 2 m) is actually sick. This is a demo proof of concept and uses the
+    sim's true status.
+  - Someone the app thinks is risky (P ≥ 50%) is within 3 m in the same room.
+  - **Walk-in warning:** you're in a room where the others add up to ≥ 0.5 expected sick people.
+    It reads room totals only.
 
 ## Movement
 
@@ -96,6 +126,9 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 - `heat.js`: heat grid in metres plus colouring. No map library, so it can move to Google Maps.
 - `motion.js`: footpath router and per-agent interpolation.
+- `aggregate.js`: per-building and per-room totals, the only input to the user map.
+- `forecast.js`: predictive mode and backtest.
+- `buildings.js`: the building-fill layer for the user map.
 - `app.js`: CSV adapter, Leaflet map, playback clock, dots, agent phone view.
 - `data/stanford_paths.json`: walkway graph (`tools/fetch_paths.py`, © OpenStreetMap contributors, ODbL).
 - [ROADMAP.md](ROADMAP.md): what's left, including the user-facing map and predictive mode.

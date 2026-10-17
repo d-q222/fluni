@@ -153,14 +153,16 @@ export function stateAt(track, t, router) {
   const a = track[lo], b = track[hi];
   const dt = b.t - a.t;
   const f = dt > 0 ? (t - a.t) / dt : 0;
-  const base = { id: a.id, p: a.p + f * (b.p - a.p), sick: f < 1 ? a.sick : b.sick };
-  const at = (s) => ({ ...base, lat: s.lat, lon: s.lon, building: s.building, floor: s.floor, room: s.room, walking: false });
+  const base = { id: a.id, p: a.p + f * (b.p - a.p), sick: f < 1 ? a.sick : b.sick, infectious: f < 1 ? a.infectious : b.infectious };
+  const at = (s) => ({
+    ...base, lat: s.lat, lon: s.lon, building: s.building, buildingId: s.buildingId, floor: s.floor, room: s.room, walking: false,
+  });
 
   // Samples the data marks as in transit already trace the route: glide through them at constant speed.
   if (a !== b && (a.moving || b.moving)) {
     return {
       ...base, lat: a.lat + f * (b.lat - a.lat), lon: a.lon + f * (b.lon - a.lon),
-      building: null, floor: null, room: null, walking: true,
+      building: null, buildingId: null, floor: null, room: null, walking: true,
     };
   }
 
@@ -178,5 +180,5 @@ export function stateAt(track, t, router) {
   const [lat, lon] = a.walk
     ? pointAlong(a.walk, ease(u) * length)
     : [a.lat + ease(u) * (b.lat - a.lat), a.lon + ease(u) * (b.lon - a.lon)];
-  return { ...base, lat, lon, building: null, floor: null, room: null, walking: true };
+  return { ...base, lat, lon, building: null, buildingId: null, floor: null, room: null, walking: true };
 }

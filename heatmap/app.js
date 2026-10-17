@@ -1,9 +1,18 @@
 import { HeatGrid, paint, HEAT_STOPS } from './heat.js';
 import { Router, buildTracks, stateAt } from './motion.js';
+import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
+import { buildForecaster } from './forecast.js';
+import { BuildingTotalsLayer } from './buildings.js';
 
 // Room-level heat for the presenter; coarse, privacy-masked heat for what real users see.
 const DEMO = { cellM: 3, sigmaM: 18 };
-const PUBLIC = { cellM: 8, sigmaM: 35, minPeople: 5 };
+// The user-facing map sees only per-building totals. Each simulated agent stands for SCALE people
+// until the sim has enough agents; buildings with fewer than MIN_PEOPLE are not shown.
+const SCALE = 50;
+const MIN_PEOPLE = 5;
+const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
+const ADJACENT_M = 2;       // "the person next to you" (demo proof of concept, uses sim truth)
+const ROOM_HOT = 0.5;       // walk-in warning when others in the room add up to ≥ this many expected sick
 const RISKY = 0.5;          // P(sick) at which the app treats someone as risky for proximity alerts
 const NEARBY_M = 3;         // ~10 ft; the PRD's "within N feet" (N still to be decided)
 const PAD_M = 120;          // grid margin around the data
@@ -31,6 +40,7 @@ const COLUMNS = {
   floor: ['floor'],
   room: ['room', 'room_id'],
   moving: ['moving'],
+  indoor: ['indoor'],
   offMap: ['off_map'],
   reported: ['self_reported_status'],
   test: ['test_status'],
@@ -39,6 +49,7 @@ const COLUMNS = {
 const TRUE = new Set(['1', 'true', 'True', 'TRUE']);
 // Truth: 0/1, true/false, or the sim's disease states (exposed or infectious counts as infected).
 const INFECTED = new Set([...TRUE, 'E', 'I_pre', 'I_sym', 'I_asym']);
+const INFECTIOUS = new Set([...TRUE, 'I_pre', 'I_sym', 'I_asym']); // can pass it on right now
 
 // Stand-in for the probability model's P(sick) until it ships: only what a real app could know,
 // i.e. the person's own self-report and test result. Never the hidden disease state.
@@ -65,16 +76,20 @@ function toFrames(rows, fields, buildingNames) {
   for (const r of rows) {
     if (col.offMap && TRUE.has(r[col.offMap])) continue; // off campus: not on the map
     const sick = col.sick ? INFECTED.has(r[col.sick]) : null;
-    const b = col.building ? r[col.building] : null;
+    const b = col.building ? r[col.building] || null : null;
+    const moving = col.moving ? TRUE.has(r[col.moving]) : null;
+    const outside = moving || (col.indoor && !TRUE.has(r[col.indoor]));
     const a = {
       id: r[col.id], lat: Number(r[col.lat]), lon: Number(r[col.lon]),
       p: beliefFrom === 'column' ? Number(r[col.p])
         : beliefFrom === 'reports' ? appBelief(r[col.reported], r[col.test]) : Number(sick),
       sick,
-      building: (b && buildingNames.get(b)) || b || null,
+      infectious: col.sick ? INFECTIOUS.has(r[col.sick]) : null,
+      buildingId: outside ? null : b, // what totals group by; null = outdoors or in transit
+      building: (b && buildingNames.get(b)) || b,
       floor: col.floor ? r[col.floor] : null,
       room: col.room ? r[col.room] || null : null,
-      moving: col.moving ? TRUE.has(r[col.moving]) : null,
+      moving,
     };
     if (!Number.isFinite(a.lat) || !Number.isFinite(a.lon)) continue;
     const t = r[col.t];
@@ -219,9 +234,10 @@ async function main() {
     try { res = await fetchCsv(dataUrl); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
   }
   if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
-  const [paths, buildingNames] = await Promise.all([
+  const [paths, buildingNames, outlines] = await Promise.all([
     fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
     loadBuildingNames(dataUrl),
+    fetch('../sim/data/osm/buildings.geojson').then((r) => r.json()).catch(() => null),
   ]);
   const data = toFrames(res.data, res.meta.fields, buildingNames);
   const { frames, times } = data;
@@ -232,8 +248,12 @@ async function main() {
   const t0 = times[0], t1 = times[times.length - 1];
 
   const demoGrid = new HeatGrid(bounds, DEMO.cellM);
-  const publicGrid = new HeatGrid(bounds, PUBLIC.cellM);
-  const vmax = { demo: globalMax(demoGrid, frames, DEMO.sigmaM), public: globalMax(publicGrid, frames, PUBLIC.sigmaM) };
+  // Everything the user-facing map gets is computed here, from totals only.
+  const totals = buildTotals(frames, times, { scale: SCALE });
+  const forecaster = buildForecaster(frames, times, { scale: SCALE });
+  const backtestRate = forecaster.backtest(60).rate;
+  const vmax = { demo: globalMax(demoGrid, frames, DEMO.sigmaM), public: buildingScaleMax(totals) };
+  if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
@@ -246,6 +266,7 @@ async function main() {
     map.setMinZoom(map.getZoom() - 1);
   }).observe($('map'));
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
+  const publicLayer = outlines ? new BuildingTotalsLayer(outlines) : null; // shown in "What users see"
 
   const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
   const dotLayer = L.layerGroup().addTo(map);
@@ -256,7 +277,7 @@ async function main() {
   // Otherwise start shortly before the first movement, so playback doesn't open on a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
   let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
-  let phoneMap = null, phoneHeat = null, phoneYou = null;
+  let phoneMap = null, phoneBuildings = null, phoneYou = null;
 
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
@@ -275,17 +296,41 @@ async function main() {
     return m;
   }
 
-  // What this agent's phone could know: its own estimate, risky people nearby, and the public heat map.
-  // Indoors, walls block (same room only); outdoors, distance alone.
-  function riskyNearby(me) {
+  // Is anyone within radiusM of me who matches `test`? Indoors, walls block (same room only).
+  function someoneNear(me, radiusM, test) {
     for (const a of current.values()) {
-      if (a.id === me.id || a.p < RISKY) continue;
+      if (a.id === me.id || !test(a)) continue;
       if (data.hasRoom && !me.walking && (a.building !== me.building || a.room !== me.room)) continue;
       const dy = (a.lat - me.lat) * 110574, dx = (a.lon - me.lon) * mPerDegLon(me.lat);
-      if (Math.hypot(dx, dy) <= NEARBY_M) return true;
+      if (Math.hypot(dx, dy) <= radiusM) return true;
     }
     return false;
   }
+
+  // What the phone tells this person right now. Proximity uses nearby phones; the walk-in warning
+  // uses room totals only.
+  function phoneAlerts(me) {
+    const msgs = [];
+    if (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) {
+      msgs.push('The person next to you is sick. (Demo: uses the simulation\'s true status.)');
+    } else if (someoneNear(me, NEARBY_M, (a) => a.p >= RISKY)) {
+      msgs.push('Someone near you is likely sick. Consider stepping out, or put on a mask.');
+    }
+    const room = !me.walking && me.room && totalsAt(totals, now).rooms.get(me.room);
+    const others = room ? room.expected - me.p : 0;
+    if (others >= ROOM_HOT) {
+      msgs.push(`You walked into a room where someone is likely sick (about ${others.toFixed(1)} expected). A mask or another room would be safer.`);
+    }
+    return msgs;
+  }
+
+  // The user-facing map's input: totals now, or a forecast. Never agent data.
+  function userTotals() {
+    const h = Number($('horizon').value);
+    return h ? forecaster.forecast(now, h) : totalsAt(totals, now).buildings;
+  }
+  const updateUserLayer = (layer) =>
+    layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: Number($('horizon').value) > 0 });
 
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
@@ -294,7 +339,9 @@ async function main() {
     $('ph-time').textContent = data.numericTime
       ? formatTime(now, true).split(', ')[1]
       : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    $('ph-alert').hidden = !riskyNearby(me);
+    const alerts = phoneAlerts(me);
+    $('ph-alert').hidden = !alerts.length;
+    $('ph-alert').querySelector('span').replaceChildren(...alerts.map((t) => Object.assign(document.createElement('div'), { textContent: t })));
     $('ph-risk').textContent = pct(me.p);
     $('ph-advice').textContent = advice(me.p);
     const where = me.walking ? 'walking' : me.building;
@@ -302,13 +349,17 @@ async function main() {
 
     if (!phoneMap) {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
-      phoneHeat = new CanvasLayer([sw, ne]).addTo(phoneMap);
+      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines).addTo(phoneMap);
       phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: '#fff', fillColor: COLORS.healthy, fillOpacity: 1 }).addTo(phoneMap);
       phoneMap.setView([me.lat, me.lon], 16);
       withHeat = true;
     }
     phoneYou.setLatLng([me.lat, me.lon]);
-    if (withHeat) paint(publicGrid.compute(current.values(), PUBLIC.sigmaM), phoneHeat.canvas, vmax.public, PUBLIC);
+    if (withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
+    const h = Number($('horizon').value);
+    document.querySelector('#phone .ph-section').textContent = h
+      ? `Forecast for ${new Date(now + h * 60000).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
+      : 'Around campus now';
   }
 
   // Move every dot to its interpolated position; repaint heat at most every HEAT_EVERY_MS.
@@ -324,9 +375,12 @@ async function main() {
     const view = $('view').value;
     const heatDue = heatDirty || realNow - lastHeat >= HEAT_EVERY_MS;
     if (heatDue) {
-      const pts = current.values();
-      if (view === 'public') paint(publicGrid.compute(pts, PUBLIC.sigmaM), heatLayer.canvas, vmax.public, PUBLIC);
-      else paint(demoGrid.compute(pts, DEMO.sigmaM), heatLayer.canvas, vmax.demo);
+      heatLayer.canvas.style.display = view === 'public' ? 'none' : '';
+      if (publicLayer) {
+        if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
+        else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
+      }
+      if (view !== 'public') paint(demoGrid.compute(current.values(), DEMO.sigmaM), heatLayer.canvas, vmax.demo);
       lastHeat = realNow;
       heatDirty = false;
     }
@@ -376,8 +430,13 @@ async function main() {
   function renderLegend() {
     const v = $('view').value;
     $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
-    $('vmid').textContent = (vmax[v] * 250).toFixed(1); // colour scale is √, so the midpoint is vmax/4
-    $('vmax').textContent = `${(vmax[v] * 1000).toFixed(1)}+`;
+    // Colour scale is √, so the midpoint is a quarter of the maximum.
+    const unit = v === 'public' ? 1 : 1000; // public: sick people per building; demo: per 1,000 m²
+    $('vmid').textContent = (vmax[v] * unit / 4).toFixed(1);
+    $('vmax').textContent = `${(vmax[v] * unit).toFixed(1)}+`;
+    document.querySelector('.legend h2').innerHTML = v === 'public'
+      ? `Expected sick people <span>per building (each sim agent = ${SCALE})</span>`
+      : 'Expected infected <span>per 1,000 m²</span>';
     const showDots = $('show-dots').checked && v === 'demo';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
@@ -402,7 +461,19 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
-  for (const id of ['view', 'show-dots', 'dot-mode']) {
+  // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
+  const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
+  horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
+  document.querySelector('.options').append(horizon);
+  // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
+  const params = new URLSearchParams(location.search);
+  if (params.get('view')) $('view').value = params.get('view');
+  if (params.get('horizon')) horizon.value = params.get('horizon');
+  document.querySelector('#phone .screen .fine').textContent =
+    `Busy buildings only; each simulated person stands for ${SCALE}. May be incomplete because not everyone shares their status.`
+    + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
+
+  for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
     $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
   }
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
@@ -414,7 +485,7 @@ async function main() {
   requestAnimationFrame(tick);
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
-  window.fluni = { data, map, vmax, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
+  window.fluni = { data, map, vmax, totals, forecaster, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
 }
 
 main().catch((err) => {

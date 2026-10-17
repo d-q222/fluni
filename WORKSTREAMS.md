@@ -71,6 +71,18 @@ Claim a row before you start. Update the status as you go. Agents should name th
      preprocessing. A Parquet mirror is written next to each large CSV.
   4. Yes: `location_id` (building), `floor`, `room_id`, with `lat,lon` inside the room.
   Heads-up for `COLUMNS` in `app.js`: `t` is an integer step index, and the ISO time is in `timestamp`.
+- **heat map → design pass (@lisaazheng):** the user map adds a few UI pieces your styling may want
+  to cover:
+  - building fills in `heatmap/buildings.js`, which use `HEAT_STOPS` from `heat.js`;
+  - a forecast `<select id="horizon">` that `app.js` creates and appends to `.options` (I kept
+    `index.html` untouched);
+  - stacked messages inside `#ph-alert`'s `<span>`;
+  - the phone's `.ph-section` heading and fine print, which `app.js` now sets.
+
+  I left your colour lines in `app.js` alone, so your PR should merge cleanly.
+- **heat map → probability model:** once you produce P(sick), the heat map will read it as a
+  `p_sick` column, or as a separate `t, agent_id, p_sick` file that I can join on. Until then it
+  uses a labelled placeholder taken from self-reports and tests.
 - **heat map → probability model:** heads-up from building the fake data: if everyone's P(sick)
   updates from everyone else's P(sick), the estimates feed on each other and all climb toward 1.
   Updating only from self-reports or tests avoided that.
