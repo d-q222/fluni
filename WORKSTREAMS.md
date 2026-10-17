@@ -6,6 +6,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 |------------|-----------|-------|--------|-------|
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
+| Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
 | Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: mock run in the final format is up; full simulator being built | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. See `sim/README.md`. |
 | Proximity alerts (phone) | _TBD_ | _unclaimed_ | Not started | PRD Functionality 1 |
 | Infection probability model | _TBD_ | _unclaimed_ | Not started | PRD Functionality 3 |
@@ -26,6 +27,10 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — Location detail.** The demo is room-level, from the synthetic data. The heat map
   real users see stays at building level: indoor GPS can't place people in rooms, and room-level
   heat could single out one person.
+
+- **2026-10-17 — Design pass may edit `heatmap/`.** @lisaazheng and @d-q222 agreed the design pass
+  can change styling, layout and assets in `heatmap/` directly. It goes through a PR on `design-pass`
+  so it doesn't collide with in-progress heat map work.
 
 ## Requests
 
