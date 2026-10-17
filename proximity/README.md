@@ -61,7 +61,14 @@ xcodebuild test -project FluniProx.xcodeproj -scheme FluniProx \
 FLUNI_TEAM=<team> tools/pair_test.sh fused 60    # A contagious; B (and C) listen on UWB+BLE+GPS
 tools/pair_test.sh uwb|ble|gps|control           # one channel only, or nobody sick (expect no alert)
 SKIP_BUILD=1 tools/pair_test.sh ble              # reuse the installed build
+tools/doctor.sh                                  # read-only check: phones, team, simulators, GitHub
+tools/sim_test.sh together                       # two iPhone simulators (needs a standard iOS runtime)
+tools/serve_heatmap.sh                           # serves the repo root; prints the phone URL
 ```
+
+The scripts are bash and exit non-zero with a reason if a phone is locked, untrusted, unpaired or has
+Developer Mode off. `sim_test.sh` never uses iPhone Duo; if no standard runtime exists, run
+`xcodebuild -downloadPlatform iOS`.
 
 With phones side by side at 60×, B should log `ALERT nearby` within seconds, then
 `ALERT closeContact` at about 15 s. The `control` case should never alert. To test "apart → no alert",

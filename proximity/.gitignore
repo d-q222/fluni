@@ -1,2 +1,3 @@
 build/
 FluniProx.xcodeproj/
+__pycache__/
