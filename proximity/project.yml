@@ -17,11 +17,13 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fluni.proxtest
         TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
     info:
       path: FluniProx/Info.plist
       properties:
-        CFBundleDisplayName: Fluni Prox
+        CFBundleDisplayName: Fluni
+        UIUserInterfaceStyle: Light
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSBluetoothAlwaysUsageDescription: Detects nearby Fluni phones by Bluetooth to estimate distance.
