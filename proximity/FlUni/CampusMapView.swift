@@ -9,6 +9,7 @@ struct CampusMapView: View {
     @State private var position = MapCameraPosition.automatic
     @State private var selected: String?
     @State private var showDetailed = false
+    @ObservedObject private var router = AppRouter.shared
 
     var body: some View {
         NavigationStack {
@@ -54,8 +55,9 @@ struct CampusMapView: View {
                         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showDetailed = false } } }
                 }
             }
-            .onAppear(perform: frame)
-            .onChange(of: heat?.buildings.count) { _, _ in frame() }
+            .onAppear { frame(); focusIfAsked() }
+            .onChange(of: heat?.buildings.count) { _, _ in frame(); focusIfAsked() }
+            .onChange(of: router.focusBuilding) { _, _ in focusIfAsked() }
             .task { await store.refresh() }
         }
     }
@@ -149,6 +151,17 @@ struct CampusMapView: View {
         }
         guard let best else { return nil }
         return best.1 <= 60 ? best.0 : nil  // tiny circles at campus zoom: allow a near miss
+    }
+
+    /// A notification asked to show a building: centre on it and open its card (waits until the data has loaded).
+    private func focusIfAsked() {
+        guard let id = router.focusBuilding else { return }
+        guard let heat = store.heat else { return }
+        router.focusBuilding = nil
+        guard let b = heat.buildings[id], let lat = b.lat, let lon = b.lon else { return }
+        selected = id
+        position = .region(MKCoordinateRegion(center: .init(latitude: lat, longitude: lon),
+                                              span: MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)))
     }
 
     /// Centre the camera on the run's buildings.

@@ -6,6 +6,7 @@ struct SettingsView: View {
     @ObservedObject var model: ProximityModel
     @AppStorage("heatmapURL") private var heatmapURL = ""
     @AppStorage("hasOnboarded") private var hasOnboarded = true
+    @AppStorage(AppNotifications.detailsKey) private var lockScreenDetails = true
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
     @Environment(\.scenePhase) private var scenePhase
@@ -96,6 +97,7 @@ struct SettingsView: View {
     private var notificationsSection: some View {
         Section {
             LabeledContent("Alerts", value: notificationText)
+            Toggle("Show details on lock screen", isOn: $lockScreenDetails)
             Button("Open iPhone Settings") {
                 if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) }
             }
@@ -103,7 +105,8 @@ struct SettingsView: View {
         } header: {
             Text("Notifications")
         } footer: {
-            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact.")
+            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact. The title is always just \"FlUni\". "
+                 + "With details off, the message only says there is an update, so people looking at your lock screen learn nothing about your health.")
         }
         .listRowBackground(Theme.surface)
     }

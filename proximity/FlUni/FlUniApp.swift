@@ -8,13 +8,15 @@ struct FlUniApp: App {
     @StateObject private var model = ProximityModel()
     @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var started = false
-    @State private var showCloseContact = false
+    @StateObject private var router = AppRouter.shared
+    @StateObject private var reportStore = SelfReportStore()
     @Environment(\.scenePhase) private var phase
 
     init() {
         // Test-only (XCUITest sets these environment variables; launch arguments can't trigger them).
         let env = ProcessInfo.processInfo.environment
         if env["FLUNI_UITEST_RESET"] == "1" { SettingsView.eraseLocalData() }
+        RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
         skipRadios = env["FLUNI_UITEST_NO_RADIOS"] == "1"
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
@@ -29,24 +31,32 @@ struct FlUniApp: App {
                 if needsOnboarding {
                     OnboardingView { hasOnboarded = true; startOnce() }
                 } else {
-                    TabView {
+                    TabView(selection: $router.tab) {
                         TodayView(model: model)
                             .tabItem { Label("Today", systemImage: "sun.max") }
+                            .tag(AppRouter.Tab.today)
                             .accessibilityIdentifier("tab.today")
                         CampusMapView()
                             .tabItem { Label("Map", systemImage: "map") }
+                            .tag(AppRouter.Tab.map)
                             .accessibilityIdentifier("tab.map")
                         MeView(model: model)
                             .tabItem { Label("Me", systemImage: "person.crop.circle") }
+                            .tag(AppRouter.Tab.me)
                             .accessibilityIdentifier("tab.me")
                     }
                     .tint(Theme.ink)
-                    .onAppear(perform: startOnce)
+                    .onAppear { startOnce(); router.becomeReady() }
                     // At the tab level so the close-contact moment shows whichever tab is open.
                     .onChange(of: model.exposure.level) { old, new in
-                        if new == .closeContact && old < .closeContact { showCloseContact = true }
+                        if new == .closeContact && old < .closeContact { router.sheet = .closeContact }
                     }
-                    .fullScreenCover(isPresented: $showCloseContact) { CloseContactSheet { showCloseContact = false } }
+                    .fullScreenCover(isPresented: Binding(get: { router.sheet == .closeContact }, set: { if !$0 { router.sheet = nil } })) {
+                        CloseContactSheet { router.sheet = nil }
+                    }
+                    .sheet(isPresented: Binding(get: { router.sheet == .reportSymptoms }, set: { if !$0 { router.sheet = nil } })) {
+                        ReportSheet(kind: .symptoms, model: model, store: reportStore)
+                    }
                 }
             }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
