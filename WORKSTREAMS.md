@@ -79,6 +79,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
   The phone uses it for the walk-in warning (PRD 2.2). It's covered by "user map sees totals only" and
   "totals are precomputed": no people or positions.
 
+- **2026-10-17 — FlUni location (product owner).** FlUni asks for **Always** location so it can warn
+  about high-risk buildings in the background. Promise shown to students: their precise location never
+  leaves the phone and is never seen by anyone. To make that true, FlUni no longer sends GPS fixes to
+  nearby phones (GPS ranging between phones stays in the test harness only).
+
 ## Requests
 
 - **design pass → proximity app and probability model (proposal, please confirm):** the heat map

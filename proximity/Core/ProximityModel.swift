@@ -197,6 +197,11 @@ final class ProximityModel: ObservableObject {
     /// false so a stray argument can never change what a student sees.
     var acceptsLaunchArguments = true
 
+    /// GPS-to-GPS ranging needs each phone's fix on the other phone. The harness keeps it for testing;
+    /// FlUni turns it off so "your precise location never leaves this phone" is literally true
+    /// (indoors GPS was 7–10 m off at 0.5 m anyway, so detection loses next to nothing).
+    var sharesLocationWithPeers = true
+
     /// Lets tests drive the phones from the Mac, e.g.
     ///   devicectl ... launch --console com.fluni.proxtest -risk contagious -speed 60 -sources UWB,BLE
     private func applyLaunchArguments() {
@@ -270,7 +275,7 @@ final class ProximityModel: ObservableObject {
         setStatus("Link", "\(link.connectedPeers.count) connected")
         log("link connected \(peer.displayName)")
         link.send(Wire(kind: .hello, id: myID.hex, risk: myRisk), to: [peer])
-        if let f = myFix { link.send(fixWire(f), to: [peer]) }
+        if sharesLocationWithPeers, let f = myFix { link.send(fixWire(f), to: [peer]) }
         uwb.start(for: peer)
     }
 
@@ -296,6 +301,7 @@ final class ProximityModel: ObservableObject {
         case .uwbToken:
             if let t = w.token { uwb.receive(tokenData: t, from: peer) }
         case .gps:
+            guard sharesLocationWithPeers else { return }  // FlUni doesn't take others' locations either
             guard let id = linkIDs[peer], let lat = w.lat, let lon = w.lon, let acc = w.acc else { return }
             let fix = CLLocation(coordinate: .init(latitude: lat, longitude: lon), altitude: 0,
                                  horizontalAccuracy: acc, verticalAccuracy: -1, timestamp: Date())
@@ -317,7 +323,7 @@ final class ProximityModel: ObservableObject {
     private func ownFix(_ fix: CLLocation) {
         guard !isPaused else { return }
         myFix = fix
-        link.send(fixWire(fix))
+        if sharesLocationWithPeers { link.send(fixWire(fix)) }
         for id in byID.keys { refreshGPS(id) }
     }
 
@@ -362,7 +368,7 @@ final class ProximityModel: ObservableObject {
         lastTick = now
 
         byID = byID.filter { now.timeIntervalSince($0.value.lastSeen) < 30 }
-        if let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
+        if sharesLocationWithPeers, let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
             lastFixSent = now
             link.send(fixWire(f))
         }

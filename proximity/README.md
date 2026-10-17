@@ -49,9 +49,9 @@ WORKSTREAMS.md.)
 | Channel | What it carries | Distance quality |
 |---|---|---|
 | **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±50–70 % |
-| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk), UWB tokens, GPS fixes | — |
+| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk), UWB tokens; GPS fixes **only in the harness** | — |
 | **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link | ~10 cm |
-| **GPS** | each phone's own fix, sent only to the linked phone | 5–20 m, poor indoors |
+| **GPS** | FlUni: your own fix, used **only on your phone** (building warnings); never sent. Harness: also sent to the linked phone for GPS ranging tests | 5–20 m, poor indoors |
 
 **Fusion** (`Fusion.swift`): fresh readings are averaged, each weighted by 1/σ². UWB dominates when
 present; Bluetooth and GPS take over when it drops out. While UWB is live, it **calibrates the

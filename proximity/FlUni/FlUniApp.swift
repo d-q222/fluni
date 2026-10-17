@@ -50,6 +50,7 @@ struct FlUniApp: App {
         guard !started, !LaunchMode.isUnitTestHost else { return }
         started = true
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
+        model.sharesLocationWithPeers = false  // privacy promise: precise location never leaves the phone
         model.start()
     }
 }
