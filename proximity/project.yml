@@ -62,3 +62,23 @@ targets:
     sources: [Tests]
     dependencies:
       - target: FluniProx
+
+  # XCUITest for the student app. Each test launches FlUni with FLUNI_UITEST_RESET=1 and FLUNI_UITEST_NO_RADIOS=1.
+  FlUniUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: FlUni
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fluni.app.uitests
+        TEST_TARGET_NAME: FlUni
+
+schemes:
+  FlUni:
+    build:
+      targets:
+        FlUni: all
+    test:
+      targets: [FlUniUITests]
