@@ -131,7 +131,7 @@ function pointAlong({ pts, cum, length }, d) {
 
 // ---------- tracks ----------
 
-// samples: [{ t (ms), id, lat, lon, p, sick, building, floor, room }] → Map id → time-sorted samples
+// samples: [{ t (ms), id, lat, lon, p, sick, building, floor, room, moving }] → Map id → time-sorted samples
 export function buildTracks(samples) {
   const tracks = new Map();
   for (const s of samples) {
@@ -155,6 +155,14 @@ export function stateAt(track, t, router) {
   const f = dt > 0 ? (t - a.t) / dt : 0;
   const base = { id: a.id, p: a.p + f * (b.p - a.p), sick: f < 1 ? a.sick : b.sick };
   const at = (s) => ({ ...base, lat: s.lat, lon: s.lon, building: s.building, floor: s.floor, room: s.room, walking: false });
+
+  // Samples the data marks as in transit already trace the route: glide through them at constant speed.
+  if (a !== b && (a.moving || b.moving)) {
+    return {
+      ...base, lat: a.lat + f * (b.lat - a.lat), lon: a.lon + f * (b.lon - a.lon),
+      building: null, floor: null, room: null, walking: true,
+    };
+  }
 
   if (a === b || distM(a.lat, a.lon, b.lat, b.lon) < SAME_PLACE_M || dt <= SHORT_GAP_MS) {
     const near = f < 0.5 ? a : b;

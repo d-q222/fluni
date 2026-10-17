@@ -7,14 +7,20 @@ the agent timeline CSV. Owner: @d-q222 (see [WORKSTREAMS.md](../WORKSTREAMS.md))
 
 ## Run it
 
+Serve the **repo root**, so the page can reach the sim's output in `../sim`:
+
 ```bash
-cd heatmap
 python3 -m http.server 8765
 ```
 
-Open http://localhost:8765. URL options, which can be combined:
+Open http://localhost:8765/heatmap/. By default it loads the sim's run
+(`sim/runs/mock_boring10/timeline.csv.gz`, gunzipped in the browser). If that isn't reachable, it
+falls back to the placeholder `data/fake_agents.csv`.
 
-- `?data=path/to/agents.csv`: load another CSV (relative to `heatmap/`).
+URL options, which can be combined:
+
+- `?data=path/to/timeline.csv[.gz]`: load another run (relative to `heatmap/`), e.g.
+  `?data=../sim/runs/<run>/timeline.csv.gz`.
 - `?at=200`: open at a moment, in minutes from the start of the data.
 - `?agent=a018`: open with that agent's phone showing. Handy for demo scenes.
 
@@ -50,8 +56,19 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
 
 ## Input CSV
 
-One row per agent per timestamp. Column names are matched loosely in `app.js` (`COLUMNS`), so the
-synthetic-data team can use their own names. To add an alias, extend that table.
+One row per agent per timestamp. The sim's format ([docs/sim-output-format.md](../docs/sim-output-format.md))
+is read directly. Other column names are matched loosely in `app.js` (`COLUMNS`); to add an alias,
+extend that table.
+
+- **Sim specifics:**
+  - `timestamp` is used, not the step index `t`.
+  - `disease_state` E or I\* counts as infected.
+  - Rows with `off_map` are hidden.
+  - `moving` rows are glided through at constant speed.
+  - Building names come from `map/buildings.csv`, next to the timeline.
+- **P(sick):** the sim holds only ground truth. Until the probability model ships a `p_sick`, the
+  map estimates it from what a real app could know: a positive test gives 95%, a "might be sick"
+  report gives 60%, and anything else gives 2%. The legend labels this as a placeholder.
 
 | Needed | Column (aliases) |
 |---|---|

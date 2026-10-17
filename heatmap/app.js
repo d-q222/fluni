@@ -10,7 +10,9 @@ const PAD_M = 120;          // grid margin around the data
 const HEAT_EVERY_MS = 100;   // heat is recomputed at most this often; dots move every frame
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
-const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/fake_agents.csv';
+// Default: the sim's run (needs the server started at the repo root), else the local placeholder.
+const DATA_PARAM = new URLSearchParams(location.search).get('data');
+const DATA_URLS = DATA_PARAM ? [DATA_PARAM] : ['../sim/runs/mock_boring10/timeline.csv.gz', 'data/fake_agents.csv'];
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -19,18 +21,35 @@ const COLORS = { healthy: '#2a78d6', infected: '#d03b3b', ring: '#fcfcfb', riskL
 // ---------- CSV adapter: the only place that knows column names ----------
 
 const COLUMNS = {
-  t: ['t', 'time', 'timestamp'],
+  t: ['timestamp', 'time', 't'],
   id: ['agent_id', 'id', 'agent'],
   lat: ['lat', 'latitude'],
   lon: ['lon', 'lng', 'long', 'longitude'],
   p: ['p_sick', 'p', 'prob_sick', 'risk'],
-  sick: ['sick', 'infected', 'is_sick'],
-  building: ['building'],
+  sick: ['sick', 'infected', 'is_sick', 'disease_state'],
+  building: ['building', 'building_name', 'location_id'],
   floor: ['floor'],
-  room: ['room'],
+  room: ['room', 'room_id'],
+  moving: ['moving'],
+  offMap: ['off_map'],
+  reported: ['self_reported_status'],
+  test: ['test_status'],
 };
 
-function toFrames(rows, fields) {
+const TRUE = new Set(['1', 'true', 'True', 'TRUE']);
+// Truth: 0/1, true/false, or the sim's disease states (exposed or infectious counts as infected).
+const INFECTED = new Set([...TRUE, 'E', 'I_pre', 'I_sym', 'I_asym']);
+
+// Stand-in for the probability model's P(sick) until it ships: only what a real app could know,
+// i.e. the person's own self-report and test result. Never the hidden disease state.
+function appBelief(reported, test) {
+  if (test === 'positive' || reported === 'tested_positive') return 0.95;
+  if (reported === 'might_be_sick') return 0.6;
+  if (test === 'negative' || reported === 'recovered') return 0.01;
+  return 0.02;
+}
+
+function toFrames(rows, fields, buildingNames) {
   const lower = Object.fromEntries(fields.map((f) => [f.trim().toLowerCase(), f]));
   const col = Object.fromEntries(
     Object.entries(COLUMNS).map(([k, names]) => [k, names.map((n) => lower[n]).find(Boolean)]),
@@ -38,18 +57,24 @@ function toFrames(rows, fields) {
   for (const k of ['t', 'id', 'lat', 'lon']) {
     if (!col[k]) throw new Error(`CSV needs a "${COLUMNS[k][0]}" column (have: ${fields.join(', ')})`);
   }
-  if (!col.p && !col.sick) throw new Error('CSV needs a p_sick or sick column');
-  if (!col.p) console.warn('No p_sick column: using ground-truth "sick" as the probability.');
+  const beliefFrom = col.p ? 'column' : col.reported || col.test ? 'reports' : col.sick ? 'truth' : null;
+  if (!beliefFrom) throw new Error('CSV needs a p_sick, self-report/test, or sick column');
+  if (beliefFrom !== 'column') console.warn(`No p_sick column: estimating it from ${beliefFrom}.`);
 
   const byTime = new Map();
   for (const r of rows) {
-    const sick = col.sick ? Number(r[col.sick]) === 1 || r[col.sick] === 'true' : null;
+    if (col.offMap && TRUE.has(r[col.offMap])) continue; // off campus: not on the map
+    const sick = col.sick ? INFECTED.has(r[col.sick]) : null;
+    const b = col.building ? r[col.building] : null;
     const a = {
       id: r[col.id], lat: Number(r[col.lat]), lon: Number(r[col.lon]),
-      p: col.p ? Number(r[col.p]) : Number(sick), sick,
-      building: col.building ? r[col.building] : null,
+      p: beliefFrom === 'column' ? Number(r[col.p])
+        : beliefFrom === 'reports' ? appBelief(r[col.reported], r[col.test]) : Number(sick),
+      sick,
+      building: (b && buildingNames.get(b)) || b || null,
       floor: col.floor ? r[col.floor] : null,
-      room: col.room ? r[col.room] : null,
+      room: col.room ? r[col.room] || null : null,
+      moving: col.moving ? TRUE.has(r[col.moving]) : null,
     };
     if (!Number.isFinite(a.lat) || !Number.isFinite(a.lon)) continue;
     const t = r[col.t];
@@ -61,19 +86,32 @@ function toFrames(rows, fields) {
   const frames = times.map((t) => byTime.get(t));
   return {
     frames, times: times.map(toMs), samples: frames.flat(), numericTime: Number.isFinite(Number(times[0])),
-    hasTruth: Boolean(col.sick), hasRoom: Boolean(col.room),
+    hasTruth: Boolean(col.sick), hasRoom: Boolean(col.room), beliefFrom,
   };
 }
 
 // ISO timestamps → epoch ms. Plain numbers are taken as seconds since the start of the simulation.
 const toMs = (t) => (Number.isFinite(Number(t)) ? Number(t) * 1000 : Date.parse(t));
 
-function loadCsv(url) {
-  return new Promise((resolve, reject) =>
-    Papa.parse(url, {
-      download: true, header: true, skipEmptyLines: true,
-      complete: (res) => resolve(res), error: reject,
-    }));
+// Fetch a CSV, gunzipping in the browser if needed (the sim ships timeline.csv.gz).
+async function fetchCsv(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  let bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+    bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+  }
+  return Papa.parse(new TextDecoder().decode(bytes), { header: true, skipEmptyLines: true });
+}
+
+// The sim keeps building names next to the timeline in map/buildings.csv (location_id → name).
+async function loadBuildingNames(dataUrl) {
+  try {
+    const { data } = await fetchCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)));
+    return new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
+  } catch {
+    return new Map();
+  }
 }
 
 // ---------- Leaflet glue ----------
@@ -126,6 +164,17 @@ function dataBounds(frames) {
   return { south: s - dLat, west: w - dLon, north: n + dLat, east: e + dLon };
 }
 
+// Earliest time any agent changes position (or t0 if nobody moves).
+function firstMove(tracks, t0) {
+  let first = Infinity;
+  for (const tr of tracks.values()) {
+    for (let i = 1; i < tr.length && tr[i].t < first; i++) {
+      if (tr[i].lat !== tr[i - 1].lat || tr[i].lon !== tr[i - 1].lon) { first = tr[i - 1].t; break; }
+    }
+  }
+  return Number.isFinite(first) ? first : t0;
+}
+
 // Fixed colour scale shared by every frame: the 90th percentile of per-frame peaks (sampled), so a
 // single extreme moment doesn't wash out the rest. Anything above it shows as the darkest colour.
 function globalMax(grid, frames, sigmaM) {
@@ -165,11 +214,16 @@ const mPerDegLon = (lat) => 111320 * Math.cos((lat * Math.PI) / 180);
 const $ = (id) => document.getElementById(id);
 
 async function main() {
-  const [res, paths] = await Promise.all([
-    loadCsv(DATA_URL),
+  let res, dataUrl;
+  for (dataUrl of DATA_URLS) {
+    try { res = await fetchCsv(dataUrl); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
+  }
+  if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
+  const [paths, buildingNames] = await Promise.all([
     fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
+    loadBuildingNames(dataUrl),
   ]);
-  const data = toFrames(res.data, res.meta.fields);
+  const data = toFrames(res.data, res.meta.fields, buildingNames);
   const { frames, times } = data;
   const tracks = buildTracks(data.samples);
   const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
@@ -199,8 +253,9 @@ async function main() {
   let current = new Map(); // agent id -> interpolated state at the current time
 
   // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
+  // Otherwise start shortly before the first movement, so playback doesn't open on a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
-  let now = at ? Math.min(t1, t0 + at * 60000) : t0, playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
+  let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true;
   let phoneMap = null, phoneHeat = null, phoneYou = null;
 
   function dotFor(id) {
@@ -327,7 +382,7 @@ async function main() {
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
-      : `<div class="key">App's estimate of P(sick):</div><div class="ramp" style="background:linear-gradient(to right, ${mix(COLORS.riskLo, COLORS.riskHi, 0)}, ${mix(COLORS.riskLo, COLORS.riskHi, 1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
+      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="ramp" style="background:linear-gradient(to right, ${mix(COLORS.riskLo, COLORS.riskHi, 0)}, ${mix(COLORS.riskLo, COLORS.riskHi, 1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
     $('dot-mode').disabled = !data.hasTruth;
   }
 
@@ -364,5 +419,5 @@ async function main() {
 
 main().catch((err) => {
   console.error(err);
-  $('status').textContent = `Couldn't load ${DATA_URL}: ${err.message}`;
+  $('status').textContent = `Couldn't load the agent data: ${err.message}`;
 });

@@ -13,7 +13,7 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 
 | # | Task | Size | Depends on | Done when |
 |---|---|---|---|---|
-| D1 | Load the teammate's real CSV (about 10 agents): add column aliases and handle the file size | M | real CSV | `?data=` loads it with no console errors |
+| D1 | ~~Load the sim's output~~ **Done** for the mock run (gzip, sim columns, building names). Still to do: the full run's size (~7,500 agents × 14 days), which needs preprocessing or Parquet | M | full sim run | The full run loads in under 5 s |
 | D2 | ~~Smooth movement on a sim-time clock~~ **Done**: footpath walking, see README | — | — | — |
 | D3 | Rescale the heat for ~10 agents (σ, colour-scale maximum) | S | D1 | One sick agent in a room shows a clear blob, and the legend still makes sense |
 | D4 | Fill building outlines by expected infected, and click a building for its count | M | `data/stanford_buildings.json`; CSV building names | Clicking a building shows its numbers |
