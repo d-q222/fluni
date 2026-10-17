@@ -338,6 +338,9 @@ export function inferRisk(input, params = {}) {
   // ---------- run ----------
 
   let contacts = input.contacts, reports = input.reports || [];
+  // CSV rows carry t as a string: compared as strings, "1060" < "941" and reports ran out of order.
+  for (const r of contacts) r.t = Number(r.t);
+  for (const r of reports) r.t = Number(r.t);
   const byT = (x, y) => x.t - y.t;
   const sorted = (a) => { for (let k = 1; k < a.length; k++) if (a[k].t < a[k - 1].t) return false; return true; };
   if (!sorted(contacts)) contacts = contacts.slice().sort(byT);

@@ -44,10 +44,11 @@ const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 // local placeholder.
 const DEFAULT_RUN = 'influenza_none_n10_d14_s2_f1f772f6';
 const PARAMS = new URLSearchParams(location.search);
-const runUrl = (run) => `../sim/runs/${run}/timeline.csv.gz`;
+// Prefer the run's compact timeline (only rows where something changes; docs/timeline-changes-format.md).
+const runUrls = (run) => [`../sim/runs/${run}/timeline_changes.csv.gz`, `../sim/runs/${run}/timeline.csv.gz`];
 const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
-  : PARAMS.get('run') ? [runUrl(PARAMS.get('run'))]
-    : [runUrl(DEFAULT_RUN), runUrl('mock_boring10'), 'data/fake_agents.csv'];
+  : PARAMS.get('run') ? runUrls(PARAMS.get('run'))
+    : [...runUrls(DEFAULT_RUN), ...runUrls('mock_boring10'), 'data/fake_agents.csv'];
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -246,6 +247,27 @@ function dataBounds(frames) {
   return { south: s - dLat, west: w - dLon, north: n + dLat, east: e + dLon };
 }
 
+// The compact timeline keeps only rows where something changes. Totals and forecasts need every agent
+// at every step, so expand it back (holding each agent's last row; rows are shared, not copied).
+// Fine for small runs; full-size runs should read precomputed totals instead (ROADMAP D1).
+function expandSteps(tracks, times, pAt = null) {
+  const ts = [...new Set(times)].sort((a, b) => a - b);
+  let step = Infinity;
+  for (let i = 1; i < ts.length; i++) step = Math.min(step, ts[i] - ts[i - 1]);
+  const t0 = ts[0], n = Number.isFinite(step) ? Math.round((ts[ts.length - 1] - t0) / step) + 1 : 1;
+  const frames = Array.from({ length: n }, () => []);
+  for (const tr of tracks.values()) {
+    let j = 0;
+    const first = Math.round((tr[0].t - t0) / step), last = Math.round((tr[tr.length - 1].t - t0) / step);
+    for (let k = first; k <= last; k++) {
+      const t = t0 + k * step;
+      while (j + 1 < tr.length && tr[j + 1].t <= t) j++;
+      frames[k].push(pAt ? { ...tr[j], p: pAt(tr[j].id, t) } : tr[j]); // risk can change mid-stay
+    }
+  }
+  return { frames, times: Array.from({ length: n }, (_, k) => t0 + k * step) };
+}
+
 // Earliest time any agent changes position (or t0 if nobody moves).
 function firstMove(tracks, t0) {
   let first = Infinity;
@@ -324,8 +346,18 @@ async function main() {
     for (const a of data.samples) a.p = model.risk.pAt(a.id, a.t);
     data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
   }
-  const { frames, times } = data;
   const tracks = buildTracks(data.samples);
+  if (/timeline_changes\.csv(\.gz)?$/.test(dataUrl)) {
+    Object.assign(data, expandSteps(tracks, data.times, model && model.risk.pAt));
+  }
+  // Positions interpolate between samples, but risk comes straight from the model when there is one
+  // (a compact stay is two rows hours apart; a report mid-stay must show up when it happens).
+  const stateNow = (track, t) => {
+    const st = stateAt(track, t, router);
+    if (st && model) st.p = model.risk.pAt(st.id, t);
+    return st;
+  };
+  const { frames, times } = data;
   const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
   const bounds = dataBounds(frames);
   const sw = [bounds.south, bounds.west], ne = [bounds.north, bounds.east];
@@ -337,7 +369,7 @@ async function main() {
   const field = new DiffusionField(bounds, DEMO.cellM, { mask });
   const statesAt = (t) => {
     const out = [];
-    for (const track of tracks.values()) { const st = stateAt(track, t, router); if (st) out.push(st); }
+    for (const track of tracks.values()) { const st = stateNow(track, t); if (st) out.push(st); }
     return out;
   };
   const heatAt = (t, nowStates = null, truth = false) => {
@@ -562,7 +594,7 @@ async function main() {
   function render(realNow) {
     current = new Map();
     for (const [id, track] of tracks) {
-      const s = stateAt(track, now, router);
+      const s = stateNow(track, now);
       if (s) current.set(id, s);
     }
     $('time').textContent = formatTime(now, data.numericTime);
