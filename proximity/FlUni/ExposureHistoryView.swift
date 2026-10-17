@@ -20,7 +20,7 @@ extension ExposureEpisode {
     }
 }
 
-/// "Recent exposures" on Today: the latest few, and a link to the full 14 days. Local only.
+/// "Recent contacts" on Today: the latest few, and a link to the full 14 days. Local only.
 struct ExposureHistorySection: View {
     @ObservedObject var store: ExposureHistoryStore
 
@@ -30,17 +30,18 @@ struct ExposureHistorySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Recent exposures").font(.fluni(.headline))
+            Text("Recent contacts").font(.fluni(.headline)).accessibilityAddTraits(.isHeader)
             if items.isEmpty {
-                Text("Nothing in the last 14 days.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
+                Text("No time near someone sick in the last 14 days.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
             } else {
                 ForEach(items.prefix(3)) { Text($0.summary).font(.fluni(.subheadline)).foregroundStyle(Theme.ink2) }
                 NavigationLink {
                     ExposureHistoryView(store: store)
                 } label: {
-                    Label("See last 14 days", systemImage: "chevron.right")
+                    Label("See the last 14 days", systemImage: "chevron.right")
                         .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
                 }
+                .accessibilityHint("Shows every close contact from the last 14 days")
             }
         }
         .foregroundStyle(Theme.ink)
@@ -61,25 +62,26 @@ struct ExposureHistoryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 if items.isEmpty {
-                    Text("No exposures in the last 14 days.").font(.fluni(.body)).foregroundStyle(Theme.ink2)
+                    Text("No time near someone sick in the last 14 days.").font(.fluni(.body)).foregroundStyle(Theme.ink2)
                 }
                 ForEach(items) { e in
                     Text(e.summary).font(.fluni(.subheadline))
                         .foregroundStyle(e.isCloseContact ? Theme.fireInk : Theme.ink)
+                        .accessibilityLabel(e.summary.replacingOccurrences(of: " · ", with: ", "))
                         .card(fill: e.isCloseContact ? Theme.fire.opacity(0.18) : Theme.surface)
                 }
-                Text("Kept on this phone only, and removed after 14 days. It never leaves your device.")
+                Text("Kept on this phone only, and removed after 14 days. It never leaves your phone.")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
             .padding(16)
         }
         .background(Theme.paper)
-        .navigationTitle("Recent exposures")
+        .navigationTitle("Recent contacts")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-/// Gentle heads-up on Today while someone who may be contagious is probably within 6 ft.
+/// Gentle heads-up on Today while someone who may be sick is probably within 6 ft.
 struct NearbyBanner: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -105,7 +107,8 @@ struct CloseContactSheet: View {
             Spacer(minLength: 0)
             Image(systemName: "heart.text.square").font(.system(size: 44)).foregroundStyle(Theme.fireInk)
                 .accessibilityHidden(true)
-            Text("You were close to someone who may be contagious")
+            Text("You were close to someone who may be sick")
+                .accessibilityAddTraits(.isHeader)
                 .font(.fluni(.title, weight: .bold)).foregroundStyle(Theme.ink)
             if let first = lines.first { Text(first).font(.fluni(.body)).foregroundStyle(Theme.ink2) }
             VStack(alignment: .leading, spacing: 14) {
@@ -119,6 +122,7 @@ struct CloseContactSheet: View {
             .card()
             Spacer(minLength: 0)
             Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
+                .accessibilityHint("Closes this message")
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

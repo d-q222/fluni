@@ -6,17 +6,29 @@ struct PausedBanner: View {
 
     var body: some View {
         if let p = model.pauseState {
-            HStack(spacing: 10) {
-                Image(systemName: "pause.circle.fill").font(.title3).accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Detection paused").font(.fluni(.subheadline, weight: .semibold))
-                    Text("Nothing is shared and exposure isn't counted, \(PauseSchedule.describe(p, calendar: .current, now: Date())).")
-                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            // Side by side normally; stacked when large text would squeeze the message.
+            let message = VStack(alignment: .leading, spacing: 2) {
+                Text("Detection is paused").font(.fluni(.subheadline, weight: .semibold))
+                Text("FlUni isn't sharing your status or counting close-contact time, \(PauseSchedule.describe(p, calendar: .current, now: Date())).")
+                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            }
+            let resume = Button("Resume detection") { model.resume() }
+                .font(.fluni(.subheadline, weight: .semibold))
+                .frame(minWidth: 44, minHeight: 44)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    Image(systemName: "pause.circle.fill").font(.title3).accessibilityHidden(true)
+                    message
+                    Spacer(minLength: 0)
+                    resume
                 }
-                Spacer(minLength: 0)
-                Button("Resume") { model.resume() }
-                    .font(.fluni(.subheadline, weight: .semibold))
-                    .frame(minHeight: 44)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "pause.circle.fill").font(.title3).accessibilityHidden(true)
+                        message
+                    }
+                    resume
+                }
             }
             .foregroundStyle(Theme.ink)
             .card(fill: Theme.sun.opacity(0.5))

@@ -6,28 +6,47 @@ struct RiskCardView: View {
     let onHow: () -> Void
     @ObservedObject private var store = PSickStore.shared
 
+    /// Same tiers as the map: low = sage, elevated = sun, high = fire. Text is ink, or fire-ink on fire.
+    private static func fill(_ b: RiskEstimate.Band) -> Color {
+        switch b {
+        case .low: return Theme.sage.opacity(0.45)
+        case .elevated: return Theme.sun.opacity(0.5)
+        case .high: return Theme.fire.opacity(0.22)
+        }
+    }
+    private static func textColor(_ b: RiskEstimate.Band) -> Color { b == .high ? Theme.fireInk : Theme.ink }
+    /// Secondary text: ink-2 passes on sage and sun tints (5.1 and 5.6), fire-ink is safer on the fire tint.
+    private static func noteColor(_ b: RiskEstimate.Band) -> Color { b == .high ? Theme.fireInk : Theme.ink2 }
+
     var body: some View {
         let p = RiskEstimate.probability(dose: dose)
+        // The headline number sets the tier colour: the campus model's when there is one, else this phone's.
+        let band = RiskEstimate.band(store.campusP ?? p)
+        let text = Self.textColor(band)
         VStack(alignment: .leading, spacing: 8) {
-            if let official = store.campusP {
-                Text("Campus model: \(RiskEstimate.percentText(official))")
-                    .font(.fluni(.title2, weight: .bold)).monospacedDigit()
-                Text("This phone's estimate: \(RiskEstimate.percentText(p))")
-                    .font(.fluni(.headline)).monospacedDigit()
-            } else {
-                Text("Your risk estimate").font(.fluni(.headline))
-                Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+            VStack(alignment: .leading, spacing: 8) {
+                if let official = store.campusP {
+                    Text("Campus model: \(RiskEstimate.percentText(official))")
+                        .font(.fluni(.title2, weight: .bold)).monospacedDigit()
+                    Text("This phone's estimate: \(RiskEstimate.percentText(p))")
+                        .font(.fluni(.headline)).monospacedDigit()
+                } else {
+                    Text("Your risk estimate").font(.fluni(.headline))
+                    Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                }
+                Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
+                Text("Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.")
+                    .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
             }
-            Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
-            Text("An estimate from nearby contacts in the last 24 hours, not a diagnosis.")
-                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            .accessibilityElement(children: .combine)
             Button(action: onHow) {
-                Label("How is this calculated?", systemImage: "function")
-                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
+                Label("See how this is worked out", systemImage: "function")
+                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Self.noteColor(band)).frame(minHeight: 44)
             }
+            .accessibilityHint("Opens the numbers behind this estimate")
         }
-        .foregroundStyle(Theme.ink)
-        .card()
+        .foregroundStyle(text)
+        .card(fill: Self.fill(band))
         .task { if store.feed == nil, !store.agent.isEmpty { await store.reload() } }
     }
 }
@@ -44,7 +63,7 @@ struct PSickDemoSheet: View {
                 Section {
                     TextField("Run name", text: $runID).textInputAutocapitalization(.never).autocorrectionDisabled()
                         .font(.footnote.monospaced())
-                    Button(store.loading ? "Loading\u{2026}" : "Load from laptop") {
+                    Button(store.loading ? "Loading\u{2026}" : "Load from the laptop") {
                         PSickLoader.runID = runID
                         Task { await store.reload() }
                     }.disabled(store.loading)
@@ -53,7 +72,7 @@ struct PSickDemoSheet: View {
                     Text("Read from the same laptop as the map.")
                 }
                 if let feed = store.feed, let range = feed.timeRange {
-                    Section("Pretend to be") {
+                    Section("Play as") {
                         NavigationLink {
                             AgentList(agents: feed.agents, selection: $store.agent)
                         } label: {
@@ -65,8 +84,8 @@ struct PSickDemoSheet: View {
                             Text(PSickFeed.clockText(store.simTime)).monospacedDigit()
                             Slider(value: $store.simTime, in: range.lowerBound...range.upperBound, step: 60)
                                 .disabled(store.follow)
-                            Toggle("Follow the map (2 sim min per second)", isOn: $store.follow)
-                        } header: { Text("Sim time") }
+                            Toggle("Follow the map (2 simulated minutes per second)", isOn: $store.follow)
+                        } header: { Text("Simulated time") }
                     }
                 }
             }
@@ -88,7 +107,7 @@ private struct AgentList: View {
     var body: some View {
         let shown = query.isEmpty ? agents : agents.filter { $0.localizedCaseInsensitiveContains(query) }
         List {
-            Button("None (this phone only)") { selection = ""; dismiss() }
+            Button("None, use this phone only") { selection = ""; dismiss() }
             ForEach(shown, id: \.self) { a in
                 Button { selection = a; dismiss() } label: {
                     HStack { Text(a).monospacedDigit(); Spacer(); if a == selection { Image(systemName: "checkmark") } }
@@ -96,7 +115,7 @@ private struct AgentList: View {
             }
         }
         .foregroundStyle(Theme.ink)
-        .searchable(text: $query, prompt: "Search agent id")
+        .searchable(text: $query, prompt: "Search students")
         .navigationTitle("Student")
     }
 }

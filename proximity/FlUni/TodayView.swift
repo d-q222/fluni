@@ -6,6 +6,7 @@ struct TodayView: View {
     @ObservedObject var model: ProximityModel
     @State private var showHow = false
     @State private var showCalc = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var level: AlertLevel { model.exposure.level }
 
@@ -21,17 +22,18 @@ struct TodayView: View {
                     nearbyCard
                     ExposureHistorySection(store: model.exposureHistory)
                     Button { showHow = true } label: {
-                        Label("How this works and what's shared", systemImage: "info.circle")
+                        Label("How FlUni works and what it shares", systemImage: "info.circle")
                             .font(.fluni(.subheadline, weight: .semibold))
                             .foregroundStyle(Theme.ink2)
                             .frame(minHeight: 44)
                     }
+                    .accessibilityHint("Opens a short explanation")
                 }
                 .padding(16)
             }
             .background(Theme.paper)
             .navigationTitle("Today")
-            .animation(.default, value: level)
+            .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
         }
@@ -51,7 +53,7 @@ struct TodayView: View {
                 if level == .none {
                     Image("Tissue").resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
                 } else {
-                    Image(systemName: level == .closeContact ? "exclamationmark.octagon.fill" : "exclamationmark.triangle.fill")
+                    Image(systemName: level == .closeContact ? "exclamationmark.circle.fill" : "info.circle.fill")
                         .font(.title).accessibilityHidden(true)
                 }
             }
@@ -74,11 +76,11 @@ struct TodayView: View {
     private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color, text: Color) {
         switch level {
         case .none:
-            return ("All clear", "No one who might be contagious has been near you.", Theme.sage.opacity(0.45), Theme.ink)
+            return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45), Theme.ink)
         case .nearby:
-            return ("Someone nearby may be contagious", "Here is what you can do right now.", Theme.sun.opacity(0.5), Theme.ink)
+            return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
         case .closeContact:
-            return ("Close contact", "You spent about 15 minutes near someone who may be contagious.", Theme.fire.opacity(0.22), Theme.fireInk)
+            return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.fireInk)
         }
     }
 
@@ -93,29 +95,31 @@ struct TodayView: View {
     private var minutesCard: some View {
         let mins = model.exposure.minutes
         let goal = ExposureTracker.closeContactMinutes
-        let tint = mins >= goal ? Theme.fireInk : (mins > 0 ? Theme.ember : Theme.sage)
-        let caption = mins >= goal ? "You've reached the 15-minute close-contact mark."
-            : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would count as close contact."
-            : "No time spent near anyone who might be contagious."
+        let tint = mins >= goal ? Theme.fireInk : Theme.ink2
+        let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
+            : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would make this a close contact."
+            : "No time near someone with symptoms or a positive test."
         return VStack(alignment: .leading, spacing: 10) {
             Text("Close-contact time").font(.fluni(.headline))
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(Int(min(mins, 99)))").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
                 Text("of \(Int(goal)) min").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
             }
-            ProgressView(value: min(mins, goal), total: goal).tint(tint)
+            ProgressView(value: min(mins, goal), total: goal).tint(tint).accessibilityHidden(true)
             Text(caption).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
         }
         .foregroundStyle(Theme.ink)
         .card()
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Close-contact time")
+        .accessibilityValue("\(Int(mins)) of \(Int(goal)) minutes. \(caption)")
     }
 
     // MARK: Nearby
 
     private var nearbyCard: some View {
         let n = model.peers.count
-        let text = n == 0 ? "No Fluni phones nearby" : n == 1 ? "1 Fluni phone nearby" : "\(n) Fluni phones nearby"
+        let text = n == 0 ? "No other FlUni phones nearby" : n == 1 ? "1 other FlUni phone nearby" : "\(n) other FlUni phones nearby"
         return HStack(spacing: 12) {
             Image(systemName: "person.2.wave.2").font(.title3).foregroundStyle(Theme.ink2).accessibilityHidden(true)
             Text(text).font(.fluni(.body, weight: .semibold))
@@ -135,13 +139,13 @@ struct HowItWorksSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     block("How it works",
-                          "Your phone and other phones running Fluni notice each other over Bluetooth, and by ultra wideband where supported. Together they estimate whether you're within 6 feet. If someone who has marked themselves sick is close for about 15 minutes in total, you get a heads-up with advice.")
+                          "Your phone and other phones running FlUni notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
                     block("What your phone shares",
-                          "Only a 3-level status (fine, symptoms, tested positive) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
+                          "Only a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
                     block("What it doesn't share",
                           "Your location is never sent to other people or to a server. Matching happens on your phone, and the map shows building totals, not people.")
                     block("Good to know",
-                          "Fluni works while the app is open. It's a nudge, not a diagnosis: if you feel unwell or are worried, test and follow campus health guidance.")
+                          "FlUni works while the app is open. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
                 }
                 .padding(20)
             }
@@ -155,7 +159,7 @@ struct HowItWorksSheet: View {
 
     private func block(_ title: String, _ body: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.fluni(.headline))
+            Text(title).font(.fluni(.headline)).accessibilityAddTraits(.isHeader)
             Text(body).font(.fluni(.body)).foregroundStyle(Theme.ink2)
         }
         .foregroundStyle(Theme.ink)
@@ -179,23 +183,24 @@ struct CalculationSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     block("Close contact",
-                          "Minutes within 6 ft of someone, times how likely they are to be contagious: 1 if they tested positive, 0.5 if they have symptoms. \(Int(ExposureTracker.closeContactMinutes)) of these in a day triggers the close-contact alert.",
+                          "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, FlUni tells you it's a close contact.",
                           "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
-                    block("Exposure dose",
-                          "The same, but closer counts more: under 1 m ×1, 1–2 m ×0.6, 2–5 m ×0.1, farther in the room ×0.02.",
-                          "You: \(d) dose-minutes")
+                    block("Closeness-weighted time",
+                          "The same minutes, but closer counts more: under 1 m ×1, 1–2 m ×0.6, 2–5 m ×0.1, farther in the room ×0.02.",
+                          "You: \(d) weighted minutes")
                     block("The estimate",
-                          "Contact part x = 1 \u{2212} e^(\u{2212}\(RiskEstimate.beta) × dose), at most \(Int(RiskEstimate.xMax * 100))%. Then P = 1 \u{2212} \(1 - RiskEstimate.prior) × (1 \u{2212} x), where \(Int(RiskEstimate.prior * 100))% is the everyday baseline. Same model as the campus map.",
+                          "The contact part is x = 1 \u{2212} e^(\u{2212}\(RiskEstimate.beta) × dose), at most \(Int(RiskEstimate.xMax * 100))%. Then P = 1 \u{2212} \(1 - RiskEstimate.prior) × (1 \u{2212} x), where \(Int(RiskEstimate.prior * 100))% is the everyday baseline. Same model as the campus map.",
                           "x = \(RiskEstimate.percentText(x)), so P = \(RiskEstimate.percentText(p))")
                     block("What counts",
-                          "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and ultra wideband do.", nil)
+                          "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model vs this phone",
-                          "The campus model is the official number, worked out on the laptop from everyone's contacts, reports and tests. This phone's estimate uses only what this phone sensed in the last 24 hours, so the two can differ.",
+                          "The campus model is the official number, worked out on the laptop from everyone's contacts, reports and tests. This phone's estimate uses only what this phone detected in the last 24 hours, so the two can differ.",
                           store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
-                    Text("It's an estimate to help you decide what to do, not a diagnosis.")
+                    Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                    Button("Demo\u{2026}") { showDemo = true }
+                    Button("Demo settings\u{2026}") { showDemo = true }
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
+                        .accessibilityHint("Developer option for demos")
                 }
                 .padding(20)
             }
