@@ -1,5 +1,7 @@
 # Heat map
 
+> **Status: tentative v1.** It runs on placeholder data, and the base map choice isn't final.
+
 Stanford campus map showing where infections are likely concentrated, played back over time from
 the agent timeline CSV. Owner: @d-q222 (see [WORKSTREAMS.md](../WORKSTREAMS.md)).
 
@@ -62,4 +64,5 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 - `app.js`: CSV adapter, Leaflet map, playback, dots, agent phone view.
 - `index.html`: layout and styles.
 
-Base map: OpenStreetMap tiles via Leaflet, greyed with CSS so the heat stands out.
+Base map (**tentative**, may switch to Google Maps): OpenStreetMap tiles via Leaflet, greyed with CSS
+so the heat stands out. Only the map glue in `app.js` would change; `heat.js` is independent of the map.

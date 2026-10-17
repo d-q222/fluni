@@ -5,7 +5,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Workstream | Directory | Owner | Status | Notes |
 |------------|-----------|-------|--------|-------|
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
-| Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data | Stanford campus map with playback, heat = P(sick) × concentration, demo dots, click a dot to see that agent's phone view. Waiting on the real CSV. See `heatmap/README.md`. |
+| Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Stanford campus map with playback, heat = P(sick) × concentration, demo dots, click a dot to see that agent's phone view. Waiting on the real CSV. See `heatmap/README.md`. |
 | Synthetic agent data | _TBD_ | _teammate, please claim_ | Not started | Agent positions over time + infection probability. The heat map consumes this. |
 | Proximity alerts (phone) | _TBD_ | _unclaimed_ | Not started | PRD Functionality 1 |
 | Infection probability model | _TBD_ | _unclaimed_ | Not started | PRD Functionality 3 |
@@ -18,7 +18,8 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — Who sees what.** The map with individual dots is **demo only**. Real users see only
   the live heat map, never people, positions, or properties. Demo feature: clicking a dot opens that
   agent's in-app view, which shows the live heat map with no people.
-- **2026-10-17 — Heat map stack: Leaflet + OpenStreetMap for now; Google Maps possibly later.**
+- **2026-10-17 — Heat map stack (TENTATIVE): Leaflet + OpenStreetMap for now. Google Maps is still being
+  considered; the deciding question is how much we can customize the map's look.**
   The heat layer is computed in our own code (`heatmap/heat.js`) on a grid in metres and drawn as
   one canvas overlay, so moving to Google Maps means rewriting only the map glue. If we do, any API
   key stays out of the repo, which is public.
