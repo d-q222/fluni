@@ -6,7 +6,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 |------------|-----------|-------|--------|-------|
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
-| Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
+| Design pass | `heatmap/` (styling, layout, assets); look of `sim/campussim/viewer_template.html` | @lisaazheng (+ Claude agent) | **In progress**: campfire palette, hand-drawn people, shared risk tiers done; hand-drawn map, loading screen and phone illustrations next | Hand-drawn visual style. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, heat maths, or the CSV contract. Palette lives in `heatmap/index.html` `:root`; see `heatmap/README.md` → `assets/`. |
 | Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. See `sim/README.md`. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones. One project, two apps: **FlUni** (student app) + **FluniProx** (test harness), sharing `Core/`; building out FlUni | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
@@ -56,6 +56,9 @@ Claim a row before you start. Update the status as you go. Agents should name th
   person. Revisit (anonymity threshold or server-side matching) before real users.
 - **2026-10-17 — GPS alone doesn't count as close contact.** Indoors GPS is ±10–30 m, so GPS-only
   evidence with error > 10 m never adds close-contact minutes (it still feeds the distance estimate).
+- **2026-10-17 — Design pass may restyle the sim viewer.** @lisaazheng and @aidenyj agreed the design
+  pass can change the look of `sim/campussim/viewer_template.html` (colours, font, people marker) to
+  match the heat map. Styling only: no simulation, encoding, or `view.py` changes.
 
 - **2026-10-17 — Phones get P(sick) from a model output file (Option A).** The model writes
   `model/out/<run>/p_sick.csv` (change points: `agent_id, t_iso, p_sick`; see
@@ -71,6 +74,13 @@ Claim a row before you start. Update the status as you go. Agents should name th
   harness stays with the product so tests hit the shipping code. Later step: move `Core/` into a Swift package.
 
 ## Requests
+
+- **design pass → proximity app and probability model (proposal, please confirm):** the heat map
+  demo now shows risk in three tiers everywhere: Low under 10%, Elevated 10–40%, High 40%+. These
+  match the phone's existing advice text in `heatmap/app.js` (`TIERS`). So the iOS app looks like
+  the same product, please use the same tiers and the palette in `heatmap/index.html` `:root`
+  (sage `#acbc8b`, sun `#ebd187`, ember `#e99569`, fire `#db6c59`, text `#33241c` on `#faf4e8`).
+  If the model changes what "elevated" or "high" should mean, change `TIERS` and every view follows.
 
 - **heat map → synthetic data:** to start, a small sample CSV (~50 agents, ~20 timestamps) would let
   the heat map be built against the real columns. Please also say:

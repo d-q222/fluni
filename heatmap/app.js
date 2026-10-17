@@ -69,7 +69,24 @@ const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const COLORS = { healthy: '#2a78d6', infected: '#d03b3b', ring: '#fcfcfb', riskLo: [134, 182, 239], riskHi: [13, 54, 107] };
+// Palette tokens from index.html (--sage, --sun, --fire, --surface). People run sage → sun → fire by
+// estimated risk, so the middle of the scale is a clear yellow instead of a muddy green-red mix.
+const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk: [[172, 188, 139], [235, 209, 135], [219, 108, 89]] };
+
+// People are drawn as @lisaazheng's hand-drawn tissue (assets/people/tissue.png) on a round badge in
+// their risk colour. It's still a canvas circle marker underneath, so clicks, tooltips and speed are
+// unchanged; only the drawing step adds the image. Until the image loads, the plain badge shows.
+const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
+PERSON.img.onload = () => PERSON.onload && PERSON.onload();
+PERSON.img.src = 'assets/people/tissue.png';
+const PersonMarker = L.CircleMarker.extend({
+  _updatePath() {
+    this._renderer._updateCircle(this);
+    const ctx = this._renderer._ctx, p = this._point, s = PERSON.size;
+    if (!ctx || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
+  },
+});
 
 // ---------- CSV adapter: the only place that knows column names ----------
 
@@ -362,15 +379,26 @@ function* asPoints(states, truth) {
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
+// One set of risk tiers for everything the presenter and user see: the phone's advice, the risk card's
+// colour, the people badges and the legend. Low < 10% (sage), Elevated 10–40% (sun), High ≥ 40% (fire).
+const TIERS = { elevated: 0.1, high: 0.4 };
+const riskTier = (p) => (p >= TIERS.high ? 'high' : p >= TIERS.elevated ? 'elevated' : 'low');
+// Blends only near each threshold, so a colour always matches its tier's advice.
+const riskColor = (p) => {
+  const [lo, mid, hi] = COLORS.risk, e = TIERS.elevated, h = TIERS.high;
+  if (p < e) return mix(lo, mid, Math.max(0, (p - 0.7 * e) / (0.3 * e)));
+  if (p < h) return mix(mid, hi, Math.max(0, (p - (h - 0.08)) / 0.08));
+  return mix(hi, hi, 0);
+};
 
 function dotColor(a, mode) {
   if (mode === 'truth') return a.sick ? COLORS.infected : COLORS.healthy;
-  return mix(COLORS.riskLo, COLORS.riskHi, Math.min(1, a.p));
+  return riskColor(Math.min(1, a.p));
 }
 
 function advice(p) {
-  if (p >= 0.4) return 'High. Consider getting tested at Vaden and staying home.';
-  if (p >= 0.1) return 'Elevated. Wear a mask in crowded rooms and watch for symptoms.';
+  if (riskTier(p) === 'high') return 'High. Consider getting tested at Vaden and staying home.';
+  if (riskTier(p) === 'elevated') return 'Elevated. Wear a mask in crowded rooms and watch for symptoms.';
   return 'Low. No action needed.';
 }
 
@@ -509,7 +537,8 @@ async function main() {
   }
   const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
   const dotLayer = L.layerGroup().addTo(map);
-  const dots = new Map(); // agent id -> circle marker
+  const dots = new Map(); // agent id -> person marker
+  PERSON.onload = () => { for (const m of dots.values()) if (m._map) m.redraw(); };
   let current = new Map(); // agent id -> interpolated state at the current time
 
   // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
@@ -531,8 +560,8 @@ async function main() {
 
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
-    const m = L.circleMarker([0, 0], {
-      renderer: dotRenderer, radius: 5, weight: 2, color: COLORS.ring, fillOpacity: 1,
+    const m = new PersonMarker([0, 0], {
+      renderer: dotRenderer, radius: PERSON.radius, weight: 2, color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -648,13 +677,14 @@ async function main() {
     $('ph-alert').querySelector('span').replaceChildren(...alerts.map((t) => Object.assign(document.createElement('div'), { textContent: t })));
     $('ph-risk').textContent = pct(me.p);
     $('ph-advice').textContent = advice(me.p);
+    $('ph-risk').closest('.risk').dataset.tier = riskTier(me.p);
     const where = me.walking ? 'walking' : me.building;
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
 
     if (!phoneMap) {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
       if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines).addTo(phoneMap);
-      phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: '#fff', fillColor: COLORS.healthy, fillOpacity: 1 }).addTo(phoneMap);
+      phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: COLORS.ring, fillColor: '#33241c', fillOpacity: 1 }).addTo(phoneMap);
       phoneMap.setView([me.lat, me.lon], 16);
       withHeat = true;
     }
@@ -757,7 +787,7 @@ async function main() {
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
-      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="ramp" style="background:linear-gradient(to right, ${mix(COLORS.riskLo, COLORS.riskHi, 0)}, ${mix(COLORS.riskLo, COLORS.riskHi, 1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
+      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>`;
     const isPublic = v === 'public';
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people

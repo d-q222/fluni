@@ -12,20 +12,28 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
-      /* Warm-tinted neutrals; colour is reserved for the data (heat + dots). */
-      --paper: #f6f5f1;
-      --surface: #fdfcfa;
-      --surface-2: #f0eee9;
-      --ink: #23211d;
-      --ink-2: #5c5850;
-      --ink-3: #6f6a61;
-      --hairline: rgba(35, 33, 29, 0.09);
-      --focus: #3f6fb5;
-      --healthy: #2a78d6;
-      --infected: #d03b3b;
-      --alert-bg: #fbefe4;
-      --alert-ink: #7c3a12;
-      --shadow: 0 1px 2px rgba(35, 33, 29, 0.06), 0 8px 24px -6px rgba(35, 33, 29, 0.14);
+      /* Palette: @lisaazheng's hand-picked "campfire" colours (sampled from her Procreate swatch).
+         sage = safe, sun → ember → fire = rising risk. Neutrals are warm paper and charcoal so
+         text passes WCAG AA; the four swatch colours are never used for small text. */
+      --sage: #acbc8b;
+      --sun: #ebd187;
+      --ember: #e99569;
+      --fire: #db6c59;
+      --fire-ink: #8e3a28;      /* fire, darkened for text (6.9:1 on paper) */
+      --paper: #faf4e8;
+      --surface: #fffaf1;
+      --surface-2: #f4ead6;
+      --surface-3: #ecdfc6;     /* hover */
+      --ink: #33241c;           /* charcoal brown, 13.6:1 on paper */
+      --ink-2: #6a5244;
+      --ink-3: #7a6152;         /* 4.8:1 on surface-2, the lowest it sits on */
+      --hairline: rgba(51, 36, 28, 0.12);
+      --focus: var(--fire-ink);
+      --healthy: var(--sage);
+      --infected: var(--fire);
+      --alert-bg: #fbeedb;
+      --alert-ink: var(--fire-ink);
+      --shadow: 0 1px 2px rgba(51, 36, 28, 0.07), 0 8px 24px -6px rgba(51, 36, 28, 0.16);
       --radius: 12px;
       --font: "Hanken Grotesk", system-ui, sans-serif;
     }
@@ -37,7 +45,7 @@
       background: var(--paper); color: var(--ink);
       font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased;
     }
-    ::selection { background: rgba(63, 111, 181, 0.18); }
+    ::selection { background: rgba(235, 209, 135, 0.55); }
     :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
     .icon { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75;
       stroke-linecap: round; stroke-linejoin: round; }
@@ -58,7 +66,7 @@
       border: 0; border-radius: 50%; background: var(--ink); color: var(--surface); cursor: pointer;
       transition: transform 120ms ease-out, background 120ms ease-out;
     }
-    .play:hover { background: #3a3731; }
+    .play:hover { background: #4a372c; }
     .play:active { transform: scale(0.94); }
     .play .icon { fill: currentColor; stroke-width: 0; width: 14px; height: 14px; }
     .play .i-pause { display: none; }
@@ -75,10 +83,10 @@
     }
     select {
       appearance: none; padding: 0 28px 0 12px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c5850' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236a5244' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 11px center;
     }
-    select:hover, .toggle:hover { background-color: #e7e4dd; }
+    select:hover, .toggle:hover { background-color: var(--surface-3); }
     select:disabled { opacity: 0.5; cursor: default; }
     .toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px 0 10px; }
     .toggle input { accent-color: var(--ink); margin: 0; }
@@ -87,13 +95,14 @@
     main { position: relative; min-height: 0; }
     #map { position: absolute; inset: 0; background: var(--surface-2); font-family: var(--font); }
     .heat-canvas { position: absolute; pointer-events: none; image-rendering: auto; }
-    .muted-tiles { filter: grayscale(1) brightness(1.06) contrast(0.85) sepia(0.08); } /* quiet base map so heat reads */
+    .muted-tiles { filter: grayscale(1) brightness(1.06) contrast(0.85) sepia(0.35); } /* quiet base map so heat reads */
     .leaflet-bar { border: 0 !important; box-shadow: var(--shadow) !important; border-radius: 10px !important; overflow: hidden; }
     .leaflet-bar a { color: var(--ink-2) !important; border-color: var(--hairline) !important; }
     .leaflet-tooltip { font: 12px/1.4 var(--font); color: var(--ink); border: 0; border-radius: 8px;
       box-shadow: var(--shadow); padding: 6px 9px; }
     .leaflet-tooltip b { font-weight: 600; }
-    .leaflet-control-attribution { font-size: 12px; background: rgba(253, 252, 250, 0.8) !important; }
+    .leaflet-control-attribution a { color: var(--ink-2) !important; }
+    .leaflet-control-attribution { font-size: 12px; background: rgba(255, 250, 241, 0.85) !important; }
 
     #status { position: absolute; inset: 0; display: grid; place-items: center; z-index: 900;
       background: var(--paper); color: var(--ink-2); }
@@ -112,6 +121,10 @@
     .key { display: flex; align-items: center; gap: 7px; margin-top: 5px; color: var(--ink-2); }
     .key:first-child { margin-top: 0; }
     .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--hairline); }
+    .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
+    .tiers span { display: flex; flex-direction: column; gap: 1px; padding-top: 6px; color: var(--ink-2);
+      border-top: 6px solid var(--c); border-radius: 2px; }
+    .tiers small { color: var(--ink-3); font-size: 11px; font-variant-numeric: tabular-nums; }
     .legend .fine { margin: 10px 0 0; color: var(--ink-3); line-height: 1.4; }
 
     /* ---------- the selected agent's phone ---------- */
@@ -119,13 +132,13 @@
       display: flex; flex-direction: column; gap: 10px; }
     .phone-frame {
       background: var(--surface); border-radius: 34px; padding: 6px; min-height: 0; overflow: hidden;
-      box-shadow: 0 0 0 6px #2b2925, 0 2px 4px rgba(35, 33, 29, 0.12), 0 24px 48px -12px rgba(35, 33, 29, 0.35);
+      box-shadow: 0 0 0 6px var(--ink), 0 2px 4px rgba(51, 36, 28, 0.12), 0 24px 48px -12px rgba(51, 36, 28, 0.35);
       display: flex; flex-direction: column; margin: 6px;
     }
     .screen { display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 14px; overflow: auto; }
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
       font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
-    .status-bar i { width: 72px; height: 20px; border-radius: 999px; background: #2b2925; }
+    .status-bar i { width: 72px; height: 20px; border-radius: 999px; background: var(--ink); }
     .app-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
     .app-title .mark { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
       background: var(--ink); color: var(--surface); }
@@ -134,20 +147,25 @@
       border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.4; }
     .alert .icon { margin-top: 1px; }
     .risk { background: var(--surface-2); border-radius: 16px; padding: 12px 14px; }
+    /* Risk card carries its tier colour (same tiers as the people badges and the legend). */
+    .risk { border-left: 6px solid transparent; }
+    .risk[data-tier="low"] { border-left-color: var(--sage); }
+    .risk[data-tier="elevated"] { border-left-color: var(--sun); }
+    .risk[data-tier="high"] { border-left-color: var(--fire); }
     .risk .label { font-size: 12px; color: var(--ink-2); }
     .risk strong { display: block; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15;
       font-variant-numeric: tabular-nums; margin-top: 2px; }
     .risk p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
     .ph-section { font-size: 12px; font-weight: 600; color: var(--ink-2); margin: 2px 0 -4px; }
-    #ph-map { height: 200px; border-radius: 16px; overflow: hidden; flex: none; }
+    #ph-map { height: 200px; border-radius: 16px; overflow: hidden; flex: none; background: var(--surface-2); }
     .screen .fine { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.4; }
     .presenter { display: flex; justify-content: space-between; align-items: center; gap: 8px;
       background: var(--surface); border-radius: 999px; padding: 4px 4px 4px 14px; box-shadow: var(--shadow);
       font-size: 12px; color: var(--ink-2); }
     .presenter b { color: var(--ink); font-weight: 600; }
-    .presenter button { font: inherit; font-size: 12px; height: 26px; padding: 0 12px; border: 0; border-radius: 999px;
+    .presenter button { white-space: nowrap; flex: none; font: inherit; font-size: 12px; height: 26px; padding: 0 12px; border: 0; border-radius: 999px;
       background: var(--surface-2); color: var(--ink); cursor: pointer; }
-    .presenter button:hover { background: #e7e4dd; }
+    .presenter button:hover { background: var(--surface-3); }
 
     @media (max-width: 720px) {
       header.bar { gap: 8px 12px; padding: 10px 12px; }
@@ -188,9 +206,9 @@
         <option value="public">What users see</option>
       </select>
       <label class="toggle"><input id="show-dots" type="checkbox" checked> People</label>
-      <select id="dot-mode" aria-label="Colour people by">
-        <option value="risk">Colour: app's estimate</option>
-        <option value="truth">Colour: true status (sim)</option>
+      <select id="dot-mode" aria-label="Color people by">
+        <option value="risk">Color: app's estimate</option>
+        <option value="truth">Color: true status (sim)</option>
       </select>
     </div>
   </header>

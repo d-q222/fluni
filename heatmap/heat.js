@@ -57,13 +57,15 @@ export class HeatGrid {
   }
 }
 
-// Single warm hue, light → dark, fading in from transparent so low risk doesn't tint the map.
+// The design palette's campfire colours: sun → ember → fire → charred red. Lightness falls the
+// whole way, so "darker = hotter" still holds for colour-blind viewers and in greyscale. Fades in
+// from transparent so low risk doesn't tint the map.
 const STOPS = [
-  [0.0, [253, 228, 214, 0]],
-  [0.1, [249, 190, 160, 140]],
-  [0.35, [242, 140, 92, 190]],
-  [0.65, [235, 104, 52, 215]],
-  [1.0, [139, 46, 12, 235]],
+  [0.0, [235, 209, 135, 0]],
+  [0.1, [235, 209, 135, 150]],   // --sun
+  [0.35, [233, 149, 105, 190]],  // --ember
+  [0.65, [219, 108, 89, 215]],   // --fire
+  [1.0, [142, 58, 40, 235]],     // --fire-ink
 ];
 export const HEAT_STOPS = STOPS;
 
