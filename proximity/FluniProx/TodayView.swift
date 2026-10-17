@@ -5,6 +5,7 @@ import SwiftUI
 struct TodayView: View {
     @ObservedObject var model: ProximityModel
     @State private var showHow = false
+    @State private var showCalc = false
 
     private var level: AlertLevel { model.exposure.level }
 
@@ -13,6 +14,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     statusCard
+                    riskCard
                     minutesCard
                     nearbyCard
                     Button { showHow = true } label: {
@@ -28,6 +30,7 @@ struct TodayView: View {
             .navigationTitle("Today")
             .animation(.default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
+            .sheet(isPresented: $showCalc) { CalculationSheet(weightedMinutes: model.exposure.minutes) }
         }
     }
 
@@ -74,6 +77,25 @@ struct TodayView: View {
         case .closeContact:
             return ("Close contact", "You spent about 15 minutes near someone who may be contagious.", Theme.fire.opacity(0.22), Theme.fireInk)
         }
+    }
+
+    // MARK: Risk
+
+    private var riskCard: some View {
+        let p = RiskEstimate.probability(weightedMinutes: model.exposure.minutes)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Your risk estimate").font(.fluni(.headline))
+            Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+            Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
+            Text("An estimate from nearby contacts in the last 24 hours, not a diagnosis.")
+                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            Button { showCalc = true } label: {
+                Label("How is this calculated?", systemImage: "function")
+                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
+            }
+        }
+        .foregroundStyle(Theme.ink)
+        .card()
     }
 
     // MARK: Minutes
@@ -145,6 +167,53 @@ struct HowItWorksSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.fluni(.headline))
             Text(body).font(.fluni(.body)).foregroundStyle(Theme.ink2)
+        }
+        .foregroundStyle(Theme.ink)
+    }
+}
+
+/// Shows the real numbers behind the risk estimate.
+struct CalculationSheet: View {
+    let weightedMinutes: Double
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let p = RiskEstimate.probability(weightedMinutes: weightedMinutes)
+        let m = String(format: "%.1f", weightedMinutes)
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    block("Weighted minutes",
+                          "Add up the minutes you spent within 6 ft of someone, each multiplied by how likely they are to be contagious: 1 if they tested positive, 0.5 if they have symptoms. People who feel fine count 0.",
+                          "You: \(m) weighted minutes")
+                    block("Close-contact mark",
+                          "About \(Int(ExposureTracker.closeContactMinutes)) weighted minutes triggers the close-contact alert.", nil)
+                    block("The estimate",
+                          "P = 1 \u{2212} (1 \u{2212} \(RiskEstimate.beta))^minutes. Each weighted minute carries a \(RiskEstimate.beta * 100)% chance.",
+                          "P = 1 \u{2212} (1 \u{2212} \(RiskEstimate.beta))^\(m) = \(RiskEstimate.percentText(p))")
+                    block("What counts",
+                          "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and ultra wideband do.", nil)
+                    Text("It's an estimate to help you decide what to do, not a diagnosis.")
+                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                }
+                .padding(20)
+            }
+            .background(Theme.paper)
+            .navigationTitle("How is this calculated?")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+    }
+
+    private func block(_ title: String, _ body: String, _ numbers: String?) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.fluni(.headline))
+            Text(body).font(.fluni(.body)).foregroundStyle(Theme.ink2)
+            if let numbers {
+                Text(numbers).font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
+                    .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.surface2, in: RoundedRectangle(cornerRadius: Theme.radius))
+            }
         }
         .foregroundStyle(Theme.ink)
     }

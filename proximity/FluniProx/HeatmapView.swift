@@ -22,11 +22,17 @@ struct HeatmapView: View {
                     HeatWebView(url: u, error: $loadError).id(reloads)
                         .overlay(alignment: .top) {
                             if let e = loadError {
-                                Label(e, systemImage: "exclamationmark.triangle.fill")
-                                    .font(.footnote)
-                                    .padding(10)
-                                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
-                                    .padding()
+                                VStack(spacing: 8) {
+                                    Label(e, systemImage: "wifi.exclamationmark")
+                                        .font(.footnote)
+                                        .foregroundStyle(Theme.ink)
+                                    Button("Retry") { loadError = nil; reloads += 1 }
+                                        .buttonStyle(.borderedProminent).tint(Theme.ink)
+                                }
+                                .padding(12)
+                                .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radius))
+                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.hairline))
+                                .padding()
                             }
                         }
                 } else {
@@ -106,8 +112,24 @@ private struct HeatWebView: UIViewRepresentable {
         func webView(_ w: WKWebView, didFail n: WKNavigation!, withError e: Error) { report(e) }
         func webView(_ w: WKWebView, didFinish n: WKNavigation!) { error = nil }
 
+        /// Plain sentences; "no internet" is distinct from "can't reach the laptop".
+        static func message(for e: Error) -> String {
+            switch (e as NSError).code {
+            case NSURLErrorNotConnectedToInternet, NSURLErrorDataNotAllowed, NSURLErrorInternationalRoamingOff:
+                return "You're offline. The map needs the internet for its tiles. Check your connection."
+            case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
+                return "Couldn't find that address. Check the laptop's name or use its IP address."
+            case NSURLErrorTimedOut:
+                return "The map took too long to respond. Check you're on the same Wi-Fi as the laptop."
+            case NSURLErrorCannotConnectToHost:
+                return "Couldn't reach the laptop. Is the server running, and are you on the same Wi-Fi?"
+            default:
+                return "Couldn't load the map: \(e.localizedDescription)"
+            }
+        }
+
         private func report(_ e: Error) {
-            error = "Couldn't load the heat map: \(e.localizedDescription)"
+            error = Self.message(for: e)
             print("[fluni] heatmap load failed: \(e.localizedDescription)")
             fflush(stdout)
         }
