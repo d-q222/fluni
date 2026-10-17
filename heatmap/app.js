@@ -539,12 +539,15 @@ async function main() {
   };
   // The trail only keeps where people stayed (inside a building): a room still reads warm after they
   // leave, but a walker leaves no ghost cloud behind the dot. No people field: nothing masks by it.
+  // The spread follows the zoom: 18 m (room-level) close up, about 16 screen pixels when zoomed out, so a
+  // cloud never shrinks to a dot. Set by the map's zoom (see sigmaForZoom below).
+  let sigmaM = DEMO.sigmaM;
   const heatAt = (t, nowStates = null, truth = false) => {
     field.clear();
     MEMORY_W.forEach((w, k) => {
       field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000), truth, k > 0), w);
     });
-    return field.diffuse(DEMO.sigmaM, { people: false });
+    return field.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
   const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
@@ -632,14 +635,28 @@ async function main() {
   const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
   // "True status (sim)" colouring also switches the demo heat to actual infections.
   const truthMode = () => data.hasTruth && $('dot-mode').value === 'truth';
+  const scales = new Map([[`false:${sigmaM}`, vmax.demo]]); // "truth:sigma" -> colour max
   const demoScale = () => {
-    if (!truthMode()) return vmax.demo;
-    if (vmax.truth === null) vmax.truth = scaleMax((t) => heatAt(t, null, true), times); // computed on first use
-    return vmax.truth;
+    const truth = truthMode(), key = `${truth}:${sigmaM}`;
+    if (!scales.has(key)) scales.set(key, scaleMax((t) => heatAt(t, null, truth), times)); // on first use
+    vmax[truth ? 'truth' : 'demo'] = scales.get(key);
+    return scales.get(key);
   };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
+  const sigmaForZoom = () => {
+    const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
+    return Math.min(120, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6)); // 6 m steps: few cached scales
+  };
+  map.on('zoomend', () => {
+    const next = sigmaForZoom();
+    if (next === sigmaM) return;
+    sigmaM = next;
+    heatDirty = true;
+    renderLegend();
+    render(performance.now());
+  });
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
   let fitted = false;
   new ResizeObserver(() => {
@@ -675,9 +692,14 @@ async function main() {
   let phoneMap = null, phoneBuildings = null, phoneYou = null, airflowTruth = false;
 
   function busiestMoment() {
-    const sample = [...tracks.values()].slice(0, 500), dayEnd = Math.min(t1, t0 + 24 * 3600000);
-    let best = Math.max(t0, firstMove(tracks, t0) - 10 * 60000), most = 0;
-    for (let t = t0; t < dayEnd; t += 5 * 60000) {
+    const sample = [...tracks.values()].slice(0, 500), DAY = 24 * 3600000;
+    // Total P at each day's noon; open on the first day with at least half the highest total.
+    const totals = [];
+    for (let d = t0; d < t1; d += DAY) totals.push(sample.reduce((sum, tr) => sum + (stateNow(tr, d + DAY / 2)?.p || 0), 0));
+    const day = Math.max(0, totals.findIndex((x) => x >= 0.5 * Math.max(...totals)));
+    const dayStart = t0 + day * DAY, dayEnd = Math.min(t1, dayStart + DAY);
+    let best = Math.max(dayStart, firstMove(tracks, dayStart) - 10 * 60000), most = 0;
+    for (let t = dayStart; t < dayEnd; t += 5 * 60000) {
       let walking = 0;
       for (const track of sample) if (stateAt(track, t)?.walking) walking++;
       if (walking > most) { most = walking; best = t - 5 * 60000; } // a moment before, so they set off on Play
