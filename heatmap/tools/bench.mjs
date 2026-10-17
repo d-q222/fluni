@@ -4,8 +4,8 @@
 //
 // Usage (serve the repo root first, e.g. python3 -m http.server 8766):
 //   node heatmap/tools/bench.mjs [--base http://localhost:8766] [--run <sim run>] [--at 2115]
-//        [--secs 4] [--views demo,phone,public,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
-//        [--top 12] [--json out.json] [--shot dir] [--tiles]
+//        [--secs 4] [--views demo,phone,zoom,public,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
+//        [--top 12] [--json out.json] [--shot dir] [--tiles] [--basemap streets|sim|drawn]
 //
 // frame = time between animation frames (16.7 ms is a smooth 60 fps); work = JavaScript run inside
 // requestAnimationFrame callbacks that frame (the app's tick plus Leaflet's canvas redraws).
@@ -26,16 +26,17 @@ const args = Object.fromEntries(process.argv.slice(2).reduce((acc, a, i, all) =>
 const BASE = args.base || 'http://localhost:8766';
 const AT = Number(args.at || 2115);           // minutes from the start (default: Tue 11:15, a busy moment)
 const SECS = Number(args.secs || 4);
-const VIEWS = (args.views || 'demo,phone,public,airflow,embed').split(',');
+const VIEWS = (args.views || 'demo,phone,zoom,public,airflow,embed').split(',');
 const SPEEDS = (args.speeds || '0,1,2,3').split(',').map(Number);
 const TOP = Number(args.top || 12);
 const AGENT = args.agent || 'A0008';
-const run = args.run ? `&run=${args.run}` : '';
+const run = (args.run ? `&run=${args.run}` : '') + (args.basemap ? `&basemap=${args.basemap}` : '');
 const DESKTOP = { width: 1400, height: 900, deviceScaleFactor: 2, mobile: false };
 const PHONE = { width: 390, height: 844, deviceScaleFactor: 3, mobile: true };
 const SCENES = {
   demo: { q: '', screen: DESKTOP },
   phone: { q: `&agent=${AGENT}`, screen: DESKTOP }, // demo view with an agent's phone open
+  zoom: { q: `&agent=${AGENT}&zoom=18`, screen: DESKTOP }, // close up: the heat canvas is scaled way up
   public: { q: '&view=public', screen: DESKTOP },
   airflow: { q: '&view=airflow', screen: DESKTOP },
   embed: { q: '&embed=app', screen: PHONE },
@@ -225,7 +226,7 @@ async function benchIn(cdp, name) {
   }
   // Lag of the heat behind a moving risky person, per speed (heat views only).
   const lag = [];
-  const gapAt = name === 'demo' || name === 'airflow' ? await cdp.evaluate(GAP_START) : null;
+  const gapAt = ['demo', 'zoom', 'airflow'].includes(name) ? await cdp.evaluate(GAP_START) : null;
   if (gapAt !== null) {
     await cdp.evaluate(GAP_PROBE);
     for (const speed of SPEEDS) {
@@ -246,7 +247,7 @@ async function benchIn(cdp, name) {
     }
   }
   const top = [...incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, msPerFrame: ms / frameCount }));
-  return { name, load, agents, rows, busyPerFrame: busy / frameCount, top, gapAt, lag };
+  return { name, load, agents, rows, busyPerFrame: busy / frameCount, top, gapAt, lag, errors: [...new Set(cdp.errors)] };
 }
 
 // ---------- main ----------
@@ -263,6 +264,7 @@ for (const v of VIEWS) {
     }
     console.log('  inclusive ms/frame (all speeds):');
     for (const t of r.top) console.log(`    ${f1(t.msPerFrame).padStart(6)}  ${t.fn}`);
+    for (const e of r.errors) console.log(`  page error: ${e.split('\n')[0]}`);
     if (r.lag.length) {
       console.log(`  heat peak → moving risky dot, metres (from minute ${r.gapAt - 1}):`);
       for (const x of r.lag) console.log(`    speed ${x.speed}: p50 ${f1(x.p50)}  p95 ${f1(x.p95)}  max ${f1(x.max)}  (${x.n} frames)`);

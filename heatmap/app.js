@@ -840,15 +840,19 @@ async function main() {
 
   // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
   function render(realNow) {
+    const view = $('view').value;
     current = new Map();
-    for (const [id, track] of tracks) {
-      const s = stateNow(track, now);
-      if (s) current.set(id, s);
+    // The user map (and the app's embed) reads totals only: skip everyone's position (2 ms a frame at
+    // 7,500 agents) unless a phone is open, which needs who is near.
+    if (view !== 'public' || selected) {
+      for (const [id, track] of tracks) {
+        const s = stateNow(track, now);
+        if (s) current.set(id, s);
+      }
     }
     $('time').textContent = formatTime(now, data.numericTime);
     $('slider').value = (now - t0) / 60000;
 
-    const view = $('view').value;
     const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
     if (heatDue) {
       const started = performance.now();
@@ -911,6 +915,7 @@ async function main() {
 
   function select(id) {
     selected = id;
+    if (!current.size) render(performance.now()); // the user map skipped positions until now
     renderPhone(true);
     if (phoneMap) {
       phoneMap.invalidateSize();
