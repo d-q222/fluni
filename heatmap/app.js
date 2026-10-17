@@ -22,7 +22,8 @@ const MEMORY_W = (() => {
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
 const SMALL_RUN_AGENTS = 500;
-const MIN_PEOPLE = 4;       // buildings with only 1–3 people are hidden; 4 or more are always shown
+const MIN_PEOPLE = 4;
+const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
 const ROOM_HOT = 0.5;       // walk-in warning when others in the room add up to ≥ this many expected sick
@@ -358,6 +359,12 @@ async function main() {
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines) : null; // shown in "What users see"
 
+  // Every k-th agent (by id) gets a dot when there are too many to draw smoothly.
+  const ids = [...tracks.keys()].sort();
+  const dotSample = ids.length > MAX_DOTS ? new Set(ids.filter((_, i) => i % Math.ceil(ids.length / MAX_DOTS) === 0)) : null;
+  if (dotSample) {
+    document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
+  }
   const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
   const dotLayer = L.layerGroup().addTo(map);
   const dots = new Map(); // agent id -> circle marker
@@ -481,9 +488,10 @@ async function main() {
 
     const showDots = $('show-dots').checked && view !== 'public';
     const mode = $('dot-mode').value;
-    for (const [id, m] of dots) if (!showDots || !current.has(id)) dotLayer.removeLayer(m);
+    for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
     if (showDots) {
       for (const a of current.values()) {
+        if (dotSample && !dotSample.has(a.id) && a.id !== selected) continue;
         const m = dotFor(a.id);
         m.setLatLng([a.lat, a.lon]).setStyle({ fillColor: dotColor(a, mode) });
         if (!dotLayer.hasLayer(m)) dotLayer.addLayer(m);
