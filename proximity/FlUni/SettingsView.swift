@@ -16,6 +16,7 @@ struct SettingsView: View {
             detectionSection
             sharedSection
             notificationsSection
+            BackgroundWarningsSection()
             mapSection
             dataSection
             aboutSection
@@ -75,8 +76,12 @@ struct SettingsView: View {
                 Label("A status with 3 levels: healthy, possibly sick, or contagious", systemImage: "circle.lefthalf.filled")
             }
             VStack(alignment: .leading, spacing: 6) {
+                Label("Your location: never shared", systemImage: "location.slash").font(.fluni(.subheadline, weight: .semibold))
+                Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            }
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Never shared").font(.fluni(.subheadline, weight: .semibold))
-                Text("Your name, phone number, device name, account, or any history. Your location is used on this phone and goes only to a phone next to you, never to a server. Matching happens on your phone.")
+                Text("Your name, phone number, device name, account, or any history. Matching happens on your phone.")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
         }

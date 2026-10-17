@@ -14,6 +14,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     PausedBanner(model: model)
+                    WalkInBanner(model: model)
                     if level == .nearby { NearbyBanner().transition(.opacity) }
                     statusCard
                     riskCard

@@ -46,7 +46,7 @@ struct OnboardingView: View {
             Text("iOS will ask for a few permissions. Here's why:").font(.fluni(.body)).foregroundStyle(Theme.ink2)
             perm("antenna.radiowaves.left.and.right", "Bluetooth and local network", "to notice other Fluni phones close by.")
             perm("wave.3.right", "Nearby Interaction", "for precise distance (is it 3 feet or 10?) on newer iPhones.")
-            perm("location", "Location", "only as a backup distance estimate. It never leaves your phone except to a phone you're linked with.")
+            perm("location", "Location", "\(AlwaysLocationCopy.promise)")
             perm("bell", "Notifications", "so you get a heads-up if you're near someone contagious.")
             Spacer()
         }

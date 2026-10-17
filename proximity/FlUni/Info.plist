@@ -34,10 +34,16 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Links to nearby FlUni phones to exchange ranging tokens and status.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used as a fallback distance estimate to nearby FlUni phones.</string>
+	<string>Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.</string>
 	<key>NSNearbyInteractionUsageDescription</key>
 	<string>Measures precise distance to nearby FlUni phones with ultra wideband.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
