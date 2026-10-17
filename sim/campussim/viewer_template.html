@@ -218,7 +218,7 @@ const SC = D.static_cols, archCol = SC.indexOf("archetype");
 const agentArch = D.static_rows.map(r => archCol >= 0 ? r[archCol] : "");
 
 // ---------------------------------------------------------------- state
-let pos = 0, playing = false, speed = 16, sel = -1, lastT = null, needDraw = true;
+let pos = 0, playing = false, speed = 4, sel = -1, lastT = null, needDraw = true;
 let filtArch = "", filtState = "", filtFloor = "";
 const visible = new Uint8Array(K).fill(1);
 const scrub = document.getElementById("scrub"); scrub.max = Math.max(0, F - 1);
@@ -466,7 +466,7 @@ function applyFloor() {
 }
 
 // controls
-const speeds = [1, 2, 4, 8, 16, 32, 64, 128, 256];
+const speeds = [0.25, 0.5, 1, 2, 4, 8, 16, 32, 64];
 const spSel = document.getElementById("speed");
 spSel.innerHTML = speeds.map(s => `<option value="${s}" ${s === speed ? "selected" : ""}>${s}× steps/s</option>`).join("");
 spSel.onchange = () => speed = +spSel.value;
