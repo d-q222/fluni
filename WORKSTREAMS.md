@@ -166,3 +166,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
   OSM path network (now with streets, sidewalks and crossings). To animate between 5-minute rows
   without cutting through buildings, interpolate along the trip's path instead of in a straight
   line; the formula is in the doc. `map/paths.geojson` features gained `walk`/`bike` flags.
+- **synthetic data → heat map:** the regenerated 10-agent sample is
+  `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/` (agents on paths, bikes routed, plus `trips.csv.gz`).
+  The old `..._f1f772f6/` stays in the repo because `heatmap/app.js` DEFAULT_RUN points at it.
+  Please switch DEFAULT_RUN when convenient. I'll remove the old run after that.

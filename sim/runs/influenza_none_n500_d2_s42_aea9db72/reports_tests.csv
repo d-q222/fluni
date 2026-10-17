@@ -1,0 +1,7 @@
+t,agent_id,event,value,target_agent_id,truthful
+318,A0084,report_other,might_be_sick,A0083,False
+397,A0184,report_other,might_be_sick,A0288,False
+402,A0144,report_other,might_be_sick,A0473,False
+406,A0417,report_other,might_be_sick,A0042,False
+494,A0193,report_other,might_be_sick,A0134,False
+531,A0482,report_other,might_be_sick,A0454,False

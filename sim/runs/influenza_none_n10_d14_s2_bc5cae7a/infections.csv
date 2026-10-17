@@ -1,0 +1,4 @@
+t,infectee_id,infector_id,route,location_id,room_id,infector_contribution
+0,A0006,IMPORT,seed,,,1.0
+0,A0009,IMPORT,seed,,,1.0
+520,A0005,A0006,aerosol,bld_232805707,bld_232805707_f1_103,0.6889

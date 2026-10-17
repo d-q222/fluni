@@ -61,6 +61,9 @@ commuter, two infections seeded at t=0). It has an aerosol infection, withheld s
 positive Vaden test, report_other events, recoveries and walking and biking trips. Point the heat map
 at it with `?data=../sim/runs/influenza_none_n10_d14_s2_bc5cae7a/timeline.csv.gz`.
 
+`runs/influenza_none_n10_d14_s2_f1f772f6/` is the same sample made before the path and biking changes. It is
+kept because the heat map loads it by default (`heatmap/app.js` DEFAULT_RUN).
+
 `runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
 cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 

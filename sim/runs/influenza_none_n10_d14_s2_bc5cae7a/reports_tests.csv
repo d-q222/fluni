@@ -1,0 +1,9 @@
+t,agent_id,event,value,target_agent_id,truthful
+998,A0006,test_taken,pending,,
+1039,A0005,report_other,might_be_sick,A0006,True
+1046,A0006,test_result,positive,,
+1057,A0006,self_report,withheld,,False
+1060,A0006,self_report,withheld,,False
+1082,A0007,report_other,might_be_sick,A0006,True
+1408,A0000,report_other,might_be_sick,A0006,True
+3722,A0006,report_other,might_be_sick,A0007,False

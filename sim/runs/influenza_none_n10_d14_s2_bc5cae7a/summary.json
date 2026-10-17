@@ -1,0 +1,49 @@
+{
+  "attack_rate": 0.3,
+  "peak_day": 0,
+  "measured_R": 0.3333,
+  "daily_incidence": [
+    2,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "infections_by_location_type": {
+    "dorm": 1,
+    "seed": 2
+  },
+  "infections_by_archetype": {
+    "homebody": 2,
+    "stem": 1
+  },
+  "infections_by_route": {
+    "aerosol": 1,
+    "seed": 2
+  },
+  "n_imports": 0,
+  "n_infected": 3,
+  "n_seed": 2,
+  "n_agents": 10,
+  "R_window_days": 7.5,
+  "R_n_cases": 3,
+  "R_by_infection_day": {
+    "0": 0.5,
+    "1": 0.0
+  },
+  "R_generation_based": 0.5,
+  "cases_by_generation": [
+    2,
+    1
+  ],
+  "note": "N=10 is too small for measured_R / attack_rate to be epidemiologically meaningful; measured_R is based on only 3 case(s) infected before day 6.5"
+}

@@ -1,6 +1,7 @@
 .venv
 runs/*
 !runs/mock_boring10/
+!runs/influenza_none_n10_d14_s2_f1f772f6/
 !runs/influenza_none_n10_d14_s2_bc5cae7a/
 !runs/influenza_none_n500_d2_s42_aea9db72/
 viewer.html

@@ -1,0 +1,32 @@
+{
+  "attack_rate": 0.002,
+  "peak_day": 1,
+  "measured_R": 0.0,
+  "daily_incidence": [
+    0,
+    1
+  ],
+  "infections_by_location_type": {
+    "off_campus": 1
+  },
+  "infections_by_archetype": {
+    "stem": 1
+  },
+  "infections_by_route": {
+    "import": 1
+  },
+  "n_imports": 1,
+  "n_infected": 1,
+  "n_seed": 0,
+  "n_agents": 500,
+  "R_window_days": 7.5,
+  "R_n_cases": 0,
+  "R_by_infection_day": {
+    "1": 0.0
+  },
+  "R_generation_based": 0.0,
+  "cases_by_generation": [
+    1
+  ],
+  "note": "measured_R is based on only 0 case(s) infected before day -5.5"
+}
