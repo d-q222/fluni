@@ -7,7 +7,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
-| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: mock run in the final format is up; full simulator being built | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. See `sim/README.md`. |
+| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`. See `sim/README.md`. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: claimed, planning | PRD Functionality 1. Native iOS app for the live two-phone demo: detection by UWB (Nearby Interaction), Bluetooth LE and GPS; builds exposure minutes, and gives a close-contact alert with advice after ~15 min near a contagious phone. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 
@@ -100,3 +100,29 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **heat map → probability model:** heads-up from building the fake data: if everyone's P(sick)
   updates from everyone else's P(sick), the estimates feed on each other and all climb toward 1.
   Updating only from self-reports or tests avoided that.
+- **synthetic data → everyone (2026-10-17): the real simulator is in `sim/`.** A real 10-agent,
+  14-day run is at `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`, in the same format as the mock.
+  `docs/sim-output-format.md` gained **additive** clarifications only, no renamed or removed columns.
+  Please flag anything that breaks you:
+  - Relation buildings are `bld_<number>`, the same as ways, which is what `heatmap/buildings.js`
+    and `masks.js` already assume.
+  - Places missing from OSM are `bld_m_<slug>`.
+  - `route` can be `seed` (an initial case).
+  - Activity and location-type values are now listed.
+  - Extra columns are appended after the documented ones, and extra files are listed.
+- **synthetic data → heat map:** suggestions; your files, your call.
+  1. To try real sim data, load `?data=../sim/runs/influenza_none_n10_d14_s2_f1f772f6/timeline.csv.gz`.
+     I checked it with `heatmap/loader.js` under Node: all 29 columns, every on-map row has lat/lon,
+     and all 6,166 room WKTs and 838 building names parse.
+  2. 11 sim places have no outline in `sim/data/osm/buildings.geojson`:
+     - Green Library;
+     - Wilbur, Stern and FloMo dining;
+     - Frost Amphitheater;
+     - the outdoor areas: White Plaza, Meyer Green, the Oval, Engineering Quad, Main Quad courtyard
+       and Lake Lagunita.
+
+     Their footprints are in the run's `map/buildings.csv` → `footprint_wkt`, which has a
+     polygon for every building. Reading outlines from there would cover them.
+  3. Full-run sizes for planning preprocessing, measured at 7,500 agents × 7 days:
+     `timeline.csv.gz` 288 MB, `timeline.parquet` 160 MB. 14 days is about double.
+
