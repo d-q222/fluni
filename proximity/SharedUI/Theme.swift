@@ -21,6 +21,13 @@ import SwiftUI
 ///   - ink-3 is used only on paper (5.2) and on surface2 (4.8); never on a tinted fill. Don't add it to
 ///     sage/sun/fire tints (starred cells fail).
 ///   - Risk card tiers (sage / sun / fire tint) use ink or fire-ink for text, ink-2 for notes (all >= 5.1).
+///   - Second a11y pass (map, banners, location, Demo, history):
+///       system-grey Form footers, headers and LabeledContent values on surface/paper: 3.3 / 3.1 -> ink-2, 7.0 / 6.6.
+///       system-red "Delete my data" on surface: 3.3 -> fire-ink, 7.3.
+///       map key swatches (sage 2.0, sun 1.4 on surface, graphic needs 3) -> 1-2 pt ink-2 outline, 7.0; fire is 3.2.
+///       high-building map mark: paper icon on fire-ink disc, 6.9; fire-ink warning icon on surface, 7.3.
+///       close-contact history row: fire-ink on fire 18% over card 6.0, ink-2 5.8 (fire 22% is 5.5).
+///       peach box (WalkInBanner): ink only, 8.6. ink-2 4.2, ink-3 3.3 and fire-ink 4.4 stay banned there.
 ///   * = below 4.5 for body text; do not use that pair.
 enum Theme {
     static let sage = Color(hex: 0xacbc8b)      // healthy

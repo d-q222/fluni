@@ -18,6 +18,9 @@ extension ExposureEpisode {
         if isCloseContact { s += " · close contact" }
         return s
     }
+
+    /// The same sentence without the middle dots, which VoiceOver reads as a pause at best.
+    var spoken: String { summary.replacingOccurrences(of: " · ", with: ", ") }
 }
 
 /// "Recent contacts" on Today: the latest few, and a link to the full 14 days. Local only.
@@ -34,12 +37,16 @@ struct ExposureHistorySection: View {
             if items.isEmpty {
                 Text("No time near someone sick in the last 14 days.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
             } else {
-                ForEach(items.prefix(3)) { Text($0.summary).font(.fluni(.subheadline)).foregroundStyle(Theme.ink2) }
+                ForEach(items.prefix(3)) { Text($0.summary).font(.fluni(.subheadline)).foregroundStyle(Theme.ink2).accessibilityLabel($0.spoken) }
                 NavigationLink {
                     ExposureHistoryView(store: store)
                 } label: {
-                    Label("See the last 14 days", systemImage: "chevron.right")
-                        .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
+                    HStack {
+                        Text("See the last 14 days")
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.right").accessibilityHidden(true)
+                    }
+                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
                 }
                 .accessibilityHint("Shows every close contact from the last 14 days")
             }
@@ -67,7 +74,7 @@ struct ExposureHistoryView: View {
                 ForEach(items) { e in
                     Text(e.summary).font(.fluni(.subheadline))
                         .foregroundStyle(e.isCloseContact ? Theme.fireInk : Theme.ink)
-                        .accessibilityLabel(e.summary.replacingOccurrences(of: " · ", with: ", "))
+                        .accessibilityLabel(e.spoken)
                         .card(fill: e.isCloseContact ? Theme.fire.opacity(0.18) : Theme.surface)
                 }
                 Text("Kept on this phone only, and removed after 14 days. It never leaves your phone.")
@@ -100,12 +107,14 @@ struct NearbyBanner: View {
 /// Full-screen, dismissible moment when the 15-minute close-contact mark is reached.
 struct CloseContactSheet: View {
     var onDone: () -> Void
+    @ScaledMetric(relativeTo: .title) private var iconSize: CGFloat = 44
 
     var body: some View {
         let lines = Advice.body(.closeContact)
+        // Scrolls at large text sizes instead of clipping; "Got it" stays pinned at the bottom.
+        ScrollView {
         VStack(alignment: .leading, spacing: 20) {
-            Spacer(minLength: 0)
-            Image(systemName: "heart.text.square").font(.system(size: 44)).foregroundStyle(Theme.fireInk)
+            Image(systemName: "heart.text.square").font(.system(size: iconSize)).foregroundStyle(Theme.fireInk)
                 .accessibilityHidden(true)
             Text("You were close to someone who may be sick")
                 .accessibilityAddTraits(.isHeader)
@@ -120,12 +129,17 @@ struct CloseContactSheet: View {
                 }
             }
             .card()
-            Spacer(minLength: 0)
-            Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
-                .accessibilityHint("Closes this message")
         }
         .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .safeAreaInset(edge: .bottom) {
+            Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
+                .accessibilityHint("Closes this message")
+                .padding(.horizontal, 24).padding(.vertical, 12)
+                .background(Theme.paper)
+        }
         .background(Theme.paper.ignoresSafeArea())
     }
 }
