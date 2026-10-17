@@ -98,8 +98,8 @@ enum Advice {
     static func title(_ level: AlertLevel) -> String {
         switch level {
         case .none: return ""
-        case .nearby: return "Someone within 6 ft may be contagious"
-        case .closeContact: return "Close contact with an infected person"
+        case .nearby: return "Someone within 6 ft may be sick"
+        case .closeContact: return "You were close to someone who may be sick"
         }
     }
 
@@ -111,11 +111,11 @@ enum Advice {
             return ["Put 6 ft or more between you, or step outside.",
                     "Consider wearing a mask while you're here."]
         case .closeContact:
-            return ["You've been within 6 ft of someone contagious for about 15 minutes.",
+            return ["You've spent about 15 minutes within 6 ft of someone who may be sick.",
                     "Leave the room now, or move well away and put on a mask.",
                     "Wash your hands; avoid touching your face.",
                     "Watch for fever, cough or sore throat over the next 1–4 days.",
-                    "If symptoms start, test and mark yourself as possibly sick in the app."]
+                    "If symptoms start, get tested and report it in FlUni."]
         }
     }
 }
