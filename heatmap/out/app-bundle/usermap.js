@@ -100,7 +100,7 @@ async function main() {
   const view = all.getBounds().isValid() ? all.getBounds() : L.latLngBounds([37.417, -122.183], [37.438, -122.156]);
   map.fitBounds(view, { padding: [8, 8] });
   map.setMinZoom(map.getZoom()); // never smaller than the whole campus
-  map.setView(view.getCenter(), map.getZoom() + 0.5); // a little closer: the phone is tall and narrow
+  map.setView(view.getCenter(), map.getBoundsZoom(view, true)); // cover the screen: a tall phone shows campus top to bottom
 
   // ---- state ----
   let step = -1, horizon = Number(P.get('horizon')) > 0 ? 60 : 0, cur = new Map(), shown = new Map(), openIdx = -1;
