@@ -36,7 +36,7 @@ struct FlUniApp: App {
                             .tabItem { Label("Today", systemImage: "sun.max") }
                             .tag(AppRouter.Tab.today)
                             .accessibilityIdentifier("tab.today")
-                        CampusMapView()
+                        BundledMapView()
                             .tabItem { Label("Map", systemImage: "map") }
                             .tag(AppRouter.Tab.map)
                             .accessibilityIdentifier("tab.map")

@@ -5,6 +5,7 @@ struct DeveloperView: View {
     /// False when this is the harness's main screen rather than a sheet in FlUni.
     var showsDone = true
     @Environment(\.dismiss) private var dismiss
+    @State private var showLaptopMap = false
 
     var body: some View {
         NavigationStack {
@@ -15,6 +16,15 @@ struct DeveloperView: View {
                 peersSection
                 demoSection
                 statusSection
+                Section { Button("Open detailed map (laptop)") { showLaptopMap = true } } footer: {
+                    Text("The full heat map, served from a laptop on the same Wi-Fi. For the team, not students.")
+                }
+            }
+            .sheet(isPresented: $showLaptopMap) {
+                NavigationStack {
+                    HeatmapView()
+                        .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showLaptopMap = false } } }
+                }
             }
             .navigationTitle("Developer")
             .navigationBarTitleDisplayMode(.inline)

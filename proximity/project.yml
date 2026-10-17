@@ -30,7 +30,13 @@ targets:
   FlUni:
     type: application
     platform: iOS
-    sources: [Core, SharedUI, FlUni]
+    sources:
+      - Core
+      - SharedUI
+      - path: FlUni
+        excludes: ["Resources/app-bundle/**"]
+      - path: FlUni/Resources/app-bundle
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fluni.app
