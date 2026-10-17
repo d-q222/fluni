@@ -250,10 +250,43 @@ const CanvasLayer = L.Layer.extend({
   },
 });
 
+// Base map: OSM street tiles, or the design pass's illustrated campus (assets/trace/), an image drawn on
+// a canvas that maps exactly onto its bounds file. A hand-drawn version can replace the same image.
+// ?basemap=drawn opens with it; the illustration also needs no tile server.
+const DRAWN = { image: 'assets/trace/campus_trace.webp', bounds: 'assets/trace/campus_trace_bounds.json' };
+const bases = new Map(); // map -> { tiles, drawn }
+let baseStyle = PARAMS.get('basemap') === 'drawn' ? 'drawn' : 'streets', drawnBounds = null;
+
 function baseMap(el, options) {
   const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, ...options });
-  L.tileLayer(TILES, { attribution: ATTRIBUTION, maxZoom: 19, className: 'muted-tiles' }).addTo(map);
+  bases.set(map, { tiles: L.tileLayer(TILES, { attribution: ATTRIBUTION, maxZoom: 19, className: 'muted-tiles' }) });
+  applyBase(map);
   return map;
+}
+
+async function setBaseStyle(style) {
+  baseStyle = style;
+  if (style === 'drawn' && !drawnBounds) {
+    const b = await fetch(DRAWN.bounds).then((r) => r.json()).catch(() => null);
+    if (!b) { baseStyle = 'streets'; console.warn(`No illustrated map at ${DRAWN.bounds}`); }
+    else drawnBounds = [[b.south, b.west], [b.north, b.east]];
+  }
+  for (const map of bases.keys()) applyBase(map);
+}
+
+function applyBase(map) {
+  const base = bases.get(map);
+  const drawn = baseStyle === 'drawn' && drawnBounds;
+  if (drawn && !base.drawn) {
+    // In the tile pane so heat and people stay on top; the paper colour fills the space around it.
+    base.drawn = L.imageOverlay(DRAWN.image, drawnBounds, { pane: 'tilePane', attribution: ATTRIBUTION });
+  }
+  if (drawn) {
+    base.tiles.remove();
+    base.drawn.addTo(map);
+  } else { base.drawn?.remove(); base.tiles.addTo(map); }
+  map.getContainer().style.background = drawn ? '#fff' : ''; // the illustration's own paper colour
+  if (baseStyle === 'drawn' && !drawnBounds) setBaseStyle('drawn'); // ?basemap=drawn: bounds not loaded yet
 }
 
 // ---------- helpers ----------
@@ -729,6 +762,11 @@ async function main() {
   const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
   horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
   document.querySelector('.options').append(horizon);
+  const basePick = Object.assign(document.createElement('select'), { id: 'basemap', ariaLabel: 'Map style' });
+  basePick.append(new Option('Street map', 'streets'), new Option('Illustrated campus', 'drawn'));
+  basePick.value = baseStyle;
+  basePick.addEventListener('change', () => setBaseStyle(basePick.value).then(() => { basePick.value = baseStyle; }));
+  document.querySelector('.options').append(basePick);
   // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
   const params = new URLSearchParams(location.search);
   if (params.get('view')) $('view').value = params.get('view');
