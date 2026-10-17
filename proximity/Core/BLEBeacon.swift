@@ -23,6 +23,32 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     private let scanQueue = DispatchQueue(label: "fluni.ble.scan")  // keeps the advert flood off the main thread
     private var smoothed: [String: (rssi: Double, at: Date)] = [:]  // scanQueue only
     private var lastPrune = Date()
+    private let pauseLock = NSLock()
+    private var _paused = false
+    private var paused: Bool {
+        get { pauseLock.lock(); defer { pauseLock.unlock() }; return _paused }
+        set { pauseLock.lock(); _paused = newValue; pauseLock.unlock() }
+    }
+
+    /// Stops advertising and scanning. Safe to call twice. Radios stay allocated; resume() restarts them.
+    func stop() {
+        paused = true
+        peripheral?.stopAdvertising()
+        scanQueue.sync {
+            central?.stopScan()
+            smoothed.removeAll()
+        }
+    }
+
+    /// Starts again after stop() (or for the first time, if the app launched paused).
+    func resume() {
+        guard peripheral != nil else { paused = false; start(); return }
+        paused = false
+        onState?("advertiser \(peripheral.state.name)")
+        onState?("scanner \(central.state.name)")
+        restartAdvertising()
+        scanQueue.async { self.restartScan() }
+    }
 
     func start() {
         peripheral = CBPeripheralManager(delegate: self, queue: nil)
@@ -38,7 +64,7 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     }
 
     private func restartScan() {
-        guard let central, central.state == .poweredOn else { return }
+        guard !paused, let central, central.state == .poweredOn else { return }
         central.stopScan()
         central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
     }
@@ -65,7 +91,7 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     }
 
     private func restartAdvertising() {
-        guard let peripheral, peripheral.state == .poweredOn, let payload else { return }
+        guard !paused, let peripheral, peripheral.state == .poweredOn, let payload else { return }
         peripheral.stopAdvertising()
         peripheral.startAdvertising([CBAdvertisementDataServiceUUIDsKey: [payload]])
     }
@@ -84,7 +110,7 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     func centralManager(_ c: CBCentralManager, didDiscover p: CBPeripheral,
                         advertisementData: [String: Any], rssi: NSNumber) {
         let uuids = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
-        guard let hit = uuids.lazy.compactMap(Self.decode).first else { return }
+        guard !paused, let hit = uuids.lazy.compactMap(Self.decode).first else { return }
         let raw = rssi.doubleValue
         guard raw < 0, raw > -110 else { return }  // 127 = unavailable
         // Exponential moving average: single BLE samples swing by several dB.

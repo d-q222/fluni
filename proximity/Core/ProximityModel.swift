@@ -37,6 +37,9 @@ final class ProximityModel: ObservableObject {
     @Published private(set) var myID = Data()
     /// When the user last chose their own status (nil = never). Persisted with the status.
     @Published private(set) var statusSetAt: Date?
+    /// Non-nil while detection is paused: nothing is broadcast or scanned and exposure doesn't accrue.
+    @Published private(set) var pauseState: PauseState?
+    var isPaused: Bool { pauseState != nil }
 
     private let ble = BLEBeacon()
     private let link = PeerLink()
@@ -61,18 +64,17 @@ final class ProximityModel: ObservableObject {
     func start() {
         UIApplication.shared.isIdleTimerDisabled = true  // keep the screen on during the demo
         restoreSavedStatus()
+        restorePause()
         applyLaunchArguments()  // first: link settings must be in place before the session exists
         rotateID()
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         ble.onState = { [weak self] in self?.setStatus("BLE", $0) }
         ble.onSighting = { [weak self] id, risk, rssi in self?.bleSighting(id: id, risk: risk, rssi: rssi) }
-        ble.start()
 
         link.onConnected = { [weak self] peer in self?.linked(peer) }
         link.onDisconnected = { [weak self] peer in self?.unlinked(peer) }
         link.onMessage = { [weak self] peer, w in self?.received(w, from: peer) }
-        link.start()
         status["Link"] = "searching"
 
         uwb.onState = { [weak self] in self?.setStatus("UWB", $0); self?.log("uwb \($0)") }
@@ -82,7 +84,15 @@ final class ProximityModel: ObservableObject {
 
         gps.onState = { [weak self] in self?.setStatus("GPS", $0) }
         gps.onFix = { [weak self] in self?.ownFix($0) }
-        gps.start()
+
+        if isPaused {
+            markSensorsPaused()  // launched while paused: the radios stay off until resume()
+            log("paused")
+        } else {
+            ble.start()
+            link.start()
+            gps.start()
+        }
 
         let t = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
         t.tolerance = 0.2  // lets iOS coalesce wakeups
@@ -109,6 +119,73 @@ final class ProximityModel: ObservableObject {
             myRisk = r
             statusSetAt = at
         }
+    }
+
+    // MARK: Pause (privacy and battery)
+
+    /// Turns every radio off. Idempotent: pausing while paused only changes how long the pause lasts.
+    func pause(_ choice: PauseChoice = .untilResumed, now: Date = Date(), calendar: Calendar = .current) {
+        let state = PauseSchedule.state(choice, from: now, calendar: calendar)
+        let wasPaused = isPaused
+        pauseState = state
+        persistPause()
+        guard !wasPaused else { return }
+        ble.stop()
+        link.stop()
+        uwb.stopAll()
+        gps.stop()
+        byID.removeAll()
+        linkIDs.removeAll()
+        myFix = nil
+        peers = []
+        markSensorsPaused()
+        log("paused")
+    }
+
+    /// Turns the radios back on with a fresh random ID, announcing the current status. Idempotent.
+    func resume() {
+        guard isPaused else { return }
+        pauseState = nil
+        persistPause()
+        lastTick = Date()
+        lastFixSent = .distantPast
+        status["Link"] = "searching"
+        status["UWB"] = UWBRanger.isSupported ? "waiting for peer" : "not supported on this device"
+        ble.resume()
+        link.resume()
+        gps.resume()
+        rotateID()  // new ID after the gap, and announce() sends the current status
+        log("resumed")
+    }
+
+    private func markSensorsPaused() {
+        for k in ["BLE", "Link", "UWB", "GPS"] { setStatus(k, "paused") }
+    }
+
+    private func persistPause() {
+        guard !(acceptsLaunchArguments && LaunchMode.isTestLaunch) else { return }
+        let d = UserDefaults.standard
+        if let p = pauseState, let data = try? JSONEncoder().encode(p) { d.set(data, forKey: "pauseState") } else { d.removeObject(forKey: "pauseState") }
+    }
+
+    /// A pause survives relaunch, unless it has already run out.
+    private func restorePause() {
+        guard !(acceptsLaunchArguments && LaunchMode.isTestLaunch),
+              let data = UserDefaults.standard.data(forKey: "pauseState"),
+              let p = try? JSONDecoder().decode(PauseState.self, from: data) else { return }
+        if PauseSchedule.shouldResume(p, now: Date()) {
+            UserDefaults.standard.removeObject(forKey: "pauseState")
+        } else {
+            pauseState = p
+        }
+    }
+
+    /// After "Delete my data": back to a fresh install's state (the caller has cleared the files and defaults).
+    func forgetEverything() {
+        if isPaused { resume() }
+        myRisk = .none
+        statusSetAt = nil
+        resetExposure()
     }
 
     func resetExposure() {
@@ -170,7 +247,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func announce() {
-        guard myID.count == 11 else { return }  // -risk is applied before the first ID exists
+        guard myID.count == 11, !isPaused else { return }  // -risk is applied before the first ID exists
         ble.advertise(id: myID, risk: myRisk)
         link.send(Wire(kind: .hello, id: myID.hex, risk: myRisk))
     }
@@ -178,6 +255,7 @@ final class ProximityModel: ObservableObject {
     // MARK: Channel inputs
 
     private func bleSighting(id: String, risk: Risk, rssi: Double) {
+        guard !isPaused else { return }  // a callback that was already queued when we paused
         if let old = byID[id]?.risk, old != risk { log("peer \(id.prefix(6)) risk=\(risk) via=ble") }
         if byID[id] == nil { log("ble seen \(id.prefix(6)) risk=\(risk)") }
         update(id) { p in
@@ -188,6 +266,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func linked(_ peer: MCPeerID) {
+        guard !isPaused else { return }
         setStatus("Link", "\(link.connectedPeers.count) connected")
         log("link connected \(peer.displayName)")
         link.send(Wire(kind: .hello, id: myID.hex, risk: myRisk), to: [peer])
@@ -203,6 +282,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func received(_ w: Wire, from peer: MCPeerID) {
+        guard !isPaused else { return }
         switch w.kind {
         case .hello:
             guard let id = w.id else { return }
@@ -225,6 +305,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func uwbDistance(peer: MCPeerID, d: Double) {
+        guard !isPaused else { return }
         guard let id = linkIDs[peer] else { return }
         update(id) { p in
             p.uwb = Reading(source: .uwb, distance: d, sigma: 0.1, at: Date())
@@ -234,6 +315,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func ownFix(_ fix: CLLocation) {
+        guard !isPaused else { return }
         myFix = fix
         link.send(fixWire(fix))
         for id in byID.keys { refreshGPS(id) }
@@ -270,6 +352,11 @@ final class ProximityModel: ObservableObject {
 
     private func tick() {
         let now = Date()
+        if let p = pauseState {
+            lastTick = now  // so the first tick after resume doesn't count the paused time
+            if PauseSchedule.shouldResume(p, now: now) { resume() }
+            return
+        }
         if now.timeIntervalSince(lastRotation) >= rotationInterval { rotateID() }
         let dt = min(now.timeIntervalSince(lastTick), 2)  // no jump after a pause
         lastTick = now
