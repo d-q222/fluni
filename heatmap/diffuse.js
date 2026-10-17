@@ -19,6 +19,7 @@ function boxWidths(sigma, n = 3) {
 }
 
 const reflect = (i, n) => (i < 0 ? -i - 1 : i >= n ? 2 * n - 1 - i : i);
+const emptyBox = () => ({ x0: Infinity, y0: Infinity, x1: -1, y1: -1 });
 const SPARSE_MAX = 64; // above this many deposited points, blur the whole grid (patches stop paying)
 
 // Running-sum box blur of radius r along rows (src -> dst).
@@ -76,18 +77,26 @@ export class DiffusionField {
     this.crop = new Float32Array(n); // a patch of a deposit, for sparse blurs
     this.vIn = mask ? new Float32Array(n) : null; // indoor heat before the mass rescale
     // Top-left cell of each deposited point, [x, y, ...], per deposit kind; null = too many to track.
+    // And the bounding box of all of them (for big runs: people rarely span the whole grid).
     this.cellsOut = []; this.cellsIn = [];
+    this.boxOut = emptyBox(); this.boxIn = emptyBox();
     this.acc = new Float64Array(this.nx);
     this.maskBlur = null; // blurred mask, cached per sigma
     this.maskSigma = -1;
   }
 
-  // Zeroes only the cells deposited into, when they were tracked.
+  // Zeroes only the cells deposited into: tracked ones, else their bounding box.
   clear() {
     const { nx } = this;
-    for (const [cells, a, b] of [[this.cellsOut, this.depOut, this.depOutP], [this.cellsIn, this.depIn, this.depInP]]) {
+    for (const [cells, box, a, b] of [[this.cellsOut, this.boxOut, this.depOut, this.depOutP], [this.cellsIn, this.boxIn, this.depIn, this.depInP]]) {
       if (!a) continue;
-      if (!cells) { a.fill(0); b.fill(0); continue; }
+      if (!cells) {
+        for (let y = box.y0; y <= box.y1 + 1; y++) {
+          a.fill(0, y * nx + box.x0, y * nx + box.x1 + 2);
+          b.fill(0, y * nx + box.x0, y * nx + box.x1 + 2);
+        }
+        continue;
+      }
       for (let k = 0; k < cells.length; k += 2) {
         const i = cells[k + 1] * nx + cells[k];
         a[i] = a[i + 1] = a[i + nx] = a[i + nx + 1] = 0;
@@ -95,6 +104,7 @@ export class DiffusionField {
       }
     }
     this.cellsOut = []; this.cellsIn = [];
+    this.boxOut = emptyBox(); this.boxIn = emptyBox();
   }
 
   // points: iterable of { lat, lon, p, indoor }. Bilinear splat of weight·p and weight.
@@ -112,7 +122,8 @@ export class DiffusionField {
       const inside = pt.indoor && this.depIn;
       const heat = inside ? this.depIn : this.depOut;
       const ppl = inside ? this.depInP : this.depOutP;
-      const cells = inside ? this.cellsIn : this.cellsOut;
+      const cells = inside ? this.cellsIn : this.cellsOut, box = inside ? this.boxIn : this.boxOut;
+      if (x0 < box.x0) box.x0 = x0; if (x0 > box.x1) box.x1 = x0; if (y0 < box.y0) box.y0 = y0; if (y0 > box.y1) box.y1 = y0;
       if (cells) {
         if (cells.length < 2 * SPARSE_MAX) cells.push(x0, y0);
         else if (inside) this.cellsIn = null; else this.cellsOut = null;
@@ -138,10 +149,13 @@ export class DiffusionField {
   }
 
   // Patches to blur: each deposited cell padded by the blur's reach, overlapping ones merged until
-  // all are disjoint. The whole grid when untracked, or when patches would cover much of it anyway.
-  patches(cells, reach) {
-    const { nx, ny } = this, whole = [{ x0: 0, y0: 0, x1: nx - 1, y1: ny - 1 }];
-    if (!cells) return whole;
+  // all are disjoint. When untracked, or when patches would cover much of the grid anyway, the
+  // bounding box of all deposits, padded the same way.
+  patches(cells, box, reach) {
+    const { nx, ny } = this;
+    if (box.x1 < 0) return []; // nothing deposited
+    const all = [{ x0: Math.max(0, box.x0 - reach), y0: Math.max(0, box.y0 - reach), x1: Math.min(nx - 1, box.x1 + 1 + reach), y1: Math.min(ny - 1, box.y1 + 1 + reach) }];
+    if (!cells) return all;
     const boxes = [];
     for (let k = 0; k < cells.length; k += 2) {
       const x = cells[k], y = cells[k + 1];
@@ -160,7 +174,7 @@ export class DiffusionField {
     }
     let area = 0;
     for (const b of boxes) area += (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1);
-    return area > (nx * ny) / 6 ? whole : boxes;
+    return area > (nx * ny) / 6 ? all : boxes;
   }
 
   // Blur dep within patch g into this.work, laid out as the patch (w × h).
@@ -230,11 +244,11 @@ export class DiffusionField {
       for (let i = 0; i < m.length; i++) if (this.maskBlur[i] < 1e-6) this.maskBlur[i] = 1e-6;
       this.maskSigma = sigmaM;
     }
-    const outside = this.patches(this.cellsOut, reach);
+    const outside = this.patches(this.cellsOut, this.boxOut, reach);
     this.addOutdoor(this.depOut, heat, radii, outside);
     if (withPeople) this.addOutdoor(this.depOutP, people, radii, outside);
     if (mask) {
-      const inside = this.patches(this.cellsIn, reach);
+      const inside = this.patches(this.cellsIn, this.boxIn, reach);
       this.addIndoor(this.depIn, heat, radii, inside);
       if (withPeople) this.addIndoor(this.depInP, people, radii, inside);
     }
