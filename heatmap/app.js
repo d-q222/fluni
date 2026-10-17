@@ -42,7 +42,7 @@ const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
-const DEFAULT_RUN = 'influenza_none_n10_d14_s2_f1f772f6';
+const DEFAULT_RUN = 'influenza_none_n10_d14_s2_bc5cae7a';
 const PARAMS = new URLSearchParams(location.search);
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
@@ -502,10 +502,21 @@ async function main() {
   let current = new Map(); // agent id -> interpolated state at the current time
 
   // ?at=<minutes from the start> opens at a specific moment (handy for demos and screenshots).
-  // Otherwise start shortly before the first movement, so playback doesn't open on a sleeping campus.
+  // Otherwise open on the first day's busiest walking moment (a class change), not a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
-  let now = at ? Math.min(t1, t0 + at * 60000) : Math.max(t0, firstMove(tracks, t0) - 10 * 60000), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true, heatInterval = 0;
+  let now = at ? Math.min(t1, t0 + at * 60000) : busiestMoment(), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true, heatInterval = 0;
   let phoneMap = null, phoneBuildings = null, phoneYou = null, airflowTruth = false;
+
+  function busiestMoment() {
+    const sample = [...tracks.values()].slice(0, 500), dayEnd = Math.min(t1, t0 + 24 * 3600000);
+    let best = Math.max(t0, firstMove(tracks, t0) - 10 * 60000), most = 0;
+    for (let t = t0; t < dayEnd; t += 5 * 60000) {
+      let walking = 0;
+      for (const track of sample) if (stateAt(track, t)?.walking) walking++;
+      if (walking > most) { most = walking; best = t - 5 * 60000; } // a moment before, so they set off on Play
+    }
+    return best;
+  }
 
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
@@ -703,7 +714,7 @@ async function main() {
       now = skipQuietGap(now + dt * SPEEDS[$('speed').value] * 60);
       if (now >= t1 && EMBED) { now = t0; heatDirty = true; } // the app tab loops the run
       else if (now >= t1) { now = t1; setPlaying(false); }
-      render(realNow);
+      try { render(realNow); } catch (err) { console.error(err); } // one bad frame must not stop playback
     }
     requestAnimationFrame(tick);
   }
@@ -736,7 +747,13 @@ async function main() {
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
       : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="ramp" style="background:linear-gradient(to right, ${mix(COLORS.riskLo, COLORS.riskHi, 0)}, ${mix(COLORS.riskLo, COLORS.riskHi, 1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
-    $('dot-mode').disabled = !data.hasTruth;
+    const isPublic = v === 'public';
+    $('dot-mode').disabled = !data.hasTruth || isPublic;
+    $('show-dots').disabled = isPublic; // the user map never shows people
+    $('horizon').hidden = !isPublic;    // forecasts are a user-map feature
+    if (!EMBED) document.querySelector('.legend .fine').textContent = isPublic
+      ? 'Totals only: no people. May be incomplete because not everyone shares their status.'
+      : 'May be incomplete: not everyone shares their status. Click a person to see their app.';
   }
 
   function setPlaying(on) {
@@ -791,9 +808,12 @@ async function main() {
   }
   if (model) {
     const why = Object.assign(document.createElement('button'), { textContent: 'Why this %?' });
+    why.style.whiteSpace = 'nowrap';
     $('ph-close').before(why);
     why.addEventListener('click', () => { mathOpen = !mathOpen; mathKey = ''; renderMath(); });
   }
+  // Short windows: the phone scrolls inside its frame instead of running off the bottom.
+  Object.assign($('phone').style, { maxHeight: 'calc(100% - 32px)', overflowY: 'auto' });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
@@ -804,7 +824,10 @@ async function main() {
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
   if (PARAMS.get('why') && model) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
-  window.fluni = { data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
+  window.fluni = {
+    data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
+    current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : field), // for tools/bench.mjs
+  };
 }
 
 main().catch((err) => {

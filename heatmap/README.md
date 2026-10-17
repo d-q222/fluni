@@ -15,7 +15,7 @@ cd fluni && git pull && python3 heatmap/tools/serve.py   # port 8000
 ```
 
 Open http://localhost:8000/heatmap/. It loads the sim's real 10-agent, 14-day run from GitHub
-(`sim/runs/influenza_none_n10_d14_s2_f1f772f6/`). If that isn't reachable it says so on screen; it no
+(`sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`). If that isn't reachable it says so on screen; it no
 longer falls back silently to mock or fake data (use `?run=mock_boring10` or `?data=data/fake_agents.csv`
 on purpose). Building outlines come from the run's
 `map/buildings.csv` footprints, which cover places missing from OSM such as Green Library.

@@ -76,6 +76,7 @@ export function renderMathPanel(container, { agentId, tMs, explain, params, form
     root.append(el('h4', { text: 'Contact graph' }), graph(agentId, contribs));
     root.append(el('p', { class: 'mp-key', text: 'Thicker = more minutes. Solid = closer. Red = risk the app knew.' }));
     root.append(el('h4', { text: 'Top contact, with numbers' }), formula(contribs[0], explain, params));
+    root.append(el('h4', { text: 'All contacts together' }), combined(contribs, explain, params));
   }
 
   root.append(el('h4', { text: 'Evidence on record' }), evidenceList(explain.evidence || [], formatTime));
@@ -189,5 +190,24 @@ function traitBox(t) {
     el('b', { text: 'Presenter only (sim truth): ' }), altruism,
     `${t.archetype || 'student'}, honesty ${n(t.honesty)}, compliance ${n(t.compliance)}, `
       + `${yes(t.has_app) ? 'has the app' : 'no app'}, ${yes(t.shares_location) ? 'shares location' : 'location private'}.`,
+  ]);
+}
+
+// From one contact to the headline: every contact folds into one exposure x (capped), then the prior.
+// x is read back from p, so it is exact whenever exposure (not a report or test) sets p.
+function combined(contribs, explain, params) {
+  const { p, prior } = explain;
+  const evidenceSets = (explain.evidence || []).some((e) => e.active !== false) && p >= 0.35;
+  if (evidenceSets) return el('p', { class: 'mp-note', text: `Here the evidence below, not contact, sets ${pct(p)}.` });
+  const x = Math.max(0, 1 - (1 - p) / (1 - prior));
+  const capped = params.xMax != null && x >= params.xMax - 0.005;
+  const people = new Set(contribs.map((c) => c.other)).size;
+  return el('div', {}, [
+    el('p', { class: 'mp-f' }, ['x = 1 − ∏(1 − s·π) = ', el('b', { text: num(x) }),
+      capped ? ` (capped at ${num(params.xMax)})` : '']),
+    el('p', { class: 'mp-f' }, ['p = 1 − (1 − ', num(prior), ')(1 − ', num(x), ') = ', el('b', { text: num(p) })]),
+    el('p', { class: 'mp-note', text: `${contribs.length} contact${contribs.length > 1 ? 's' : ''} with ${people} `
+      + `${people > 1 ? 'people' : 'person'} listed, plus smaller ones and second-hand risk.`
+      + (capped ? ' Contact alone never takes anyone past this: household flu attack rates are 10–40%.' : '') }),
   ]);
 }
