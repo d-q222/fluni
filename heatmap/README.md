@@ -7,15 +7,17 @@ the agent timeline CSV. Owner: @d-q222 (see [WORKSTREAMS.md](../WORKSTREAMS.md))
 
 ## Run it
 
-Serve the **repo root**, so the page can reach the sim's output in `../sim`:
+Serve the **repo root** (not `heatmap/`), so the page can reach the sim's output in `../sim`.
+Caching is off, so a reload always runs the latest code:
 
 ```bash
-python3 -m http.server 8765
+cd fluni && git pull && python3 heatmap/tools/serve.py   # port 8000
 ```
 
-Open http://localhost:8765/heatmap/. By default it loads the sim's real 10-agent, 14-day sample run
-(`sim/runs/influenza_none_n10_d14_s2_f1f772f6/`). If that isn't reachable, it falls back to the
-mock run, then to the placeholder `data/fake_agents.csv`. Building outlines come from the run's
+Open http://localhost:8000/heatmap/. It loads the sim's real 10-agent, 14-day run from GitHub
+(`sim/runs/influenza_none_n10_d14_s2_f1f772f6/`). If that isn't reachable it says so on screen; it no
+longer falls back silently to mock or fake data (use `?run=mock_boring10` or `?data=data/fake_agents.csv`
+on purpose). Building outlines come from the run's
 `map/buildings.csv` footprints, which cover places missing from OSM such as Green Library.
 
 URL options, which can be combined:

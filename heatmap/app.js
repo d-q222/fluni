@@ -65,7 +65,7 @@ if (EMBED) {
 const runUrls = (run) => [`../sim/runs/${run}/timeline_changes.csv.gz`, `../sim/runs/${run}/timeline.csv.gz`];
 const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
   : PARAMS.get('run') ? runUrls(PARAMS.get('run'))
-    : [...runUrls(DEFAULT_RUN), ...runUrls('mock_boring10'), 'data/fake_agents.csv'];
+    : runUrls(DEFAULT_RUN); // no silent fallback to mock or fake data: a failure must be visible
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -771,5 +771,6 @@ async function main() {
 
 main().catch((err) => {
   console.error(err);
-  $('status').textContent = `Couldn't load the agent data: ${err.message}`;
+  $('status').textContent = `Couldn't load the sim run (${err.message}). Serve the repo root, not heatmap/: `
+    + 'cd fluni && python3 heatmap/tools/serve.py, then open http://localhost:8000/heatmap/';
 });
