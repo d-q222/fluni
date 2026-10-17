@@ -129,6 +129,63 @@ function pointAlong({ pts, cum, length }, d) {
   return [pts[i - 1][0] + f * (pts[i][0] - pts[i - 1][0]), pts[i - 1][1] + f * (pts[i][1] - pts[i - 1][1])];
 }
 
+// ---------- the sim's own routes (trips.csv.gz) ----------
+// Mirrors sim/campussim/viewer_template.html: a trip covers steps [t_start-1, t_end]. During the first
+// step the agent goes in a line from the room spot to the door (0 -> start_m metres); after that it is
+// start_m + speed*(step - t_start) metres along the path, clamped at the end. Later trips win on overlap.
+
+const KY_SIM = 110540;
+
+// rows: trips.csv.gz rows. Returns Map agent_id -> trips sorted by t_start, each with
+// { ts, te, sm, v (metres per step), mode, xs, ys, cum (Float64Array, metres), len }.
+export function buildTrips(rows, { startMs, stepMs, originLat = 37.418 }) {
+  const kx = 111320 * Math.cos((originLat * Math.PI) / 180);
+  const byAgent = new Map();
+  for (const r of rows) {
+    const pts = r.path ? r.path.split(';') : [];
+    const n = pts.length;
+    if (n < 2) continue;
+    const xs = new Float64Array(n), ys = new Float64Array(n), cum = new Float64Array(n);
+    for (let q = 0; q < n; q++) {
+      const sp = pts[q].indexOf(' ');
+      xs[q] = +pts[q].slice(0, sp); ys[q] = +pts[q].slice(sp + 1);
+      if (q) cum[q] = cum[q - 1] + Math.hypot((xs[q] - xs[q - 1]) * kx, (ys[q] - ys[q - 1]) * KY_SIM);
+    }
+    const trip = {
+      ts: +r.t_start, te: +r.t_end, sm: +r.start_m || 0, v: +r.speed_mps * (stepMs / 1000),
+      mode: r.mode, xs, ys, cum, len: cum[n - 1],
+    };
+    if (!byAgent.has(r.agent_id)) byAgent.set(r.agent_id, []);
+    byAgent.get(r.agent_id).push(trip);
+  }
+  for (const list of byAgent.values()) list.sort((a, b) => a.ts - b.ts);
+  return { byAgent, startMs, stepMs };
+}
+
+// Hands each track its agent's trips (tracks are arrays; this only adds properties).
+export function attachTrips(tracks, trips) {
+  for (const [id, track] of tracks) {
+    track.trips = trips.byAgent.get(id) || null;
+    track.tripHint = 0;
+    track.tripStartMs = trips.startMs;
+    track.tripStepMs = trips.stepMs;
+  }
+}
+
+// Latest trip of the track's agent covering continuous step tau, or null. Checks the cached index first.
+function tripAt(track, tau) {
+  const L = track.trips;
+  const h = track.tripHint;
+  if (h < L.length && L[h].ts - 1 <= tau && tau <= L[h].te && (h + 1 >= L.length || L[h + 1].ts - 1 > tau)) return L[h];
+  let lo = 0, hi = L.length - 1, best = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (L[m].ts - 1 <= tau) { best = m; lo = m + 1; } else hi = m - 1; }
+  for (let j = best; j >= 0 && j > best - 4; j--) if (tau <= L[j].te) { track.tripHint = j; return L[j]; }
+  return null;
+}
+
+// Distance along the trip at step tau (metres).
+const tripDist = (t, tau) => (tau < t.ts ? t.sm * (tau - t.ts + 1) : Math.min(t.len, t.sm + t.v * (tau - t.ts)));
+
 // ---------- tracks ----------
 
 // samples: [{ t (ms), id, lat, lon, p, sick, building, floor, room, moving }] → Map id → time-sorted samples
@@ -154,6 +211,24 @@ export function stateAt(track, t, router) {
   const dt = b.t - a.t;
   const f = dt > 0 ? (t - a.t) / dt : 0;
   const base = { id: a.id, p: a.p + f * (b.p - a.p), sick: f < 1 ? a.sick : b.sick, infectious: f < 1 ? a.infectious : b.infectious };
+
+  // The sim's logged route, when one covers this moment: position exactly as the sim computes it.
+  if (track.trips) {
+    const tau = (t - track.tripStartMs) / track.tripStepMs;
+    const trip = tripAt(track, tau);
+    if (trip) {
+      const d = tripDist(trip, tau), c = trip.cum;
+      let i = 0, j = c.length - 1;
+      while (j - i > 1) { const m = (i + j) >> 1; if (c[m] <= d) i = m; else j = m; }
+      const seg = c[j] - c[i], u = seg > 0 ? Math.max(0, Math.min(1, (d - c[i]) / seg)) : 0;
+      const lon = trip.xs[i] + u * (trip.xs[j] - trip.xs[i]), lat = trip.ys[i] + u * (trip.ys[j] - trip.ys[i]);
+      if (d < trip.len || tau < trip.ts) {
+        return { ...base, lat, lon, building: null, buildingId: null, floor: null, room: null, walking: true, mode: trip.mode };
+      }
+      const s = f < 0.5 ? a : b; // arrived: standing at the in-room spot
+      return { ...base, lat, lon, building: s.building, buildingId: s.buildingId, floor: s.floor, room: s.room, walking: false };
+    }
+  }
   const at = (s) => ({
     ...base, lat: s.lat, lon: s.lon, building: s.building, buildingId: s.buildingId, floor: s.floor, room: s.room, walking: false,
   });

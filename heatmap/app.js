@@ -5,7 +5,7 @@ import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
 import { inferRisk } from '../model/infer.js';
 import { renderMathPanel } from './mathpanel.js';
-import { Router, buildTracks, stateAt } from './motion.js';
+import { Router, buildTracks, buildTrips, attachTrips, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
@@ -192,6 +192,20 @@ async function loadModel(dataUrl, agentIds) {
     return { risk, contacts: contacts.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
+    return null;
+  }
+}
+
+// The sim's logged routes next to the timeline (trips.csv.gz, docs/sim-output-format.md); null if missing.
+async function loadTrips(dataUrl) {
+  try {
+    const base = new URL(dataUrl, location.href);
+    const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
+    const { data } = await loadCsv(new URL('trips.csv.gz', base),
+      ['agent_id', 't_start', 't_end', 'mode', 'speed_mps', 'start_m', 'path']);
+    return buildTrips(data, { startMs: Date.parse(config.start), stepMs: config.step_min * 60000, originLat: config.local_frame?.origin_lat });
+  } catch (err) {
+    console.warn(`No trips for this run (${err}); routing walkers with the footpath graph.`);
     return null;
   }
 }
@@ -493,6 +507,9 @@ async function main() {
     data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
   }
   const tracks = buildTracks(data.samples);
+  // Walk the sim's own logged routes (trips.csv.gz) when the run has them; the Router is the fallback.
+  const trips = await loadTrips(dataUrl);
+  if (trips) attachTrips(tracks, trips);
   if (/timeline_changes\.csv(\.gz)?$/.test(dataUrl)) {
     Object.assign(data, expandSteps(tracks, data.times, model && model.risk.pAt));
   }

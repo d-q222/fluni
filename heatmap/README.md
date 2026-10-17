@@ -85,7 +85,10 @@ Demo scenes on the sim's mock run:
 Dots move continuously, with no jumps between CSV rows (`motion.js`):
 
 - Between two samples at the same place, the agent stays put.
-- When the place changes, the agent leaves as soon as the earlier sample ends. They walk at
+- Movement follows the simulator's own logged routes: when the run has `trips.csv.gz`, an agent
+  on a trip is placed exactly where the sim puts it (same distance-along-path formula as the sim
+  viewer, speed and mode from the trip). Only runs without trips fall back to the rules below.
+- Fallback: when the place changes, the agent leaves as soon as the earlier sample ends. They walk at
   1.35 m/s along Stanford's real footpaths (an OpenStreetMap walkway graph, A* routing), then wait
   until the next sample.
 - Samples 2 minutes apart or less are interpolated directly, since fine-grained data already traces
@@ -176,7 +179,8 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
   `trace/` is the template for the hand-drawn campus map, with the exact bounds it covers.
   The heat ramp in `heat.js` and the colours in `app.js` (`COLORS`) use the same palette, so
   change colours in all three places together. No map library, so it can move to Google Maps.
-- `motion.js`: footpath router and per-agent interpolation.
+- `motion.js`: the sim's trip routes (`buildTrips`), per-agent interpolation, and the footpath router (fallback).
+- `tools/check_trips.mjs`: checks trip positions against the sim's formula and times `stateAt`.
 - `diffuse.js`: heat field (binning plus a fast blur, kept inside buildings).
 - `masks.js`: rasterizes building outlines onto the heat grid.
 - `mathpanel.js`: the "Why this %?" panel (the PRD's "show the math" demo beat).
