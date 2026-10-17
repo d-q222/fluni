@@ -13,8 +13,8 @@ struct WalkInBanner: View {
                     Text(WalkInWarning.message(for: b.name)).font(.fluni(.subheadline, weight: .semibold))
                     Spacer(minLength: 0)
                 }
-                .foregroundStyle(Theme.fireInk)
-                .card(fill: Theme.fire.opacity(0.18))
+                .foregroundStyle(Theme.ink)
+                .card(.peach)
                 .accessibilityElement(children: .combine)
             }
         }
