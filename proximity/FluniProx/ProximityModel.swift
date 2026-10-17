@@ -280,7 +280,9 @@ final class ProximityModel: ObservableObject {
 
         let before = exposure.level
         var e = exposure
-        e.advance(simSeconds: dt * speed, contacts: byID.values.map { ($0.pClose, $0.risk) })
+        let ps = Array(byID.values)
+        e.advance(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) },
+                  tiers: ps.map { $0.estimate.map(Fusion.tierWeight) ?? 0 })
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         if exposure.level > notifiedLevel {

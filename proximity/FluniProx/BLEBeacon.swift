@@ -1,6 +1,8 @@
 import CoreBluetooth
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Broadcasts and hears anonymous beacons. The whole payload rides in one 128-bit service UUID:
 ///   bytes 0-3  "FLU1" magic
@@ -26,11 +28,13 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         peripheral = CBPeripheralManager(delegate: self, queue: nil)
         central = CBCentralManager(delegate: self, queue: scanQueue)
         // Radios can be left idle or stale after a trip through the background or a Bluetooth toggle.
+        #if canImport(UIKit)
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in
             self?.restartAdvertising()
             self?.scanQueue.async { self?.restartScan() }
         }
+        #endif
     }
 
     private func restartScan() {

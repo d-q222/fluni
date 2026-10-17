@@ -337,20 +337,26 @@ final class CriticalExposureTests: XCTestCase {
         t.advance(simSeconds: s, contacts: [(p, r)])
     }
 
-    // S6: minutes never decrease, never NaN/inf, even with garbage inputs; closeContact is sticky.
+    // S6 (with the agreed rolling 24 h window): minutes are never NaN/inf/negative, even with garbage
+    // inputs; within the first 24 h of simulated time they never decrease and closeContact is sticky.
+    // A huge finite step (1e308 s, clamped to 24 h) legitimately expires everything, so after that
+    // only finiteness is checked.
     func testMinutesMonotoneFiniteUnderGarbage() {
         var rng = SplitMix(20)
         let bad: [Double] = [.nan, .infinity, -.infinity, -5, -0.001, 1e308, -1e308, 7, 1.0000001]
         for trial in 0..<300 {
             var t = ExposureTracker()
-            var prev = 0.0, wasClose = false
+            var prev = 0.0, wasClose = false, elapsed = 0.0
             for step in 0..<60 {
                 let s = rng.int(3) == 0 ? bad[rng.int(bad.count)] : rng.range(0, 120)
                 let cs: [(pClose: Double, risk: Risk)] = (0..<rng.int(4)).map { _ in
                     (rng.int(3) == 0 ? bad[rng.int(bad.count)] : rng.unit(), Risk.allCases[rng.int(3)])
                 }
                 t.advance(simSeconds: s, contacts: cs)
-                XCTAssertTrue(t.minutes.isFinite, "S6 trial \(trial) step \(step): minutes \(t.minutes) after sim=\(s) \(cs)")
+                elapsed += s.isFinite ? min(max(s, 0), ExposureTracker.window) : 0
+                XCTAssertTrue(t.minutes.isFinite && t.minutes >= 0, "S6 trial \(trial) step \(step): minutes \(t.minutes) after sim=\(s) \(cs)")
+                XCTAssertTrue(t.dose.isFinite && t.dose >= 0, "S6 trial \(trial) step \(step): dose \(t.dose)")
+                guard elapsed < ExposureTracker.window - 60 else { break }  // window reached: expiry is allowed
                 XCTAssertGreaterThanOrEqual(t.minutes, prev, "S6 trial \(trial) step \(step): minutes decreased after sim=\(s) \(cs)")
                 if t.minutes.isFinite { prev = t.minutes } else { break }
                 if wasClose { XCTAssertEqual(t.level, .closeContact, "S6 closeContact not sticky") }

@@ -1,6 +1,8 @@
 import Foundation
 import MultipeerConnectivity
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Message sent over the peer link. One flat struct keeps the wire format obvious.
 struct Wire: Codable {
@@ -60,8 +62,10 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         advertiser.startAdvertisingPeer()
         browser.startBrowsingForPeers()
         tick = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.maintain() }
+        #if canImport(UIKit)
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in self?.restartDiscovery("foreground") }
+        #endif
     }
 
     func send(_ w: Wire, to peers: [MCPeerID]? = nil) {

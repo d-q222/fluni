@@ -72,6 +72,18 @@ enum Fusion {
         e.sources == [.gps] && e.sigma > maxGPSOnlySigma
     }
 
+    /// Distance-tier weight for the risk dose, as in model/infer.js: <1 m → 1, 1–2 m → 0.6,
+    /// 2–5 m → 0.1, farther (still in radio range, ~same room) → 0.02. Coarse GPS alone → 0.
+    static func tierWeight(_ e: Estimate) -> Double {
+        if isCoarseGPSOnly(e) || !e.distance.isFinite { return 0 }
+        switch e.distance {
+        case ..<1: return 1
+        case ..<2: return 0.6
+        case ..<5: return 0.1
+        default: return 0.02
+        }
+    }
+
     /// P(true distance <= 6 ft) under a normal error model.
     static func pClose(_ e: Estimate) -> Double {
         guard e.distance.isFinite, e.sigma.isFinite else { return 0 }

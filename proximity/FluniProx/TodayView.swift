@@ -30,7 +30,7 @@ struct TodayView: View {
             .navigationTitle("Today")
             .animation(.default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
-            .sheet(isPresented: $showCalc) { CalculationSheet(weightedMinutes: model.exposure.minutes) }
+            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
         }
     }
 
@@ -82,7 +82,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        let p = RiskEstimate.probability(weightedMinutes: model.exposure.minutes)
+        let p = RiskEstimate.probability(dose: model.exposure.dose)
         return VStack(alignment: .leading, spacing: 8) {
             Text("Your risk estimate").font(.fluni(.headline))
             Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
@@ -174,23 +174,27 @@ struct HowItWorksSheet: View {
 
 /// Shows the real numbers behind the risk estimate.
 struct CalculationSheet: View {
-    let weightedMinutes: Double
+    let minutes: Double
+    let dose: Double
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        let p = RiskEstimate.probability(weightedMinutes: weightedMinutes)
-        let m = String(format: "%.1f", weightedMinutes)
+        let p = RiskEstimate.probability(dose: dose)
+        let x = RiskEstimate.contactTerm(dose: dose)
+        let m = String(format: "%.1f", minutes)
+        let d = String(format: "%.1f", dose)
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    block("Weighted minutes",
-                          "Add up the minutes you spent within 6 ft of someone, each multiplied by how likely they are to be contagious: 1 if they tested positive, 0.5 if they have symptoms. People who feel fine count 0.",
-                          "You: \(m) weighted minutes")
-                    block("Close-contact mark",
-                          "About \(Int(ExposureTracker.closeContactMinutes)) weighted minutes triggers the close-contact alert.", nil)
+                    block("Close contact",
+                          "Minutes within 6 ft of someone, times how likely they are to be contagious: 1 if they tested positive, 0.5 if they have symptoms. \(Int(ExposureTracker.closeContactMinutes)) of these in a day triggers the close-contact alert.",
+                          "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
+                    block("Exposure dose",
+                          "The same, but closer counts more: under 1 m ×1, 1–2 m ×0.6, 2–5 m ×0.1, farther in the room ×0.02.",
+                          "You: \(d) dose-minutes")
                     block("The estimate",
-                          "P = 1 \u{2212} (1 \u{2212} \(RiskEstimate.beta))^minutes. Each weighted minute carries a \(RiskEstimate.beta * 100)% chance.",
-                          "P = 1 \u{2212} (1 \u{2212} \(RiskEstimate.beta))^\(m) = \(RiskEstimate.percentText(p))")
+                          "Contact part x = 1 \u{2212} e^(\u{2212}\(RiskEstimate.beta) × dose), at most \(Int(RiskEstimate.xMax * 100))%. Then P = 1 \u{2212} \(1 - RiskEstimate.prior) × (1 \u{2212} x), where \(Int(RiskEstimate.prior * 100))% is the everyday baseline. Same model as the campus map.",
+                          "x = \(RiskEstimate.percentText(x)), so P = \(RiskEstimate.percentText(p))")
                     block("What counts",
                           "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and ultra wideband do.", nil)
                     Text("It's an estimate to help you decide what to do, not a diagnosis.")
