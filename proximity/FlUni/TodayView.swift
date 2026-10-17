@@ -84,20 +84,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        let p = RiskEstimate.probability(dose: model.exposure.dose)
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("Your risk estimate").font(.fluni(.headline))
-            Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
-            Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
-            Text("An estimate from nearby contacts in the last 24 hours, not a diagnosis.")
-                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-            Button { showCalc = true } label: {
-                Label("How is this calculated?", systemImage: "function")
-                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
-            }
-        }
-        .foregroundStyle(Theme.ink)
-        .card()
+        RiskCardView(dose: model.exposure.dose) { showCalc = true }
     }
 
     // MARK: Minutes
@@ -179,6 +166,8 @@ struct CalculationSheet: View {
     let minutes: Double
     let dose: Double
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var store = PSickStore.shared
+    @State private var showDemo = false
 
     var body: some View {
         let p = RiskEstimate.probability(dose: dose)
@@ -199,8 +188,13 @@ struct CalculationSheet: View {
                           "x = \(RiskEstimate.percentText(x)), so P = \(RiskEstimate.percentText(p))")
                     block("What counts",
                           "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and ultra wideband do.", nil)
+                    block("Campus model vs this phone",
+                          "The campus model is the official number, worked out on the laptop from everyone's contacts, reports and tests. This phone's estimate uses only what this phone sensed in the last 24 hours, so the two can differ.",
+                          store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
                     Text("It's an estimate to help you decide what to do, not a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                    Button("Demo\u{2026}") { showDemo = true }
+                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
                 }
                 .padding(20)
             }
@@ -208,6 +202,7 @@ struct CalculationSheet: View {
             .navigationTitle("How is this calculated?")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showDemo) { PSickDemoSheet() }
         }
     }
 
