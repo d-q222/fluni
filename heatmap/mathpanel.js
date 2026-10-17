@@ -204,7 +204,7 @@ function combined(contribs, explain, params) {
   const people = new Set(contribs.map((c) => c.other)).size;
   return el('div', {}, [
     el('p', { class: 'mp-f' }, ['x = 1 − ∏(1 − s·π) = ', el('b', { text: num(x) }),
-      capped ? ` (capped at ${num(params.xMax)})` : '']),
+      capped ? ` (direct contact capped at ${num(params.xMax)}${x > params.xMax + 0.005 ? ', plus second-hand risk' : ''})` : '']),
     el('p', { class: 'mp-f' }, ['p = 1 − (1 − ', num(prior), ')(1 − ', num(x), ') = ', el('b', { text: num(p) })]),
     el('p', { class: 'mp-note', text: `${contribs.length} contact${contribs.length > 1 ? 's' : ''} with ${people} `
       + `${people > 1 ? 'people' : 'person'} listed, plus smaller ones and second-hand risk.`
