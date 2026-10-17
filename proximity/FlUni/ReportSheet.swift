@@ -56,6 +56,8 @@ struct ReportSheet: View {
     // MARK: symptoms
 
     @ViewBuilder private var symptomsBody: some View {
+        Image("FeelingSick").resizable().scaledToFit().frame(maxHeight: 140)
+            .frame(maxWidth: .infinity).accessibilityHidden(true)  // Lisa's illustration
         Text("What are you feeling?").font(.fluni(.headline)).foregroundStyle(Theme.ink)
             .accessibilityAddTraits(.isHeader)
         VStack(spacing: 8) {

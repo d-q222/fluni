@@ -25,6 +25,9 @@ struct AtHomeCard: View {
                 }
             }
             .foregroundStyle(Theme.ink)
+            // Lisa's "feeling sick" tissue (design pass).
+            Image("FeelingSick").resizable().scaledToFit().frame(maxHeight: 110)
+                .frame(maxWidth: .infinity).accessibilityHidden(true)
             header(phase)
             if case .periodOver(let feverFree) = phase {
                 periodOver(feverFree: feverFree)
