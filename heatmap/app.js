@@ -6,10 +6,11 @@ import { BuildingTotalsLayer } from './buildings.js';
 
 // Room-level heat for the presenter; coarse, privacy-masked heat for what real users see.
 const DEMO = { cellM: 3, sigmaM: 18 };
-// The user-facing map sees only per-building totals. Each simulated agent stands for SCALE people
-// until the sim has enough agents; buildings with fewer than MIN_PEOPLE are not shown.
-const SCALE = 50;
-const MIN_PEOPLE = 5;
+// The user-facing map sees only per-building totals. Small runs (the mock has 10 agents) are scaled
+// so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
+const SMALL_RUN_SCALE = 50;
+const SMALL_RUN_AGENTS = 500;
+const MIN_PEOPLE = 4;       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 2;       // "the person next to you" (demo proof of concept, uses sim truth)
 const ROOM_HOT = 0.5;       // walk-in warning when others in the room add up to ≥ this many expected sick
@@ -249,8 +250,9 @@ async function main() {
 
   const demoGrid = new HeatGrid(bounds, DEMO.cellM);
   // Everything the user-facing map gets is computed here, from totals only.
-  const totals = buildTotals(frames, times, { scale: SCALE });
-  const forecaster = buildForecaster(frames, times, { scale: SCALE });
+  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
+  const totals = buildTotals(frames, times, { scale });
+  const forecaster = buildForecaster(frames, times, { scale });
   const backtestRate = forecaster.backtest(60).rate;
   const vmax = { demo: globalMax(demoGrid, frames, DEMO.sigmaM), public: buildingScaleMax(totals) };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
@@ -435,7 +437,7 @@ async function main() {
     $('vmid').textContent = (vmax[v] * unit / 4).toFixed(1);
     $('vmax').textContent = `${(vmax[v] * unit).toFixed(1)}+`;
     document.querySelector('.legend h2').innerHTML = v === 'public'
-      ? `Expected sick people <span>per building (each sim agent = ${SCALE})</span>`
+      ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
       : 'Expected infected <span>per 1,000 m²</span>';
     const showDots = $('show-dots').checked && v === 'demo';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
@@ -470,7 +472,7 @@ async function main() {
   if (params.get('view')) $('view').value = params.get('view');
   if (params.get('horizon')) horizon.value = params.get('horizon');
   document.querySelector('#phone .screen .fine').textContent =
-    `Busy buildings only; each simulated person stands for ${SCALE}. May be incomplete because not everyone shares their status.`
+    `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
 
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {

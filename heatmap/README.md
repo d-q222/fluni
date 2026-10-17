@@ -39,8 +39,10 @@ Demo scenes on the sim's mock run:
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
-  - Each simulated agent stands for 50 people (`SCALE` in `app.js`) until the sim has more agents.
-  - Buildings with fewer than 5 people are shown as outlines only.
+  - In small runs (under 500 agents, like the 10-agent mock), each agent stands for 50 people.
+    Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*` in `app.js`.
+  - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
+    (`MIN_PEOPLE`).
   - **Forecast** ("In 1 / 2 / 3 hours", from `forecast.js`):
     - Method: each person's habits (building per 30-minute slot, learned from the *other* days)
       × their current P(sick), summed per building.
@@ -75,13 +77,12 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   colour means the same thing at every moment. It is a square-root scale, so the legend's middle
   label is a quarter of its maximum.
 - **Heat → "Room-level (demo)"**: fine detail (σ = 18 m), presenter only.
-- **Heat → "What users see"**: coarse (σ = 35 m), and areas with fewer than 5 people nearby are
-  hidden so one sick person can't be singled out. No people are shown.
+- **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
+  people shown.
 - **Dots (demo only)**: one per agent. Colour by the app's estimate of P(sick), or by the
   simulation's true status.
 - **Click a dot** to see that agent's phone: their estimated risk and advice, a proximity alert
-  (someone the app thinks is risky, P ≥ 50%, in the same room within 3 m), and the public heat
-  map. The dashed box under the phone shows the simulation's truth and is *not* part of the app.
+  (someone the app thinks is risky, P ≥ 50%, in the same room within 3 m), and the user map. The dashed box under the phone shows the simulation's truth and is *not* part of the app.
   From the console, `fluni.select("a018")` opens a specific agent.
 
 ## Input CSV

@@ -27,7 +27,7 @@ export class BuildingTotalsLayer {
   constructor(geojson, { renderer } = {}) {
     this.group = L.layerGroup();
     this.totals = new Map();
-    this.opts = { minPeople: 5, forecast: false };
+    this.opts = { minPeople: 4, forecast: false };
     this.items = new Map(); // buildingId → { layer, shown, key }
     for (const f of geojson.features) {
       const id = 'bld_' + String(f.properties.id).split('/')[1];
@@ -48,7 +48,7 @@ export class BuildingTotalsLayer {
     this.map = null;
   }
 
-  update(totals, vmax, { minPeople = 5, forecast = false } = {}) {
+  update(totals, vmax, { minPeople = 4, forecast = false } = {}) {
     this.totals = totals;
     this.opts = { minPeople, forecast };
     for (const [id, it] of this.items) {

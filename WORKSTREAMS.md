@@ -34,9 +34,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — User map sees totals only.** The in-app (user-facing) heat map is drawn only from
   per-building and per-room totals (people, expected sick). It never receives agent positions or
   properties. The presenter's demo map can see everything.
-- **2026-10-17 — Population scaling (temporary).** Each simulated agent stands for 50 people on the
-  user map (and in its "fewer than 5 people" rule), labelled on screen, until the full sim has
-  enough agents.
+- **2026-10-17 — Population scaling (temporary).** In small runs (under 500 agents, e.g. the 10-agent
+  mock), each simulated agent stands for 50 people on the user map, labelled on screen. Full runs
+  (~7,000 agents) show real counts.
+- **2026-10-17 — Hiding small groups (supersedes "fewer than 5").** The user map hides a building
+  only when just 1–3 people are in it. Anything with 4 or more is shown.
 - **2026-10-17 — Walk-in warning is room-level.** Demo proof of concept: the phone also alerts when
   the person right next to you is actually sick (sim truth, labelled as demo-only). Privacy
   hardening is deferred for now.

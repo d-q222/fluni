@@ -5,7 +5,7 @@ There are two separate products here. Keep them apart:
 - **Demo view** (presenter only). A bird's-eye map that follows the simulated agents as dots, with
   room-level heat. Clicking a dot shows that agent's phone.
 - **User-facing map** (what real users get). Aggregate heat only: no people, no positions, no
-  properties. It is building-level, hides areas with fewer than 5 people, and has a predictive mode.
+  properties. It is building-level, hides buildings with only 1–3 people, and has a predictive mode.
 
 Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 
@@ -25,7 +25,7 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 | # | Task | Size | Depends on | Done when |
 |---|---|---|---|---|
 | U1 | ~~Building-level fills~~ **Done** (`buildings.js`) | | | |
-| U2 | ~~Real per-building count, hide under 5~~ **Done**: counts come from `aggregate.js`, scaled ×50 for now | | | |
+| U2 | ~~Real per-building count, hide tiny groups~~ **Done**: counts come from `aggregate.js`; only 1–3 people are hidden; small runs are scaled ×50 | | | |
 | U3 | ~~Walk-in warning and disclaimer~~ **Done**: room-level warning, plus a demo-only "the person next to you is sick" alert | | | |
 | U4 | ~~Predictive mode~~ **Done** (`forecast.js`): +1/+2/+3 h, an 80% range, and a backtest (64% coverage on the mock; the ranges are too narrow, so worth revisiting with more days or a correlation-aware model) | | | |
 | U5 | **Partly done**: the user map reads only `aggregate.js` totals in the page. Still to do: a precomputed totals file for the full run, which is too big for the browser | M | full sim run | |
