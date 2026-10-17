@@ -1,0 +1,160 @@
+import Foundation
+
+/// One stretch of continuous exposure to a risky phone. Stored on the device only.
+/// No peer IDs and no distances: just when, how much, and the worst status seen.
+struct ExposureEpisode: Codable, Equatable, Identifiable {
+    var start: Date
+    var end: Date
+    /// Σ dt/60 × pClose × risk weight over the episode (the same minutes the 15-min rule counts).
+    var weightedMinutes: Double
+    /// The highest status among the phones that were probably within 6 ft.
+    var maxRisk: Risk
+
+    var id: Date { start }
+    var durationMinutes: Double { end.timeIntervalSince(start) / 60 }
+    /// Same threshold as the live alert.
+    var isCloseContact: Bool { weightedMinutes >= ExposureTracker.closeContactMinutes - 1e-6 }
+}
+
+/// Groups the per-tick contacts into episodes. Pure: feed it the same inputs as
+/// `ExposureTracker.advance` plus the tick's Date.
+///
+/// - A tick is "risky" when any peer with a status above `.none` has pClose >= 0.5.
+/// - An episode starts on a risky tick and ends once 2 simulated minutes pass with no risky tick.
+/// - While open, risky ticks add dt/60 × pClose × weight for every risky peer (peers overlap by
+///   summing, like the tracker). Quiet ticks add nothing.
+/// - An episode's `end` is the end of its last risky tick, so the 2-minute tail is not included.
+/// - Episodes under `minListedMinutes` weighted minutes are dropped (flicker, not an exposure).
+struct ExposureHistory: Equatable {
+    static let startPClose = 0.5
+    static let gapSeconds = 120.0
+    static let minListedMinutes = 0.5
+
+    private struct Open: Equatable {
+        var start: Date
+        var weighted = 0.0
+        var maxRisk = Risk.none
+        var elapsed = 0.0      // simulated seconds since start
+        var lastRisky = 0.0    // `elapsed` at the end of the last risky tick
+        var quiet = 0.0        // simulated seconds since the last risky tick
+    }
+    private var open: Open?
+
+    /// The episode in progress, if any (not yet finished or filtered).
+    var ongoing: ExposureEpisode? {
+        open.map { ExposureEpisode(start: $0.start, end: $0.start.addingTimeInterval($0.lastRisky),
+                                   weightedMinutes: $0.weighted, maxRisk: $0.maxRisk) }
+    }
+
+    /// `simSeconds` is clamped to [0, 24 h]; NaN/inf count as 0. A pClose that is NaN is ignored,
+    /// others are clamped to [0, 1]. `now` is the time at the END of the tick.
+    mutating func advance(simSeconds: Double, contacts: [(pClose: Double, risk: Risk)], at now: Date) -> [ExposureEpisode] {
+        let dt = simSeconds.isFinite ? min(max(simSeconds, 0), ExposureTracker.window) : 0
+        var added = 0.0
+        var worst = Risk.none
+        var risky = false
+        for c in contacts where c.pClose.isFinite && c.risk != .none {
+            let p = min(max(c.pClose, 0), 1)
+            added += dt / 60 * p * c.risk.weight
+            if p >= Self.startPClose {
+                risky = true
+                if c.risk.rawValue > worst.rawValue { worst = c.risk }
+            }
+        }
+        if risky {
+            var o = open ?? Open(start: now.addingTimeInterval(-dt))
+            o.elapsed += dt
+            o.lastRisky = o.elapsed
+            o.quiet = 0
+            o.weighted += added
+            if worst.rawValue > o.maxRisk.rawValue { o.maxRisk = worst }
+            open = o
+            return []
+        }
+        guard var o = open else { return [] }
+        o.elapsed += dt
+        o.quiet += dt
+        if o.quiet >= Self.gapSeconds - 1e-6 {
+            open = nil
+            return Self.finish(o)
+        }
+        open = o
+        return []
+    }
+
+    /// Ends the episode in progress (e.g. on reset), returning it if it is worth listing.
+    mutating func finishOpen() -> [ExposureEpisode] {
+        guard let o = open else { return [] }
+        open = nil
+        return Self.finish(o)
+    }
+
+    private static func finish(_ o: Open) -> [ExposureEpisode] {
+        guard o.weighted >= minListedMinutes - 1e-9 else { return [] }
+        return [ExposureEpisode(start: o.start, end: o.start.addingTimeInterval(o.lastRisky),
+                                weightedMinutes: o.weighted, maxRisk: o.maxRisk)]
+    }
+}
+
+/// The saved list: 14 days, JSON.
+enum ExposureLog {
+    static let retention = 14 * 24 * 3600.0
+
+    /// Keeps episodes that ended within the last 14 days (exactly 14 days old is kept), oldest first.
+    static func pruned(_ episodes: [ExposureEpisode], now: Date) -> [ExposureEpisode] {
+        episodes.filter { now.timeIntervalSince($0.end) <= retention }.sorted { $0.start < $1.start }
+    }
+
+    static func encode(_ episodes: [ExposureEpisode]) throws -> Data {
+        let e = JSONEncoder()
+        e.dateEncodingStrategy = .secondsSince1970
+        e.outputFormatting = [.sortedKeys]
+        return try e.encode(episodes)
+    }
+
+    /// Unreadable data gives an empty list rather than a crash.
+    static func decode(_ data: Data) -> [ExposureEpisode] {
+        let d = JSONDecoder()
+        d.dateDecodingStrategy = .secondsSince1970
+        return (try? d.decode([ExposureEpisode].self, from: data)) ?? []
+    }
+}
+
+/// Owns the history on the device: runs the episode logic, saves finished episodes to a small JSON
+/// file in Application Support, prunes old ones. Nothing leaves the phone.
+final class ExposureHistoryStore: ObservableObject {
+    @Published private(set) var episodes: [ExposureEpisode] = []
+    @Published private(set) var ongoing: ExposureEpisode?
+    private var history = ExposureHistory()
+    private let url: URL?
+
+    init(url: URL? = ExposureHistoryStore.defaultURL) {
+        self.url = url
+        if let url, let data = try? Data(contentsOf: url) {
+            episodes = ExposureLog.pruned(ExposureLog.decode(data), now: Date())
+        }
+    }
+
+    static var defaultURL: URL? {
+        try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
+                                     appropriateFor: nil, create: true).appendingPathComponent("exposure-history.json")
+    }
+
+    func record(simSeconds: Double, contacts: [(pClose: Double, risk: Risk)], at now: Date = Date()) {
+        let done = history.advance(simSeconds: simSeconds, contacts: contacts, at: now)
+        if !done.isEmpty { add(done, now: now) }
+        if history.ongoing != ongoing { ongoing = history.ongoing }
+    }
+
+    /// Closes the episode in progress (used by the reset button).
+    func finishOngoing(now: Date = Date()) {
+        let done = history.finishOpen()
+        if !done.isEmpty { add(done, now: now) }
+        ongoing = nil
+    }
+
+    private func add(_ done: [ExposureEpisode], now: Date) {
+        episodes = ExposureLog.pruned(episodes + done, now: now)
+        if let url, let data = try? ExposureLog.encode(episodes) { try? data.write(to: url, options: .atomic) }
+    }
+}

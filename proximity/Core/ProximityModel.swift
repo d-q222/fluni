@@ -52,6 +52,8 @@ final class ProximityModel: ObservableObject {
     private var lastFixSent = Date.distantPast
     private var timer: Timer?
     private var notifiedLevel = AlertLevel.none
+    /// Local-only list of past exposure episodes (14 days), shown on Today.
+    let exposureHistory = ExposureHistoryStore()
 
     /// Ephemeral IDs rotate like GAEN's rolling proximity IDs (shorter via -rotate for tests).
     private var rotationInterval: TimeInterval = 15 * 60
@@ -291,6 +293,7 @@ final class ProximityModel: ObservableObject {
         let ps = Array(byID.values)
         e.advance(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) },
                   tiers: ps.map { $0.estimate.map(Fusion.tierWeight) ?? 0 })
+        exposureHistory.record(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, at: now)
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         if exposure.level > notifiedLevel {
