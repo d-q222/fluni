@@ -105,6 +105,7 @@ const COLUMNS = {
   offMap: ['off_map'],
   reported: ['self_reported_status'],
   test: ['test_status'],
+  shed: ['infectiousness'], // the sim's per-person shedding rate (0 when not infectious)
 };
 
 const TRUE = new Set(['1', 'true', 'True', 'TRUE']);
@@ -148,7 +149,8 @@ function toFrames(rows, fields, buildingNames) {
       p: beliefFrom === 'column' ? Number(r[col.p])
         : beliefFrom === 'reports' ? appBelief(r[col.reported], r[col.test]) : Number(sick),
       sick,
-      infectious: col.sick ? INFECTIOUS.has(r[col.sick]) : null,
+      // How infectious, from the sim when it says (I_pre ~0.04, I_asym ~0.4, I_sym up to ~2.9); else 0/1.
+      infectious: col.shed && r[col.shed] !== '' ? Number(r[col.shed]) : col.sick ? Number(INFECTIOUS.has(r[col.sick])) : null,
       buildingId: outside ? null : b, // what totals group by; null = outdoors or in transit
       building: (b && buildingNames.get(b)) || b,
       floor: col.floor ? r[col.floor] : null,
@@ -440,7 +442,7 @@ function scaleMax(heatAt, times) {
 function* asPoints(states, truth, stayedOnly = false) {
   for (const s of states) {
     if (stayedOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(Boolean(s.infectious)) : s.p, indoor: Boolean(s.buildingId) };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : s.p, indoor: Boolean(s.buildingId) };
   }
 }
 
@@ -920,7 +922,7 @@ async function main() {
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : truthMode() ? 'Actually infectious <span>per 1,000 m² (sim truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
+      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
     const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
