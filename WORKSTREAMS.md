@@ -9,7 +9,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
 | Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: mock run in the final format is up; full simulator being built | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. See `sim/README.md`. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: claimed, planning | PRD Functionality 1. Native iOS app for the live two-phone demo: detection by UWB (Nearby Interaction), Bluetooth LE and GPS; builds exposure minutes, and gives a close-contact alert with advice after ~15 min near a contagious phone. |
-| Infection probability model | _TBD_ | _unclaimed_ | Not started | PRD Functionality 3 |
+| Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: first version | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice. For now the heat map computes it in the browser. A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 
 ## Decisions
 
