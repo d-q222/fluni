@@ -75,6 +75,7 @@ struct ReportSheet: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
+                .accessibilityIdentifier("symptom.\(s.rawValue)")
             }
         }
         DatePicker("When did it start?", selection: $date, in: ...Date(), displayedComponents: .date)
@@ -84,6 +85,7 @@ struct ReportSheet: View {
         Button("Set status to possibly sick") { submit() }
             .buttonStyle(PrimaryButtonStyle(fill: Theme.sun))
             .disabled(picked.isEmpty).opacity(picked.isEmpty ? 0.5 : 1)
+            .accessibilityIdentifier("report.submit")
             .accessibilityHint(picked.isEmpty ? "Pick at least one symptom first" : "Shares \"possibly sick\" with phones near you")
     }
 
@@ -103,11 +105,13 @@ struct ReportSheet: View {
             sharedBox("Phones near you will see \"contagious\" and may warn their owners. The test type and date are never shared. They stay on this phone. A test is more reliable than symptoms alone, so nearby phones treat it as a stronger signal.")
             Button("Review and share") { confirmPositive = true }
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.fireInk, text: Theme.paper))
+                .accessibilityIdentifier("report.submit")
                 .accessibilityHint("Asks you to confirm before anything is shared")
         } else {
             sharedBox(negativeNote)
             Button("Save negative result") { submit() }
                 .buttonStyle(PrimaryButtonStyle())
+                .accessibilityIdentifier("report.submit")
         }
     }
 

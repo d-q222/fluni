@@ -39,11 +39,13 @@ struct RiskCardView: View {
                     .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
             }
             .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("risk.card")
             Button(action: onHow) {
                 Label("See how this is worked out", systemImage: "function")
                     .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Self.noteColor(band)).frame(minHeight: 44)
             }
             .accessibilityHint("Opens the numbers behind this estimate")
+            .accessibilityIdentifier("risk.how")
         }
         .foregroundStyle(text)
         .card(fill: Self.fill(band))
