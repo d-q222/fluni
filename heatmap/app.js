@@ -12,12 +12,10 @@ import { BuildingTotalsLayer } from './buildings.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
-// Heat is mostly the present: current positions at full weight, plus a faint trail of where people
-// were over the last half hour, so a room still reads warm just after people leave. (An hour-long
-// average made the heat lag far behind moving dots.)
-const MEMORY = { stepMin: 10, steps: 4, tauMin: 15, trail: 0.35 };
-const MEMORY_W = Array.from({ length: MEMORY.steps },
-  (_, k) => (k === 0 ? 1 : MEMORY.trail * Math.exp((-k * MEMORY.stepMin) / MEMORY.tauMin)));
+// Heat is the expected number of infected people near each point right now: Σ P(sick) of the people
+// there, spread by the diffusion kernel (which integrates to 1, so a cloud holds exactly its people's
+// expected count). No trail of past positions: that counted people who had already left. Infectious
+// air that lingers after people leave is the sim's own room view ("Infectious air by room").
 // The user-facing map sees only per-building totals. Small runs (the mock has 10 agents) are scaled
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
@@ -438,10 +436,8 @@ function scaleMax(heatAt, times) {
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
-// stayedOnly: skip people on the move (for the trail: see heatAt).
-function* asPoints(states, truth, stayedOnly = false) {
+function* asPoints(states, truth) {
   for (const s of states) {
-    if (stayedOnly && !s.buildingId) continue;
     yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : s.p, indoor: Boolean(s.buildingId) };
   }
 }
@@ -537,16 +533,13 @@ async function main() {
     for (const track of tracks.values()) { const st = stateNow(track, t); if (st) out.push(st); }
     return out;
   };
-  // The trail only keeps where people stayed (inside a building): a room still reads warm after they
-  // leave, but a walker leaves no ghost cloud behind the dot. No people field: nothing masks by it.
+  // No people field: nothing masks by it.
   // The spread follows the zoom: 18 m (room-level) close up, about 16 screen pixels when zoomed out, so a
   // cloud never shrinks to a dot. Set by the map's zoom (see sigmaForZoom below).
   let sigmaM = DEMO.sigmaM;
   const heatAt = (t, nowStates = null, truth = false) => {
     field.clear();
-    MEMORY_W.forEach((w, k) => {
-      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000), truth, k > 0), w);
-    });
+    field.deposit(asPoints(nowStates || statesAt(t), truth), 1);
     return field.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.

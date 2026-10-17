@@ -107,10 +107,10 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
     streets. Outdoors, it spreads freely.
-  - Heat is mostly the present. Current positions get full weight, plus a faint trail over the last
-    30 minutes (3 snapshots, 10 minutes apart, 35% × e^(−age/15 min)), so a room still reads warm
-    just after people leave without lagging behind moving dots. The heat is recomputed every frame
-    while that costs under 8 ms, and backs off on big runs.
+  - Heat is the expected number of infected people near each point now: Σ P(sick) of the people
+    there, spread by a kernel that integrates to 1 (legend: per 1,000 m²). No trail of past
+    positions. The spread follows the zoom (18 m close up, ~16 screen px zoomed out), with a colour
+    scale per spread. The heat is recomputed every frame while that costs under 8 ms.
   - **Airflow heat (experimental)** (`aerosol.js`): an evolving field instead of a snapshot.
     Infectious people emit into their room; the air mixes within the room, leaks through doors
     (walls sit on cell faces, with one door per ~8 m), and is ventilated away (τ 30 min indoors,
