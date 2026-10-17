@@ -24,6 +24,9 @@ from .geo import to_ll, to_xy
 
 ROOT = Path(__file__).resolve().parent.parent
 LAYOUTS = ["seated", "mingle", "bed", "free"]
+MODES = ("walk", "bike")
+ROADS = {"residential", "unclassified", "tertiary", "tertiary_link", "secondary", "secondary_link", "primary",
+         "primary_link", "living_street"}
 
 BUILDING_COLS = ["location_id", "osm_id", "name", "type", "lat", "lon", "floors", "area_m2", "capacity",
                  "ventilation_ach", "indoor", "entrance_sources"]
@@ -65,6 +68,12 @@ def point_in_rings(x, y, rings):
             if (np.count_nonzero(x < xi) % 2) == 1:
                 return True
     return False
+
+
+def _is_passage(p):
+    """OSM way that legitimately runs through/under a building footprint."""
+    return (p.get("tunnel") in ("yes", "building_passage") or p.get("covered") == "yes" or
+            p.get("indoor") == "yes" or p.get("highway") == "corridor" or p.get("layer") not in (None, "0"))
 
 
 def _ring_area(r):
@@ -144,11 +153,12 @@ class Campus:
         if not data_dir.is_absolute():
             data_dir = ROOT / data_dir
         self.data_dir = data_dir
-        files = {n: data_dir / f"{n}.geojson" for n in ("buildings", "entrances", "paths")}
+        files = {n: data_dir / f"{n}.geojson" for n in ("buildings", "entrances", "paths", "building_holes")}
         man_path = ROOT / cfg_map.get("manual_places", "data/manual_places.json")
         ovr_path = ROOT / cfg_map.get("location_overrides", "data/location_overrides.json")
         h = hashlib.sha256()
-        for p in [files["buildings"], files["entrances"], files["paths"], man_path, ovr_path]:
+        for p in [files["buildings"], files["entrances"], files["paths"], man_path, ovr_path] + \
+                ([files["building_holes"]] if files["building_holes"].exists() else []):
             h.update(p.read_bytes() if p.exists() else b"")
         h.update(json.dumps(cfg_map, sort_keys=True).encode())
         self.version = h.hexdigest()[:16]
@@ -158,9 +168,11 @@ class Campus:
         pgj = json.loads(files["paths"].read_text())["features"]
         manual = json.loads(man_path.read_text()) if man_path.exists() else []
         overrides = json.loads(ovr_path.read_text()) if ovr_path.exists() else {}
+        hgj = json.loads(files["building_holes"].read_text())["features"] if files["building_holes"].exists() else []
 
         self._build_paths(pgj)
         self._build_buildings(bgj, manual, overrides)
+        self._build_holes(hgj)
         self._build_entrances(egj, manual)
         self._build_rooms()
         self._build_entry_points()
@@ -248,6 +260,19 @@ class Campus:
         for i, n in enumerate(self.buildings["name"]):
             if n and n not in self._name_to_b:
                 self._name_to_b[n] = i
+
+    def _build_holes(self, hgj):
+        """Courtyards of multipolygon buildings (building_holes.geojson): open ground for routing only."""
+        osm_to_b = {o: i for i, o in enumerate(self.buildings["osm_id"]) if o}
+        self._holes = {}
+        for f in hgj:
+            b = osm_to_b.get(f["properties"]["building_id"])
+            if b is None:
+                continue
+            for poly in f["geometry"]["coordinates"]:
+                r = np.asarray(poly[0], float)
+                x, y = to_xy(r[:, 0], r[:, 1])
+                self._holes.setdefault(b, []).append(np.column_stack([x, y]))
 
     # ------------------------------------------------------------------ entrances
     def _build_entrances(self, egj, manual):
@@ -532,7 +557,7 @@ class Campus:
     def _build_paths(self, pgj):
         excl = set(self.cfg.get("exclude_highways", []))
         dp = int(self.cfg.get("node_round_dp", 7))
-        key_to_node, coords, eu, ev = {}, [], [], []
+        key_to_node, coords, eu, ev, ew = {}, [], [], [], []
         self._ways = []
         for f in pgj:
             hw = f["properties"].get("highway")
@@ -547,20 +572,28 @@ class Campus:
                     j = key_to_node[k] = len(coords)
                     coords.append(k)
                 ids.append(j)
+            wi = len(self._ways)
             self._ways.append((f, ids))
             for a, c in zip(ids, ids[1:]):
                 if a != c:
                     eu.append(a)
                     ev.append(c)
+                    ew.append(wi)
         ll = np.array(coords, float)
         x, y = to_xy(ll[:, 0], ll[:, 1])
         xy = np.column_stack([x, y])
-        eu, ev = np.array(eu), np.array(ev)
+        eu, ev, ew = np.array(eu), np.array(ev), np.array(ew)
+        # per-mode cost factor of each way (inf = not allowed); edges no mode may use are dropped
+        wf = {m: np.array([self._mode_factor(f["properties"], m) for f, _ in self._ways]) for m in MODES}
+        ok = np.zeros(len(eu), bool)
+        for m in MODES:
+            ok |= np.isfinite(wf[m][ew])
+        eu, ev, ew = eu[ok], ev[ok], ew[ok]
         n = len(coords)
         w = np.hypot(*(xy[eu] - xy[ev]).T)
         g = csr_matrix((np.r_[w, w] + 1e-9, (np.r_[eu, ev], np.r_[ev, eu])), shape=(n, n))
         ncomp, lab = connected_components(g, directed=False)
-        big = np.bincount(lab).argmax()
+        big = np.bincount(lab[np.r_[eu, ev]]).argmax()
         keep = np.flatnonzero(lab == big)
         remap = -np.ones(n, int)
         remap[keep] = np.arange(len(keep))
@@ -569,10 +602,41 @@ class Campus:
         self.node_ll = ll[keep]
         self.edges = np.column_stack([remap[eu[m]], remap[ev[m]]])
         self.edge_len = w[m]
+        self.edge_way = ew[m]
+        self.edge_f = {k: v[self.edge_way] for k, v in wf.items()}
         self._way_in_net = [bool(len(ids) and lab[ids[0]] == big) for _, ids in self._ways]
         self.P = len(keep)
         self._node_tree = cKDTree(self.node_xy)
         self.n_path_components = int(ncomp)
+
+    def _mode_factor(self, p, mode):
+        """Cost multiplier (>= ~0.8, inf = forbidden) of a way with OSM tags p for mode (map.json "modes")."""
+        mc = self.cfg["modes"][mode]
+        hw = p.get("highway")
+        f = float(mc["highway"].get(hw, mc["default"]))
+        own = p.get("foot" if mode == "walk" else "bicycle")
+        if hw in mc.get("forbid", ()) or own in ("no", "use_sidepath"):
+            return math.inf
+        if p.get("access") in ("private", "no") and own not in ("yes", "designated", "permissive"):
+            return math.inf
+        if own == "dismount":
+            return float(mc.get("dismount", math.inf))
+        if own == "designated":
+            f = min(f, float(mc["designated"]))
+        elif own in ("yes", "permissive"):
+            f = min(f, float(mc["allowed"]))
+        fw = p.get("footway")
+        if fw == "crossing":
+            f = min(f, float(mc["crossing"]))
+        elif fw == "sidewalk" and "sidewalk" in mc:
+            f = max(f, float(mc["sidewalk"]))
+        if hw in ROADS and mode == "walk":
+            sw = p.get("sidewalk:both") or p.get("sidewalk")
+            if sw in ("no", "none"):
+                f *= float(mc["no_sidewalk"])
+            elif sw == "separate":  # sidewalks are their own ways: walk on those, not the carriageway
+                f *= float(mc["separate_sidewalk"])
+        return f
 
     def _build_entry_points(self):
         rows = []
@@ -586,26 +650,230 @@ class Campus:
         self.entry_points = pd.DataFrame(rows)
 
     def _build_graph(self):
-        """Directed graph: path nodes [0,P) + entrance nodes [P,P+E) + src-super [.., +B) + dst-super [.., +B).
-        src-super -> entrances (out only), entrances -> dst-super (in only): buildings are never tunnels."""
+        """Per-mode directed graphs over path nodes [0,P) + entrance nodes [P,P+E) + src-super [.., +B) +
+        dst-super [.., +B). src-super -> entrances (out only), entrances -> dst-super (in only): buildings
+        are never tunnels. Each door is joined to the nearest point on a walkable edge whose straight
+        connector clears every building (the edge is split there); edges through buildings cost more."""
+        self._grid_build()
+        self._fix_fallback_doors()
+        self._attach_entrances()
+        self._penalize_through_buildings()
         P, E, B = self.P, len(self.entrances), self.B
-        _, acc = self._node_tree.query(np.column_stack([self.ent_x, self.ent_y]))
-        self.ent_access = acc.astype(np.int32)
+        acc = self.ent_access
         con = np.hypot(self.ent_x - self.node_xy[acc, 0], self.ent_y - self.node_xy[acc, 1])
+        self.ent_connector_m = con
         eidx = P + np.arange(E)
         self._off_src, self._off_dst = P + E, P + E + B
-        tiny = 1e-6
-        u = [self.edges[:, 0], self.edges[:, 1], eidx, acc, self._off_src + self.ent_b, eidx]
-        v = [self.edges[:, 1], self.edges[:, 0], acc, eidx, eidx, self._off_dst + self.ent_b]
-        w = [self.edge_len + tiny, self.edge_len + tiny, con + tiny, con + tiny, np.full(E, tiny), np.full(E, tiny)]
         n = P + E + 2 * B
-        self._G = csr_matrix((np.concatenate(w), (np.concatenate(u), np.concatenate(v))), shape=(n, n))
+        tiny = 1e-6
+        self._G, self._L = {}, {}
+        for m in MODES:
+            ok = np.isfinite(self.edge_f[m])
+            e0, e1, el = self.edges[ok, 0], self.edges[ok, 1], self.edge_len[ok]
+            cost = el * self.edge_f[m][ok] * self.edge_pen[ok]
+            u = np.concatenate([e0, e1, eidx, acc, self._off_src + self.ent_b, eidx])
+            v = np.concatenate([e1, e0, acc, eidx, eidx, self._off_dst + self.ent_b])
+            c = np.concatenate([cost, cost, con, con, np.zeros(E), np.zeros(E)]) + tiny
+            L = np.concatenate([el, el, con, con, np.zeros(E), np.zeros(E)])
+            # parallel ways between the same nodes: keep the cheapest (csr_matrix would sum them)
+            key = u.astype(np.int64) * n + v
+            o = np.lexsort((c, key))
+            first = np.r_[True, key[o][1:] != key[o][:-1]]
+            o = o[first]
+            self._G[m] = csr_matrix((c[o], (u[o], v[o])), shape=(n, n))
+            self._L[m] = csr_matrix((L[o] + tiny, (u[o], v[o])), shape=(n, n))
         self._gxy = np.vstack([self.node_xy, np.column_stack([self.ent_x, self.ent_y]),
                                np.full((2 * B, 2), np.nan)])
         self._sssp_cache = OrderedDict()
         self._row_cache = {}
         self._entry_nodes = set(self.entry_points["node"].tolist())
         self._targets = np.concatenate([self._off_dst + np.arange(B), self.entry_points["node"].to_numpy()])
+
+    # -- footprint raster: which indoor building (if any) covers each 1 m cell
+    def _grid_build(self):
+        res = float(self.cfg.get("footprint_grid_m", 1.0))
+        tags = self.buildings["osm_tag"].to_numpy()
+        solid = self.buildings["indoor"].to_numpy(bool) & ~np.isin(tags, list(self.cfg.get("open_building_tags", [])))
+        allxy = np.vstack([r for rings in self._rings for r in rings] + [self.node_xy])
+        x0, y0 = allxy.min(0) - 10
+        x1, y1 = allxy.max(0) + 10
+        nx, ny = int((x1 - x0) / res) + 1, int((y1 - y0) / res) + 1
+        grid = np.full((ny, nx), -1, np.int32)
+        xc = x0 + (np.arange(nx) + 0.5) * res
+        for b in np.flatnonzero(solid):
+            rings = self._rings[b]
+            ry = np.concatenate([r[:, 1] for r in rings])
+            j0, j1 = max(0, int((ry.min() - y0) / res)), min(ny - 1, int((ry.max() - y0) / res))
+            holes = self._holes.get(b, [])
+            for j in range(j0, j1 + 1):
+                yc = y0 + (j + 0.5) * res
+                for a, c in _scanline(rings, yc):
+                    i0, i1 = np.searchsorted(xc, [a, c])
+                    grid[j, i0:i1] = b
+                for h in holes:
+                    for a, c in _scanline([h], yc):
+                        i0, i1 = np.searchsorted(xc, [a, c])
+                        row = grid[j, i0:i1]
+                        row[row == b] = -1
+        self._grid, self._grid_o, self._grid_res = grid, (x0, y0), res
+
+    def building_at(self, x, y):
+        """Indoor building idx covering each point (-1 = open ground); x, y arrays (m)."""
+        x, y = np.asarray(x, float), np.asarray(y, float)
+        g, (x0, y0), res = self._grid, self._grid_o, self._grid_res
+        i = ((x - x0) / res).astype(np.int64)
+        j = ((y - y0) / res).astype(np.int64)
+        ok = (i >= 0) & (j >= 0) & (i < g.shape[1]) & (j < g.shape[0])
+        out = np.full(x.shape, -1, np.int32)
+        out[ok] = g[j[ok], i[ok]]
+        return out
+
+    def _clear(self, p, q, skip_m=0.5):
+        """True if the straight segment p->q (past its first skip_m meters) stays out of every building."""
+        L = math.hypot(q[0] - p[0], q[1] - p[1])
+        if L <= skip_m:
+            return True
+        s = np.arange(skip_m, L, 0.5 * self._grid_res) / L
+        return not (self.building_at(p[0] + s * (q[0] - p[0]), p[1] + s * (q[1] - p[1])) >= 0).any()
+
+    def _edge_index(self):
+        """KD-tree over points sampled every ~4 m along walkable edges -> candidate edges near a point."""
+        walk = np.flatnonzero(np.isfinite(self.edge_f["walk"]))
+        a, b = self.node_xy[self.edges[walk, 0]], self.node_xy[self.edges[walk, 1]]
+        k = np.maximum(1, np.ceil(self.edge_len[walk] / 4.0)).astype(int)
+        rep = np.repeat(np.arange(len(walk)), k + 1)
+        f = np.concatenate([np.linspace(0, 1, n + 1) for n in k])
+        pts = a[rep] + f[:, None] * (b[rep] - a[rep])
+        return cKDTree(pts), walk[rep]
+
+    def _project(self, x, y, eids):
+        a, b = self.node_xy[self.edges[eids, 0]], self.node_xy[self.edges[eids, 1]]
+        d = b - a
+        L2 = np.maximum((d ** 2).sum(1), 1e-12)
+        t = np.clip(((x - a[:, 0]) * d[:, 0] + (y - a[:, 1]) * d[:, 1]) / L2, 0, 1)
+        q = a + t[:, None] * d
+        return q, t, np.hypot(q[:, 0] - x, q[:, 1] - y)
+
+    def _best_attach(self, x, y, tree, owner):
+        """(edge, t, q, clear) of the nearest walkable-edge point reachable from (x, y) by a clear line."""
+        best = None
+        for R in self.cfg.get("connector_search_m", [30, 80, 200, 500]):
+            idx = tree.query_ball_point([x, y], R + 4.0)
+            if not idx:
+                continue
+            eids = np.unique(owner[idx])
+            q, t, d = self._project(x, y, eids)
+            o = np.argsort(d, kind="stable")
+            if best is None:
+                best = (int(eids[o[0]]), float(t[o[0]]), q[o[0]], False)
+            for j in o[:24]:
+                if d[j] > R:
+                    break
+                if self._clear((x, y), q[j]):
+                    return int(eids[j]), float(t[j]), q[j], True
+        return best
+
+    def _fix_fallback_doors(self):
+        """Fallback doors (no tagged door and no footpath within 12 m) and doors of hand-placed buildings
+        (data/manual_places.json, often overlapping OSM footprints) move to the outline point with the
+        shortest clear connector to a walkable edge."""
+        tree, owner = self._edge_index()
+        src = self.entrances["source"].to_numpy()
+        for e in np.flatnonzero(np.isin(src, ["fallback", "manual"])):
+            b = int(self.ent_b[e])
+            ring = max(self._rings[b], key=lambda r: abs(_ring_area(r)))
+            seg = np.hypot(*np.diff(ring, axis=0).T)
+            cum = np.r_[0, np.cumsum(seg)]
+            s = np.arange(0, cum[-1], 1.0)
+            k = np.clip(np.searchsorted(cum, s, side="right") - 1, 0, len(seg) - 1)
+            f = ((s - cum[k]) / np.maximum(seg[k], 1e-9))[:, None]
+            pts = ring[k] + f * (ring[k + 1] - ring[k])
+            d, _ = tree.query(pts)
+            for j in np.argsort(d, kind="stable")[:40]:
+                r = self._best_attach(pts[j, 0], pts[j, 1], tree, owner)
+                if r and r[3]:
+                    x, y = float(pts[j, 0]), float(pts[j, 1])
+                    lon, lat = to_ll(x, y)
+                    self.ent_x[e], self.ent_y[e] = x, y
+                    self.entrances.loc[e, ["x", "y", "lat", "lon"]] = [x, y, round(float(lat), 7), round(float(lon), 7)]
+                    break
+
+    def _attach_entrances(self):
+        """Join every door to a walkable edge (split at the attachment point); sets ent_access (node idx)."""
+        tree, owner = self._edge_index()
+        E = len(self.entrances)
+        att = [self._best_attach(float(self.ent_x[e]), float(self.ent_y[e]), tree, owner) for e in range(E)]
+        self.ent_clear = np.array([bool(a and a[3]) for a in att])
+        snap = float(self.cfg.get("split_snap_m", 0.5))
+        acc = np.zeros(E, np.int32)
+        splits = {}
+        for e, (eid, t, q, _) in enumerate(att):
+            u, v = self.edges[eid]
+            L = self.edge_len[eid]
+            if t * L <= snap:
+                acc[e] = u
+            elif (1 - t) * L <= snap:
+                acc[e] = v
+            else:
+                splits.setdefault(eid, []).append((t, e, q))
+        new_xy, new_edges, new_way, drop = [], [], [], []
+        nid = self.P
+        for eid in sorted(splits):
+            u, v = self.edges[eid]
+            chain = [int(u)]
+            last_t = -1.0
+            for t, e, q in sorted(splits[eid], key=lambda r: (r[0], r[1])):
+                if (t - last_t) * self.edge_len[eid] <= snap and len(chain) > 1:
+                    acc[e] = chain[-1]  # doors attaching (almost) at the same point share a node
+                    continue
+                new_xy.append(q)
+                chain.append(nid)
+                acc[e] = nid
+                nid += 1
+                last_t = t
+            chain.append(int(v))
+            drop.append(eid)
+            for a, c in zip(chain, chain[1:]):
+                new_edges.append((a, c))
+                new_way.append(self.edge_way[eid])
+        if new_xy:
+            keep = np.ones(len(self.edges), bool)
+            keep[drop] = False
+            self.node_xy = np.vstack([self.node_xy, np.asarray(new_xy)])
+            self.node_ll = np.vstack([self.node_ll, np.column_stack(to_ll(*np.asarray(new_xy).T))])
+            ne = np.asarray(new_edges, np.int64)
+            nw = np.asarray(new_way, np.int64)
+            fk = {m: f[keep] for m, f in self.edge_f.items()}
+            way_f = {m: np.full(len(self._ways), np.nan) for m in self.edge_f}
+            for m, f in self.edge_f.items():
+                way_f[m][self.edge_way] = f
+            self.edges = np.vstack([self.edges[keep], ne])
+            self.edge_way = np.concatenate([self.edge_way[keep], nw])
+            self.edge_len = np.hypot(*(self.node_xy[self.edges[:, 0]] - self.node_xy[self.edges[:, 1]]).T)
+            self.edge_f = {m: np.concatenate([fk[m], way_f[m][nw]]) for m in self.edge_f}
+            self.P = len(self.node_xy)
+            self._node_tree = cKDTree(self.node_xy)
+        self.ent_access = acc
+
+    def _penalize_through_buildings(self):
+        """edge_pen: map.json through_building_factor on edges running >= through_building_min_m inside an
+        indoor footprint, unless OSM marks the way as a passage (tunnel/covered/indoor/corridor/layer) or
+        map.json lists it in passage_ways."""
+        pen = float(self.cfg.get("through_building_factor", 1.0))
+        min_m = float(self.cfg.get("through_building_min_m", 3.0))
+        step = 0.5 * self._grid_res
+        k = np.maximum(1, np.ceil(self.edge_len / step)).astype(int)
+        rep = np.repeat(np.arange(len(self.edges)), k)
+        f = (np.arange(k.sum()) - np.repeat(np.cumsum(k) - k, k) + 0.5) / np.repeat(k, k)
+        a, b = self.node_xy[self.edges[rep, 0]], self.node_xy[self.edges[rep, 1]]
+        inside = self.building_at(*(a + f[:, None] * (b - a)).T) >= 0
+        m_in = np.bincount(rep, weights=inside * (self.edge_len[rep] / k[rep]), minlength=len(self.edges))
+        extra = set(self.cfg.get("passage_ways", []))
+        passage = np.array([_is_passage(f["properties"]) or f["properties"].get("id") in extra
+                            for f, _ in self._ways])[self.edge_way]
+        self.edge_passage = passage
+        self.edge_inside_m = m_in
+        self.edge_pen = np.where((m_in >= min_m) & ~passage, pen, 1.0)
 
     def _src_node(self, src):
         kind, val = src
@@ -625,34 +893,53 @@ class Campus:
             return self._off_dst + int(val), None, 0.0
         return self._src_node(dst)
 
-    def _sssp(self, s):
-        c = self._sssp_cache.get(s)
+    def _sssp(self, s, mode="walk"):
+        """(cost, predecessor, geometric length) from node s over mode's graph; costs pick the route,
+        lengths (meters along it) time it."""
+        ck = (mode, s)
+        c = self._sssp_cache.get(ck)
         if c is not None:
-            self._sssp_cache.move_to_end(s)
+            self._sssp_cache.move_to_end(ck)
             return c
-        d, pred = dijkstra(self._G, directed=True, indices=s, return_predecessors=True)
-        c = (d.astype(np.float64), pred.astype(np.int32))
-        self._sssp_cache[s] = c
+        d, pred = dijkstra(self._G[mode], directed=True, indices=s, return_predecessors=True)
+        pred = pred.astype(np.int64)
+        has = pred >= 0
+        w = np.zeros(len(pred))
+        w[has] = np.asarray(self._L[mode][pred[has], np.flatnonzero(has)]).ravel()
+        anc = np.where(has, pred, -1)
+        while (anc >= 0).any():  # pointer jumping: sum edge lengths up the shortest-path tree
+            m = anc >= 0
+            w2, a2 = w.copy(), anc.copy()
+            w2[m] += w[anc[m]]
+            a2[m] = anc[anc[m]]
+            w, anc = w2, a2
+        w[~np.isfinite(d)] = np.inf
+        c = (d.astype(np.float64), pred.astype(np.int32), w)
+        self._sssp_cache[ck] = c
         if len(self._sssp_cache) > int(self.cfg.get("route_cache_size", 512)):
             self._sssp_cache.popitem(last=False)
         if s >= self._off_src or s in self._entry_nodes:
-            self._row_cache[s] = c[0][self._targets]
+            self._row_cache[ck] = w[self._targets]
         return c
 
-    def route(self, src, dst):
+    def route(self, src, dst, mode="walk"):
         """Polyline (K,2) xy meters from src to dst along paths (door -> paths -> door) and its length (m).
-        src/dst: ("b", b) | ("e", entry idx) | ("xy", (x, y))."""
-        r = self.route_full(src, dst)
+        src/dst: ("b", b) | ("e", entry idx) | ("xy", (x, y)); mode: "walk" | "bike"."""
+        r = self.route_full(src, dst, mode)
         return r["xy"], r["length"]
 
-    def route_full(self, src, dst):
-        """route() plus the entrances used: dict(xy, length, src_entrance, dst_entrance) (entrance idx or -1)."""
+    def route_full(self, src, dst, mode="walk"):
+        """route() plus the entrances used and the mode actually routed (bike falls back to walk when the
+        bike network can't connect src and dst): dict(xy, length, src_entrance, dst_entrance, mode)."""
         s, sp, sd = self._src_node(src)
         t, tp, td = self._dst_node(dst)
         if src[0] == "b" and dst[0] == "b" and int(src[1]) == int(dst[1]):
             e = int(self._b_ents[int(src[1])][0])
-            return dict(xy=np.array([[self.ent_x[e], self.ent_y[e]]]), length=0.0, src_entrance=e, dst_entrance=e)
-        d, pred = self._sssp(s)
+            return dict(xy=np.array([[self.ent_x[e], self.ent_y[e]]]), length=0.0, src_entrance=e, dst_entrance=e,
+                        mode=mode)
+        d, pred, glen = self._sssp(s, mode)
+        if not np.isfinite(d[t]) and mode != "walk":
+            return self.route_full(src, dst, "walk")
         seq = []
         j = t
         while j >= 0:
@@ -668,31 +955,43 @@ class Campus:
             pts = np.vstack([[sp], pts])
         if tp is not None:
             pts = np.vstack([pts, [tp]])
-        length = float(d[t]) + sd + td
+        length = float(glen[t]) + sd + td
         se = ents[0] if src[0] == "b" and ents else -1
         de = ents[-1] if dst[0] == "b" and ents else -1
         if len(pts) == 1:
             pts = np.vstack([pts, pts])
-        return dict(xy=pts, length=length, src_entrance=se, dst_entrance=de)
+        return dict(xy=pts, length=length, src_entrance=se, dst_entrance=de, mode=mode)
 
-    def distance(self, src, dst) -> float:
-        """Path distance (m) between endpoints; building/entry rows cached for all sources."""
+    def distance(self, src, dst, mode="walk") -> float:
+        """Length (m) of the mode's route between endpoints (inf if that network can't connect them);
+        building/entry rows cached for all sources."""
         if src[0] == "b" and dst[0] == "b" and int(src[1]) == int(dst[1]):
             return 0.0
         if src[0] in ("b", "e") and dst[0] in ("b", "e"):
             ti = int(dst[1]) if dst[0] == "b" else self.B + int(dst[1])
             s = self._src_node(src)[0]
-            row = self._row_cache.get(s)
+            row = self._row_cache.get((mode, s))
             if row is None:  # symmetric network: reuse the reverse row if cached
-                row2 = self._row_cache.get(self._src_node(dst)[0])
-                if row2 is not None:
-                    return float(row2[int(src[1]) if src[0] == "b" else self.B + int(src[1])])
-                # compute the destination's row instead: destinations (dining, classes) repeat more
+                si = int(src[1]) if src[0] == "b" else self.B + int(src[1])
                 s2 = self._src_node(dst)[0]
-                self._sssp(s2)
-                return float(self._row_cache[s2][int(src[1]) if src[0] == "b" else self.B + int(src[1])])
+                row2 = self._row_cache.get((mode, s2))
+                if row2 is None:
+                    # compute the destination's row instead: destinations (dining, classes) repeat more
+                    self._sssp(s2, mode)
+                    row2 = self._row_cache[(mode, s2)]
+                return float(row2[si])
             return float(row[ti])
-        return self.route_full(src, dst)["length"]
+        return self.route_full(src, dst, mode)["length"]
+
+    def trip_mode(self, src, dst, owns_bike):
+        """("walk"|"bike", route length m): bike owners ride trips of at least modes.bike_min_trip_m that the
+        bike network connects; everyone else, and short hops, walk."""
+        dw = self.distance(src, dst, "walk")
+        if owns_bike and dw >= float(self.cfg["modes"]["bike_min_trip_m"]):
+            db = self.distance(src, dst, "bike")
+            if np.isfinite(db):
+                return "bike", db
+        return "walk", dw
 
     # ------------------------------------------------------------------ lookups
     def buildings_of_type(self, type_name) -> np.ndarray:
@@ -767,7 +1066,9 @@ class Campus:
         for (f, ids), innet in zip(self._ways, self._way_in_net):
             p = f["properties"]
             feats.append({"type": "Feature", "properties": {"id": p.get("id"), "highway": p.get("highway"),
-                                                            "name": p.get("name"), "in_network": innet},
+                                                            "name": p.get("name"), "in_network": innet,
+                                                            "walk": innet and math.isfinite(self._mode_factor(p, "walk")),
+                                                            "bike": innet and math.isfinite(self._mode_factor(p, "bike"))},
                           "geometry": f["geometry"]})
         with open(d / "paths.geojson", "w") as f:
             json.dump({"type": "FeatureCollection", "features": feats}, f)

@@ -6,7 +6,8 @@ Per agent and day we build "commitments" (classes, practice, lifts, evening labs
 home buffers) in absolute minutes, derive the awake window (or commuter on-campus windows), paint
 them into a per-agent segment-id row in priority order, fill the remaining awake gaps with flex
 blocks (library / dorm study / common room / gym / outdoor / lab / home), then insert transit
-("commute") steps before every building change using campus.distance / pop.speed_mps.
+("commute") steps before every building change, timed by campus.trip_mode (walk or bike, route length)
+at the agent's speed for that mode.
 All randomness is pre-drawn in fixed-shape arrays from the handed rng (deterministic).
 """
 from dataclasses import dataclass
@@ -493,19 +494,23 @@ def build_plans(cfg, campus, pop, sections, events, rng) -> Plans:
         ch = np.flatnonzero(bc[1:] != bc[:-1]) + 1
         if len(ch):
             e_i = int(entry_e[i]) if entry_e[i] >= 0 else 0
-            speed = float(pop.speed_mps[i])
+            owns_bike = bool(pop.transport[i] == 1)
+            spd_w = float((pop.walk_speed if pop.walk_speed is not None else pop.speed_mps)[i])
+            spd_b = float((pop.bike_speed if pop.bike_speed is not None else pop.speed_mps)[i])
             run_start = np.concatenate(([0], ch[:-1])).tolist()
             bcl = bc.tolist() if len(ch) > 64 else None
             for c, p0 in zip(ch.tolist(), run_start):
                 sb = bcl[c - 1] if bcl is not None else int(bc[c - 1])
                 db = bcl[c] if bcl is not None else int(bc[c])
-                key = (sb if sb >= 0 else -2 - e_i, db if db >= 0 else -2 - e_i)
-                dist = dist_cache.get(key)
-                if dist is None:
+                key = (sb if sb >= 0 else -2 - e_i, db if db >= 0 else -2 - e_i, owns_bike)
+                md = dist_cache.get(key)
+                if md is None:
                     src = ("b", sb) if sb >= 0 else ("e", e_i)
                     dst = ("b", db) if db >= 0 else ("e", e_i)
-                    dist = float(campus.distance(src, dst))
-                    dist_cache[key] = dist
+                    mode, dist = campus.trip_mode(src, dst, owns_bike)
+                    md = dist_cache[key] = (mode == "bike", float(dist))
+                dist = md[1]
+                speed = spd_b if md[0] else spd_w
                 k = int(math.ceil(dist / speed / step_s)) if dist > 0 else 1
                 k = min(k, c - p0 - 1)
                 if k <= 0:

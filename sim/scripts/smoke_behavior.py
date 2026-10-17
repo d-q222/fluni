@@ -161,7 +161,7 @@ def run(cfg, campus, pop, plans, rng, hooks=None, record=True):
     beh = Behavior(cfg, campus, pop, plans, rng)
     T = plans.act.shape[1]
     keys = ["room", "b", "x", "y", "floor", "indoor", "moving", "off_map", "act", "event", "section",
-            "entrance", "masked", "isolating", "trip_dist"]
+            "entrance", "masked", "isolating", "trip_dist", "transport", "speed"]
     buf = {k: [] for k in keys}
     sym = np.zeros(pop.N, bool)
     t0 = time.time()
@@ -200,8 +200,11 @@ def checks(cfg, campus, pop, plans, H, beh):
     td = H["trip_dist"]
     tr = (room[1:] == ROOM_TRANSIT) & (room[:-1] == ROOM_TRANSIT) & (np.diff(td, axis=0) > 0)
     adv = np.diff(td, axis=0) / step_s
-    ratio = adv[tr] / np.broadcast_to(pop.speed_mps, adv.shape)[tr]
-    chk("transit arc speed == pop.speed_mps", np.allclose(ratio, 1.0) if tr.any() else True,
+    ws, bs = getattr(pop, "walk_speed", None), getattr(pop, "bike_speed", None)
+    want = np.where(H["transport"] == 1, bs if bs is not None else pop.speed_mps,
+                    ws if ws is not None else pop.speed_mps)[1:]
+    ratio = adv[tr] / want[tr]
+    chk("transit arc speed == trip mode's speed", np.allclose(ratio, 1.0) if tr.any() else True,
         f"ratio min/max {ratio.min():.4f}/{ratio.max():.4f} (n={tr.sum()})" if tr.any() else "")
     late = (room == ROOM_TRANSIT) & (plans.act.T != ACT["commute"])
     early = H["act"] == ACT["arrived_early"]

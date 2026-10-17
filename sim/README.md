@@ -30,22 +30,45 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
+Agents move along the campus path network: footpaths, mapped sidewalks and crossings, and streets,
+from `data/osm/paths.geojson` (`data/osm/build_paths.py --fetch` refreshes it from Overpass).
+Each building's door is joined to the nearest walkable edge by a connector that doesn't cross another
+building. Paths that run through a footprint cost 5× unless OSM marks them as passages
+(covered/tunnel/indoor/layer) or `configs/map.json` lists them in `passage_ways` (the Main Quad
+arcades). Courtyards of multipolygon buildings (`data/osm/building_holes.geojson`, from
+`build_holes.py`) count as open ground.
+
+**Biking.** `transport_mode` in `agents_static.csv` says whether an agent owns a bike (`bike_p` per
+archetype in `configs/population.json`). Bike owners ride trips of at least 300 m
+(`map.modes.bike_min_trip_m`) on bike-legal ways (no steps, no `bicycle=no`; cycleways and streets
+preferred, sidewalks avoided) at `bike_mps`, and walk shorter hops at `walk_mps`. Per-mode edge
+costs are in `configs/map.json` → `modes`. In the timeline, `transport_mode` is the current trip's
+mode while moving.
+
+Every run also writes `trips.csv.gz`: one row per trip with its route polyline. `view.py` uses it to
+move agents along their route between steps (bikers are drawn as ◆). Without it, the 5-minute rows
+would be joined by straight lines that cut through buildings. Turn it off with
+`--set output.trips=false`.
+
 Every run also writes `timeline_changes.csv.gz`, the compact timeline the heat map asked for
 ([docs/timeline-changes-format.md](../docs/timeline-changes-format.md)): only rows where something
 changes plus the last row of each stay. It's about 5× smaller than `timeline.csv.gz`.
 
 ## Sample run
 
-`runs/influenza_none_n10_d14_s2_f1f772f6/` is a real 10-agent, 14-day run (one dorm plus one
-commuter, two infections seeded at t=0). It has a close-contact infection and an aerosol infection,
-a withheld self-report, a positive Vaden test, report_other events and a recovery. Point the heat map
-at it with `?data=../sim/runs/influenza_none_n10_d14_s2_f1f772f6/timeline.csv.gz`.
+`runs/influenza_none_n10_d14_s2_bc5cae7a/` is a real 10-agent, 14-day run (one dorm plus one
+commuter, two infections seeded at t=0). It has an aerosol infection, withheld self-reports, a
+positive Vaden test, report_other events, recoveries and walking and biking trips. Point the heat map
+at it with `?data=../sim/runs/influenza_none_n10_d14_s2_bc5cae7a/timeline.csv.gz`.
+
+`runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
+cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 
 ## Code
 
 | Module | Does |
 |---|---|
-| `campussim/campus.py` | OSM buildings, typed locations, procedural rooms, path graph + routing, entry points |
+| `campussim/campus.py` | OSM buildings, typed locations, procedural rooms, walk/bike path graphs + routing, door connectors, entry points |
 | `campussim/population.py` | agents and archetypes (studious, social, athlete, stem, commuter, homebody) |
 | `campussim/schedule.py` | class sections, parties, hangouts, games/large events, study groups |
 | `campussim/plans.py` | each agent's intended day: sleep, meals, classes, practice, flex, events, travel |
@@ -63,8 +86,9 @@ at it with `?data=../sim/runs/influenza_none_n10_d14_s2_f1f772f6/timeline.csv.gz
 
 ## Data
 
-- `data/osm/`: OpenStreetMap extract (buildings, entrances, paths; © OpenStreetMap contributors,
-  ODbL). `build.py` made it from an Overpass dump.
+- `data/osm/`: OpenStreetMap extract (buildings, entrances, paths, building holes; © OpenStreetMap
+  contributors, ODbL). `build.py` made buildings/entrances from an Overpass dump, `build_paths.py`
+  makes paths (with access tags), and `build_holes.py` makes courtyards.
 - `data/manual_places.json`: places missing from OSM (Green Library, Wilbur/Stern/FloMo dining,
   Frost Amphitheater, White Plaza, Meyer Green, the Oval, Engineering Quad, Main Quad courtyard,
   Lake Lagunita). Their ids are `bld_m_<slug>`.
@@ -79,6 +103,12 @@ at it with `?data=../sim/runs/influenza_none_n10_d14_s2_f1f772f6/timeline.csv.gz
 - **Too many `report_other` events** (about 50 per real self-report at full scale).
 - **Large output.** 7,500 agents × 7 days is 4.5 GB, of which 3.0 GB is `timeline_by_agent/` and
   657 MB `contacts.csv.gz`. Turn per-agent files off with `--set output.by_agent=false`.
+- **Small residual wall-crossing.** About 0.5 m per trip still runs through a footprint (500 agents,
+  2 days). Causes: a few untagged OSM footways through dorms (Lakeside/Admin, Fairclough), and
+  hand-placed areas in `data/manual_places.json` (Meyer Green, Engineering Quad, White Plaza) whose
+  rectangles overlap real buildings. Also, the leg from an agent's spot in the room to the door is a
+  straight line inside the building, since there are no corridors.
+- Bikes ignore one-way rules.
 - Infections on footpaths are labelled `unknown` in `summary.json` → `infections_by_location_type`.
 
 ## Mock run

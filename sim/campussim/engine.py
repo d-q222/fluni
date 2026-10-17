@@ -14,7 +14,7 @@ from .config import ROOT, code_version, config_hash
 from .contacts import contacts_frame, find_contacts
 from .disease import Disease, infections_frame, room_exposure_frame
 from .interventions import REGISTRY, apply_actions, build_observable
-from .output import RunWriter, TimelineChanges, timeline_frame
+from .output import RunWriter, TimelineChanges, timeline_frame, trips_frame
 from .plans import build_plans
 from .population import build_population
 from .reports import Reports, reports_frame
@@ -28,7 +28,7 @@ BUFFER_FIELDS = {  # name -> dtype of the (steps_per_day, N) day buffer
     "indoor": bool, "off_map": bool, "act": np.int8, "event": np.int32, "section": np.int32,
     "entrance": np.int32, "moving": bool, "state": np.int8, "dsi": np.float64, "inf": np.float64,
     "symptomatic": bool, "severity": np.float64, "masked": bool, "self_status": np.int8,
-    "test_status": np.int8, "isolating": bool, "action": object,
+    "test_status": np.int8, "isolating": bool, "action": object, "transport": np.int8,
 }
 
 
@@ -125,7 +125,7 @@ def run(cfg, external_provider=None, quiet=False):
                           ("symptomatic", dis.symptomatic), ("severity", dis.severity),
                           ("masked", beh.masked), ("self_status", rep.self_status),
                           ("test_status", rep.test_status), ("isolating", beh.isolating),
-                          ("action", action_col)):
+                          ("action", action_col), ("transport", beh.transport)):
             buf[name][k] = val
 
         if len(contacts["a"]):
@@ -141,6 +141,8 @@ def run(cfg, external_provider=None, quiet=False):
             if contact_frames:
                 writer.append("contacts", pd.concat(contact_frames, ignore_index=True))
             writer.append("room_exposure", pd.concat(exposure_frames, ignore_index=True))
+            if writer.ocfg["trips"]:
+                writer.append("trips", trips_frame(beh.drain_trips(final=t == T - 1), pop.agent_id))
             contact_frames, exposure_frames = [], []
             n_inf = int(np.isin(dis.state, codes.INFECTIOUS_STATES).sum())
             log(f"day {t // spd + 1}/{rc['days']} done; infectious now {n_inf}, "

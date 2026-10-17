@@ -2,7 +2,9 @@
 
 Per step: desired (room, act, event) = plan, then overrides (isolation > Vaden > leave_location >
 carry-on drops > plan). Room changes inside a building are instant; building changes are trips along
-campus.route at pop.speed_mps. In-room positions follow the room layout and stay fixed during a visit
+campus.route in the trip's mode (campus.trip_mode: bike owners ride longer trips, everyone walks short
+ones) at the agent's speed for that mode. Every trip is logged with its polyline (drain_trips ->
+trips.csv.gz) so viewers can move agents along the route between steps. In-room positions follow the room layout and stay fixed during a visit
 (mingle offsets are re-sampled periodically). Masks are drawn per visit / activity change.
 The common path (stationary agents) is vectorized; Python loops only touch travelers, room changers,
 mingle re-samples and override agents.
@@ -112,7 +114,18 @@ class Behavior:
         ep = cp.entry_points
         self._ep_xy = np.column_stack([ep["x"].to_numpy(float), ep["y"].to_numpy(float)])
         self._entry_e = np.asarray(pop.entry_e, np.int64).copy()
-        self.speed = np.asarray(pop.speed_mps, float)
+        self.speed = np.asarray(pop.speed_mps, float).copy()   # speed of the current trip
+        ws, bs = getattr(pop, "walk_speed", None), getattr(pop, "bike_speed", None)
+        self.walk_speed = np.asarray(ws if ws is not None else pop.speed_mps, float)
+        self.bike_speed = np.asarray(bs if bs is not None else pop.speed_mps, float)
+        self.own_mode = np.asarray(getattr(pop, "transport", np.zeros(N)), np.int8)
+        self.transport = self.own_mode.copy()   # public: current trip's mode while moving, else own mode
+        self._trip_open = {}    # i -> trip record (see _log_trip)
+        self._trip_done = []
+        self._trip_new = []
+        self._next_trip = 0
+        self._loc_b = cp.buildings["location_id"].tolist()
+        self._loc_e = ep["entry_id"].tolist()
         # stats for validation
         self.n_trips = 0
         self.n_reroutes = 0
@@ -329,9 +342,12 @@ class Behavior:
 
     def _start_trip(self, i, t, des, from_xy, dxy):
         at = self._at[i]
+        mode = None
         if from_xy:
             p0 = (float(self.x[i]), float(self.y[i]))
             src = ("xy", p0)
+            mode = codes.TRANSPORT[self.transport[i]]   # re-routes keep the mode of the trip under way
+            self._end_trip(i, t, "rerouted")
         elif at >= 0:
             p0 = (float(self.x[i]), float(self.y[i]))
             src = ("b", int(self.r_b[at]))
@@ -345,7 +361,12 @@ class Behavior:
             e = self._entry(i, p0[0], p0[1])
             dst = ("e", e)
             dxy = self._ep_xy[e]
-        poly, se, de = self._route(src, dst)
+        if mode is None:
+            mode = self.campus.trip_mode(src, dst, bool(self.own_mode[i]))[0] if hasattr(self.campus, "trip_mode") else "walk"
+        poly, se, de, mode = self._route(src, dst, mode)
+        m = codes.TRANSPORT.index(mode)
+        self.transport[i] = m
+        self.speed[i] = self.bike_speed[i] if mode == "bike" else self.walk_speed[i]
         pts = np.vstack([np.asarray(p0)[None], poly, np.asarray(dxy, float)[None]])
         seg = np.hypot(np.diff(pts[:, 0]), np.diff(pts[:, 1]))
         cum = np.concatenate([[0.0], np.cumsum(seg)])
@@ -359,24 +380,71 @@ class Behavior:
         self._dest[i] = des
         self.n_trips += 1
         self._set_trip_pos(i)
+        self._log_trip(i, t, m, src, dst, pts, float(cum[-1]))
 
-    def _route(self, src, dst):
-        """(polyline (K,2), src entrance, dst entrance); building/entry-point pairs cached."""
-        key = None if src[0] == "xy" else (src[0], int(src[1]), dst[0], int(dst[1]))
+    def _route(self, src, dst, mode="walk"):
+        """(polyline (K,2), src entrance, dst entrance, mode routed); building/entry-point pairs cached."""
+        key = None if src[0] == "xy" else (src[0], int(src[1]), dst[0], int(dst[1]), mode)
         hit = self._route_cache.get(key) if key else None
         if hit is not None:
             return hit
         cp = self.campus
         if hasattr(cp, "route_full"):
-            rf = cp.route_full(src, dst)
+            try:
+                rf = cp.route_full(src, dst, mode)
+            except TypeError:  # campus stand-ins without modes
+                rf = cp.route_full(src, dst)
             poly, se, de = rf["xy"], int(rf.get("src_entrance", -1)), int(rf.get("dst_entrance", -1))
+            mode = rf.get("mode", mode)
         else:
             poly, _ = cp.route(src, dst)
             se = de = -1
-        res = (np.asarray(poly, float).reshape(-1, 2), se, de)
+        res = (np.asarray(poly, float).reshape(-1, 2), se, de, mode)
         if key:
             self._route_cache[key] = res
         return res
+
+    # ------------------------------------------------------------------ trip log
+    def _loc_id(self, ep):
+        kind, v = ep
+        return self._loc_b[int(v)] if kind == "b" else self._loc_e[int(v)] if kind == "e" else ""
+
+    def _log_trip(self, i, t, mode, src, dst, pts, length):
+        # [trip_id, agent, t_start, t_end, mode, speed, start_m, length, outcome, from, to, xy]
+        self._trip_open[i] = [self._next_trip, i, t, -1, mode, float(self.speed[i]), None, length, "",
+                              self._loc_id(src), self._loc_id(dst), pts]
+        self._next_trip += 1
+        self._trip_new.append(i)
+
+    def _end_trip(self, i, t, outcome):
+        rec = self._trip_open.pop(i, None)
+        if rec is None:
+            return
+        if rec[6] is None:  # ended in the step it started: started where it ended up
+            rec[6] = min(float(self._trips[i][4]), rec[7]) if i in self._trips else rec[7]
+        rec[3], rec[8] = t, outcome
+        self._trip_done.append(rec)
+
+    def _note_trip_starts(self):
+        """start_m = meters along the polyline at the end of the trip's first step (after any advance)."""
+        for i in self._trip_new:
+            rec = self._trip_open.get(i)
+            if rec is not None and rec[6] is None and i in self._trips:
+                rec[6] = float(self._trips[i][4])
+        self._trip_new = []
+
+    def drain_trips(self, final=False):
+        """Finished trips (all, open ones as "unfinished", when final) in trip_id order, as records
+        [trip_id, agent, t_start, t_end, mode, speed, start_m, length, outcome, from, to, xy (K,2)].
+        Holds back trips newer than the oldest still-open one so ids come out in order."""
+        if final:
+            for i in list(self._trip_open):
+                self._end_trip(i, self.t, "unfinished")
+        done = sorted(self._trip_done, key=lambda r: r[0])
+        lim = min((r[0] for r in self._trip_open.values()), default=None)
+        k = len(done) if lim is None else next((j for j, r in enumerate(done) if r[0] > lim), len(done))
+        out, self._trip_done = done[:k], done[k:]
+        return out
 
     def _set_trip_pos(self, i):
         xs, ys, cum, total, d = self._trips[i][:5]
@@ -434,6 +502,7 @@ class Behavior:
                 self._advance(np.flatnonzero(self._trav), t)
 
         self._finalize(t, des, dact, ovr, pa, pe, ps, symptomatic)
+        self._note_trip_starts()
 
     def _place_initial(self, t, des, pe):
         self._t0_done = True
@@ -462,8 +531,10 @@ class Behavior:
                 self._set_trip_pos(i)
 
     def _arrive(self, i):
+        self._end_trip(i, self.t, "arrived")
         xs, ys, cum, total, _, de = self._trips.pop(i)
         des = self._dest[i]
+        self.transport[i] = self.own_mode[i]
         self._trav[i] = False
         self._at[i] = des
         self._mask_draw[i] = True

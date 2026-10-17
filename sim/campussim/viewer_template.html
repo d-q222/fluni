@@ -207,6 +207,8 @@ const MOV_TRUE = dictIndex("moving", "True");
 const st = COL.disease_state ? decodeCat(COL.disease_state) : new Uint8Array(K * F);
 const flo = COL.floor ? decodeCat(COL.floor) : new Uint8Array(K * F);
 const room = COL.room_id ? decodeCat(COL.room_id) : null;
+const trm = COL.transport_mode ? decodeCat(COL.transport_mode) : null;
+const BIKE = dictIndex("transport_mode", "bike");
 // state dict code -> canonical state index
 const stIdx = (COL.disease_state ? COL.disease_state.dict : []).map(s => M.states.indexOf(s));
 const stColor = (COL.disease_state ? COL.disease_state.dict : []).map(s => STATE_COLORS[s] || "#888");
@@ -337,8 +339,39 @@ function resizeCanvas() {
 map.on("resize", resizeCanvas); map.on("move", () => needDraw = true);
 const scrX = new Float32Array(K), scrY = new Float32Array(K), onScr = new Uint8Array(K);
 
+// ---------------------------------------------------------------- trips (route polylines)
+// A trip covers steps [ts-1, te]: room -> door during its first step (0 -> sm meters), then sm + v*dt
+// along the route, clamped at the end (the in-room spot). Later trips win where they overlap (re-routes).
+const TR = D.trips, agentTrips = Array.from({ length: K }, () => []), trips = [];
+if (TR) {
+  let p = 0;
+  for (let j = 0; j < TR.k.length; j++) {
+    const n = TR.n[j], xs = new Float64Array(n), ys = new Float64Array(n), cum = new Float64Array(n);
+    let lo = 0, la = 0;
+    for (let q = 0; q < n; q++, p += 2) { lo += TR.pts[p]; la += TR.pts[p + 1]; xs[q] = lo / 1e6; ys[q] = la / 1e6;
+      if (q) cum[q] = cum[q - 1] + Math.hypot((xs[q] - xs[q - 1]) * KX, (ys[q] - ys[q - 1]) * KY); }
+    const t = { ts: TR.ts[j], te: TR.te[j], sm: TR.sm[j] / 100, v: TR.v[j] / 1e4 * M.step_min * 60, bike: TR.bike[j], xs, ys, cum };
+    trips.push(t); agentTrips[TR.k[j]].push(t);
+  }
+}
+function tripAt(k, tau) {   // latest trip of agent k covering continuous step tau
+  const L = agentTrips[k]; let lo = 0, hi = L.length - 1, best = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (L[m].ts - 1 <= tau) { best = m; lo = m + 1; } else hi = m - 1; }
+  for (let j = best; j >= 0 && j > best - 4; j--) if (tau <= L[j].te) return L[j];
+  return null;
+}
+function tripLL(t, tau) {
+  const tot = t.cum[t.cum.length - 1];
+  const d = tau < t.ts ? t.sm * (tau - t.ts + 1) : Math.min(tot, t.sm + t.v * (tau - t.ts));
+  const c = t.cum; let lo = 0, hi = c.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c[m] <= d) lo = m; else hi = m; }
+  const s = c[hi] - c[lo], f = s > 0 ? Math.max(0, Math.min(1, (d - c[lo]) / s)) : 0;
+  return [t.xs[lo] + f * (t.xs[hi] - t.xs[lo]), t.ys[lo] + f * (t.ys[hi] - t.ys[lo])];
+}
+
 function agentLL(k, f, a) {
   const i = k * F + f;
+  if (trips.length && offm[i] !== OFF_TRUE) { const t = tripAt(k, M.frames_t[f] + a * M.stride); if (t) return tripLL(t, M.frames_t[f] + a * M.stride); }
   if (offm[i] === OFF_TRUE || posnull[i]) return null;
   let la = lat[i], lo = lon[i];
   if (a > 0 && f + 1 < F) { const j = i + 1; if (offm[j] !== OFF_TRUE && !posnull[j]) { la += (lat[j] - la) * a; lo += (lon[j] - lo) * a; } }
@@ -366,14 +399,21 @@ function draw() {
     const si = stIdx[st[k * F + f]]; order[si === 0 || si === 5 ? 0 : 1].push(k);
   }
   for (const grp of order) for (const k of grp) {
-    const i = k * F + f, moving = mov[i] === MOV_TRUE;
+    const i = k * F + f, moving = mov[i] === MOV_TRUE, bike = moving && trm && trm[i] === BIKE;
     const dim = filtFloor && catStr("floor", flo[i]) !== filtFloor;
     ctx.globalAlpha = dim ? 0.22 : 1;
-    ctx.beginPath(); ctx.arc(scrX[k], scrY[k], moving ? r * 0.72 : r, 0, 6.2832);
+    ctx.beginPath();
+    if (bike) { const q = r * 1.05; ctx.moveTo(scrX[k], scrY[k] - q); ctx.lineTo(scrX[k] + q, scrY[k]); ctx.lineTo(scrX[k], scrY[k] + q); ctx.lineTo(scrX[k] - q, scrY[k]); ctx.closePath(); }
+    else ctx.arc(scrX[k], scrY[k], moving ? r * 0.72 : r, 0, 6.2832);
     ctx.fillStyle = stColor[st[i]]; ctx.fill();
     ctx.lineWidth = moving ? 1.4 : 0.8; ctx.strokeStyle = moving ? "#1d2430" : "rgba(255,255,255,0.9)"; ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  if (sel >= 0 && trips.length) {   // selected agent's current route
+    const t = tripAt(sel, M.frames_t[f] + a * M.stride);
+    if (t) { ctx.beginPath(); for (let q = 0; q < t.xs.length; q++) { const p = map.project([t.xs[q], t.ys[q]]); q ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
+      ctx.lineWidth = 2.5; ctx.strokeStyle = t.bike ? "rgba(38,110,200,0.8)" : "rgba(30,30,30,0.6)"; ctx.setLineDash(t.bike ? [] : [5, 4]); ctx.stroke(); ctx.setLineDash([]); }
+  }
   if (sel >= 0 && onScr[sel]) {
     ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.stroke();
     ctx.beginPath(); ctx.arc(scrX[sel], scrY[sel], r + 5, 0, 6.2832); ctx.lineWidth = 1.6; ctx.strokeStyle = "#111"; ctx.stroke();
@@ -402,12 +442,13 @@ const legend = document.getElementById("legend");
 legend.innerHTML = `<tr><td></td><th>shown</th><th>population</th></tr>` + M.states.map((s, i) =>
   `<tr><td><span class="sw" style="background:${STATE_COLORS[s]}"></span>${s}</td><td class="n" id="cs${i}"></td><td class="n" id="cp${i}"></td></tr>`).join("");
 function updateCounts(f) {
-  const cs = new Array(6).fill(0); let off = 0, movn = 0, shown = 0;
+  const cs = new Array(6).fill(0); let off = 0, movn = 0, bikes = 0, shown = 0;
   for (let k = 0; k < K; k++) { if (!visible[k]) continue; const i = k * F + f; shown++;
-    if (offm[i] === OFF_TRUE || posnull[i]) { off++; continue; } cs[stIdx[st[i]]]++; if (mov[i] === MOV_TRUE) movn++; }
+    if (offm[i] === OFF_TRUE || posnull[i]) { off++; continue; } cs[stIdx[st[i]]]++;
+    if (mov[i] === MOV_TRUE) { movn++; if (trm && trm[i] === BIKE) bikes++; } }
   const t = M.frames_t[f];
   for (let s = 0; s < 6; s++) { document.getElementById("cs" + s).textContent = cs[s]; document.getElementById("cp" + s).textContent = D.counts[t * 6 + s]; }
-  document.getElementById("extra-counts").textContent = `${shown} agents in view filter · ${off} off-map (hidden) · ${movn} moving`;
+  document.getElementById("extra-counts").textContent = `${shown} agents in view filter · ${off} off-map (hidden) · ${movn} moving (● ${movn - bikes} walking, ◆ ${bikes} biking)`;
 }
 let litRooms = [];
 function updateRooms(f) {

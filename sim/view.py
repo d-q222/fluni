@@ -3,7 +3,7 @@
     python view.py runs/<run_id> [--no-open] [--max-agents N] [--stride K] [--out file]
 
 Reads only the run folder (timeline.parquet or timeline.csv.gz, agents_static.csv, map/*,
-infections.csv, config.json) and writes <run>/viewer.html with all data embedded as compact JSON
+infections.csv, config.json, trips.csv.gz if present) and writes <run>/viewer.html with all data embedded as compact JSON
 (works from file://). Large runs are subsampled: a deterministic agent subset (--max-agents,
 default 1500) and every K-th step (--stride, auto so agents x frames <= ~3M).
 
@@ -13,6 +13,8 @@ Encoding (decoded by campussim/viewer_template.html):
   * categorical columns -> dictionary codes; numeric columns -> quantized ints whose first
     differences are run-length encoded (stationary/linear stretches collapse). Null -> sentinel.
   * x_local_m / y_local_m are re-derived from lat/lon in the browser (campus-local frame).
+  * trips.csv.gz (route polylines) lets the viewer move travelers along their footpath route between
+    steps instead of in a straight line through buildings.
 """
 import argparse
 import json
@@ -475,6 +477,26 @@ def _ffill_null(M):
     return out
 
 
+def encode_trips(run, sel_ids):
+    """Trips of the embedded agents: parallel int arrays + flat delta-coded lon/lat (1e-6 deg)."""
+    p = os.path.join(run, "trips.csv.gz")
+    if not os.path.exists(p):
+        return None
+    tr = pd.read_csv(p, dtype={"agent_id": str, "path": str, "mode": str}, keep_default_na=False)
+    kof = {a: k for k, a in enumerate(sel_ids)}
+    tr = tr[tr["agent_id"].isin(kof)].sort_values("trip_id", kind="stable")
+    out = {"k": [], "ts": [], "te": [], "sm": [], "v": [], "bike": [], "n": [], "pts": []}
+    for r in tr.itertuples(index=False):
+        ll = np.round(np.array([[float(v) for v in q.split()] for q in r.path.split(";")]) * 1e6).astype(np.int64)
+        d = np.diff(ll, axis=0, prepend=np.zeros((1, 2), np.int64))
+        out["k"].append(kof[r.agent_id]); out["ts"].append(int(r.t_start)); out["te"].append(int(r.t_end))
+        out["sm"].append(int(round(float(r.start_m) * 100))); out["v"].append(int(round(float(r.speed_mps) * 1e4)))
+        out["bike"].append(1 if r.mode == "bike" else 0); out["n"].append(len(ll))
+        out["pts"].extend(d.ravel().tolist())
+    log(f"trips: {len(out['k']):,} for {len(set(out['k']))} agents")
+    return out
+
+
 def to_json(enc, mapdata):
     """Serialize to compact JSON (big int arrays written directly)."""
     parts = ['{"meta":', json.dumps(enc["meta"], separators=(",", ":")),
@@ -492,7 +514,7 @@ def to_json(enc, mapdata):
     parts.append('],"posnull":{"runs":' + ints_json(enc["posnull"][0]) + ',"offs":' + ints_json(enc["posnull"][1]) + "}")
     parts.append(',"counts":' + ints_json(enc["counts"].ravel()))
     rest = {"occ": enc["occ"], "static_cols": enc["static_cols"], "static_rows": enc["static_rows"],
-            "inf_cols": enc["inf_cols"], "inf_rows": enc["inf_rows"], "map": mapdata}
+            "inf_cols": enc["inf_cols"], "inf_rows": enc["inf_rows"], "map": mapdata, "trips": enc.get("trips")}
     for k, v in rest.items():
         parts.append(f',"{k}":' + json.dumps(v, separators=(",", ":")))
     parts.append("}")
@@ -513,6 +535,7 @@ def main(argv=None):
         sys.exit(f"not a run folder: {run}")
     t0 = time.time()
     enc = encode(run, a.max_agents, a.stride or None, a.seed)
+    enc["trips"] = encode_trips(run, enc["agents"])
     mapdata = build_map(run)
     payload = to_json(enc, mapdata)
     with open(TEMPLATE, encoding="utf-8") as f:

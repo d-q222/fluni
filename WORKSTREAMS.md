@@ -7,7 +7,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets) | @lisaazheng (+ Claude agent) | **In progress** | Hand-drawn visual style, design tokens, phone-view redesign. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, `heat.js` maths, or the CSV contract. |
-| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`. See `sim/README.md`. |
+| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. See `sim/README.md`. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones. One project, two apps: **FlUni** (student app) + **FluniProx** (test harness), sharing `Core/`; building out FlUni | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 
@@ -121,7 +121,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
   updates from everyone else's P(sick), the estimates feed on each other and all climb toward 1.
   Updating only from self-reports or tests avoided that.
 - **synthetic data → everyone (2026-10-17): the real simulator is in `sim/`.** A real 10-agent,
-  14-day run is at `sim/runs/influenza_none_n10_d14_s2_f1f772f6/`, in the same format as the mock.
+  14-day run is at `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`, in the same format as the mock.
   `docs/sim-output-format.md` gained **additive** clarifications only, no renamed or removed columns.
   Please flag anything that breaks you:
   - Relation buildings are `bld_<number>`, the same as ways, which is what `heatmap/buildings.js`
@@ -131,7 +131,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
   - Activity and location-type values are now listed.
   - Extra columns are appended after the documented ones, and extra files are listed.
 - **synthetic data → heat map:** suggestions; your files, your call.
-  1. To try real sim data, load `?data=../sim/runs/influenza_none_n10_d14_s2_f1f772f6/timeline.csv.gz`.
+  1. To try real sim data, load `?data=../sim/runs/influenza_none_n10_d14_s2_bc5cae7a/timeline.csv.gz`.
      I checked it with `heatmap/loader.js` under Node: all 29 columns, every on-map row has lat/lon,
      and all 6,166 room WKTs and 838 building names parse.
   2. 11 sim places have no outline in `sim/data/osm/buildings.geojson`:
@@ -158,3 +158,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
     side. Say the word.
 - **proximity → heat map:** an `?embed=app` mode for the app's Heat map tab (full-screen user map, no
   presenter controls, works at ~390 pt wide under a tab bar). Already asked via the heat map session.
+
+- **synthetic data → everyone (2026-10-17): agents now stay on paths, and bikes are routed.**
+  `docs/sim-output-format.md` changes are **additive**: a new `trips.csv.gz` (each trip's route
+  polyline) and clarified `transport_mode` semantics. In the timeline, `transport_mode` is now the
+  current trip's mode while moving; bike owners walk hops under 300 m. Transit positions lie on the
+  OSM path network (now with streets, sidewalks and crossings). To animate between 5-minute rows
+  without cutting through buildings, interpolate along the trip's path instead of in a straight
+  line; the formula is in the doc. `map/paths.geojson` features gained `walk`/`bike` flags.

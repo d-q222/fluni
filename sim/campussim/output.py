@@ -24,7 +24,7 @@ from . import codes, geo
 DEFAULTS = {
     "by_agent": True, "parquet": True, "by_agent_max_open": 512, "by_agent_buffer_mb": 512,
     "gzip_level": 6, "gzip_threads": 8, "gzip_block_mb": 8, "chunk_rows": 262144,
-    "parquet_compression": "zstd",
+    "parquet_compression": "zstd", "trips": True,
 }
 
 TIMELINE_COLUMNS = [
@@ -57,9 +57,15 @@ STREAM_SCHEMAS = {
                       ("infectious_occupants", "int", "int32"), ("quanta_concentration", 6, "float64")],
 }
 STREAM_SCHEMAS["timeline_changes"] = STREAM_SCHEMAS["timeline"]
+# one row per trip; path = "lon lat;lon lat;..." (door -> footpaths -> door, ends at the in-room spot)
+STREAM_SCHEMAS["trips"] = [
+    ("trip_id", "int", "int64"), ("agent_id", "str", "string"), ("t_start", "int", "int32"),
+    ("t_end", "int", "int32"), ("mode", "str", "string"), ("speed_mps", 6, "float64"),
+    ("start_m", 2, "float64"), ("length_m", 2, "float64"), ("outcome", "str", "string"),
+    ("from_id", "str", "string"), ("to_id", "str", "string"), ("path", "str", "string")]
 STREAM_SORT = {"timeline": ["t", "agent_id"], "timeline_changes": ["t", "agent_id"],
-               "contacts": ["t", "agent_a", "agent_b"], "room_exposure": ["t", "room_id"]}
-NO_PARQUET_STREAMS = {"timeline_changes"}  # docs/timeline-changes-format.md asks for csv.gz only
+               "contacts": ["t", "agent_a", "agent_b"], "room_exposure": ["t", "room_id"], "trips": ["trip_id"]}
+NO_PARQUET_STREAMS = {"timeline_changes", "trips"}  # docs/timeline-changes-format.md asks for csv.gz only
 # docs/timeline-changes-format.md: a row is kept when any of these differ from the agent's previous row
 CHANGE_COLUMNS = ["lat", "lon", "location_id", "room_id", "floor", "indoor", "off_map", "moving",
                   "disease_state", "self_reported_status", "test_status", "isolating", "activity"]
@@ -634,7 +640,9 @@ def timeline_frame(t0, t1, buffers, campus, pop, events, sections, step_timestam
 
     ts = list(step_timestamps)
     ts_arr = np.asarray(ts[t0:t1] if len(ts) >= t1 else ts[:steps], dtype=object)
-    tr_v = np.asarray(codes.TRANSPORT, dtype=object)[np.asarray(pop.transport, dtype=np.int64)]
+    tr = g("transport")  # per-step mode (current trip while moving); older callers: agent's own mode
+    tr_v = (np.asarray(codes.TRANSPORT, dtype=object)[tr.astype(np.int64)] if tr is not None else
+            np.tile(np.asarray(codes.TRANSPORT, dtype=object)[np.asarray(pop.transport, dtype=np.int64)][order], steps))
     ids_sorted = ids[order]
 
     action = g("action")
@@ -660,7 +668,7 @@ def timeline_frame(t0, t1, buffers, campus, pop, events, sections, step_timestam
         "activity": act_v[g("act").astype(np.int64)],
         "event_id": event_id,
         "moving": g("moving", np.zeros(n, bool)).astype(bool) | transit,
-        "transport_mode": np.tile(tr_v[order], steps),
+        "transport_mode": tr_v,
         "disease_state": st_v[state],
         "days_since_infection": dsi,
         "infectiousness": np.asarray(g("inf", np.zeros(n)), dtype=np.float64),
@@ -673,6 +681,25 @@ def timeline_frame(t0, t1, buffers, campus, pop, events, sections, step_timestam
         "intervention_action": action,
     }
     return pd.DataFrame(cols, columns=TIMELINE_COLUMNS, copy=False)
+
+
+def trips_frame(records, agent_ids):
+    """Behavior.drain_trips() records -> trips stream DataFrame."""
+    cols = [c for c, _, _ in STREAM_SCHEMAS["trips"]]
+    if not records:
+        return pd.DataFrame({c: [] for c in cols})
+    ids = np.asarray(agent_ids, dtype=object)
+    paths = []
+    for r in records:
+        lon, lat = geo.to_ll(r[11][:, 0], r[11][:, 1])
+        paths.append(";".join(f"{a:.7f} {b:.7f}" for a, b in zip(lon.tolist(), lat.tolist())))
+    return pd.DataFrame({
+        "trip_id": [r[0] for r in records], "agent_id": ids[[r[1] for r in records]],
+        "t_start": [r[2] for r in records], "t_end": [r[3] for r in records],
+        "mode": [codes.TRANSPORT[r[4]] for r in records], "speed_mps": [r[5] for r in records],
+        "start_m": [r[6] for r in records], "length_m": [r[7] for r in records],
+        "outcome": [r[8] for r in records], "from_id": [r[9] for r in records], "to_id": [r[10] for r in records],
+        "path": paths}, columns=cols)
 
 
 # ----------------------------------------------------------------------------- compact timeline

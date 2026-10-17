@@ -35,7 +35,7 @@ class Population:
     team_id: np.ndarray
     teams: list
     transport: np.ndarray
-    speed_mps: np.ndarray
+    speed_mps: np.ndarray              # speed of the agent's own mode (transport)
     mask_propensity: np.ndarray
     compliance: np.ndarray
     honesty: np.ndarray
@@ -49,6 +49,8 @@ class Population:
     fav_common: np.ndarray
     class_schedule: list
     arch_params: dict                   # cfg["population"]["archetypes"]
+    walk_speed: np.ndarray = None       # per-mode speeds (m/s); None -> speed_mps for both
+    bike_speed: np.ndarray = None
     FLEX_KEYS: list = field(default_factory=lambda: list(FLEX_KEYS))
     _param_cache: dict = field(default_factory=dict, repr=False)
     _param_keys: dict = field(default_factory=dict, repr=False)
@@ -380,6 +382,8 @@ def build_population(cfg, campus, rng) -> Population:
     base = np.where(transport == 1, pcfg.get("bike_mps", 4.5), pcfg.get("walk_mps", 1.3))
     jit = np.clip(rng.normal(1.0, pcfg.get("speed_jitter_sd", 0.1), N), 0.7, 1.3)
     speed = base * jit
+    walk_speed = pcfg.get("walk_mps", 1.3) * jit                # short hops: bike owners walk too
+    bike_speed = pcfg.get("bike_mps", 4.5) * jit
 
     fav_dining = _favorites(campus, "dining", home_b, pcfg, rng)
     fav_library = _favorites(campus, "library", home_b, pcfg, rng)
@@ -390,6 +394,7 @@ def build_population(cfg, campus, rng) -> Population:
         N=N, agent_id=[f"A{i:0{w_id}d}" for i in range(N)], archetype=archetype, class_year=class_year,
         home_b=home_b, home_room=home_room, bed_slot=bed_slot, friend_group=friend_group,
         team_id=team_id, teams=teams, transport=transport, speed_mps=speed,
+        walk_speed=walk_speed, bike_speed=bike_speed,
         mask_propensity=mask, compliance=comp, honesty=hon, has_app=has_app, shares_location=shares,
         sick_profile=sick_profile, sick_response_p=sick_response_p, entry_e=entry_e,
         fav_dining=fav_dining, fav_library=fav_library, fav_common=fav_common,

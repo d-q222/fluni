@@ -2,7 +2,7 @@
 
 > **Draft**, proposed by the synthetic data workstream (`sim/`). Per AGENTS.md rule 3, changes need
 > agreement from the workstreams that use it. Example of every file: `sim/runs/mock_boring10/` (mock)
-> and `sim/runs/influenza_none_n10_d14_s2_f1f772f6/` (real simulator, 10 agents, 14 days).
+> and `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/` (real simulator, 10 agents, 14 days).
 
 A run is a folder `runs/<run_id>/`. Large tables are gzipped CSV; the full sim also writes a Parquet
 mirror with the same columns. Booleans are `True`/`False`; missing values are empty.
@@ -55,6 +55,12 @@ mirror with the same columns. Booleans are `True`/`False`; missing values are em
   (tier 4) in rooms of capacity ≤ 150. Pairs < 5 m across a wall appear with an empty `room_id`.
 - `route = seed`: an initial case (`--initial-seeds`), not an off-campus import.
 - `off_map = True` means off campus: no position, location or room.
+- `transport_mode` (`walk`/`bike`): in `agents_static.csv`, whether the agent owns a bike. In the
+  timeline, while `moving` it is the mode of the current trip (bike owners walk trips shorter than
+  `map.modes.bike_min_trip_m`, 300 m); otherwise it repeats the agent's own mode.
+- Positions in transit lie on the campus path network (footpaths, sidewalks, crossings, streets for
+  bikes; `map/paths.geojson`), joined to doors by short connectors that don't cross other buildings.
+  Between two steps an agent follows its route in `trips.csv.gz`, not the straight line between rows.
 - `self_reported_status`: `none`, `might_be_sick`, `tested_positive`, `recovered`.
   `test_status`: `none`, `pending`, `positive`, `negative`.
 
@@ -66,7 +72,14 @@ mirror with the same columns. Booleans are `True`/`False`; missing values are em
   `schedule/events.csv` + `name`; `summary.json` has extra keys after the listed ones.
 - Extra files: `timeline_changes.csv.gz` (compact timeline, [timeline-changes-format.md](timeline-changes-format.md)),
   `timeline.parquet`, `contacts.parquet`, `room_exposure.parquet` (same columns),
-  `map/paths.geojson` (footpath network), `map/entry_points.csv` (where commuters enter campus).
+  `map/paths.geojson` (path network; properties `walk`/`bike` say which modes may use a way),
+  `map/entry_points.csv` (where commuters enter campus).
+- `trips.csv.gz`: one row per trip between buildings: trip_id, agent_id, t_start, t_end, mode,
+  speed_mps, start_m, length_m, outcome (`arrived`/`rerouted`/`unfinished`), from_id, to_id
+  (location_id or entry_id), path (`lon lat;lon lat;...`, from the in-room spot through the doors to
+  the destination spot). Position at a continuous step τ with t_start ≤ τ ≤ t_end: distance along
+  path = min(length_m, start_m + speed_mps·step_s·(τ − t_start)); during [t_start − 1, t_start] it
+  goes linearly from 0 to start_m. Where trips overlap (re-routes), the later one wins.
 
 ## Size (full run)
 
