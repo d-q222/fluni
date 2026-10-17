@@ -4,6 +4,7 @@ import { rasterizeBuildings } from './masks.js';
 import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
 import { inferRisk } from '../model/infer.js';
+import { renderMathPanel } from './mathpanel.js';
 import { Router, buildTracks, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -39,8 +40,14 @@ const CONTAGIOUS = 0.9;     // P(sick) the app treats as "contagious" (≈ a pos
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
-const DATA_PARAM = new URLSearchParams(location.search).get('data');
-const DATA_URLS = DATA_PARAM ? [DATA_PARAM] : ['../sim/runs/mock_boring10/timeline.csv.gz', 'data/fake_agents.csv'];
+// ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
+// local placeholder.
+const DEFAULT_RUN = 'influenza_none_n10_d14_s2_f1f772f6';
+const PARAMS = new URLSearchParams(location.search);
+const runUrl = (run) => `../sim/runs/${run}/timeline.csv.gz`;
+const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
+  : PARAMS.get('run') ? [runUrl(PARAMS.get('run'))]
+    : [runUrl(DEFAULT_RUN), runUrl('mock_boring10'), 'data/fake_agents.csv'];
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -163,13 +170,30 @@ async function loadRooms(dataUrl) {
 }
 
 // The sim keeps building names next to the timeline in map/buildings.csv (location_id → name).
-async function loadBuildingNames(dataUrl) {
+// Also returns building outlines when the run has footprints (footprint_wkt covers every building,
+// including places missing from OSM like bld_m_green_library); otherwise null.
+async function loadBuildings(dataUrl) {
   try {
-    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name']);
-    return new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
+    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name', 'footprint_wkt']);
+    const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
+    const features = data.filter((b) => b.location_id && b.footprint_wkt).map((b) => ({
+      type: 'Feature',
+      // buildings.js / masks.js key features by 'bld_' + the part after the slash.
+      properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name },
+      geometry: wktGeometry(b.footprint_wkt),
+    }));
+    return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null };
   } catch {
-    return new Map();
+    return { names: new Map(), outlines: null };
   }
+}
+
+// WKT POLYGON / MULTIPOLYGON (lon lat) → GeoJSON geometry.
+function wktGeometry(wkt) {
+  const body = String(wkt).replace(/^[A-Z ]+/i, '').trim().replace(/^\(+|\)+$/g, '');
+  const polys = body.split(/\)\s*\)\s*,\s*\(\s*\(/).map((poly) => poly.split(/\)\s*,\s*\(/)
+    .map((ring) => ring.split(',').map((pt) => pt.trim().split(/\s+/).map(Number))));
+  return polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys };
 }
 
 // ---------- Leaflet glue ----------
@@ -286,13 +310,14 @@ async function main() {
     try { res = await loadCsv(dataUrl, Object.values(COLUMNS).flat()); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
   }
   if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
-  const [paths, buildingNames, outlines, rooms] = await Promise.all([
+  const [paths, runBuildings, osmOutlines, rooms] = await Promise.all([
     fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
-    loadBuildingNames(dataUrl),
+    loadBuildings(dataUrl),
     fetch('../sim/data/osm/buildings.geojson').then((r) => r.json()).catch(() => null),
     loadRooms(dataUrl),
   ]);
-  const data = toFrames(res.data, res.fields, buildingNames);
+  const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
+  const data = toFrames(res.data, res.fields, runBuildings.names);
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
   const model = data.beliefFrom === 'column' ? null : await loadModel(dataUrl, [...new Set(data.samples.map((a) => a.id))]);
   if (model) {
@@ -368,7 +393,7 @@ async function main() {
   let fitted = false;
   new ResizeObserver(() => {
     map.invalidateSize();
-    if (fitted || !map.getSize().x) return;
+    if (fitted || !map.getSize().x || !map.getSize().y) return; // wait for real width *and* height
     fitted = true;
     map.fitBounds([sw, ne]);
     map.setMinZoom(map.getZoom() - 1);
@@ -483,8 +508,28 @@ async function main() {
   const updateUserLayer = (layer) =>
     layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: Number($('horizon').value) > 0 });
 
+  // "Why this %?": the model's explanation for the selected person, beside the phone (presenter only).
+  const mathBox = Object.assign(document.createElement('aside'), { id: 'math', hidden: true });
+  mathBox.setAttribute('aria-label', 'Why this risk');
+  mathBox.style.cssText = 'position:absolute;top:16px;right:328px;z-index:1100;width:340px;max-height:calc(100% - 32px);overflow:auto';
+  document.querySelector('main').append(mathBox);
+  let mathOpen = false, mathKey = '';
+  function renderMath() {
+    const show = mathOpen && model && selected && current.has(selected);
+    mathBox.hidden = !show;
+    if (!show) return;
+    const key = `${selected}@${Math.floor(now / (5 * 60000))}`; // re-render once per 5 sim-minutes
+    if (key === mathKey) return;
+    mathKey = key;
+    renderMathPanel(mathBox, {
+      agentId: selected, tMs: now, explain: model.risk.explain(selected, now), params: model.risk.params,
+      formatTime: (ms) => formatTime(ms, data.numericTime),
+    });
+  }
+
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
+    renderMath();
     if (!me) { $('phone').hidden = true; return; }
     $('phone').hidden = false;
     $('ph-time').textContent = data.numericTime
@@ -642,6 +687,11 @@ async function main() {
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
     $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
   }
+  if (model) {
+    const why = Object.assign(document.createElement('button'), { textContent: 'Why this %?' });
+    $('ph-close').before(why);
+    why.addEventListener('click', () => { mathOpen = !mathOpen; mathKey = ''; renderMath(); });
+  }
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
@@ -651,6 +701,7 @@ async function main() {
   requestAnimationFrame(tick);
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
+  if (PARAMS.get('why') && model) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
   window.fluni = { data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); } };
 }
 

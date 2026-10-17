@@ -38,7 +38,7 @@ Output:
 - `explain(agentId, tMs, k = 5)`: `{ p, prior, evidence, contributions }`. `evidence` is the log of
   reports/tests about the person up to `tMs` (with `active`); `contributions` are the k contacts that
   raised their risk most: `{ tMs, other, distanceTier, durationMin, transmission, otherRisk, delta,
-  retro }`. Contacts with the same person less than 30 min apart are merged into one entry; each
+  retro }`. Each has `learnedMs`, when the app could know it (later than `tMs` for look-back ones); `explain` only returns contributions with `learnedMs <= tMs`. Contacts with the same person less than 30 min apart are merged into one entry, look-back and live ones separately; each
   agent keeps its 64-128 largest.
 - `flags`: `[{ agentId, tMs, kind, detail }]`, sorted by time.
 - `params`: the resolved parameters.
@@ -53,7 +53,7 @@ Time-ordered single pass over contacts and reports (evidence first within a step
      combines as a noisy-or, so two reporters give 0.58.
    - positive test, or a `tested_positive` self-report: `posTest`, which overrides the rest.
    - negative test: j's own P is capped at `negTest`, and j is no source. Evidence newer than the test counts again.
-   - `recovered` clears j's evidence and exposure.
+   - `recovered` clears j's evidence and exposure, but only if at least `recoverDays` after the last sick report or positive; a sooner claim is flagged and takes effect only once that time has passed.
    - evidence expires after `evidenceDays`; negative tests after `negTestDays`.
 3. **Exposure.** A contact with minutes m at tier k has transmission
    `pi = 1 - exp(-beta * w_k * m)`. Receiver risk x_i becomes `1 - (1 - x_i)(1 - s_j * pi)`, capped
@@ -78,6 +78,7 @@ Time-ordered single pass over contacts and reports (evidence first within a step
 |---|---|
 | `unexpected_report` | `might_be_sick` self-report while the model's P was below `unexpectedBelow`. Either a false report or a case from outside the contact network. |
 | `silent_high_risk` | P above `highP` for more than `highHours` from exposure alone, with no self-report or positive test. |
+| `suspicious_recovery` | `recovered` self-report less than `recoverDays` after a `might_be_sick` or positive report. The claim is not believed until `recoverDays` have passed, so P keeps its evidence-based level until then. |
 | `report_other_unsupported` | report about someone with no reporter -> target contact in the previous `unsupportedHours`. The report still counts, at `unsupportedWeight`. |
 
 ## Parameters (`DEFAULTS` in `infer.js`, override via the second argument)
@@ -102,6 +103,7 @@ Time-ordered single pass over contacts and reports (evidence first within a step
 | `fillHours` | 6 | decay change-point spacing |
 | `minDelta` | 0.01 | smaller changes are not written |
 | `mergeGapMin`, `contribMin` | 30, 0.001 | `explain` aggregation |
+| `recoverDays` | 3 | flu lasts 5-7 days, so a recovery claim sooner than this is doubted |
 | `unexpectedBelow`, `highP`, `highHours`, `unsupportedHours` | 0.05, 0.5, 24, 48 | flag thresholds |
 
 ## Performance

@@ -13,12 +13,17 @@ Serve the **repo root**, so the page can reach the sim's output in `../sim`:
 python3 -m http.server 8765
 ```
 
-Open http://localhost:8765/heatmap/. By default it loads the sim's run
-(`sim/runs/mock_boring10/timeline.csv.gz`, gunzipped in the browser). If that isn't reachable, it
-falls back to the placeholder `data/fake_agents.csv`.
+Open http://localhost:8765/heatmap/. By default it loads the sim's real 10-agent, 14-day sample run
+(`sim/runs/influenza_none_n10_d14_s2_f1f772f6/`). If that isn't reachable, it falls back to the
+mock run, then to the placeholder `data/fake_agents.csv`. Building outlines come from the run's
+`map/buildings.csv` footprints, which cover places missing from OSM such as Green Library.
 
 URL options, which can be combined:
 
+- `?run=<name>`: load `sim/runs/<name>/`, e.g. `?run=mock_boring10`.
+- `?why=1` (with `?agent=`): open the "Why this %?" panel (the same as the button on the presenter
+  bar). It shows the model's contact graph, the formula with that person's numbers, and the
+  evidence on record (`mathpanel.js`).
 - `?data=path/to/timeline.csv[.gz]`: load another run (relative to `heatmap/`), e.g.
   `?data=../sim/runs/<run>/timeline.csv.gz`.
 - `?at=200`: open at a moment, in minutes from the start of the data.
@@ -162,6 +167,12 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 - `motion.js`: footpath router and per-agent interpolation.
 - `diffuse.js`: heat field (binning plus a fast blur, kept inside buildings).
 - `masks.js`: rasterizes building outlines onto the heat grid.
+- `mathpanel.js`: the "Why this %?" panel (the PRD's "show the math" demo beat).
+- `tools/precompute.mjs`: for full-size runs, writes `timeline_changes.csv.gz` (changes only; see
+  [docs/timeline-changes-format.md](../docs/timeline-changes-format.md)) and `totals.json.gz`
+  (building totals and hourly forecasts). Usage: `node heatmap/tools/precompute.mjs
+  sim/runs/<run> --out <dir>`. It is validated against the in-browser `aggregate.js` and
+  `forecast.js` (identical results), and handles 7,000 agents × 14 days in about 80 s.
 - `loader.js`: streaming CSV loader (gunzips on the fly, keeps only the columns the adapter uses).
   A 7,000-agent day peaks at ~0.44 GB instead of ~4.9 GB. 14-day runs still need a compact format:
   see ROADMAP D1.

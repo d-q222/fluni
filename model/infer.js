@@ -38,6 +38,7 @@ export const DEFAULTS = {
   unexpectedBelow: 0.05,  // flag a "might be sick" self-report when the model gave less than this
   highP: 0.5,             // flag silent_high_risk above this ...
   highHours: 24,          // ... for longer than this, with no report or test of their own
+  recoverDays: 3,         // a "recovered" claim sooner than this after a sick report/positive is not believed
   unsupportedHours: 48,   // report_other needs a reporter -> target contact within this window
 };
 
@@ -94,16 +95,18 @@ export function inferRisk(input, params = {}) {
   const newEv = () => ({
     selfT: -Infinity, selfL: 0, posT: -Infinity, negT: -Infinity,
     rep: new Map(), log: [], lvl: 0, cap: 1, own: false, pos: false,
+    recT: -Infinity, recEff: Infinity, // a recovery claim at recT takes effect from recEff
   });
   const getEv = (i) => ev[i] || (ev[i] = newEv());
 
   // Evidence level at time t: sets e.lvl (lifted risk), e.cap (ceiling) and e.own (self-evidence).
   function evEval(e, t) {
     const negOn = t - e.negT < negMs;
-    e.pos = t - e.posT < evMs && e.posT >= e.negT;
+    const rc = t >= e.recEff ? e.recT : -Infinity; // evidence at or before an accepted recovery is void
+    e.pos = t - e.posT < evMs && e.posT >= e.negT && e.posT > rc;
     e.own = e.pos;
     if (e.pos) { e.cap = 1; return (e.lvl = P.posTest); }
-    const counts = (T) => t - T < evMs && (T > e.negT || !negOn); // newer than a negative test
+    const counts = (T) => t - T < evMs && T > rc && (T > e.negT || !negOn); // newer than a negative test
     let q = 1;
     if (counts(e.selfT)) { q *= 1 - e.selfL; e.own = true; }
     for (const r of e.rep.values()) if (counts(r.t)) q *= 1 - r.l;
@@ -203,20 +206,24 @@ export function inferRisk(input, params = {}) {
     if (a2 > 0) xi[i] = Math.min(P.xiMax, 1 - (1 - xi[i]) * (1 - pi * a2));
     dF[i] = Math.max(dF[i], nowMs + decayAfter);
     const delta = 1 - (1 - xd[i]) * (1 - xi[i]) - before;
-    if (delta >= P.contribMin) addContrib(i, j, cMs, tier, durMin, pi, Math.max(a1, a2), delta, nowMs !== cMs);
+    if (delta >= P.contribMin) addContrib(i, j, cMs, nowMs, tier, durMin, pi, Math.max(a1, a2), delta, nowMs !== cMs);
   }
 
-  function addContrib(i, j, cMs, tier, durMin, pi, risk, delta, retro) {
+  // learnedMs = when the app knew about this contribution (later than the contact for retro ones), so
+  // explain() never shows risk that wasn't known yet. Only entries learned together are merged.
+  function addContrib(i, j, cMs, learnedMs, tier, durMin, pi, risk, delta, retro) {
     const m = open[i] || (open[i] = new Map()), list = contribs[i] || (contribs[i] = []);
     let c = m.get(j);
-    if (c && cMs - c.tMs <= mergeMs && cMs >= c.tMs) {
+    const sameBatch = c && c.retro === retro && (retro ? c.learnedMs === learnedMs : true);
+    if (sameBatch && cMs - c.tMs <= mergeMs && cMs >= c.tMs) {
+      if (!retro) c.learnedMs = learnedMs;
       c.tMs = cMs; c.durationMin += durMin; c.delta += delta;
       c.transmission = 1 - (1 - c.transmission) * (1 - pi);
       if (tier < c.distanceTier) c.distanceTier = tier;
       if (risk > c.otherRisk) c.otherRisk = risk;
       return;
     }
-    c = { tMs: cMs, other: agentIds[j], distanceTier: tier, durationMin: durMin, transmission: pi,
+    c = { tMs: cMs, learnedMs, other: agentIds[j], distanceTier: tier, durationMin: durMin, transmission: pi,
       otherRisk: risk, delta, retro };
     m.set(j, c); list.push(c);
     if (list.length > 128) { // keep the 64 most influential
@@ -290,9 +297,16 @@ export function inferRisk(input, params = {}) {
     } else if (r.event === 'self_report') {
       if (r.value === 'might_be_sick') { e.selfT = tMs; e.selfL = level = P.selfReport; }
       else if (r.value === 'tested_positive') { e.posT = tMs; level = P.posTest; }
-      else { // recovered: clear everything
-        e.selfT = e.posT = e.negT = -Infinity; e.rep.clear();
-        touch(subject, tMs); xd[subject] = 0; xi[subject] = 0;
+      else { // recovered
+        const sick = Math.max(e.selfT, e.posT);
+        if (tMs - sick < P.recoverDays * DAY) { // too soon: evidence stays until recEff, then it is void
+          e.recT = tMs; e.recEff = sick + P.recoverDays * DAY;
+          flags.push({ agentId: r.agent_id, tMs, kind: 'suspicious_recovery',
+            detail: `claimed recovered ${((tMs - sick) / HOUR).toFixed(0)} h after reporting sick; not believed until ${P.recoverDays} d` });
+        } else { // believed: clear everything
+          e.selfT = e.posT = e.negT = -Infinity; e.rep.clear();
+          touch(subject, tMs); xd[subject] = 0; xi[subject] = 0;
+        }
       }
     } else if (r.value === 'positive') { e.posT = tMs; level = P.posTest; }
     else { e.negT = tMs; level = P.negTest; }
@@ -367,7 +381,7 @@ export function inferRisk(input, params = {}) {
       ...x, active: tMs - x.tMs < (x.value === 'negative' ? negMs : evMs),
     }));
     const list = (i === undefined ? null : contribs[i]) || [];
-    const contributions = list.filter((c) => c.tMs <= tMs).sort((x, y) => y.delta - x.delta).slice(0, k)
+    const contributions = list.filter((c) => c.learnedMs <= tMs).sort((x, y) => y.delta - x.delta).slice(0, k)
       .map((c) => ({ ...c }));
     return { p: pAt(agentId, tMs), prior: P.prior, evidence, contributions };
   }

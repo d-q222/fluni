@@ -13,7 +13,7 @@ Sizes: S is under 1 h, M is 1–3 h, L is 3 h or more.
 
 | # | Task | Size | Depends on | Done when |
 |---|---|---|---|---|
-| D1 | ~~Load the sim's output~~ **Done** for the mock run (gzip, sim columns, building names). Still to do: the full run's size (~7,500 agents × 14 days), which needs preprocessing or Parquet | M | full sim run | The full run loads in under 5 s |
+| D1 | **In progress (Option A)**: the streaming loader is done; `tools/precompute.mjs` writes the compact timeline and `totals.json.gz` (validated). Still to do: the app reading `totals.json.gz` and `timeline_changes.csv.gz` when present, and the sim writing the compact file itself | M | — | The full run opens in under 10 s |
 | D2 | ~~Smooth movement on a sim-time clock~~ **Done**: footpath walking, see README | — | — | — |
 | D7 | ~~Better heat diffusion~~ **Done**: heat stays inside buildings, lingers about 30 min after people leave, and scales to 7,000 agents (`diffuse.js`, `masks.js`). Follow-up: `HeatGrid` in `heat.js` is now unused and can be removed once the design pass merges | — | — | — |
 | D3 | Rescale the heat for ~10 agents (σ, colour-scale maximum) | S | D1 | One sick agent in a room shows a clear blob, and the legend still makes sense |
