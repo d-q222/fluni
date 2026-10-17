@@ -300,6 +300,17 @@ function dataBounds(frames) {
   return { south: s - dLat, west: w - dLon, north: n + dLat, east: e + dLon };
 }
 
+// What to fit on screen at load: the middle 96% of positions, so a few trips far off campus (a
+// commuter's home) don't zoom the map out to all of Palo Alto. The heat grid still uses dataBounds.
+function viewBounds(frames) {
+  const lats = [], lons = [];
+  const every = Math.max(1, Math.floor(frames.length / 400));
+  for (let k = 0; k < frames.length; k += every) for (const a of frames[k]) { lats.push(a.lat); lons.push(a.lon); }
+  if (!lats.length) return null;
+  const q = (v, f) => v.sort((x, y) => x - y)[Math.floor(f * (v.length - 1))];
+  return [[q(lats, 0.02), q(lons, 0.02)], [q(lats, 0.98), q(lons, 0.98)]];
+}
+
 // The compact timeline keeps only rows where something changes. Totals and forecasts need every agent
 // at every step, so expand it back (holding each agent's last row; rows are shared, not copied).
 // Fine for small runs; full-size runs should read precomputed totals instead (ROADMAP D1).
@@ -480,7 +491,7 @@ async function main() {
     map.invalidateSize();
     if (fitted || !map.getSize().x || !map.getSize().y) return; // wait for real width *and* height
     fitted = true;
-    map.fitBounds([sw, ne]);
+    map.fitBounds(viewBounds(frames) || [sw, ne]);
     map.setMinZoom(map.getZoom() - 1);
     // ?zoom=19 (with ?agent=…) opens close up on that person, e.g. to watch airflow in their room.
     const zoom = Number(new URLSearchParams(location.search).get('zoom'));
