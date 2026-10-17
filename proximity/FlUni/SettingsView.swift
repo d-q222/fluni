@@ -58,11 +58,11 @@ struct SettingsView: View {
             }
             .accessibilityIdentifier("settings.pause")
         } header: {
-            Text("Detection")
+            Text("Detection").foregroundStyle(Theme.ink2)
         } footer: {
             Text(model.isPaused
                  ? "While paused, FlUni doesn't share your status, look for nearby phones or count close-contact time, so it can't warn you either."
-                 : "Pausing stops FlUni's use of Bluetooth, precise distance sensing and location, and saves battery.")
+                 : "Pausing stops FlUni's use of Bluetooth, precise distance sensing and location, and saves battery.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -70,21 +70,25 @@ struct SettingsView: View {
     // MARK: What is shared
 
     private var sharedSection: some View {
-        Section("What FlUni shares") {
+        Section {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Phones within Bluetooth range see exactly two things:").font(.fluni(.subheadline))
                 Label("A random ID that changes every 15 minutes", systemImage: "arrow.triangle.2.circlepath")
                 Label("A status with 3 levels: healthy, possibly sick, or contagious", systemImage: "circle.lefthalf.filled")
             }
+            .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: 6) {
-                Label("Your location: never shared", systemImage: "location.slash").font(.fluni(.subheadline, weight: .semibold))
+                Label("Your precise location", systemImage: "location.slash").font(.fluni(.subheadline, weight: .semibold))
                 Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
+            .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: 6) {
-                Text("Never shared").font(.fluni(.subheadline, weight: .semibold)).accessibilityAddTraits(.isHeader)
+                Text("Never shared").font(.fluni(.subheadline, weight: .semibold))
                 Text("Your name, phone number, device name, account, or any history. Matching happens on your phone.")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
+        } header: {
+            Text("What FlUni shares").foregroundStyle(Theme.ink2)
         }
         .font(.fluni(.footnote))
         .foregroundStyle(Theme.ink)
@@ -95,15 +99,15 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            LabeledContent("Alerts", value: notificationText)
+            LabeledContent("Alerts") { Text(notificationText).foregroundStyle(Theme.ink2) }
             Button("Open iPhone Settings") {
                 if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) }
             }
             .accessibilityHint("Opens the iPhone Settings app, where you can change notification permission")
         } header: {
-            Text("Notifications")
+            Text("Notifications").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact.")
+            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -131,9 +135,9 @@ struct SettingsView: View {
                 .accessibilityLabel("Map address")
                 .frame(minHeight: 44)
         } header: {
-            Text("Map address")
+            Text("Map address").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("Where the Map tab loads the campus heat map from.")
+            Text("Where the Map tab loads the campus heat map from.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -142,10 +146,13 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         Section {
+            // System red is 3.3:1 on surface; fire-ink is 7.3.
             Button("Delete my data", role: .destructive) { confirmDelete = true }
+                .foregroundStyle(Theme.fireInk)
+                .frame(minHeight: 44)
                 .accessibilityIdentifier("settings.delete")
         } footer: {
-            Text("Removes everything FlUni saved on this phone. Nothing is stored on a server.")
+            Text("Removes everything FlUni saved on this phone. Nothing is stored on a server.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -172,10 +179,12 @@ struct SettingsView: View {
     // MARK: About
 
     private var aboutSection: some View {
-        Section("About") {
-            LabeledContent("Version", value: Self.version)
+        Section { 
+            LabeledContent("Version") { Text(Self.version).foregroundStyle(Theme.ink2) }
             Text("Palette and illustrations: Lisa Zheng (lisaazheng)")
             Text("Map data © OpenStreetMap contributors")
+        } header: {
+            Text("About").foregroundStyle(Theme.ink2)
         }
         .font(.fluni(.footnote))
         .foregroundStyle(Theme.ink)

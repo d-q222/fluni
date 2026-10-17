@@ -12,10 +12,12 @@ struct PausedBanner: View {
                 Text("FlUni isn't sharing your status or counting close-contact time, \(PauseSchedule.describe(p, calendar: .current, now: Date())).")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
+            .accessibilityElement(children: .combine)
             let resume = Button("Resume detection") { model.resume() }
                 .accessibilityIdentifier("banner.resume")
                 .font(.fluni(.subheadline, weight: .semibold))
                 .frame(minWidth: 44, minHeight: 44)
+                .accessibilityHint("Turns detection back on")
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) {
                     Image(systemName: "pause.circle.fill").font(.title3).accessibilityHidden(true)
