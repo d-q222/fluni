@@ -6,8 +6,8 @@ import { HEAT_STOPS } from './heat.js';
 
 const MAX_FILL = 0.75;       // fill opacity at the palette's most opaque stop
 const FORECAST_FILL = 0.5;   // forecasts are drawn lighter than measurements
-const INK = '#4a3628';       // warm dark outline, never pure black
-const MUTED = '#9a8f85';     // outline when too few people to show anything
+const INK = '#33241c';       // --ink from the design palette; warm dark outline, never pure black
+const MUTED = '#a8988a';     // outline when too few people to show anything
 const HIDDEN = { stroke: false, fill: false, interactive: false };
 
 // Same piecewise-linear interpolation as the LUT in heat.js.

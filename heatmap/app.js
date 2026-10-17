@@ -69,7 +69,9 @@ const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const COLORS = { healthy: '#2a78d6', infected: '#d03b3b', ring: '#fcfcfb', riskLo: [134, 182, 239], riskHi: [13, 54, 107] };
+// Palette tokens from index.html (--sage, --sun, --fire, --surface). People run sage → sun → fire by
+// estimated risk, so the middle of the scale is a clear yellow instead of a muddy green-red mix.
+const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk: [[172, 188, 139], [235, 209, 135], [219, 108, 89]] };
 
 // ---------- CSV adapter: the only place that knows column names ----------
 
@@ -362,10 +364,11 @@ function* asPoints(states, truth) {
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
+const riskColor = (p) => { const [lo, mid, hi] = COLORS.risk; return p < 0.5 ? mix(lo, mid, p * 2) : mix(mid, hi, (p - 0.5) * 2); };
 
 function dotColor(a, mode) {
   if (mode === 'truth') return a.sick ? COLORS.infected : COLORS.healthy;
-  return mix(COLORS.riskLo, COLORS.riskHi, Math.min(1, a.p));
+  return riskColor(Math.min(1, a.p));
 }
 
 function advice(p) {
@@ -654,7 +657,7 @@ async function main() {
     if (!phoneMap) {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
       if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines).addTo(phoneMap);
-      phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: '#fff', fillColor: COLORS.healthy, fillOpacity: 1 }).addTo(phoneMap);
+      phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: COLORS.ring, fillColor: '#33241c', fillOpacity: 1 }).addTo(phoneMap);
       phoneMap.setView([me.lat, me.lon], 16);
       withHeat = true;
     }
@@ -757,7 +760,7 @@ async function main() {
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
-      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="ramp" style="background:linear-gradient(to right, ${mix(COLORS.riskLo, COLORS.riskHi, 0)}, ${mix(COLORS.riskLo, COLORS.riskHi, 1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
+      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="ramp" style="background:linear-gradient(to right, ${riskColor(0)}, ${riskColor(0.5)}, ${riskColor(1)})"></div><div class="ramp-labels"><span>0%</span><span>100%</span></div>`;
     const isPublic = v === 'public';
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
