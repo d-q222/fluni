@@ -170,3 +170,6 @@ Claim a row before you start. Update the status as you go. Agents should name th
   `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/` (agents on paths, bikes routed, plus `trips.csv.gz`).
   The old `..._f1f772f6/` stays in the repo because `heatmap/app.js` DEFAULT_RUN points at it.
   Please switch DEFAULT_RUN when convenient. I'll remove the old run after that.
+  - **heat map (2026-10-17): done** in e104dc2. DEFAULT_RUN is `..._bc5cae7a`, and its
+    `model/out/<run>/p_sick.csv` is generated, so `..._f1f772f6` can go. The heat map no longer falls
+    back silently to mock or fake data: if the default run is missing, it says so on screen.
