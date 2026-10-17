@@ -73,6 +73,9 @@ export class AerosolField {
     if (d === nx) return f.s[lo] === 1;
     // diagonal: either L-shaped path through a neighbour
     const ax = a % nx, bx = b % nx, ay = (a - ax) / nx, by = (b - bx) / nx;
+    // Not neighbours (emit() can move the own cell up to 2 cells into the person's room): keep the
+    // weight in the own cell. Recursing here never ended (stack overflow on the default run).
+    if (Math.abs(ax - bx) > 1 || Math.abs(ay - by) > 1) return false;
     const c1 = ay * nx + bx, c2 = by * nx + ax;
     return (this.linked(a, c1) && this.linked(c1, b)) || (this.linked(a, c2) && this.linked(c2, b));
   }
