@@ -42,6 +42,13 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-17 — Walk-in warning is room-level.** Demo proof of concept: the phone also alerts when
   the person right next to you is actually sick (sim truth, labelled as demo-only). Privacy
   hardening is deferred for now.
+- **2026-10-17 — Full-size runs: compact timeline + precomputed totals ("Option A").** The browser
+  can't load the full 28 M-row timeline. Proposal: the sim also writes `timeline_changes.csv.gz`
+  ([docs/timeline-changes-format.md](docs/timeline-changes-format.md)), and the heat map precomputes
+  `totals.json.gz` (building totals and forecasts). The full timeline stays the source of truth.
+- **2026-10-17 — Demo phone alerts follow the proximity app.** 6 ft distance; an immediate heads-up;
+  a close-contact alert at 15 weighted minutes in 24 h (contagious 1, possibly sick 0.5). Added on
+  the heat map phone: a retroactive "exposure notice" for contacts who later report sick.
 
 ## Requests
 
@@ -59,6 +66,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
   5. Until your CSV lands, the heat map runs on made-up data from `heatmap/tools/make_fake_agents.py`.
      Its columns are only a suggestion. Use whatever suits the simulation and the heat map will adapt.
      The column names it accepts are listed in `heatmap/README.md`.
+- **heat map → synthetic data (@aidenyj):** please also write `timeline_changes.csv.gz` per
+  [docs/timeline-changes-format.md](docs/timeline-changes-format.md) for the full run. It's the same
+  columns, keeping only rows where something changes plus the last row of each stay. Our converter,
+  `heatmap/tools/precompute.mjs`, produces it from the full timeline until then, so it isn't
+  blocking.
 - **heat map → synthetic data:** official Stanford building names/IDs and categories (academic,
   dining, libraries, rec) are described in `docs/stanford-map-sources.md`. Matching your `building`
   names to those makes building-level heat and forecasts much easier.
