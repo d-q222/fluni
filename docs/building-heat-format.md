@@ -19,6 +19,7 @@ served from the laptop with the rest of the repo, at
 | `expected_sick` | Σ P(sick) of the people inside, scaled the same way |
 | `heat` | 0–1, the map's own colour scale: √(expected_sick / colour max), capped at 1. The colour max is the 90th percentile of each snapshot's hottest building |
 | `high` | `1` if `heat ≥ 0.5`, i.e. past the legend's midpoint, the buildings the map shows dark; else `0` |
+| `radius_m` | Optional, for geofencing: √(footprint area / π) + 10 m of GPS slack, rounded; empty if the area is unknown. Added after the first version, so it is the last column |
 
 - Rows are **snapshots every 15 minutes**: all rows with the same `t_iso` describe campus at that
   moment. To read the state at time t, take the rows with the latest `t_iso ≤ t`.

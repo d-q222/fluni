@@ -450,14 +450,15 @@ const HEAT_EVERY_MIN = 15;
 const peaks = steps.map((st) => Math.max(0, ...st.sp.map((x) => x * scale))).sort((a, b) => a - b);
 const heatMax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
 const where = new Map();
-if (existsSync(bFile)) for (const b of parseCsv(readFileSync(bFile, 'utf8'))) where.set(b.location_id, [b.lat, b.lon]);
+if (existsSync(bFile)) for (const b of parseCsv(readFileSync(bFile, 'utf8'))) where.set(b.location_id, [b.lat, b.lon, b.area_m2 > 0 ? Math.round(Math.sqrt(b.area_m2 / Math.PI) + 10) : '']);
 const pad2 = (x) => String(x).padStart(2, '0');
 const isoLocal = (ms) => {
   const d = new Date(ms);
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
 };
 const csvField = (x) => (/[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x);
-const heatRows = ['t_iso,building_id,name,lat,lon,people,expected_sick,heat,high'];
+// radius_m (last, optional): a circle of the footprint's area plus 10 m of GPS slack, for geofencing.
+const heatRows = ['t_iso,building_id,name,lat,lon,people,expected_sick,heat,high,radius_m'];
 let nextSnap = -Infinity;
 steps.forEach((st, i) => {
   if (!st.b.length || times[i] < nextSnap) return;
@@ -465,8 +466,8 @@ steps.forEach((st, i) => {
   st.b.forEach((bi, k) => {
     const people = st.n[k] * scale, sick = st.sp[k] * scale, b = buildings[bi];
     if (people < MIN_PEOPLE) return; // hidden on the map too
-    const heat = Math.min(1, Math.sqrt(sick / heatMax)), [lat = '', lon = ''] = where.get(b.id) || [];
-    heatRows.push([isoLocal(times[i]), b.id, csvField(b.name), lat, lon, people, sick.toFixed(2), heat.toFixed(3), heat >= 0.5 ? 1 : 0].join(','));
+    const heat = Math.min(1, Math.sqrt(sick / heatMax)), [lat = '', lon = '', radius = ''] = where.get(b.id) || [];
+    heatRows.push([isoLocal(times[i]), b.id, csvField(b.name), lat, lon, people, sick.toFixed(2), heat.toFixed(3), heat >= 0.5 ? 1 : 0, radius].join(','));
   });
 });
 writeFileSync(join(outDir, 'building_heat.csv'), heatRows.join('\n') + '\n');
