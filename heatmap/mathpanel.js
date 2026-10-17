@@ -26,7 +26,7 @@ const CSS = `
 .mathpanel .mp-node { fill: var(--surface, #fdfcfa); stroke: var(--ink-2, #5c5850); stroke-width: 1.5; }
 .mathpanel .mp-self { fill: var(--ink, #23211d); stroke: none; }
 .mathpanel .mp-id { font-size: 10px; font-weight: 600; fill: var(--ink, #23211d); }
-.mathpanel .mp-risk { font-size: 10px; fill: var(--infected, #d03b3b); font-variant-numeric: tabular-nums; }
+.mathpanel .mp-risk { font-size: 10px; fill: var(--fire-ink, var(--infected, #d03b3b)); font-variant-numeric: tabular-nums; }
 .mathpanel .mp-tag { font-size: 8.5px; fill: var(--ink-3, #6f6a61); font-style: italic; }
 .mathpanel .mp-key { margin: 4px 0 0; font-size: 11px; color: var(--ink-3, #6f6a61); }
 .mathpanel .mp-f { margin: 2px 0; font-variant-numeric: tabular-nums; }

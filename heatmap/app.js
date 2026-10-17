@@ -76,7 +76,7 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 // People are drawn as @lisaazheng's hand-drawn tissue (assets/people/tissue.png) on a round badge in
 // their risk colour. It's still a canvas circle marker underneath, so clicks, tooltips and speed are
 // unchanged; only the drawing step adds the image. Until the image loads, the plain badge shows.
-const PERSON = { radius: 9, img: new Image(), size: 22, onload: null };
+const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
