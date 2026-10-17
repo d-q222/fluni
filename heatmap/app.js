@@ -44,6 +44,23 @@ const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 // local placeholder.
 const DEFAULT_RUN = 'influenza_none_n10_d14_s2_f1f772f6';
 const PARAMS = new URLSearchParams(location.search);
+// ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
+// controls, no people. Styled from here so index.html stays the design pass's.
+const EMBED = PARAMS.get('embed') === 'app';
+if (EMBED) {
+  document.documentElement.classList.add('embed');
+  document.head.append(Object.assign(document.createElement('style'), { textContent: `
+    html.embed body { grid-template-rows: 1fr; }
+    html.embed header.bar, html.embed #phone { display: none; }
+    html.embed .embed-chip { position: absolute; z-index: 500; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 6px 6px 12px;
+      background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); font-size: 13px; }
+    html.embed .embed-chip #time { min-width: 0; font-variant-numeric: tabular-nums; }
+    html.embed .embed-chip select { font: inherit; max-width: 50%; }
+    html.embed .leaflet-top { top: 52px; }
+    html.embed .legend { left: 10px; right: 10px; width: auto; bottom: calc(10px + env(safe-area-inset-bottom)); }
+  ` }));
+}
 // Prefer the run's compact timeline (only rows where something changes; docs/timeline-changes-format.md).
 const runUrls = (run) => [`../sim/runs/${run}/timeline_changes.csv.gz`, `../sim/runs/${run}/timeline.csv.gz`];
 const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
@@ -647,7 +664,8 @@ async function main() {
     lastFrame = realNow;
     if (playing) {
       now = skipQuietGap(now + dt * SPEEDS[$('speed').value] * 60);
-      if (now >= t1) { now = t1; setPlaying(false); }
+      if (now >= t1 && EMBED) { now = t0; heatDirty = true; } // the app tab loops the run
+      else if (now >= t1) { now = t1; setPlaying(false); }
       render(realNow);
     }
     requestAnimationFrame(tick);
@@ -715,6 +733,16 @@ async function main() {
   document.querySelector('#phone .screen .fine').textContent =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
+  if (EMBED) {
+    // User map only, slowest speed, playing; the time and forecast picker float over the map.
+    $('view').value = 'public';
+    $('speed').value = '0';
+    const chip = Object.assign(document.createElement('div'), { className: 'embed-chip' });
+    chip.append($('time'), horizon);
+    document.querySelector('main').append(chip);
+    document.querySelector('.legend .fine').textContent = document.querySelector('#phone .screen .fine').textContent;
+    setPlaying(true);
+  }
 
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
     $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });

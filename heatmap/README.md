@@ -29,6 +29,9 @@ URL options, which can be combined:
 - `?at=200`: open at a moment, in minutes from the start of the data.
 - `?agent=A0008`: open with that agent's phone showing. Handy for demo scenes.
 - `?view=public`: open on the user-facing map. Add `&horizon=60` (or 120 or 180) for a forecast.
+- `?embed=app`: the Swift app's heat map tab (`proximity/FluniProx/HeatmapView.swift`). Only the
+  user-facing map, full screen, playing slowly and looping; the time and forecast picker float on top.
+  Serve the repo root and point the tab at `http://<laptop>.local:8000/heatmap/?embed=app`.
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
