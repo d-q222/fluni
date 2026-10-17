@@ -105,6 +105,15 @@ struct BLECalibrator: Equatable {
     private(set) var samples = 0
 
     var isCalibrated: Bool { samples >= 5 }
+    /// Started from this phone's learned prior (see TxPowerPrior) rather than the generic default.
+    private(set) var startedFromPrior = false
+
+    /// A new peer starts from what this phone has learned about other phones, if anything.
+    static func fromPrior(_ prior: TxPowerPrior) -> BLECalibrator {
+        var c = BLECalibrator()
+        if prior.isLearned { c.txPower = prior.txPower; c.startedFromPrior = true }
+        return c
+    }
 
     func distance(rssi: Double) -> Double {
         pow(10, (txPower - rssi) / (10 * pathLossExponent))
@@ -113,7 +122,7 @@ struct BLECalibrator: Equatable {
     /// BLE ranging is roughly multiplicative noise; calibration shrinks it.
     func reading(rssi: Double, at: Date) -> Reading {
         let d = distance(rssi: rssi)
-        let rel = isCalibrated ? 0.4 : 0.7
+        let rel = isCalibrated ? 0.4 : (startedFromPrior ? 0.55 : 0.7)
         return Reading(source: .ble, distance: d, sigma: rel * d + 0.3, at: at)
     }
 
@@ -127,6 +136,43 @@ struct BLECalibrator: Equatable {
         let alpha = samples < 5 ? 0.5 : 0.1
         txPower += alpha * (implied - txPower)
         samples += 1
+    }
+}
+
+/// This phone's learned RSSI-at-1-m for other phones, from every UWB-calibrated pair. Kept across ID
+/// rotations and launches so Bluetooth-only ranging (UWB off, or in the background) starts calibrated.
+/// Field data (1069 UWB/BLE pairs, 3 iPhones) put the best single value near -61 dBm, with pairs
+/// spreading from about -49 to -71, which is why per-phone learning beats any fixed default.
+struct TxPowerPrior: Codable, Equatable {
+    var txPower = BLECalibrator.defaultTxPower
+    private(set) var pairs = 0
+    var isLearned: Bool { pairs >= 1 }
+
+    /// Fold in one calibrated pair's txPower; implausible values are ignored.
+    mutating func learn(_ calibrated: Double) {
+        guard calibrated.isFinite, BLECalibrator.txPowerRange.contains(calibrated) else { return }
+        txPower += (pairs < 3 ? 0.5 : 0.2) * (calibrated - txPower)
+        pairs += 1
+    }
+}
+
+/// Median RSSI over the last few seconds for one beacon. Single samples swing by ±10 dB (bodies,
+/// orientation, reflections; measured 0.3–0.8 m apart: -60 to -50 dBm interquartile), and a median
+/// ignores the spikes an average lets through.
+struct RSSIWindow: Equatable {
+    static let span: TimeInterval = 4
+    static let maxSamples = 15
+    struct Sample: Equatable { var rssi: Double; var at: Date }
+    private(set) var samples: [Sample] = []
+    var lastAt: Date? { samples.last?.at }
+
+    /// Adds a sample and returns the current median.
+    mutating func add(_ rssi: Double, at t: Date) -> Double {
+        samples.append(Sample(rssi: rssi, at: t))
+        samples.removeAll { t.timeIntervalSince($0.at) > Self.span }
+        if samples.count > Self.maxSamples { samples.removeFirst(samples.count - Self.maxSamples) }
+        let s = samples.map(\.rssi).sorted()
+        return s.count % 2 == 1 ? s[s.count / 2] : (s[s.count / 2 - 1] + s[s.count / 2]) / 2
     }
 }
 

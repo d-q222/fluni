@@ -199,6 +199,9 @@ struct PeerRow: View {
     private var distanceText: String {
         guard let e = peer.estimate else { return "Distance unknown" }
         let ft = e.distance * 3.281
+        let lo = max(0, e.distance - e.sigma) * 3.281, hi = (e.distance + e.sigma) * 3.281
+        // Coarse estimates (Bluetooth alone, GPS) get a range so the number isn't read as precise.
+        if hi - lo >= 2 { return String(format: "≈ %.0f ft (%.0f–%.0f ft)", max(1, ft.rounded()), lo.rounded(), hi.rounded()) }
         return ft < 10 ? String(format: "%.0f ft away", max(1, ft.rounded())) : String(format: "~%.0f ft away", ft)
     }
 

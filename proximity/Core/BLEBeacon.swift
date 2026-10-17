@@ -21,7 +21,7 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     private var central: CBCentralManager!
     private var payload: CBUUID?
     private let scanQueue = DispatchQueue(label: "fluni.ble.scan")  // keeps the advert flood off the main thread
-    private var smoothed: [String: (rssi: Double, at: Date)] = [:]  // scanQueue only
+    private var smoothed: [String: RSSIWindow] = [:]  // scanQueue only
     private var lastPrune = Date()
     private let pauseLock = NSLock()
     private var _paused = false
@@ -113,13 +113,12 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         guard !paused, let hit = uuids.lazy.compactMap(Self.decode).first else { return }
         let raw = rssi.doubleValue
         guard raw < 0, raw > -110 else { return }  // 127 = unavailable
-        // Exponential moving average: single BLE samples swing by several dB.
+        // Median over the last few seconds: single BLE samples swing by ±10 dB.
         let now = Date()
-        let s = smoothed[hit.id].map { 0.7 * $0.rssi + 0.3 * raw } ?? raw
-        smoothed[hit.id] = (s, now)
+        let s = smoothed[hit.id, default: RSSIWindow()].add(raw, at: now)
         if now.timeIntervalSince(lastPrune) > 30 {  // rotated IDs would otherwise pile up
             lastPrune = now
-            smoothed = smoothed.filter { now.timeIntervalSince($0.value.at) < 30 }
+            smoothed = smoothed.filter { $0.value.lastAt.map { now.timeIntervalSince($0) < 30 } ?? false }
         }
         DispatchQueue.main.async { self.onSighting?(hit.id, hit.risk, s) }
     }

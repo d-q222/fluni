@@ -315,12 +315,27 @@ final class ProximityModel: ObservableObject {
     private func uwbDistance(peer: MCPeerID, d: Double) {
         guard !isPaused else { return }
         guard let id = linkIDs[peer] else { return }
+        var newlyCalibrated: Double?
         update(id) { p in
             p.uwb = Reading(source: .uwb, distance: d, sigma: 0.1, at: Date())
             // UWB is ground truth for this phone pair: teach the BLE model while we have it.
-            if let rssi = p.rssi { p.calibrator.observe(rssi: rssi, trueDistance: d) }
+            if let rssi = p.rssi {
+                let was = p.calibrator.isCalibrated
+                p.calibrator.observe(rssi: rssi, trueDistance: d)
+                if !was && p.calibrator.isCalibrated { newlyCalibrated = p.calibrator.txPower }
+            }
+        }
+        // ...and remember it for every future peer, so Bluetooth-only ranging starts calibrated.
+        if let tx = newlyCalibrated {
+            txPrior.learn(tx)
+            if let data = try? JSONEncoder().encode(txPrior) { UserDefaults.standard.set(data, forKey: Self.txPriorKey) }
+            log("ble prior txPower=\(fmt(txPrior.txPower)) pairs=\(txPrior.pairs)")
         }
     }
+
+    private static let txPriorKey = "ble.txPowerPrior"
+    private lazy var txPrior: TxPowerPrior = UserDefaults.standard.data(forKey: Self.txPriorKey)
+        .flatMap { try? JSONDecoder().decode(TxPowerPrior.self, from: $0) } ?? TxPowerPrior()
 
     private func ownFix(_ fix: CLLocation) {
         guard !isPaused else { return }
@@ -349,7 +364,7 @@ final class ProximityModel: ObservableObject {
 
     private func update(_ id: String, _ change: (inout PeerState) -> Void) {
         let isNew = byID[id] == nil
-        var p = byID[id] ?? PeerState(id: id)
+        var p = byID[id] ?? PeerState(id: id, calibrator: .fromPrior(txPrior))
         change(&p)
         p.lastSeen = Date()
         byID[id] = p
