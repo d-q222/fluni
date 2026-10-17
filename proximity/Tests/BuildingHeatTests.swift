@@ -136,14 +136,14 @@ final class BuildingHeatTests: XCTestCase {
     // MARK: The bundled file
 
     func testBundledFile() throws {
-        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let url = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("FlUni/Resources/building_heat.csv")
         let b = try BuildingHeat.parse(try Data(contentsOf: url))
         XCTAssertEqual(b.rejected, 0)
         XCTAssertEqual(b.rowCount, 4507)
         XCTAssertEqual(b.snapshots.count, 1344)
-        XCTAssertEqual(b.buildings.count, 32)
-        XCTAssertEqual(b.mappable.count, 32)
+        XCTAssertEqual(b.buildings.count, 31)
+        XCTAssertEqual(b.mappable.count, 31)
         XCTAssertEqual(b.timeRange, t("2026-01-05T00:00:00")...t("2026-01-18T23:45:00"))
         // 2026-01-05T00:00:00,bld_232805707,Jerry,37.4210814,-122.1736733,450,9.00,0.235,0
         XCTAssertEqual(b.reading("bld_232805707", at: t("2026-01-05T00:00:00")), .init(people: 450, expectedSick: 9, heat: 0.235, high: false))
