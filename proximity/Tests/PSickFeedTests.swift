@@ -127,9 +127,10 @@ final class PSickFeedTests: XCTestCase {
     /// Values read by eye from the CSV: A0000 line 2 (16:20 = 0.1154, next 16:40), A0003 line 44
     /// (17:05 = 0.0545, next 17:15 = 0.0670), A0001 first row 20:15 = 0.0327, A0009 last row 0.3689.
     func testRealSampleFile() throws {
-        let dir = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent().appendingPathComponent("model/out/influenza_none_n10_d14_s2_f1f772f6")
-        let data = try Data(contentsOf: dir.appendingPathComponent("p_sick.csv"))
+        // Our own copy of model/out/influenza_none_n10_d14_s2_f1f772f6/p_sick.csv (that run is being retired).
+        let fixtures = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent()
+            .appendingPathComponent("Fixtures")
+        let data = try Data(contentsOf: fixtures.appendingPathComponent("p_sick_f1f772f6.csv"))
         let f = try PSickFeed.parse(data)
         XCTAssertEqual(f.rejected, 0)
         XCTAssertEqual(f.rowCount, 136)
