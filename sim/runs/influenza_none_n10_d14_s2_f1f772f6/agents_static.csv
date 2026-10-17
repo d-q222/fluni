@@ -1,0 +1,11 @@
+agent_id,archetype,class_year,home_dorm,home_room_id,class_schedule,friend_group_id,team_id,transport_mode,mask_propensity,compliance,honesty,has_app,shares_location,sickness_behavior_profile
+A0000,athlete,2026,Jerry,bld_232805707_f1_102,SEC_MWF_03|SEC_TTH_01|SEC_TTH_03,FG00,TM00,bike,0.189,0.769,0.816,True,False,carry_on
+A0001,social,2027,Jerry,bld_232805707_f1_102,SEC_MWF_03|SEC_MWF_04|SEC_MWF_05|SEC_TTH_02,FG01,,walk,0.143,0.212,0.61,False,False,visit_vaden_then_isolate
+A0002,social,2027,Jerry,bld_232805707_f1_102,SEC_MWF_01|SEC_MWF_02|SEC_MWF_05|SEC_TTH_03,FG01,,walk,0.395,0.701,0.868,True,True,carry_on
+A0003,commuter,2029,OFF_CAMPUS,,SEC_MWF_03|SEC_MWF_04|SEC_TTH_02|SEC_TTH_03,FG01,,walk,0.45,0.539,0.847,False,False,carry_on
+A0004,studious,2027,Jerry,bld_232805707_f1_102,SEC_MWF_01|SEC_MWF_04|SEC_MWF_06|SEC_TTH_02,FG01,,walk,0.462,0.925,0.785,True,False,stay_home
+A0005,homebody,2027,Jerry,bld_232805707_f1_103,SEC_MWF_02|SEC_MWF_06|SEC_TTH_03,FG00,,bike,0.365,0.86,0.841,True,True,stay_home
+A0006,homebody,2028,Jerry,bld_232805707_f1_103,SEC_MWF_02|SEC_MWF_04|SEC_MWF_07,FG00,,walk,0.568,0.69,0.23,True,True,visit_vaden_then_isolate
+A0007,stem,2026,Jerry,bld_232805707_f1_103,SEC_MWF_03|SEC_MWF_06|SEC_MWF_07|SEC_TTH_01,FG00,,bike,0.178,0.794,0.718,True,False,visit_vaden_then_isolate
+A0008,studious,2028,Jerry,bld_232805707_f1_104,SEC_MWF_01|SEC_MWF_05|SEC_TTH_02|SEC_TTH_03,FG01,,bike,0.386,0.868,0.915,True,True,stay_home
+A0009,stem,2027,Jerry,bld_232805707_f1_104,SEC_MWF_01|SEC_MWF_03|SEC_MWF_06|SEC_TTH_01|SEC_TTH_02,FG00,,walk,0.047,0.632,0.583,True,True,visit_vaden_then_isolate

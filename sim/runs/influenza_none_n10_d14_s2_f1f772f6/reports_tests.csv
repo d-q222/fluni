@@ -1,0 +1,13 @@
+t,agent_id,event,value,target_agent_id,truthful
+1060,A0006,self_report,might_be_sick,,True
+1178,A0007,report_other,might_be_sick,A0006,True
+1466,A0005,report_other,might_be_sick,A0006,True
+1684,A0006,self_report,recovered,,False
+2164,A0005,self_report,might_be_sick,,True
+2182,A0006,report_other,might_be_sick,A0005,True
+2442,A0007,self_report,might_be_sick,,True
+2522,A0005,report_other,might_be_sick,A0007,True
+2671,A0006,report_other,might_be_sick,A0007,True
+2696,A0007,report_other,might_be_sick,A0005,True
+3469,A0005,self_report,recovered,,False
+3510,A0007,self_report,recovered,,True
