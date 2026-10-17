@@ -212,12 +212,12 @@ async function loadRooms(dataUrl) {
 // including places missing from OSM like bld_m_green_library); otherwise null.
 async function loadBuildings(dataUrl) {
   try {
-    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name', 'footprint_wkt']);
+    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name', 'type', 'footprint_wkt']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
     const features = data.filter((b) => b.location_id && b.footprint_wkt).map((b) => ({
       type: 'Feature',
       // buildings.js / masks.js key features by 'bld_' + the part after the slash.
-      properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name },
+      properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name, type: b.type },
       geometry: wktGeometry(b.footprint_wkt),
     }));
     return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null };
@@ -267,43 +267,93 @@ const CanvasLayer = L.Layer.extend({
   },
 });
 
-// Base map: OSM street tiles, or the design pass's illustrated campus (assets/trace/), an image drawn on
-// a canvas that maps exactly onto its bounds file. A hand-drawn version can replace the same image.
-// ?basemap=drawn opens with it; the illustration also needs no tile server.
+// Base maps (?basemap=sim|streets|drawn):
+// - sim: the sim viewer's look (@aidenyj): OpenFreeMap's Positron vector map, with the run's own map on
+//   top (its building footprints and the path network people walk). Loaded on first use. Default.
+// - streets: OSM raster tiles, greyed.
+// - drawn: the design pass's illustrated campus (assets/trace/), an image on a canvas that maps exactly
+//   onto its bounds file; a hand-drawn version can replace the same image. Needs no tile server.
 const DRAWN = { image: 'assets/trace/campus_trace.webp', bounds: 'assets/trace/campus_trace_bounds.json' };
-const bases = new Map(); // map -> { tiles, drawn }
-let baseStyle = PARAMS.get('basemap') === 'drawn' ? 'drawn' : 'streets', drawnBounds = null;
+const GL = {
+  style: 'https://tiles.openfreemap.org/styles/positron',
+  css: 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
+  js: 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
+  leaflet: 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js',
+};
+// Buildings in one neutral tint: the viewer colours them by type, but here warm tints would read as heat.
+const SIM_BUILDING = { fillColor: '#e7dfd0', fillOpacity: 0.75, color: '#a8988a', weight: 0.7, opacity: 0.8 };
+const STYLES = ['sim', 'streets', 'drawn'];
+const bases = new Map(); // map -> { streets, drawn, sim } layers, made on first use
+let baseStyle = STYLES.includes(PARAMS.get('basemap')) ? PARAMS.get('basemap') : 'sim';
+let drawnBounds = null, glReady = null, simMap = null; // simMap: { buildings, paths } from the run
 
 function baseMap(el, options) {
   const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, ...options });
-  bases.set(map, { tiles: L.tileLayer(TILES, { attribution: ATTRIBUTION, maxZoom: 19, className: 'muted-tiles' }) });
+  map.createPane('simPane').style.zIndex = 250; // above base tiles, below heat, fills and people
+  bases.set(map, {});
   applyBase(map);
   return map;
 }
 
+const loadScript = (src) => new Promise((ok, fail) => document.head.append(
+  Object.assign(document.createElement('script'), { src, onload: ok, onerror: () => fail(new Error(`couldn't load ${src}`)) })));
+function loadGl() {
+  glReady ||= (async () => {
+    document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: GL.css }));
+    await loadScript(GL.js);
+    await loadScript(GL.leaflet);
+  })();
+  return glReady;
+}
+
+// The run's own map for the sim style; called once the run is loaded.
+function setSimMap(data) {
+  simMap = data;
+  if (baseStyle === 'sim') for (const map of bases.keys()) applyBase(map);
+}
+
 async function setBaseStyle(style) {
   baseStyle = style;
-  if (style === 'drawn' && !drawnBounds) {
-    const b = await fetch(DRAWN.bounds).then((r) => r.json()).catch(() => null);
-    if (!b) { baseStyle = 'streets'; console.warn(`No illustrated map at ${DRAWN.bounds}`); }
-    else drawnBounds = [[b.south, b.west], [b.north, b.east]];
+  try {
+    if (style === 'drawn' && !drawnBounds) {
+      const b = await fetch(DRAWN.bounds).then((r) => r.json());
+      drawnBounds = [[b.south, b.west], [b.north, b.east]];
+    }
+    if (style === 'sim') await loadGl();
+  } catch (err) {
+    console.warn(`Base map "${style}" unavailable (${err.message}); using street tiles.`);
+    baseStyle = 'streets';
   }
   for (const map of bases.keys()) applyBase(map);
 }
 
+function layerFor(map, base, style) {
+  if (style === 'streets') return (base.streets ||= L.tileLayer(TILES, { attribution: ATTRIBUTION, maxZoom: 19, className: 'muted-tiles' }));
+  if (style === 'drawn') return drawnBounds && (base.drawn ||= L.imageOverlay(DRAWN.image, drawnBounds, { pane: 'tilePane', attribution: ATTRIBUTION }));
+  if (!window.L.maplibreGL) return null;
+  if (!base.sim) {
+    base.sim = L.layerGroup([L.maplibreGL({ style: GL.style })]);
+    base.simData = null;
+  }
+  if (simMap && base.simData !== simMap) { // the run's buildings and paths, drawn like the sim viewer
+    base.simData = simMap;
+    const renderer = L.canvas({ pane: 'simPane' });
+    const attribution = '<a href="https://openfreemap.org">OpenFreeMap</a> ' + ATTRIBUTION;
+    if (simMap.paths) base.sim.addLayer(L.geoJSON(simMap.paths, { pane: 'simPane', renderer, interactive: false, attribution,
+      style: { color: '#8aa39b', weight: 1.2, opacity: 0.55 } }));
+    if (simMap.buildings) base.sim.addLayer(L.geoJSON(simMap.buildings, { pane: 'simPane', renderer, interactive: false,
+      attribution: simMap.paths ? undefined : attribution, style: SIM_BUILDING }));
+  }
+  return base.sim;
+}
+
 function applyBase(map) {
   const base = bases.get(map);
-  const drawn = baseStyle === 'drawn' && drawnBounds;
-  if (drawn && !base.drawn) {
-    // In the tile pane so heat and people stay on top; the paper colour fills the space around it.
-    base.drawn = L.imageOverlay(DRAWN.image, drawnBounds, { pane: 'tilePane', attribution: ATTRIBUTION });
-  }
-  if (drawn) {
-    base.tiles.remove();
-    base.drawn.addTo(map);
-  } else { base.drawn?.remove(); base.tiles.addTo(map); }
-  map.getContainer().style.background = drawn ? '#fff' : ''; // the illustration's own paper colour
-  if (baseStyle === 'drawn' && !drawnBounds) setBaseStyle('drawn'); // ?basemap=drawn: bounds not loaded yet
+  const layer = layerFor(map, base, baseStyle);
+  if (!layer) { setBaseStyle(baseStyle); return; } // not loaded yet (first use, or ?basemap=)
+  for (const style of STYLES) { const l = base[style]; if (l && l !== layer) l.remove(); }
+  if (!map.hasLayer(layer)) layer.addTo(map);
+  map.getContainer().style.background = baseStyle === 'drawn' ? '#fff' : ''; // the illustration's own paper colour
 }
 
 // ---------- helpers ----------
@@ -372,8 +422,10 @@ function scaleMax(heatAt, times) {
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
-function* asPoints(states, truth) {
+// stayedOnly: skip people on the move (for the trail: see heatAt).
+function* asPoints(states, truth, stayedOnly = false) {
   for (const s of states) {
+    if (stayedOnly && !s.buildingId) continue;
     yield { lat: s.lat, lon: s.lon, p: truth ? Number(Boolean(s.infectious)) : s.p, indoor: Boolean(s.buildingId) };
   }
 }
@@ -431,6 +483,8 @@ async function main() {
     loadRooms(dataUrl),
   ]);
   const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
+  setSimMap({ buildings: runBuildings.outlines,
+    paths: await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null) });
   const data = toFrames(res.data, res.fields, runBuildings.names);
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
   const model = data.beliefFrom === 'column' ? null : await loadModel(dataUrl, [...new Set(data.samples.map((a) => a.id))]);
@@ -464,12 +518,14 @@ async function main() {
     for (const track of tracks.values()) { const st = stateNow(track, t); if (st) out.push(st); }
     return out;
   };
+  // The trail only keeps where people stayed (inside a building): a room still reads warm after they
+  // leave, but a walker leaves no ghost cloud behind the dot. No people field: nothing masks by it.
   const heatAt = (t, nowStates = null, truth = false) => {
     field.clear();
     MEMORY_W.forEach((w, k) => {
-      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000), truth), w);
+      field.deposit(asPoints(k === 0 && nowStates ? nowStates : statesAt(t - k * MEMORY.stepMin * 60000), truth, k > 0), w);
     });
-    return field.diffuse(DEMO.sigmaM);
+    return field.diffuse(DEMO.sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
   const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
@@ -733,7 +789,10 @@ async function main() {
       for (const a of current.values()) {
         if (dotSample && !dotSample.has(a.id) && a.id !== selected) continue;
         const m = dotFor(a.id);
-        m.setLatLng([a.lat, a.lon]).setStyle({ fillColor: dotColor(a, mode) });
+        // Only touch dots that changed: each update makes Leaflet repaint the canvas around that dot.
+        const ll = m.getLatLng(), fill = dotColor(a, mode);
+        if (ll.lat !== a.lat || ll.lng !== a.lon) m.setLatLng([a.lat, a.lon]);
+        if (m.options.fillColor !== fill) m.setStyle({ fillColor: fill });
         if (!dotLayer.hasLayer(m)) dotLayer.addLayer(m);
       }
     }
@@ -821,7 +880,7 @@ async function main() {
   horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
   document.querySelector('.options').append(horizon);
   const basePick = Object.assign(document.createElement('select'), { id: 'basemap', ariaLabel: 'Map style' });
-  basePick.append(new Option('Street map', 'streets'), new Option('Illustrated campus', 'drawn'));
+  basePick.append(new Option('Sim map', 'sim'), new Option('Street map', 'streets'), new Option('Illustrated campus', 'drawn'));
   basePick.value = baseStyle;
   basePick.addEventListener('change', () => setBaseStyle(basePick.value).then(() => { basePick.value = baseStyle; }));
   document.querySelector('.options').append(basePick);
