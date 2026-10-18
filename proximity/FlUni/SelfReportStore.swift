@@ -1,7 +1,7 @@
 import Foundation
 
-/// Keeps the user's self-report details on this phone only (UserDefaults, JSON) and applies the rules in
-/// Core/SelfReport.swift. The only thing that leaves the phone is the 3-level status, through
+/// Keeps the user's self-report details on this phone only (a JSON file in Application Support, encrypted while
+/// the phone is locked) and applies the rules in Core/SelfReport.swift. The only thing that leaves the phone is the 3-level status, through
 /// ProximityModel.setMyStatus; symptoms, dates and test kinds are never broadcast.
 final class SelfReportStore: ObservableObject {
     @Published private(set) var record: SelfReportRecord
@@ -9,17 +9,30 @@ final class SelfReportStore: ObservableObject {
     @Published var notice: String?
 
     let reporter: SelfReporter
-    private let defaults: UserDefaults
-    private static let key = "selfReportRecord"
+    private let url: URL?
+    private var observer: NSObjectProtocol?
+    /// Posted by "Delete my data" so every live store forgets its in-memory copy.
+    static let didDeleteData = Notification.Name("fluni.didDeleteData")
 
-    init(calendar: Calendar = .current, defaults: UserDefaults = .standard) {
+    static var defaultURL: URL? {
+        try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("self-report.json")
+    }
+
+    init(calendar: Calendar = .current, defaults: UserDefaults = .standard, url: URL? = SelfReportStore.defaultURL) {
         self.reporter = SelfReporter(calendar: calendar)
-        self.defaults = defaults
-        if let data = defaults.data(forKey: Self.key), let r = try? JSONDecoder().decode(SelfReportRecord.self, from: data) {
-            record = r
-        } else {
-            record = SelfReportRecord()
+        self.url = url
+        record = SelfReportRecord()
+        if let url, let r = SelfReportFile.load(url: url, defaults: defaults) { record = r }
+        observer = NotificationCenter.default.addObserver(forName: Self.didDeleteData, object: nil, queue: .main) { [weak self] _ in
+            self?.record = SelfReportRecord(); self?.notice = nil
         }
+    }
+
+    deinit { if let observer { NotificationCenter.default.removeObserver(observer) } }
+
+    private func save() {
+        if let url { SelfReportFile.save(record, to: url) }
     }
 
     /// Call when the model's status may have changed behind our back (first appearance, Developer tools).
@@ -30,7 +43,7 @@ final class SelfReportStore: ObservableObject {
 
     private func set(_ r: SelfReportRecord) {
         record = r
-        if let data = try? JSONEncoder().encode(r) { defaults.set(data, forKey: Self.key) }
+        save()
     }
 
     private func commit(_ r: SelfReportRecord, to model: ProximityModel) {
