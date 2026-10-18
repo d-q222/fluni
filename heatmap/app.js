@@ -311,7 +311,7 @@ async function loadBuildings(dataUrl) {
 //   walls at any zoom and never show through into the next room. Close up (zoom >= ROOM_ZOOM) the walls of
 //   the rooms in view are drawn too, thin and faint, so the audience sees what stops the heat.
 // - Airflow (setGrid): a whole grid painted by paint(), scaled onto the view, unclipped.
-const VIEW_PAD = 0.15, ROOM_ZOOM = 18; // from ROOM_ZOOM heat is per room and the room walls are drawn
+const VIEW_PAD = 0.15, ROOM_ZOOM = Infinity; // product owner: each building is one heat zone at every zoom (no room zones or walls)
 const CanvasLayer = L.Layer.extend({
   initialize(bounds) {
     this.bounds = L.latLngBounds(bounds);
