@@ -288,6 +288,14 @@
     @media (prefers-reduced-motion: reduce) { #phone #ph-today .choices button img { transition: none; } }
     /* Lisa's hand-drawn alert "!" (assets/icons/alert.png) in the heads-up / close-contact strip */
     #phone #ph-today .strip .ico { width: 26px; height: 26px; margin-top: -1px; flex: none; }
+    /* Lisa's hand-drawn recovery markers (assets/track/): done sage, today ember with a double ring, still to come empty */
+    #phone #ph-today .track .d i { width: 22px; height: 22px; border: 0; border-radius: 0; box-shadow: none;
+      background: url("assets/track/upcoming.png") center / contain no-repeat; }
+    #phone #ph-today .track .d.done i { background-image: url("assets/track/done.png"); }
+    #phone #ph-today .track .d.today i { width: 28px; height: 28px; margin: -3px 0; background-image: url("assets/track/today.png"); }
+    #phone[data-theme="night"] #ph-today .track .d i { background-image: url("assets/night/track/upcoming.png"); }
+    #phone[data-theme="night"] #ph-today .track .d.done i { background-image: url("assets/night/track/done.png"); }
+    #phone[data-theme="night"] #ph-today .track .d.today i { background-image: url("assets/night/track/today.png"); }
     .presenter button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
