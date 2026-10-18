@@ -85,6 +85,12 @@ enum Fusion {
         !e.sources.isEmpty && e.sources.allSatisfy { $0 == .gps } && e.sigma > maxGPSOnlySigma
     }
 
+    /// The distance the risk dose uses (RiskEstimate): the fused distance, or nil when the only evidence is
+    /// coarse GPS (it can't tell 2 m from 25 m) or the distance isn't a finite, non-negative number.
+    static func doseDistance(_ e: Estimate) -> Double? {
+        isCoarseGPSOnly(e) || !e.distance.isFinite || e.distance < 0 ? nil : e.distance
+    }
+
     /// P(true distance <= 6 ft) under a normal error model.
     static func pClose(_ e: Estimate) -> Double {
         guard e.distance.isFinite, e.sigma.isFinite else { return 0 }
