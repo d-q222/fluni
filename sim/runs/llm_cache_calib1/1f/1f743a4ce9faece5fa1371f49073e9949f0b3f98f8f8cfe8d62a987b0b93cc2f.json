@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:35",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:55"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "home",
+    "start": "09:40"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS194W_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:15",
+    "place": "class:BIOE141B_LBS02",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:25",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "plan:bld_232805685_f1_101",
+    "start": "18:10"
+   },
+   {
+    "activity": "relax",
+    "end": "21:15",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "21:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Friday: usual classes, labs, and meals, masked indoors. Feeling fine but still a bit anxious since Dylan said things are going around the dorm.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll keep my usual Friday routine: breakfast, study, class, lab, and evening lab work. I'll stay masked indoors since Dylan mentioned things going around the dorm. I'm a bit anxious but nothing needs to change. I'll try to sleep a little earlier than the autopilot schedule.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

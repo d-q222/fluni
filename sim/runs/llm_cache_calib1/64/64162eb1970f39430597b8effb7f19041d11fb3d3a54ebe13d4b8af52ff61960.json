@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah, seems smart with people in the dorm sick. You feeling okay?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yes, definitely! I'm supposed to eat with Dakota too, so perfect. Let's grab a table, I've got until the gym later.",
+  "shared_health": false
+ }
+}

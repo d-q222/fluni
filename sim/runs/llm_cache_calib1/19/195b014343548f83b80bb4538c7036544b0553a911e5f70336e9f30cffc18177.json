@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Tyler! Heading to the hangout too? I'm masked up and keeping some distance since a few people got FlUni notices, hope that's cool.",
+  "shared_health": false
+ }
+}

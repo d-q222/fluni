@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for telling me, Sidney. That sounds rough. Have you been to Vaden yet? You should get checked and stay in if you can. Feel better.",
+  "shared_health": false
+ }
+}

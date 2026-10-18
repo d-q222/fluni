@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Emerson! Yeah, just for a bit, staying near the edge and leaving early. I've heard the fever rumors too, so I'm keeping my mask on. I feel fine though, you?",
+  "shared_health": true
+ }
+}

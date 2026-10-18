@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Heads up, I heard Teagan and Chris from our dorm have fever and cough, tests still pending. I'm feeling fine, just keeping my mask on and skipping the hangout tonight. You?",
+  "shared_health": true
+ }
+}

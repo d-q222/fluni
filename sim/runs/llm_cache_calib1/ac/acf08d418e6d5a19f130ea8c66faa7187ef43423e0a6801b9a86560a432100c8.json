@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Campbell that Skyler is awaiting a flu test and Sidney is sick, and suggested they skip the hangout. Campbell may pop in briefly and promised to text me Skyler's result. I'm still going home to study and sleep early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

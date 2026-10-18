@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan, you headed to study after dinner too? I'm going to Green in a bit.",
+  "shared_health": false
+ }
+}

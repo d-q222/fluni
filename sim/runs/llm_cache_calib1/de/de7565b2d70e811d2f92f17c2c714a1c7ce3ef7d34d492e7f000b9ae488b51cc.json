@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Lake at breakfast; they feel fine and heard Hadley and Sidney look rough. Still masking and keeping my plan, skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

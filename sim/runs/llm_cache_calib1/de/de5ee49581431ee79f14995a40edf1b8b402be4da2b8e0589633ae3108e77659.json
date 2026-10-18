@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! How's your Sunday going? You feeling okay with all the illness rumors going around?",
+  "shared_health": false
+ }
+}

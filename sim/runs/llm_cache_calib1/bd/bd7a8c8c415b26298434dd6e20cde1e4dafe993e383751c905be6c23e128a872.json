@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, totally fine, I'm good for all of it. Taper, lounge, party, count me in. Let's grab food first, I'm so hungry.",
+  "shared_health": true
+ }
+}

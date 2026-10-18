@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey, yeah I'm fine too, nothing off. Haven't heard from Wesley. Dell said Oli's coughing and Chris has a fever, so I'm avoiding the lounge. Let's keep telling each other if anything changes.",
+  "shared_health": true
+ }
+}

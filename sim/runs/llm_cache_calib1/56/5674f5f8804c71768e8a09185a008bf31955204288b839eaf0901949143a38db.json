@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, always in indoor spaces. I feel fine, just worried about catching something before midterms. You feeling okay?",
+  "shared_health": true
+ }
+}

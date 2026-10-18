@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! What's up, you hanging at Taper for a bit? I'm just chilling before heading to White Plaza later, you should come.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Onyx I'm skipping the Arizona game tonight because crowds make me nervous. Onyx suggested maybe hanging in the dorm lounge later; I didn't commit.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

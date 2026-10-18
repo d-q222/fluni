@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "11:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "13:00",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "rest",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Still feverish and achy. The app says stay home until Wed, so I rested in my room all day and skipped the game and the library. Anxious about the hangout exposure, but thankful for Aspen and Emerson.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Aspen, really appreciate it. Staying in until Wednesday per the app. My test was negative but I still feel rough, so please keep your distance and keep the mask on. If I need anything I'll text you.",
+    "time": "",
+    "to": "A0190"
+   }
+  ],
+  "thoughts": "I'm feverish and achy, and the app says stay home until Wed. My test was negative, but I still feel awful and might be sick, so I'm staying in. I'll sleep, rest, and drink fluids. I'll text Aspen a quick thanks and ask them to keep their distance. I'll skip the library and the football game. I'll eat in my room with whatever I have and maybe have Aspen drop something off outside the door.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

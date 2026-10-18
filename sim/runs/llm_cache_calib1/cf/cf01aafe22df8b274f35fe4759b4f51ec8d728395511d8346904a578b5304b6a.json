@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Mika is masked and skipping the hangout; they said Skyler is awaiting a flu test and Sidney is sick too. I promised to text Mika and Umi when I hear Skyler's result, and I might only pop into the hangout briefly.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Heard Skyler's waiting on a flu test and Sidney's sick too. Anyone know the result? I'll share as soon as I hear. Still thinking about just popping in at the hangout.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

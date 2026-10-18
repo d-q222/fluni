@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Carter and Onyx at Lakeside before Taper. Carter feels fine, is being careful and will bail from the lounge if people cough; I said I'd do the same. Keeping my plans, no mask.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "07:55"
+   },
+   {
+    "activity": "eat",
+    "end": "09:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:25"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:05"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:MATH62CM_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:PWR2RE_SEM02",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CS106B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "plan:bld_1169967277_f2_202",
+    "start": "14:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:35",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "17:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:35",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "00:50",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "22:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:45",
+    "place": "home",
+    "start": "00:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:45"
+   }
+  ],
+  "diary": "Wednesday: sticking to my usual routine of classes, lab and study. Feeling fine, still watching for illness and checking in with Finley.",
+  "messages": [],
+  "thoughts": "Feeling fine. Disciplined routine: class, lab, study. Finley is a possible close-contact situation through Wesley, so I'll stay watchful and keep checking in, but nothing warrants changing plans. Stay on the usual schedule.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

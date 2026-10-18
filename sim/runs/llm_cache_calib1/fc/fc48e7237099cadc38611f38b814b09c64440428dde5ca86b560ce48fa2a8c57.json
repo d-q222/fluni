@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Glad you're okay! I'm feeling fine too, just masking to be safe. Are you going to the dorm hangout tonight? I'm heading over around 8:30.",
+  "shared_health": true
+ }
+}

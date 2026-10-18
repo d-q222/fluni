@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Good to see you. You doing okay? Heard Dakota and Chris in the dorm tested positive, so I'm keeping things short and masking tonight.",
+  "shared_health": false
+ }
+}

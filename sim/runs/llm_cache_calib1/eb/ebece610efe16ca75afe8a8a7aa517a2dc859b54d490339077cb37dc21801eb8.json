@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Campbell in the Lucie Stern lobby; they're doing a short lounge lap because people in the dorm are sick. I told them about the party at EV00081 around 10:25 and said to skip it if they feel off. Both feel fine and will keep distance from anyone coughing.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

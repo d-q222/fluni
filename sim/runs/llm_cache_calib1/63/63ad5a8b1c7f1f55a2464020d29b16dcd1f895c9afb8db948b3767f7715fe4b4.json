@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Winter at the Arizona game; I'm wearing a mask I forgot about because I'm wary of the coughing, but I feel fine. Sitting with Winter, Carter, Dakota, Wynn, Dell and Onyx.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

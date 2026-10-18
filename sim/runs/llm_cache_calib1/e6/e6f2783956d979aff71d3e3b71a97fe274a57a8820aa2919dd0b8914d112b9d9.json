@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel totally fine, just keeping an eye out. Onyx offered me a spare mask for the lounge tonight, so maybe I'll take it. Let's grab food, then Taper after?",
+  "shared_health": true
+ }
+}

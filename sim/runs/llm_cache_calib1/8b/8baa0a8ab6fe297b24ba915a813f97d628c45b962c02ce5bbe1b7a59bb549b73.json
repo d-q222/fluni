@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Bryce, who is masked and feeling fine. I mentioned Scout's close contact exposure. Keeping my mask on and watching for symptoms; heading to study then class.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

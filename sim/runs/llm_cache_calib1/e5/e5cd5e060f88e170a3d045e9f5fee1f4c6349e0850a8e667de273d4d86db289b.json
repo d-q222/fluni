@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, I'm masking too. Hope lab goes okay, see you around!",
+  "shared_health": false
+ }
+}

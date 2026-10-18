@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Stevie told me Dakota and Chris tested positive; Stevie is masked, feels fine, and heading to their room. I said I'd text them how my 2:15 Vaden test goes.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

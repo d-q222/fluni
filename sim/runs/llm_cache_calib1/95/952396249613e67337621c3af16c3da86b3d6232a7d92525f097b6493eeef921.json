@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Rain also feels fine but was near Teagan Thursday; both of us are masking and skipping the dorm hangout. We agreed to share Teagan's test result if we hear anything and to check Vaden if symptoms start.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

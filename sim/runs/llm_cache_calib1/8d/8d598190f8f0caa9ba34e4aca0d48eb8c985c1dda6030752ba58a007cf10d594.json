@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Neo from my dorm feels fine, app quiet, keeping distance since flu is confirmed in the dorm. We agreed to text if anything changes. Sticking with my low-key plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

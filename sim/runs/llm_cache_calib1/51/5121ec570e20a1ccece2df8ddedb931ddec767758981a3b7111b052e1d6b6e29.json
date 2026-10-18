@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:ARCHLGY103_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:40",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:50"
+   },
+   {
+    "activity": "gym",
+    "end": "18:15",
+    "place": "bld:bld_232805714",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "event:EV00073",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "22:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Thu Jan 8: Stern was crowded so I ate quickly masked. Plan class, lab, gym, a quieter dinner, and a short dorm hangout, still keeping distance from Sawyer until their test result.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 41 people and Sawyer from my dorm is awaiting a flu test. I feel fine and keep my mask on. I'll finish eating quickly, then stick to my routine of class, lab, and gym. I'll skip the crowded dinner at Stern and eat at a quieter dining hall. The dorm hangout is probably fine briefly, but I'll keep my mask on and leave early.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

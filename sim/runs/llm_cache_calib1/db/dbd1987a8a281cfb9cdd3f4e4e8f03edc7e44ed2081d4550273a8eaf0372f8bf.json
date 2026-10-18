@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey. Any word on Jesse's test result yet?",
+  "shared_health": false
+ }
+}

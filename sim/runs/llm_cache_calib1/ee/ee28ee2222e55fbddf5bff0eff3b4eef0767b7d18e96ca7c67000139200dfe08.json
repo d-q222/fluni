@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Salem at the dorm hangout; both of us feel fine. Agreed to text each other if either starts feeling off and to keep some distance from Sidney and Bailey.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

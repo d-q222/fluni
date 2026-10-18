@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ugh, that's not reassuring. Thanks for telling me. I'll keep masking and probably skip the lounge thing tonight. Stay healthy, Ocean!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey True! Yeah, still masking with all the rumors going around. I feel fine though, just a little worried about getting sick. You good?",
+  "shared_health": true
+ }
+}

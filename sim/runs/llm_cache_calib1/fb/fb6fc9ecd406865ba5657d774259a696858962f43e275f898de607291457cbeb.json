@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same here, pretty normal day. Classes, and I've been a little wary of everything going around too. I feel fine though, just being careful. Study group in the lounge after dinner for me.",
+  "shared_health": true
+ }
+}

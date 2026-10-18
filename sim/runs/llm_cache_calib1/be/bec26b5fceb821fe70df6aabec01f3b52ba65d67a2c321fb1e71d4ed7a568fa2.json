@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:15",
+    "place": "home",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:AA214_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "gym",
+    "end": "12:35",
+    "place": "bld:bld_6593510",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "12:55"
+   },
+   {
+    "activity": "gym",
+    "end": "14:20",
+    "place": "bld:bld_6593510",
+    "start": "13:25"
+   },
+   {
+    "activity": "study",
+    "end": "15:55",
+    "place": "home",
+    "start": "14:35"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:50",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:50",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:05"
+   },
+   {
+    "activity": "study",
+    "end": "19:15",
+    "place": "bld:bld_232841950",
+    "start": "18:00"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:00",
+    "place": "event:EV00001",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "First Monday of the quarter: class, gym, study group at Green Library tonight, and hopefully catching up with Dell at White Plaza. Feeling fine, just a little wary of illness going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_m_white_plaza",
+    "text": "Hey Dell! Want to hang out at White Plaza after class and catch up on the new quarter?",
+    "time": "17:05",
+    "to": "A0126"
+   }
+  ],
+  "thoughts": "First Monday of the quarter, feeling fine. I'll stick close to my routine: sleep, class, gym, some outdoor time with friends, and the study group at Green Library tonight. I'll grab lunch and dinner-ish snacks, and invite a friend to White Plaza. Slightly worried about illness but not enough to change plans.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

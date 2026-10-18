@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:35"
+   },
+   {
+    "activity": "study",
+    "end": "14:10",
+    "place": "bld:bld_m_green_library",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "bld:bld_m_green_library",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Feel fine but worried with Oli sniffling and Chris and Dakota positive. I'm masking, studying out of the room at Green, skipping the game and dorm hangout.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "x",
+    "time": "",
+    "to": "A0061"
+   }
+  ],
+  "thoughts": "Oli is sniffling next to me and Chris and Dakota are positive. I feel fine but I'm worried. I'll keep a mask on around Oli, get out of the room for a while to study at Green Library, grab food, and skip the game and dorm hangout. I'll text Carter to check in and maybe look at Vaden if I feel off.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

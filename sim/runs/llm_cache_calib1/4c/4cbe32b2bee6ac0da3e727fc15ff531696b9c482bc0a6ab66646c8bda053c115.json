@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds like a plan, I'll bail too if people are hacking. Let's grab food, I'm starving.",
+  "shared_health": false
+ }
+}

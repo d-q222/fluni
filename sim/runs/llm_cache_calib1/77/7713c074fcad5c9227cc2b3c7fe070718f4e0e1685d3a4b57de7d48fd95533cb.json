@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan. Heads up, Teagan has a fever and I was near them Thursday at Stern, so I'm keeping my distance. I feel fine though. Have you heard anything about their test?",
+  "shared_health": true
+ }
+}

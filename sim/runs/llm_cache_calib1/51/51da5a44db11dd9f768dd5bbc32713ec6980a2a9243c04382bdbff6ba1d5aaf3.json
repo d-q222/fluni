@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:50",
+    "place": "home",
+    "start": "08:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:25",
+    "place": "bld:bld_m_the_oval",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:MATH62CM_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "11:35",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "lab",
+    "end": "13:55",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "17:20",
+    "place": "plan:bld_1169967277_f2_201",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:25",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "21:30",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:50",
+    "place": "home",
+    "start": "21:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Tuesday plan: usual routine of class, lab, study and meals. Feeling fine, still a little watchful about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine. Illness is going around, so I'll stay watchful and tell Finley if I feel off. Organized day: class, lab, study, meals.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

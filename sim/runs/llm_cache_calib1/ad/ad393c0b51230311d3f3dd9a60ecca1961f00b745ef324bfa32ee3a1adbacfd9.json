@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Pretty chill, just relaxing before class at 11:15. Honestly the masks feel smart lately, a friend of mine got a FlUni alert and is waiting on test results. Anyway, enjoy the gym!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:40",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "plan:bld_m_green_library_f3_311",
+    "start": "11:45"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:40",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:10",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "gym",
+    "end": "17:15",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:50",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:20",
+    "place": "bld:bld_232841950",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "event:EV00099",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Plan is class, gym, dinner, then the dorm hangout, staying a bit away from anyone coughing. Feel fine and will sleep earlier tonight.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit wary of the fever rumors in Stern, but I'm social and calm. I'll follow my usual routine, go to classes and the dorm hangout, but skip the late Taper study and sleep earlier. I'll keep distance from anyone coughing.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

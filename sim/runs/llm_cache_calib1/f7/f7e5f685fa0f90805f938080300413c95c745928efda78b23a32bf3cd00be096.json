@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Library first, then CHEM 31B at 10:30. I noticed the mask, everything okay? You feeling alright?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Devon this morning; both of us feel fine, no word from Wesley. We'll text each other if anything changes. Keeping my mask on and sticking to my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

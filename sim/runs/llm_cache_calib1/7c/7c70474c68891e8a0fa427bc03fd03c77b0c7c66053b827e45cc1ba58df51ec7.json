@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:45",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:35",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "21:45"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "23:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Dinner at crowded Stern, then study group and hanging out at Taper as usual. Feeling fine, only slightly worried about illness going around.",
+  "messages": [],
+  "thoughts": "Stern is crowded, but I feel fine and I'm very social. I'll finish dinner with friends, head to the study group and hang out at Taper like usual, then go home to relax and sleep. I won't bother with a mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

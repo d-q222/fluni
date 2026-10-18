@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Briefly mixed up study rooms with Lux, a stranger in Lathrop Library; they were friendly and I moved to the room next door. Nothing else changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

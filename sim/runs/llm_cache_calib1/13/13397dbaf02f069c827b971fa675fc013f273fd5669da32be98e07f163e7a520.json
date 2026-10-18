@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Lake! Yeah, Max just told me. I can't make 8:50, I've got something at 8:45, but have a good lift. See you at practice later!",
+  "shared_health": false
+ }
+}

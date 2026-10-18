@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lux! I'm feeling fine, just being careful since stuff's going around. Wallace is a close contact for me too, so we might've crossed paths. Are you feeling okay? Maybe test or mask up for a bit.",
+  "shared_health": true
+ }
+}

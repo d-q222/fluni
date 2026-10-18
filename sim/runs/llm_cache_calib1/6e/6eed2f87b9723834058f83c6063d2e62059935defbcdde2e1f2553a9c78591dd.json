@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "11:30",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "rest",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Feverish and achy, so I stayed in my room all day resting, skipping CHEM 31B, the study group and the hangout. Very worried about spreading it.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks both. Staying in and resting today, skipping class and the study group. Will keep you posted.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I woke up feverish with chills, cough, sore throat and body aches. I already told my friends. The sensible thing is to stay in my room and rest all day, skip CHEM 31B and the study group, and avoid the dorm hangout. I'll sleep more, drink water, and maybe do light studying from bed. I might grab food at Stern only if I really need it, but better to stay in. Very worried about spreading it.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

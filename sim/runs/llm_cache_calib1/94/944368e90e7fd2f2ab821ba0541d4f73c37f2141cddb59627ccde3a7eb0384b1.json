@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Neo. Yeah, I heard something like that too. I'm feeling fine, just staying masked and avoiding the lounge. How about you?",
+  "shared_health": true
+ }
+}

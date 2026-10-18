@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "12:35"
+   },
+   {
+    "activity": "rest",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Thursday: flu test was negative but I still feel awful with fever and aches. I told the group, am staying isolated in my room and skipping the hangout, and will rest tonight.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my flu test came back negative, but I still have fever, chills and cough, so I'm staying in my room and skipping the hangout. Will keep you posted. Stay healthy!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "My flu test came back negative, but I still have fever, chills, cough and aches, and I was exposed to Sidney. The app says might be sick. Best to stay in my room, rest, drink fluids and keep isolating. Skip the hangout and class. I'll text the group a quick update so they know it was negative but I'm still staying in.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

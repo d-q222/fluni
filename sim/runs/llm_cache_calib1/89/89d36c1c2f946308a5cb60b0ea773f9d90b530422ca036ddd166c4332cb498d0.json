@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey True. Just a heads up, I heard Dakota and Chris in the dorm tested positive, so I'm keeping my mask on and keeping some distance. You doing okay?",
+  "shared_health": false
+ }
+}

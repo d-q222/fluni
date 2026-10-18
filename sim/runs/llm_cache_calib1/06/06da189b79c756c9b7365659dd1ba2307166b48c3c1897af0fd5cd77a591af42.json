@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Winter at Taper; they invited me to hang out at Taper tonight but I declined because of practice, dinner, lifting and studying. Nobody mentioned being sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

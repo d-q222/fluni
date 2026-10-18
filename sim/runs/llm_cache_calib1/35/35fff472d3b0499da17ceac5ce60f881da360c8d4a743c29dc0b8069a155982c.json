@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, let's sit together! Game starts around 1:15 I think, so I'll find you there. Text me where you end up.",
+  "shared_health": false
+ }
+}

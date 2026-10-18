@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "I'm feeling fine, no symptoms, just keeping my mask on and some distance. Wait, dorm exposure notices? I hadn't heard about that, did you get flagged by FlUni? Hope you stay okay!",
+  "shared_health": true
+ }
+}

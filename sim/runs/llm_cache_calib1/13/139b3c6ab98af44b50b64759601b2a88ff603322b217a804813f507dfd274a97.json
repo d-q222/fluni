@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "home",
+    "start": "08:20"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:BIO82_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:35",
+    "place": "bld:bld_232841950",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:COLLEGE102_SEM34",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "dorm_lounge",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Thu Jan 8: normal class day, Lakeside dinner with friends and a chill evening in the lounge. Feeling fine, still a little wary of the coughing going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_1040629370",
+    "text": "Dinner at Lakeside at 6:15 tonight? Who's in?",
+    "time": "18:15",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Thursday. I feel fine, so I'll keep my normal routine: sleep, class, Taper, lunch at Stern, seminar, and dinner with friends. I'm a little wary of the coughing around, so I'll be careful but not skip anything. I'll invite friends to dinner and maybe hang out in the evening.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

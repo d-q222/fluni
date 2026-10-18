@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Finley at Stern lunch; both of us feel fine, masked and anxious. We'll keep our distance and text if anything feels off. I'm heading to the library.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell, what's up? Grabbing lunch before the gym?",
+  "shared_health": false
+ }
+}

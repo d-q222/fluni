@@ -1,0 +1,54 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "18:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "relax",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Sat Jan 10: Stern was crowded, so I ate fast with my mask on and went back to my room to study. Feel fine but still worried.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 48 people and I'm already worried. I'll finish my meal quickly with my mask on and head back to my room. The game is off, so nothing pulls me out. I'll stay in, study, relax, grab a quick masked dinner, and sleep. Still feel fine, so no testing needed.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

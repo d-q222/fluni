@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:35",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:40",
+    "place": "home",
+    "start": "12:05"
+   },
+   {
+    "activity": "lab",
+    "end": "16:10",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "lab",
+    "end": "21:00",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "21:10"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Feel fine but worried with Sidney and Bailey both sick. Keeping class and lab, skipping the gym and hangout, studying in my room, watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope you feel better soon, Bailey. Text if you need anything dropped off. I'm fine so far, keeping distance.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "I feel fine, though Sidney and Bailey are both sick, so I'm worried. I'll keep my usual classes and lab since I follow health advice and have no symptoms, skip the gym, and eat quickly. I'll study in my room more and stay distant from people. I'll keep watching for symptoms and go to Vaden if anything shows up.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hadley and Sidney looked rough, and Wynn said Chris tested positive. I'm not masked right now, but I'll keep my distance. See you at the game!",
+  "shared_health": true
+ }
+}

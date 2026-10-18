@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dakota at Lakeside; they feel fine, I feel fine, offered a spare mask. Still on for Taper, then a short masked lounge stop, and we'll bail if people cough.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

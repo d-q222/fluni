@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "11:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:50"
+   },
+   {
+    "activity": "study",
+    "end": "14:10",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "health_visit",
+    "end": "15:05",
+    "place": "bld:bld_26250731",
+    "start": "14:15"
+   },
+   {
+    "activity": "rest",
+    "end": "18:00",
+    "place": "home",
+    "start": "15:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "study",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "22:55",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:55"
+   }
+  ],
+  "diary": "Sun Jan 11: Heard two people in my dorm tested positive. I feel fine but I'm more worried. Masked lunch, Vaden test at 14:15, then staying in my room.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Stevie. I feel fine too, getting tested at Vaden today and staying in my room otherwise. Stay safe!",
+    "time": "",
+    "to": "A0123"
+   }
+  ],
+  "thoughts": "Stevie's warning that two people in my dorm tested positive makes me more nervous. I feel fine, but I'm sticking with the plan: grab a quick masked lunch (or maybe take it back), keep to my room, and go to Vaden masked for a test at 14:15. Then I'll stay in and rest. I'll also skip the game.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

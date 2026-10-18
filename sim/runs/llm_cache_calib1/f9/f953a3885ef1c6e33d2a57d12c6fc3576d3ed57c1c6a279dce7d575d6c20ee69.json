@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler, morning. Heading to lift at 8:50 with Lake if you want to come.",
+  "shared_health": false
+ }
+}

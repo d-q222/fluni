@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Fine here too, no symptoms. Okay, just text me when you hear so I can tell Neo. I'll keep masking in the room till then.",
+  "shared_health": true
+ }
+}

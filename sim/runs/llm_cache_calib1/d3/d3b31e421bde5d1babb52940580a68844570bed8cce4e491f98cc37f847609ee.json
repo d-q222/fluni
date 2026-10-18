@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "It's the one at event EV00081, starts around 10:25. Come by after your lounge lap if you feel up for it. Just skip it if you start feeling off, okay?",
+  "shared_health": false
+ }
+}

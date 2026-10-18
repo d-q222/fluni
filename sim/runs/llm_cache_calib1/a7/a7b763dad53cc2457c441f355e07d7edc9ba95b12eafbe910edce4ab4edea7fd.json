@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Morgan at Stern Dining; Morgan may head home before 11pm, so I'll text them when I'm out of lab either way. Nothing else changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oli at Stern Dining that I was near Teagan (who tested positive) on Thursday; I feel fine and am masking. Oli is masked and headed to Green. Plans unchanged: study at home, lab tonight, watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

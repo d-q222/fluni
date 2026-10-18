@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "14:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "home",
+    "start": "14:00"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun: Still sick and isolating in my room, resting and masked. Asked Sawyer to leave dinner outside my door; still anxious about my roommate and friends.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Sawyer, that's really kind. Could you leave some soup, fruit and a water bottle outside my door around 19:00? Please knock and step away, and stay masked. I don't want you to get sick.",
+    "time": "",
+    "to": "A0050"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Oli! I'm okay, just resting and isolating until Wednesday. I'll let you know if I need anything.",
+    "time": "",
+    "to": "A0055"
+   }
+  ],
+  "thoughts": "I'm still sick and positive, and FlUni says isolate until Wednesday. I'll stay in my room, sleep, rest, and do light studying from bed. Sawyer keeps offering food, so I'll accept some Stern food left outside the door and thank them. I'm anxious about my roommate, so I'll stay masked.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

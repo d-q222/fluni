@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel totally fine too. Just chilling before lunch. Good that you're being careful with the mask anyway. See you at the dorm hangout tonight?",
+  "shared_health": true
+ }
+}

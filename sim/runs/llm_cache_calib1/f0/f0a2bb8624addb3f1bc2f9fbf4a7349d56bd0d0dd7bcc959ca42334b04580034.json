@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:35",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_203",
+    "start": "22:40"
+   },
+   {
+    "activity": "relax",
+    "end": "01:40",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:40"
+   }
+  ],
+  "diary": "Friday evening: Stern was crowded so I ate quickly with my mask on, then went back to my room. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded with 43 people. I feel fine but a bit wary, so I'll finish eating quickly with my mask on and head back to my room. Staying home is my default anyway. Later I may still go to Green Library, since it's my routine, but it's late and likely quiet.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

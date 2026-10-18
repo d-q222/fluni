@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Finley. Still feeling okay? I'm fine, just working on problem sets before lab at 8:45.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! You heading to the Arizona game tonight? A bunch of us are going to Maples after dinner.",
+  "shared_health": false
+ }
+}

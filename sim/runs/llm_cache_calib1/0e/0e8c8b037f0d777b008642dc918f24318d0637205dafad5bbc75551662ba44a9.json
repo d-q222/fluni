@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Lake I feel fine but I'm being careful since Chris tested positive and I saw Dakota Thursday. Lake feels fine too. I'm heading home after dinner to stay in and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

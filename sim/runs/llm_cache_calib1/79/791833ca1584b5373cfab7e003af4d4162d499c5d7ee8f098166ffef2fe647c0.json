@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chris is coming to the Arizona game; we agreed to meet outside the dorm around 5:30 and head to Maples together. I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

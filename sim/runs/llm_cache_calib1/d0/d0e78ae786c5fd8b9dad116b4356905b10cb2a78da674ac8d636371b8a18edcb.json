@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "lab",
+    "end": "21:45",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "01:00",
+    "place": "bld:bld_1169967277",
+    "start": "22:00"
+   },
+   {
+    "activity": "relax",
+    "end": "02:00",
+    "place": "home",
+    "start": "01:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:00"
+   }
+  ],
+  "diary": "Friday evening: ate quickly at crowded Stern, then lab and quiet study at Breer. Feel fine, still a bit wary of the flu.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded and I'm wary of the flu. I'll grab food quickly, then head to lab as usual. After lab, study at Breer, which is quiet, then go home to sleep a bit earlier than usual.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

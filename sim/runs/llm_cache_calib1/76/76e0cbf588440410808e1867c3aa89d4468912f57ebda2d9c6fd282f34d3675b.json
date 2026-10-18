@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "14:35",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "14:40"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:45",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:45"
+   }
+  ],
+  "diary": "Teagan tested positive. I feel fine but may be exposed, so I'm masking, avoiding crowds, keeping to lab, meals, and home. Watching for symptoms; fairly worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're sick, Teagan. Rest up and drink lots of fluids. I'll watch my symptoms and keep my distance, but let me know if you need anything.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan tested positive and I was possibly exposed Wednesday. I feel fine but should be careful. I'll keep my routine mostly, but limit crowds: sleep in, eat, a little lab, skip the crowded dining at dinner if possible. I'll watch symptoms and keep a mask on. Reply to the group offering to help Teagan by leaving water outside their door is risky; I'll just send a brief supportive text.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

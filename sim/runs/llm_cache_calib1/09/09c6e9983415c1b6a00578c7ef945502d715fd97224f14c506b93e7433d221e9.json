@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh wow, thanks for the heads up. I feel fine too, just keeping an eye out. Staying in sounds smart. Hope you stay healthy, text me if you need anything!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with roommate Finley (masked, feels fine, a bit anxious) at 00:45; Wesley was fine and staying in as of last word. We'll text if anything changes. I'm going to sleep as planned.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

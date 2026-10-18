@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, fair! I'm skipping the lounge though, Oli's been coughing right by me all day. Taper's still on, then I'll probably head home. Come find me after if you bail early!",
+  "shared_health": false
+ }
+}

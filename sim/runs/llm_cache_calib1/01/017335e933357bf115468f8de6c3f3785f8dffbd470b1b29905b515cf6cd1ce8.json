@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Morgan confirmed Teagan tested symptomatic with flu symptoms; Morgan was near Teagan Wednesday, is masked, feels fine. We agreed to watch for symptoms, go to Vaden if any appear, and share test news. I'm still skipping the hangout and going to lab.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

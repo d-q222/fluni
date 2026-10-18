@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon. Morning. Fair warning, I'm feeling kind of off today, fever and a cough, so I'm going to keep a bit of distance.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "rest",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "rest",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Friday: still feverish despite the negative flu test. Staying isolated in my room, skipping class and lab, resting and drinking fluids, and keeping the group updated.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks everyone. Flu test was negative but I still have fever and aches, so I'm staying in my room today. I'll text if I need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Still feverish and achy even though the flu test came back negative. The app says I might be sick, so I'll stay in my room, rest, and skip class and lab. Maybe I'll email the TA about the problem set. I'll sleep a lot, drink fluids, and eat only if I can get food dropped at my door, or maybe go for a quick meal when no one is around. Better to stay home.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

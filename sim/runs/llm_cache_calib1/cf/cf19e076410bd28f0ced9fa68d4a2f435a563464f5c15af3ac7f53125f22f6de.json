@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, I'll probably be there around 11 after lab. I'll text you if I'm heading up. See you later!",
+  "shared_health": false
+ }
+}

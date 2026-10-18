@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, yeah just tired from lifting, I feel fine otherwise! Good on Eden for being careful though. Is Eden actually sick or just playing it safe?",
+  "shared_health": true
+ }
+}

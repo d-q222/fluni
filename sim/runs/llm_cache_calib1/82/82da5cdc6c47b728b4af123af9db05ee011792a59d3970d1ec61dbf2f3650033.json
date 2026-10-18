@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, Rain. Yeah, Teagan texted me too. I feel fine, just masking and skipping the hangout. Let me know if you hear about the test results.",
+  "shared_health": true
+ }
+}

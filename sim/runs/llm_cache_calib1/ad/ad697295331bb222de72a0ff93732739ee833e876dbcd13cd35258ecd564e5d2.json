@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Onyx! Yeah I'm fine, just being careful since stuff's going around. I can't make the game though, I've got practice and gym tonight. Have fun!",
+  "shared_health": true
+ }
+}

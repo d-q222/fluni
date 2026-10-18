@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Yeah, same, I feel fine but I ate dinner with Dakota Friday so I'm keeping the mask on and watching for symptoms. Heading to the football game soon, then skipping the party and lounge. You doing okay?",
+  "shared_health": true
+ }
+}

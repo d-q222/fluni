@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told roommate Onyx I'm fine and masking only out of caution; Onyx said they feel fine too. Heading to the study group as planned.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

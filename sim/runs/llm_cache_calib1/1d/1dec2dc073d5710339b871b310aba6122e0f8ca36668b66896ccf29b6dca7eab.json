@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain. Yeah, I got flagged a few days ago, but my flu test came back negative and I feel fine. Still masking in crowds though. Are you getting tested?",
+  "shared_health": true
+ }
+}

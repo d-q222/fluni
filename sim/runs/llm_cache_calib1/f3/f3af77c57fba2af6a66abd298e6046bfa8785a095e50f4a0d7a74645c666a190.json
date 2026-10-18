@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Oakley at Stern; they're masked, feel fine, and know about Dakota and Chris testing positive. We both plan to stay in tonight, keep masking, and check in tomorrow.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, just being careful in the crowd, I feel fine. Heard a rumor about someone in a dorm with a fever, so I figured why not. You good?",
+  "shared_health": true
+ }
+}

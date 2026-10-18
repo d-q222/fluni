@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell is masked and feels fine, just careful since Oli has been coughing near them and Chris has a fever. They're doing Taper then heading home early; I asked them to text when home. I'm still masked up, plan unchanged, and will bail from the lounge if people cough.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Skyler about lifting with Lake at 8:50; Skyler can't come but will see me at practice later. Nothing changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

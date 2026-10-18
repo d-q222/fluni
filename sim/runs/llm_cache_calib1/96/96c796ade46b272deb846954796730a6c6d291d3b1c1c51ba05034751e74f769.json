@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, smart. I'm good, feeling totally fine. Gotta run to Green to study, catch you later!",
+  "shared_health": true
+ }
+}

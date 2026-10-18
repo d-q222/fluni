@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:45",
+    "place": "plan:bld_m_green_library_f2_205",
+    "start": "12:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "study",
+    "end": "19:30",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "00:10",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:50",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Sat Jan 10: Stern was crowded so I ate fast and left. Feel fine but anxious; masked library studying, skipping the game, avoiding the lounge, home for the evening.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 41 people, so I'll finish eating quickly and head to Green Library, masked. I'll stick to my routine, skip the football game, avoid the lounge, and go home for the evening. Dinner at Wilbur is fine if I mask up until I sit down and eat quickly.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

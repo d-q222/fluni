@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Campbell my flu test was negative and that I feel fine; they feel fine too, just a bit paranoid. Plan unchanged: head home, maybe Mark Taper later, masking in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

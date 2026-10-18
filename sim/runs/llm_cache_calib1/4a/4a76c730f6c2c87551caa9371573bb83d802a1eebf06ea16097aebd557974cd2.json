@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli. Yeah, it's packed, I'm just finishing up and heading out. You're wearing one too, so thanks for that.",
+  "shared_health": false
+ }
+}

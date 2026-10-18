@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with True at Mark Taper; they have Phil at 10:30 and practice later. We floated dinner after practice. Nobody mentioned being sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

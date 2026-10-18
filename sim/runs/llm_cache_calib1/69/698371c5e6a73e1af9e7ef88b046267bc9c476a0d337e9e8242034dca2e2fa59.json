@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sidney! Yeah, it's already a lot, and I have lab tonight too. I noticed the mask, everything okay or just being careful?",
+  "shared_health": false
+ }
+}

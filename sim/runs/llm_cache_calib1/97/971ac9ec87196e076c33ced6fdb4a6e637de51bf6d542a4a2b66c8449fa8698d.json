@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:30",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "relax",
+    "end": "13:35",
+    "place": "bld:bld_232805662",
+    "start": "12:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:05",
+    "place": "bld:bld_m_meyer_green",
+    "start": "13:40"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Dakota and Chris are sick and I was near Dakota. I feel fine, but I'm skipping the game and the party, masking around people, and keeping the day low-key. More worried now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Dakota and Chris! I was near Dakota too, so I'm skipping the game and the party, masking, and keeping it low-key. Will tell you if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota and Chris are sick and I was near Dakota. I feel fine, but I'm skipping the game and the party. I'll sleep in, then keep the day low-key and mask when I'm around people. I'll stay out of the room if Oli keeps coughing, but I'll take a quiet Taper hangout and dinner. I'll stay home tonight. I'll text the group to wish Dakota and Chris well and say I'm skipping too.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

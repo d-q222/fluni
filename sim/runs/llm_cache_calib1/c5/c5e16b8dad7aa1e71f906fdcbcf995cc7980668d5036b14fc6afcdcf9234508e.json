@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Did you hear Dakota and Chris in our dorm tested positive? I'm keeping my mask on and skipping the hangout tonight. You doing okay?",
+  "shared_health": false
+ }
+}

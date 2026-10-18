@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:35",
+    "place": "home",
+    "start": "07:25"
+   },
+   {
+    "activity": "study",
+    "end": "08:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "07:40"
+   },
+   {
+    "activity": "eat",
+    "end": "09:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "09:10"
+   },
+   {
+    "activity": "study",
+    "end": "12:45",
+    "place": "home",
+    "start": "11:05"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:PWR2KSC_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:40",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:40",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "17:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:20",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "19:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "event:EV00077",
+    "start": "21:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Plan a standard Thursday: Green study, PWR seminar, masked indoors, brief dorm hangout then early sleep. Feeling fine, still a bit cautious.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual Thursday routine: early Green Library study, meals at Stern, PWR seminar, and an evening study session. I'll wear a mask indoors. The dorm hangout is in my own building, so I'll drop by briefly but leave early since I'm introverted and want sleep.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

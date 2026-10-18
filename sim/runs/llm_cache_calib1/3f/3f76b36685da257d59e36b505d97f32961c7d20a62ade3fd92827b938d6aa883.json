@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "15:15",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "practice",
+    "end": "16:15",
+    "place": "bld:bld_232715573",
+    "start": "15:35"
+   },
+   {
+    "activity": "class",
+    "end": "17:40",
+    "place": "class:DESIGN141_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:20",
+    "place": "home",
+    "start": "17:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "gym",
+    "end": "20:10",
+    "place": "bld:bld_6593510",
+    "start": "19:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:25",
+    "place": "bld:bld_232805662",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Ate lunch at a crowded Stern Dining, felt fine but stayed a bit wary. Heading to rest, then practice, class, gym and studying at Coupa.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 43 people, and I've been a bit wary of illness lately. I feel fine, so I'll finish lunch quickly, then head home to relax before practice. I'll keep the rest of my usual routine, but move my dinner a bit and study at Coupa as usual.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

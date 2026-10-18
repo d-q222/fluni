@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "gym",
+    "end": "20:10",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Dinner at Stern was crowded so I kept my mask handy. Planning gym, then studying at home and an early night; skipping the late hangout. Still a little wary of illness.",
+  "messages": [],
+  "thoughts": "Stern is crowded, about 42 people, and I'm a bit wary of illness. I've finished the chat with Campbell and Umi, so I'll wrap up dinner soon and head to the gym as usual. Then I'll go home to study and unwind. I'm an introvert and not joining the later hangout. I'll wear a mask in the crowded dining room and gym.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

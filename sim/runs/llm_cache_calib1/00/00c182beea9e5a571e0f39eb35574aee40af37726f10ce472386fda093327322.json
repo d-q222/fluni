@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:10",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:40",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:45"
+   },
+   {
+    "activity": "event",
+    "end": "15:45",
+    "place": "event:EV00113",
+    "start": "13:05"
+   },
+   {
+    "activity": "gym",
+    "end": "17:35",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:40",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:10"
+   },
+   {
+    "activity": "gym",
+    "end": "20:05",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Chris and Dakota are confirmed sick. I feel fine, so I'm still doing the game, gym and dinner, but skipping the Acacia party. More worried now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris and Dakota. I'm fine, skipping the party tonight since half of us are sick or exposed. Wynn, maybe skip too?",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris and Dakota both texted that they're sick, and Dakota was hanging out with people last night. I feel fine and I'm social, so I'm not canceling everything. I'll skip the crowded party tonight, since a bunch of the friend group is sick or exposed, but I'll still go to the game outdoors, hit the gym, and eat. Wynn is going to the party, so I might swing by briefly or just stay in. I'll keep it low-key and replace the party with a hangout at home.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

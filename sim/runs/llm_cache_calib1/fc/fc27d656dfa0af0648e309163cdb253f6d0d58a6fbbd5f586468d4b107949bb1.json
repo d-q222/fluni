@@ -1,0 +1,83 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m4"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:15",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "class",
+    "end": "12:05",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:00",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Mon Jan 5: Following my usual routine, but I said yes to Campbell's dinner at Stern before study group. Feeling fine, still a little wary about illness going around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sounds good, I'll be at Stern at 18:20!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Regular Monday. Campbell invited the group to dinner at Stern before study group. I'm a homebody but I like my small circle, and I'd be at Stern for dinner anyway, so I'll go. I feel fine. I'll keep a mask in my bag in case it's crowded, but I won't wear one at dinner.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

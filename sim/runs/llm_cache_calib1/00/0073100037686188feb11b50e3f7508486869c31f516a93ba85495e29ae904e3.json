@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "relax",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:45"
+   },
+   {
+    "activity": "gym",
+    "end": "18:00",
+    "place": "bld:bld_255490604",
+    "start": "16:50"
+   },
+   {
+    "activity": "relax",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "eat",
+    "end": "19:40",
+    "place": "bld:bld_333374283",
+    "start": "19:05"
+   },
+   {
+    "activity": "gym",
+    "end": "21:30",
+    "place": "bld:bld_255490604",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "21:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Saturday: left crowded Stern quickly, going to the Cal game with Skyler and Ocean masked, then gym. Feel fine, still watching the dorm fever rumor.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Heading to the stadium soon, will text where I sit. Masking up.",
+    "time": "",
+    "to": "A0157"
+   }
+  ],
+  "thoughts": "Stern Dining is crowded, so I'll finish eating quickly and leave. I feel fine and promised Skyler and Ocean I'd go to the Cal game. I'll mask in the stadium crowd, then do gym and swim practice as usual, and keep my evening low-key and early to bed.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

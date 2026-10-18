@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good, shorter lounge and we bail if anyone's coughing. Let's grab food, I'm starving!",
+  "shared_health": false
+ }
+}

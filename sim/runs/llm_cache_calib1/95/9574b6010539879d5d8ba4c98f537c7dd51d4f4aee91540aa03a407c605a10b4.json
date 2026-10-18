@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Walked to the dorm hangout with Jesse; we both feel fine, are masking, and plan to stay near the edge and leave early. Still a bit anxious about the Stern fever rumors.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "15:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "home",
+    "start": "16:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "FlUni told me to stay home until Tue Jan 13. I feel fine but I'm following it: left lab early, skipping study group, studying in my room with a mask handy. Still worried.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "FlUni told me to stay home until Tue. I feel fine but I'm staying in to be safe, so I'm skipping lab and study group tonight. Take care, everyone!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "The FlUni app says to stay home until Jan 13. I feel fine, but I'm already worried and I almost always follow health advice. I'll finish the current lab block quickly, then go home and skip the in-person lab and study group. I'll eat at home or grab food early, keep my mask on, and tell my lab and study group I'm staying in. I'll text the group so everyone knows.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

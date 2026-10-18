@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden told me Dakota and Chris tested positive; Eden and I both feel fine and are being careful. I'll keep staying in my room and masking.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Eden says Dakota and Chris tested positive in our dorm. I feel fine, staying in my room and masked. Stay careful!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 4
+ }
+}

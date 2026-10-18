@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley. Heads up, FlUni flagged you as a close contact for me, so I'm keeping my distance. I feel fine though, you doing okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Lake at Stern Dining; they're going to the 7pm Arizona game after a Green stop. I said I have lifting and might swing by after if not wiped, no firm commitment.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

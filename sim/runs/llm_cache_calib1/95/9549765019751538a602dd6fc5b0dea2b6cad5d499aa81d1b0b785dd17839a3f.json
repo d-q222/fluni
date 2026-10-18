@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota. Did you hear about people in Stern having fevers? I'm masking up and skipping the lounge tonight, just staying in. You feeling okay?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oakley at Stern Dining; invited them to Taper at 8:30 tonight, they might come if not wiped. Both seem fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

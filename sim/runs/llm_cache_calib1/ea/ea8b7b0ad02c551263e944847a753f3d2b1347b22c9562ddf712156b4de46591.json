@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:30",
+    "place": "bld:bld_232805662",
+    "start": "12:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:40",
+    "place": "home",
+    "start": "14:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:05",
+    "place": "bld:bld_m_the_oval",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "23:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: feel fine but still cautious about the Dakota exposure. Skipping the game and the party, keeping a mask on outside, a quiet study day and early night, and I'll text if I feel off.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Dakota and Chris! I feel fine but I ate with Dakota Friday, so I'm skipping the game and the party, masking out, and watching for symptoms. Will text if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "It's Sunday. I feel fine but I ate with Dakota Friday, so I'm staying cautious. Dell nudged me to skip crowds, and the conversation notes already show I said I'd think about it. I'll sleep in, keep things low-key, skip the basketball game, study a bit at Coupa with a mask, eat at Stern, and stay in tonight. As an outgoing person I'll miss people, but exposure is a real concern.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

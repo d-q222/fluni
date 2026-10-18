@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Stern was crowded, so I ate fast and went home. Skipping the dorm hangout since Chris and Dakota tested positive. I feel fine, will keep washing my hands and keep my mask handy.",
+  "messages": [],
+  "thoughts": "Stern is crowded and Chris from my dorm tested positive, so I'll finish eating quickly and head home. I feel fine, but I'm skipping the dorm hangout like I planned. Quiet night in my room, then sleep at a reasonable hour. I'll keep a mask handy and wash my hands.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Max. Yeah, loading up too, practice this afternoon. You going to the basketball game tonight?",
+  "shared_health": false
+ }
+}

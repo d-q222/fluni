@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Mika at Stern; we're both masked and careful, and I feel fine. Mika offered a spare mask for the study group, which I'll take.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

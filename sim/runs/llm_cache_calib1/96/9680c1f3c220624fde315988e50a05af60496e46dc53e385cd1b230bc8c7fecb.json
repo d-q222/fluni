@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Crowded in here today, huh? I'm waiting on a flu test from Vaden, FlUni flagged me, so I'm keeping my mask on too. I feel fine though.",
+  "shared_health": true
+ }
+}

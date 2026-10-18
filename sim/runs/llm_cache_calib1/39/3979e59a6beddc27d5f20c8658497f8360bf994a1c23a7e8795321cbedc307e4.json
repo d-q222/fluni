@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Dell at Maples before the Arizona game; we're heading in to find Onyx and Carter. I feel fine and my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

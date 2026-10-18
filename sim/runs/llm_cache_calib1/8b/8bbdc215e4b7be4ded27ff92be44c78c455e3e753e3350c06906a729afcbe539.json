@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Yeah, grabbing dinner, then heading to Green to study before lab. It really has been packed. I see you're masking too, anything going around I should know about?",
+  "shared_health": false
+ }
+}

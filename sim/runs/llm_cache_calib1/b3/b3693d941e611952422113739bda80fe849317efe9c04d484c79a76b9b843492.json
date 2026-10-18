@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel totally fine. Honestly I'm skipping the lounge tonight too, with Sidney and Hadley sick in our dorm. Still doing Taper this afternoon though. Stay healthy, catch you later!",
+  "shared_health": true
+ }
+}

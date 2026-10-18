@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Just being careful after Eden's warning, I feel totally fine though. Still on for Taper before the lounge? Carter's coming too, and I'll save us seats.",
+  "shared_health": true
+ }
+}

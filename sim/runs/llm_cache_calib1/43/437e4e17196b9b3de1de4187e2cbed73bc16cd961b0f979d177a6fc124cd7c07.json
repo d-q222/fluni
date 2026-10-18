@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Yep, dinner here tonight for sure. Right now I'm about to head to White Plaza for a bit, you should come by if you're free. Why the mask, everything okay?",
+  "shared_health": false
+ }
+}

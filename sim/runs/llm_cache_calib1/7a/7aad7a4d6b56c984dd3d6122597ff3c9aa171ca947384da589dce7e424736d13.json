@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ah, my bad, I misread that. Yeah, I'm fine, just being careful since a couple people I know might be sick. Good luck at practice though!",
+  "shared_health": true
+ }
+}

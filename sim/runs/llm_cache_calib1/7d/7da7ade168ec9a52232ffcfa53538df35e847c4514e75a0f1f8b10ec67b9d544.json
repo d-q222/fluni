@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with True, a dorm neighbor, at Stern; they're heading to Green to study until about nine. Nothing changes for my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

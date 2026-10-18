@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "health_visit",
+    "end": "09:10",
+    "place": "bld:bld_26250731",
+    "start": "08:35"
+   },
+   {
+    "activity": "eat",
+    "end": "09:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "11:35",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:JAPANLNG11B_LNG01",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "practice",
+    "end": "17:50",
+    "place": "bld:bld_232715629",
+    "start": "15:25"
+   },
+   {
+    "activity": "gym",
+    "end": "19:10",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Wed Jan 7: Sat next to Hadley from my dorm at Vaden and they looked really sick. I feel fine but am waiting on my flu test; masking in crowds and keeping my normal routine.",
+  "messages": [],
+  "thoughts": "Hadley from my dorm is right next to me looking really sick. I feel fine but I'm waiting on a test result. I'll finish up here, mask up in crowds, and keep my routine, but skip lingering in crowded Stern and eat a quick breakfast. I'll go to class and practice since I feel fine, and be honest with teammates if my result comes back positive.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

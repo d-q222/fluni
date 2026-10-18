@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Awesome, I'll save you a spot! See you at Taper around 8:30 then. Enjoy the gym!",
+  "shared_health": false
+ }
+}

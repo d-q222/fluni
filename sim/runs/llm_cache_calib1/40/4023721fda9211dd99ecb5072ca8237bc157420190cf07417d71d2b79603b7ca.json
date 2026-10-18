@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:00",
+    "place": "home",
+    "start": "08:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:20",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "17:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Staying in my room per FlUni until Jan 11, studying remotely from home and only slipping out for quick masked meals. Feeling fine but anxious.",
+  "messages": [],
+  "thoughts": "FlUni told me to stay home until Jan 11 after a close contact, and I'm anxious and almost always follow health advice. I feel fine, but I'll stay in my room. I'll study there, skip the in-person classes and library, and grab quick meals only if needed. I'll keep my mask handy. I'll eat at the dining hall off-peak with a mask? Better to avoid it, so I'll stay put and maybe pick up food briefly at a quiet time. Staying home is safest; I'll keep one short takeout meal style visit at off hours.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

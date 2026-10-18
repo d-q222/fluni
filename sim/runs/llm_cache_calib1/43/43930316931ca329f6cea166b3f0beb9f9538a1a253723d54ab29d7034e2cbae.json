@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Actually I'm not masked, just feeling fine. Day's good, lunch then library then practice. You doing okay? Heard people in the dorm have been sick.",
+  "shared_health": true
+ }
+}

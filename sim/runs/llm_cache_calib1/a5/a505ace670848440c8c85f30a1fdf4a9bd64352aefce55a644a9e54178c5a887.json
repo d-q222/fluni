@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, same here, Wesley's a close contact for me too, and I feel fine so far. Thanks for telling me. Let's keep masking and text each other if anything feels off.",
+  "shared_health": true
+ }
+}

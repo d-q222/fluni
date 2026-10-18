@@ -1,0 +1,73 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:BIOE271_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "11:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:20"
+   },
+   {
+    "activity": "relax",
+    "end": "13:20",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:ARTSTUDI122_PRA01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:35",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wednesday: stuck to my routine of classes, dining and quiet study at home. Everyone's going to the basketball game but I'm skipping it, still masking indoors.",
+  "messages": [],
+  "thoughts": "Everyone's going to the basketball game, but a crowded arena is not my thing and I'm anxious about getting sick. I'll stick with my routine: classes, dining, quiet study, masked indoors. I'll politely decline by staying in.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

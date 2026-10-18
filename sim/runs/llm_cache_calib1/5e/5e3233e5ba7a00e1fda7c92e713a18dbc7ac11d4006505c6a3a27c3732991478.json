@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Not yet, probably tonight. Oh, I'm not masked actually, just feeling fine. Maybe you're thinking of someone else? I'm just a little wary of the illness going around.",
+  "shared_health": true
+ }
+}

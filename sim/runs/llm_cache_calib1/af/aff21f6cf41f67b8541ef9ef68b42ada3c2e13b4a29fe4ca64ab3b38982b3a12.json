@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Happy first Monday of the quarter. Did you get any food yet, or are you just getting here?",
+  "shared_health": false
+ }
+}

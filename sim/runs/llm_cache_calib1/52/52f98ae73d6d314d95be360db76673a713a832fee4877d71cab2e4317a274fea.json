@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "09:40",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "11:25",
+    "place": "bld:bld_26250731",
+    "start": "09:45"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Feverish and achy, so I'm skipping class today, going to Vaden to get tested, then isolating in my room. Anxious about having exposed people at the hangout, but grateful Aspen and Emerson checked in.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks both. I'm going to Vaden this morning to get tested, then staying in my room and skipping class. Sorry if I exposed you at the hangout. Please watch for symptoms and keep masking.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I woke with a fever, chills, cough and body aches, and I'm anxious about having exposed people at the hangout. Aspen and Emerson both told me to get tested at Vaden. I'll sleep a bit more, then go to Vaden in the morning, masked. After that I'll go straight home and skip MATH 21 to rest and isolate. I'll text a quick thank-you.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

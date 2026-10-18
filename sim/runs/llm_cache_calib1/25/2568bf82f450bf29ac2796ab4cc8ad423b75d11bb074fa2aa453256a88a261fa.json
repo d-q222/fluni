@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Dell at Coupa; they feel fine and will meet us at the Arizona game around 7 (I'll save them a spot near Onyx), then Taper after. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

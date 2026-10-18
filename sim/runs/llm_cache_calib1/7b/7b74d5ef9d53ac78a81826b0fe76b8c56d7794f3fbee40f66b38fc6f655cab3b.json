@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce, still up? You're masked, are you feeling okay or just being careful with all the Stern fever stuff?",
+  "shared_health": false
+ }
+}

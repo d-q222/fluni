@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:40"
+   },
+   {
+    "activity": "lab",
+    "end": "21:05",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "Stern Dining was crowded again so I ate fast, then did lab with a mask on and planned to skip the dorm hangout and stay home. Feeling fine but still watching for symptoms.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 40 people and I've had exposure worries from Scout and Sawyer. I'll finish eating quickly with my mask on between bites, then head to lab as usual. Lab is evening work I need to do, and it's probably less crowded. After, I'll go home and relax, skipping the dorm hangout again to avoid crowds.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

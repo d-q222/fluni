@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, pasta sounds good. Good luck with lab! Maybe I'll see you back at the dorm later.",
+  "shared_health": false
+ }
+}

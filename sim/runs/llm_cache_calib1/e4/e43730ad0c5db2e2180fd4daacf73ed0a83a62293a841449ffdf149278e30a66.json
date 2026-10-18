@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout. Still fine here, just anxious too. My FlUni stay-in ended today so I'm heading to the library after this, masked. You doing okay?",
+  "shared_health": true
+ }
+}

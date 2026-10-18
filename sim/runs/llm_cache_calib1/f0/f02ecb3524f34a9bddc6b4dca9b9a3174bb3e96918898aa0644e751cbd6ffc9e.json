@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, Bryce. I feel fine right now, but I'll keep an eye out. Hope Scout's okay. Stay safe out there!",
+  "shared_health": true
+ }
+}

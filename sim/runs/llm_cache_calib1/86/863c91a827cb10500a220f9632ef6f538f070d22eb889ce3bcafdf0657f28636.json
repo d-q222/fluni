@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "No, I haven't been flagged myself, I feel fine. Scout got a close contact exposure notice and so did Sawyer, so I'm just being careful. Might be worth checking your FlUni app. Anyway, I should finish eating before lab, stay safe!",
+  "shared_health": true
+ }
+}

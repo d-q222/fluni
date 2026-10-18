@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Waverly at Stern Dining at 12:25; both feel fine and agreed to tell each other if anything feels off. Waverly mentioned Ari said Bailey and Sidney have been sick. Keeping my usual routine and watching for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

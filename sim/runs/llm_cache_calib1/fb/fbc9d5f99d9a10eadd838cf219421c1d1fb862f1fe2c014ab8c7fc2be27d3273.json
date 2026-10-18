@@ -1,0 +1,104 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:25",
+    "place": "home",
+    "start": "07:55"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "bld:bld_232841950",
+    "start": "08:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:EARTHSYS183_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CLASSICS2L_LNG01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:40",
+    "place": "bld:bld_232841950",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "20:35",
+    "place": "plan:bld_232841956_f3_303",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:20",
+    "place": "home",
+    "start": "20:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:25",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Jesse is sick after the dorm hangout. I feel fine, so I kept my routine, masked up, and skipped the late lab block to rest. I'll watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're feeling awful, Jesse. Rest and drink fluids, and get tested at Vaden if you can. Let me know if you need anything dropped off!",
+    "time": "",
+    "to": "A0170"
+   }
+  ],
+  "thoughts": "Jesse got sick after the dorm hangout where I was nearby, so I'm a bit more worried. I feel fine, so I'll keep my routine and classes, mask up indoors, and keep an eye out for symptoms. I'll skip the late lab block and wind down earlier, and check in on Jesse kindly.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

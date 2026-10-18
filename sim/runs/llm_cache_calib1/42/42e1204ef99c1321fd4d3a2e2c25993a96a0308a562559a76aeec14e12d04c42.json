@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Waverly I'm fine, tested negative, and keeping my mask on since Sidney is sick. Waverly feels fine too; we both know Sidney is sick. Sticking to my plan: Green to study, then home.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

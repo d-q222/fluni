@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "16:40",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "15:10"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "20:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "20:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Bailey is still feverish. I feel fine, finishing lab, studying, keeping distance and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update. Rest up and keep us posted. Get checked at Vaden if the fever doesn't break.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "Bailey is still sick, which I already knew about. I feel fine, so I'll finish lab, then keep my routine but limit exposure. I'll eat at Wilbur but skip crowding, and study at Green Library. I'll send Bailey a short reply wishing them well.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

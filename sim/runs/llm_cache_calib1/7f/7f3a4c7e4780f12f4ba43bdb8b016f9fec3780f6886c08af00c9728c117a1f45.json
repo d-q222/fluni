@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Yeah, I'm planning on the party, feel totally fine though. Skyler said Hadley and Sidney looked sick at Vaden, Sidney had a fever and cough. You feeling okay?",
+  "shared_health": true
+ }
+}

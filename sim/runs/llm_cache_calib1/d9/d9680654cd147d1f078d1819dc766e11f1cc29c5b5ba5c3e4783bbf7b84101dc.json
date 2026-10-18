@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:40"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:15"
+   },
+   {
+    "activity": "class",
+    "end": "11:35",
+    "place": "class:PSYCH1_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_232715666",
+    "start": "11:50"
+   },
+   {
+    "activity": "lab",
+    "end": "13:10",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:35",
+    "place": "home",
+    "start": "13:25"
+   },
+   {
+    "activity": "lab",
+    "end": "17:30",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "17:35"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "00:20",
+    "place": "plan:bld_m_green_library_f2_208",
+    "start": "23:05"
+   },
+   {
+    "activity": "relax",
+    "end": "01:25",
+    "place": "home",
+    "start": "00:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:25"
+   }
+  ],
+  "diary": "Followed my usual Wednesday routine with a mask indoors. Feeling fine but still watching for symptoms after Scout's exposure.",
+  "messages": [],
+  "thoughts": "Feeling fine, but Scout in my dorm is a close contact, so I'll stay careful. Keeping my usual disciplined routine with a mask indoors, and I'll watch for symptoms. Skipping nothing important.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

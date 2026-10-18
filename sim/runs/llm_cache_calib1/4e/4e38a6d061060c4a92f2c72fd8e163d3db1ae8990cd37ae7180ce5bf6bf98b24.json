@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer (masked, feels fine) said a friend of theirs tested positive. I told them I feel fine and am staying a bit careful. Plans unchanged, but I'll mask in crowds like the game and hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Thanks for the heads up, I appreciate it. Hope it comes back negative. Let me know either way, and I'll keep a little distance too. I've got practice later so I don't want to risk it.",
+  "shared_health": false
+ }
+}

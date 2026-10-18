@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Lake at Stern; they think practice is at 3:35 but my plan says 4:20. They'll check the team chat. I'll verify the time before heading to practice.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

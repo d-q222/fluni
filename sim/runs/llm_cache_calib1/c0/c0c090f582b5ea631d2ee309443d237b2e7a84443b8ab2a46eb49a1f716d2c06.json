@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:20",
+    "place": "home",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:SPANLANG3_LNG01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:PHYSICS41_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:JAPANLNG2_LNG05",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_232715666",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "15:30",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "18:45",
+    "place": "home",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:40",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Normal Monday: classes, meals, and studying in my room. Feeling fine, wearing a mask indoors and a bit wary of illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine. Classes in the morning, then mostly staying in my room. I'll wear a mask indoors since I'm a little worried about illness going around.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

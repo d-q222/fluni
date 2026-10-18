@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:25",
+    "place": "home",
+    "start": "09:50"
+   },
+   {
+    "activity": "class",
+    "end": "12:25",
+    "place": "class:BIOE141B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:CS194W_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:10",
+    "place": "home",
+    "start": "13:50"
+   },
+   {
+    "activity": "lab",
+    "end": "17:55",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:15"
+   },
+   {
+    "activity": "relax",
+    "end": "19:05",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "23:25",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "19:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "23:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:45",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:45"
+   }
+  ],
+  "diary": "Regular Monday of classes and long lab hours; feeling fine, wearing a mask indoors and skipping the dorm hangout to avoid crowds.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick to my routine: classes, lab, study. I'll wear a mask indoors since I'm anxious about illness going around. Skip the dorm hangout, since lab runs late and crowds make me nervous.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

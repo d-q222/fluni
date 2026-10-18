@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, deal. Which party are you headed to after? Maybe I'll swing by once I do my lounge lap.",
+  "shared_health": false
+ }
+}

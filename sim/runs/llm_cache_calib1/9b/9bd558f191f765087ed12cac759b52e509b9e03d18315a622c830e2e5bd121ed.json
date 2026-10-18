@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, still up, just winding down too. I feel fine, just anxious. Last I heard Wesley was fine and staying in till today. I'm going to sleep soon, we'll text if anything changes.",
+  "shared_health": true
+ }
+}

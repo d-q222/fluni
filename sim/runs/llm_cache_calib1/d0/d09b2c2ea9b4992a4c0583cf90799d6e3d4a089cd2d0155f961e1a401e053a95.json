@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up. I'm doing fine, masking too, and skipping the hangout tonight. Hope you stay okay. Let me know if you hear anything more.",
+  "shared_health": true
+ }
+}

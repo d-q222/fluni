@@ -1,0 +1,93 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:25"
+   },
+   {
+    "activity": "eat",
+    "end": "11:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:20"
+   },
+   {
+    "activity": "study",
+    "end": "14:50",
+    "place": "home",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:55"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "bld:bld_232805671",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_232715666",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:05",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "study",
+    "end": "22:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:40",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "22:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Fri Jan 9: Val texted that they're sick with fever and cough. I feel fine but am masking in crowds and keeping distance, and I texted Val and Oli. Sticking with classes and studying.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Oh no Val, so sorry you're feeling awful! Rest up and let us know the test result. I'll keep my distance, let me know if you need anything dropped off.",
+    "time": "",
+    "to": "A0143"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up Oli, Val has flu-like symptoms and is getting tested. Watch for symptoms and maybe mask up when we study.",
+    "time": "",
+    "to": "A0055"
+   }
+  ],
+  "thoughts": "Val is sick with flu-like symptoms. I feel fine and tested negative, but I was flagged as a contact earlier. I'll still go to class and keep my routine, but wear a mask in crowded places, and reply kindly to Val. I'll keep distance and watch symptoms. I'll skip nothing major, but study in Green less late tonight.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

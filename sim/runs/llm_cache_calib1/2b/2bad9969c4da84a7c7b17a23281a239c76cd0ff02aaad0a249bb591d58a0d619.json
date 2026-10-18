@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, same here. Just being careful since there's stuff going around. I'm headed to Green Library after this too, so maybe I'll see you there.",
+  "shared_health": false
+ }
+}

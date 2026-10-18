@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I feel fine too, just really worried. I'm staying masked and keeping to my room today. Good call on getting tested, let me know how it goes?",
+  "shared_health": true
+ }
+}

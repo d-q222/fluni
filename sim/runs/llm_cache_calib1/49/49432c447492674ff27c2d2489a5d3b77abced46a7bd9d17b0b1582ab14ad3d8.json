@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:40",
+    "place": "home",
+    "start": "13:25"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Stern Dining was crowded, so I ate quickly and left. Jesse is still being tested, so I'm masking, studying mostly in my room, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope the Vaden test goes okay, Jesse. Let me know the result and rest up. I'm fine so far and staying masked.",
+    "time": "",
+    "to": "A0170"
+   }
+  ],
+  "thoughts": "Stern Dining is crowded and Jesse has a fever after our hangout, so I should finish eating quickly and leave. I feel fine, but I'll keep my mask on and study somewhere less crowded. My room is safest this afternoon. Later I'll go to Green's reading room, since it's usually quiet, and then come back early. I'll grab dinner a bit earlier to dodge the crowd.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

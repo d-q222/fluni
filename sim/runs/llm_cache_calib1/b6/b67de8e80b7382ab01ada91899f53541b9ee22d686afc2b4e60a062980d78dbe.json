@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, totally, let's grab a table! I'm here till like 6:45 anyway. Are you going to the Taper hangout later too?",
+  "shared_health": false
+ }
+}

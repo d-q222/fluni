@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Carter from my dorm is masked, says they're a close contact of Dakota, feel fine, and plan to test tomorrow. I kept my distance and will grab food and head back to my room.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Test came back negative, feel fine. Ran into Carter at Stern, they said they're a close contact of Dakota and testing tomorrow. Staying in my room tonight.",
+    "time": "",
+    "to": "A0123"
+   }
+  ],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Jaden, who lives in my dorm and wore a mask, said a couple of their friends have the flu and they're keeping distance. I feel fine and said I'd stay careful too. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

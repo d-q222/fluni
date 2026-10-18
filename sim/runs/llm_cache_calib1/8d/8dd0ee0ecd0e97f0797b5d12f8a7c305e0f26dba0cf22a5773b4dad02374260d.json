@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx, thanks for the heads up! Yeah, I heard about Dakota and Chris. I feel fine, just masking and skipping the hangout tonight. Hope you stay feeling okay, maybe get tested at Vaden if anything feels off?",
+  "shared_health": true
+ }
+}

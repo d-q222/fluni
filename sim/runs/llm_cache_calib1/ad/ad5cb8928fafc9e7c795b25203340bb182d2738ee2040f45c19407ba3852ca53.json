@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Lake. Nah, no morning lift for me, I've got class at 9. Practice is later, I think it's around 6 after my gym slot, but check the team chat to be sure.",
+  "shared_health": false
+ }
+}

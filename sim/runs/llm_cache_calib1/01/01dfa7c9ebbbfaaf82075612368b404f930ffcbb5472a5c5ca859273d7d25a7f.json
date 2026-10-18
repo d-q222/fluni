@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:05",
+    "place": "bld:bld_m_the_oval",
+    "start": "15:35"
+   },
+   {
+    "activity": "lab",
+    "end": "19:00",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:05"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:40"
+   },
+   {
+    "activity": "study",
+    "end": "01:55",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "relax",
+    "end": "03:05",
+    "place": "home",
+    "start": "01:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "03:05"
+   }
+  ],
+  "diary": "Teagan and Chris from my dorm are waiting on flu tests. I feel fine but worried, so I'll mask, keep my distance, skip the hangout, and stick to study and lab.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Hope the test comes back quickly and you feel better soon. Let me know if you need anything dropped off outside your door.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan from my dorm has flu symptoms and so does Chris. I feel fine but I'm more worried. I'll finish eating, mask, then study at home. The Oval is outdoors and low risk, so a short walk is fine. Lab is part of my routine and I'm disciplined, so I'll go masked and keep distance. I'll skip the dorm hangout and eat dinner early or quietly. I'll reply to Teagan with support.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Masked up again, good. Feeling okay? Dylan was saying stuff's going around the dorm, so I'm kind of on edge.",
+  "shared_health": true
+ }
+}

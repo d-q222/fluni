@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon! Noticed the mask, everything okay? I'm fine, just being careful about the flu going around.",
+  "shared_health": true
+ }
+}

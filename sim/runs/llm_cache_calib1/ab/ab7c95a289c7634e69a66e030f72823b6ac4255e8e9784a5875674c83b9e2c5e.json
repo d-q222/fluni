@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ari! Yeah, I'm trying to be careful lately. Ready as I'll ever be, you?",
+  "shared_health": false
+ }
+}

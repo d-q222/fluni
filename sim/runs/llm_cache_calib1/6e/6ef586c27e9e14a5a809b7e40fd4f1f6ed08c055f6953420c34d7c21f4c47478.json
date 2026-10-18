@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Teagan, masked, said there are exposure notices in our dorm; my app has been quiet and I feel fine. I'll keep my distance from anyone who seems sick and stay careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

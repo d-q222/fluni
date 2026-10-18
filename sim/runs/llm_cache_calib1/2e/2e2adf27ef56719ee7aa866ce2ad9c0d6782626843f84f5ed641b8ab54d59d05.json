@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Campbell at Taper; they feel fine, a bit paranoid, and plan to pop into the dorm hangout and leave early. I feel fine and am keeping my plans, masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

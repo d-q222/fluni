@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, testing's a good idea, I'll look into it. Thanks for the space. Let's both watch for symptoms and text if anything changes. See you around.",
+  "shared_health": false
+ }
+}

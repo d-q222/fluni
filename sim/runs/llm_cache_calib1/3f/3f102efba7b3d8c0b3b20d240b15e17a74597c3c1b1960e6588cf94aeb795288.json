@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Teagan said Scout and Sawyer got FlUni close contact notices; Teagan feels fine and is masked. I feel fine, will check my FlUni app, keep mask on and distance. Plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

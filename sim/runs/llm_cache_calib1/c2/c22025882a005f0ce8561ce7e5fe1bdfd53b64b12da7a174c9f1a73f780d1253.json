@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with my roommate Finley, who wears a mask out of caution but says they feel fine. We agreed to tell each other if either of us feels off. Illness seems to be going around, so I'll stay watchful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

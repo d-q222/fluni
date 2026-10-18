@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nah, I'm skipping it. Gonna study at home, and with people sick in the dorm I'm staying careful. Have fun though, maybe keep your mask on if you go!",
+  "shared_health": false
+ }
+}

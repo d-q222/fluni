@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley, good game out there? Still masked up, huh, smart. I'm feeling fine, just heading home to chill after.",
+  "shared_health": true
+ }
+}

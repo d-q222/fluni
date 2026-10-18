@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Jaden at Wilbur Dining; neither of us is sick, but Jaden says lots of people seem to be coughing lately. I'll keep being careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

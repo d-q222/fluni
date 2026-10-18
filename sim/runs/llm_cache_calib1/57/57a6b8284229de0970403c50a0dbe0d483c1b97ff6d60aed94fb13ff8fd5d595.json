@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "lab",
+    "end": "09:25",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:PWR2NK_SEM01",
+    "start": "09:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:05",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "11:20"
+   },
+   {
+    "activity": "gym",
+    "end": "13:20",
+    "place": "bld:bld_232715571",
+    "start": "12:10"
+   },
+   {
+    "activity": "eat",
+    "end": "14:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:25"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "14:15"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS109_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "16:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:10",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "17:50"
+   },
+   {
+    "activity": "lab",
+    "end": "21:55",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Followed my usual Monday: lab, seminar, gym, CS109, more lab. Feeling fine, just a bit wary about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll follow my usual routine. It's a Monday with classes and lab, and I'll stay organized. A little worried about illness going around, but no symptoms. No mask indoors as usual.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

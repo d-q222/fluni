@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Yeah, dinner then Taper with Dell, lounge at 8:45 still on for me. I feel fine, but I noticed the mask. You doing okay, or just being careful with the fevers going around Stern?",
+  "shared_health": true
+ }
+}

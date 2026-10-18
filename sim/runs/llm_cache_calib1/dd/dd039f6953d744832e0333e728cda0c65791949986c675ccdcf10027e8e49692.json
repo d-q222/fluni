@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chris from my dorm is also waiting on a flu test at Vaden with fever and cough, and they're masked. We agreed to keep our distance; I'll go home and isolate after my test.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: still waiting on my flu test at Vaden. Fever and cough since this morning. Ran into Chris from our dorm, who is also waiting on a flu test with the same symptoms. I'm isolating at home after this, so please keep your distance and stay safe.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 4
+ }
+}

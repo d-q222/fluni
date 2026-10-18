@@ -1,0 +1,562 @@
+[
+ {
+  "id": "bld_3126352",
+  "name": "Florence Moore Hall",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://en.wikipedia.org/wiki/Florence_Moore_Hall",
+  "note": "seven three-story houses (Alondra, Cardenal, Faisan, Gavilan, Loro, Mirlo, Paloma) on a hillside"
+ },
+ {
+  "id": "bld_22862",
+  "name": "Lucie Stern Hall",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://resed.stanford.edu/houses/stern-hall-houses/donner",
+  "note": "Donner has '3 co-ed floors' + basement; per GUP history the 1949 phase was 2 storeys, 1956/1959 additions 3 storeys; typical 3"
+ },
+ {
+  "id": "bld_1169967277",
+  "name": "Breer Library",
+  "floors": null,
+  "confidence": "low",
+  "source": "https://www.campus-maps.com/stanford-university/breer-library/",
+  "note": "672 Lomita Drive (small building in the Lomita fraternity cluster); no floor count found, likely 1"
+ },
+ {
+  "id": "bld_m_green_library",
+  "name": "Green Library",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=03-210",
+  "note": "East Wing: basement + 3 floors; Bing (West) Wing: basement + 5 floors (4th/5th are a smaller stack/tower portion); area-weighted typical ~3"
+ },
+ {
+  "id": "bld_35820",
+  "name": "Main Quad",
+  "floors": 2.5,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=01-020",
+  "note": "Inner Quad buildings (1-110, 250, 300-370) are 2 floors; corner/outer buildings (120,160,170,200,260,320,380,420,460) 3-4 floors, some with basements; typical by count 2, area-weighted ~2.5; using the area-weighted 2.5 (the shading divides by floor area)"
+ },
+ {
+  "id": "bld_26249523",
+  "name": "Mirrielees",
+  "floors": 4,
+  "confidence": "medium",
+  "source": "https://www.openstreetmap.org/way/26249523",
+  "note": "OSM building:levels=4; R&DE accessibility chart lists lounges on 1st, 3rd and 4th floors; grad students once assigned to 4th floor"
+ },
+ {
+  "id": "bld_160447376",
+  "name": "Toyon Hall",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/toyon-hall",
+  "note": "R&DE mentions 1st, 2nd and third floors; Wikipedia 'each of its three floors'; GUP: wings 1-3 storeys"
+ },
+ {
+  "id": "bld_232805657",
+  "name": "Branner Hall",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://www.swagroup.com/projects/stanford-branner-hall/",
+  "note": "SWA: three-story dorm; GUP says residential wings are 2 storeys over a ground level with 3-storey center wing; R&DE lists ground + 1st/2nd floors"
+ },
+ {
+  "id": "bld_232805733",
+  "name": "Roble Hall",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/roble-hall",
+  "note": "'three stories high', 4 wings; basement under B wing"
+ },
+ {
+  "id": "bld_232805685",
+  "name": "Lathrop Library",
+  "floors": 4,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=08-350",
+  "note": "floors 1-4 plus occupied lower level (classrooms, study area)"
+ },
+ {
+  "id": "bld_232805713",
+  "name": "Kimball Hall",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://en.wikipedia.org/wiki/Stanford_University_student_housing",
+  "note": "Wikipedia: 'three-story buildings of Gerhard Casper Quad'; Kimball has an elevator; not independently confirmed"
+ },
+ {
+  "id": "bld_518906030",
+  "name": "Meier Hall",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://www.caldrywall.com/project/stanford-meier-and-norcliffe-residence-halls-at-lagunita-court/",
+  "note": "three stories above grade + partial basement (2016)"
+ },
+ {
+  "id": "bld_232841950",
+  "name": "Mark Taper Student Center",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=06-310",
+  "note": "1st floor seminar/lounge, 2nd floor offices, no elevator"
+ },
+ {
+  "id": "bld_26250737",
+  "name": "Terra House",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/self-operated-houses",
+  "note": "now '539 Cowell' (1967 Cowell Cluster house); no floor source found, estimate 2"
+ },
+ {
+  "id": "bld_182440070",
+  "name": "Rinconada (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses: breezeways at 2nd and 3rd floors + laundry basement; Rinconada 'two mixed-gender floors, one single-gender floor'; OSM levels=3"
+ },
+ {
+  "id": "bld_232805730",
+  "name": "Narnia",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/self-operated-houses",
+  "note": "1963 house at 1135 Campus Dr; no floor source found, typical 1960s Row house of 2 storeys"
+ },
+ {
+  "id": "bld_30775908",
+  "name": "Otero (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_1040629365",
+  "name": "Adelfa (Lagunita Court)",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "1934 Lagunita Court wing; GUP gives no storey count; photos suggest 2 storeys (some 3); unverified"
+ },
+ {
+  "id": "bld_182436549",
+  "name": "Toussaint Louverture (Lasuen)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "610 Mayfield: 'wood-frame construction, three stories tall'"
+ },
+ {
+  "id": "bld_469393555",
+  "name": "Sapp Center for Science Teaching and Learning",
+  "floors": 4,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=07-200",
+  "note": "ground/1st floor auditorium, floors up to 3, Li & Ma Science Library on 3rd and 4th floors (4th via library only)"
+ },
+ {
+  "id": "bld_232805719",
+  "name": "Castaño (Lagunita)",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://en.wikipedia.org/wiki/Stanford_University_student_housing",
+  "note": "actually in Gerhard Casper Quad (not Lagunita), opened 1992; 'three-story buildings'"
+ },
+ {
+  "id": "bld_m_flomo_dining",
+  "name": "Florence Moore Dining",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://rde.stanford.edu/studenthousing/florence-moore-hall",
+  "note": "central dining in FloMo complex; single dining level (houses' dining rooms on 1st/2nd floor common areas)"
+ },
+ {
+  "id": "bld_232805661",
+  "name": "Columbae House",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "549 Lasuen: three-story wood-frame house with 2-3 storey rear addition"
+ },
+ {
+  "id": "bld_232805656",
+  "name": "Bechtel International Center",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "three-story house (courtyard level C + 1 + 2 per ADA guide) with 2-storey 1977 addition"
+ },
+ {
+  "id": "bld_161272541",
+  "name": "Fairclough Lounge",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://www.openstreetmap.org/way/161272541",
+  "note": "lounge in Rains Houses Building 31; OSM building:levels=3 for the building (lounge itself on ground floor)"
+ },
+ {
+  "id": "bld_182436548",
+  "name": "Kairos",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "586 Mayfield: two storeys + additional dormered top storey added 1935/37"
+ },
+ {
+  "id": "bld_917710378",
+  "name": "Norcliffe",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://www.caldrywall.com/project/stanford-meier-and-norcliffe-residence-halls-at-lagunita-court/",
+  "note": "twin of Meier: three stories above grade + partial basement"
+ },
+ {
+  "id": "bld_m_wilbur_dining",
+  "name": "Wilbur Dining",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "dining room in Wilbur central administration building; single dining level"
+ },
+ {
+  "id": "bld_343020506",
+  "name": "Cedro (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_232805691",
+  "name": "Haas Center for Public Service",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=02-935",
+  "note": "elevator serves floors 1, 2, 3"
+ },
+ {
+  "id": "bld_m_stern_dining",
+  "name": "Stern Dining",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://rde.stanford.edu/studenthousing/stern-hall",
+  "note": "dining within Stern Hall; single level assumed"
+ },
+ {
+  "id": "bld_182436550",
+  "name": "Lasuen HFD",
+  "floors": 2,
+  "confidence": "medium",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "assumed = Lasuen House, 572 Mayfield (bldg 11-180): two-story wood-frame former duplex, now admin use"
+ },
+ {
+  "id": "bld_232841892",
+  "name": "Hewlett Teaching Center",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=04-510",
+  "note": "elevator to floors 1 and 2; two large auditoriums"
+ },
+ {
+  "id": "bld_30775913",
+  "name": "Soto (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_333374283",
+  "name": "Arrillaga Family Dining Commons",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=06-250",
+  "note": "'a two-story dining facility'; dining on 2nd floor"
+ },
+ {
+  "id": "bld_1040629370",
+  "name": "Lakeside Dining",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://rde.stanford.edu/studenthousing/lagunita-court",
+  "note": "dining wing of Lagunita Court; single level"
+ },
+ {
+  "id": "bld_232668058",
+  "name": "Synergy House",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "550 San Juan (Cooksey House): 'two-and-one-half story' with dormered attic; counted 3"
+ },
+ {
+  "id": "bld_232715571",
+  "name": "Arrillaga Family Sports Center",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=09-307",
+  "note": "floors B, 1, 2 (2 above ground + basement)"
+ },
+ {
+  "id": "bld_232805704",
+  "name": "Lantana",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://en.wikipedia.org/wiki/Stanford_University_student_housing",
+  "note": "Gerhard Casper Quad, 1992; 'three-story buildings'; common spaces on 1st floor"
+ },
+ {
+  "id": "bld_182440071",
+  "name": "Trancos (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_182440069",
+  "name": "Okada (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_232715623",
+  "name": "Murray House",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/governors-corner-sterling-quad",
+  "note": "1982 Governor's Corner independent house; no explicit count found, estimate 3"
+ },
+ {
+  "id": "bld_1040377400",
+  "name": "Granada (Lagunita)",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "1934 Lagunita Court wing (West Lag); no explicit count; estimate 2"
+ },
+ {
+  "id": "bld_1040629369",
+  "name": "Eucalipto (Lagunita)",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "1934 Lagunita Court wing (West Lag); no explicit count; estimate 2"
+ },
+ {
+  "id": "bld_232805707",
+  "name": "Jerry House",
+  "floors": 3,
+  "confidence": "medium",
+  "source": "https://www.openstreetmap.org/way/232805707",
+  "note": "1965 hillside house at 658 Lomita Ct; OSM building:levels=3; 2-story balcony"
+ },
+ {
+  "id": "bld_232805745",
+  "name": "Xanadu",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/self-operated-houses",
+  "note": "1976 Row house (558 Mayfield); no floor source found, estimate 3"
+ },
+ {
+  "id": "bld_518906031",
+  "name": "Windhover",
+  "floors": 1,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=05-090",
+  "note": "single-level contemplative center (open rooms, no upper floor)"
+ },
+ {
+  "id": "bld_343020507",
+  "name": "Junipero (Wilbur Hall)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://rde.stanford.edu/studenthousing/wilbur-hall",
+  "note": "Wilbur houses 3 floors + basement; OSM levels=3"
+ },
+ {
+  "id": "bld_1434557267",
+  "name": "Computing & Data Science",
+  "floors": 4,
+  "confidence": "medium",
+  "source": "https://news.stanford.edu/stories/2025/02/coda-marks-new-era-for-computing-and-data-science-at-stanford",
+  "note": "staircase connects five floors: sunken garden level + floors 1-4; OSM levels=4; 5 if garden level counted"
+ },
+ {
+  "id": "bld_182436545",
+  "name": "Durand (Lasuen)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "634 Mayfield: 'three-story rectangular shaped house'"
+ },
+ {
+  "id": "bld_1040629366",
+  "name": "Naranja (Lagunita)",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "1934 Lagunita Court wing (East Lag); no explicit count; estimate 2"
+ },
+ {
+  "id": "bld_11032836",
+  "name": "Potter House",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/governors-corner-sterling-quad",
+  "note": "Sterling Quad (1982-83); no explicit count, estimate 3"
+ },
+ {
+  "id": "bld_182436547",
+  "name": "The Warehaus",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "620 Mayfield: three-story wood-frame + basement"
+ },
+ {
+  "id": "bld_182436546",
+  "name": "Grove (Lasuen)",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "584 Mayfield: two-story central section + third-story attic with dormers (added 1974) + full basement"
+ },
+ {
+  "id": "bld_255490604",
+  "name": "Arrillaga Outdoor Education and Recreation Center",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=04-640",
+  "note": "ground floor (courts, climbing wall) + occupied lower level (14,000 sf fitness center, classrooms); 2 if lower level counted"
+ },
+ {
+  "id": "bld_232805667",
+  "name": "Enchanted Broccoli Forest",
+  "floors": 2,
+  "confidence": "low",
+  "source": "https://stanfordmag.org/contents/how-broccoli-forest-happened",
+  "note": "1963 former Alpha Delta Phi house, 1115 Campus Dr; no floor source, estimate 2"
+ },
+ {
+  "id": "bld_81794792",
+  "name": "Huang Engineering Center",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=04-080",
+  "note": "elevator to B, 1, 2, 3; NVIDIA auditorium on terrace/basement level"
+ },
+ {
+  "id": "bld_232715665",
+  "name": "Elliott Program Center",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=05-720",
+  "note": "elevator to floors 1, 2"
+ },
+ {
+  "id": "bld_6593510",
+  "name": "Roble Gymnasium",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "1931 gym around courtyard; tall single-storey gyms/studios"
+ },
+ {
+  "id": "bld_232715573",
+  "name": "Avery Competition Pool",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=09-310",
+  "note": "outdoor pool; pool deck level 1 + plaza/seating level 2"
+ },
+ {
+  "id": "bld_307364465",
+  "name": "Shriram Center for Bioengineering & Chemical Engineering",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=04-060",
+  "note": "floors 1-3 + basement and sub-basement labs; OSM levels=3"
+ },
+ {
+  "id": "bld_182436558",
+  "name": "Neptune",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "650 Mayfield: three-story wood-frame + basement"
+ },
+ {
+  "id": "bld_232805671",
+  "name": "Ford Center For Sports & Recreation",
+  "floors": 1,
+  "confidence": "medium",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=08-250",
+  "note": "high-bay courts/gymnastics; no upper floors listed"
+ },
+ {
+  "id": "bld_11032837",
+  "name": "Adams House",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/governors-corner-sterling-quad",
+  "note": "Sterling Quad (1982-83); no explicit count, estimate 3"
+ },
+ {
+  "id": "bld_11032551",
+  "name": "Schiff House",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/governors-corner-sterling-quad",
+  "note": "Sterling Quad (1982-83); no explicit count, estimate 3"
+ },
+ {
+  "id": "bld_232805742",
+  "name": "Storey House",
+  "floors": 3,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "544 Lasuen (bldg 02-921): three-story wood-frame house"
+ },
+ {
+  "id": "bld_232805655",
+  "name": "BOB (Robert S. Moore South)",
+  "floors": 3,
+  "confidence": "low",
+  "source": "https://rde.stanford.edu/studenthousing/self-operated-houses",
+  "note": "1976 Row house (566 Mayfield); no floor source, estimate 3"
+ },
+ {
+  "id": "bld_232805714",
+  "name": "Koret Pavilion",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://maps.stanford.edu/ada/building-ada.cfm?FACIL_ID=02-950",
+  "note": "elevator to all floors; restrooms on 1st and 2nd; KoPa Cafe on 1st"
+ },
+ {
+  "id": "bld_232805720",
+  "name": "Mariposa House",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "two-story wood-frame house (Creative Writing Program, not a dorm); ADA guide: 1st and 2nd floors"
+ },
+ {
+  "id": "bld_232805736",
+  "name": "Attneave",
+  "floors": 2,
+  "confidence": "high",
+  "source": "https://stgenpln.blob.core.windows.net/document/SU_2018GUP_App_Vol4_pt2.pdf",
+  "note": "Attneave (former Serra) House, 589 Capistrano: 'wood framed two-story house' (Clayman Institute, not a dorm)"
+ }
+]

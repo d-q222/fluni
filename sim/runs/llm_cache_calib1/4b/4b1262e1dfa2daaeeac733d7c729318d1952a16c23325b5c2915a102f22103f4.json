@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:50",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:45",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:10",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "gym",
+    "end": "12:25",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "11:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:35",
+    "place": "class:CS106EA_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "18:00",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "plan:bld_m_green_library_f2_202",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "21:20",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "gym",
+    "end": "22:15",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "21:35"
+   },
+   {
+    "activity": "party",
+    "end": "00:55",
+    "place": "event:EV00081",
+    "start": "22:40"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "01:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Thursday: normal classes and study, gym, then the party tonight. Feeling healthy and happy.",
+  "messages": [],
+  "thoughts": "Thursday, feeling fine. The window starts at 04:00, so I'll sleep in, then do a normal day: outdoor time, study, gym, CS106EA class, library, dinner. The Arizona game already happened last night so no event now. Tonight the party sounds fun, so I'll go. Not worried about illness.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

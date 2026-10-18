@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wallace! Yeah, a bit of studying here before CHEM class at 10:30. You're masking, everything okay?",
+  "shared_health": false
+ }
+}

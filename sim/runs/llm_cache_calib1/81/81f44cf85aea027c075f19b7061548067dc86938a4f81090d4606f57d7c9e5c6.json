@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I've got Oceans 71 at 2:30, then lab tonight too. Stay safe in lab! Maybe we can grab food later this week if everyone's still healthy?",
+  "shared_health": false
+ }
+}

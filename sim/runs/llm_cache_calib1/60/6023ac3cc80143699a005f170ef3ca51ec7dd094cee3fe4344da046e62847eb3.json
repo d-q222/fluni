@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Mika at Stern breakfast; they wear a mask out of caution, say they have no symptoms, and offered me a spare mask. I might take one for class.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

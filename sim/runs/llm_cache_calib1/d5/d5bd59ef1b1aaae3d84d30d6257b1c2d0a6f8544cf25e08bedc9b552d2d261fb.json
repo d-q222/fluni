@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Stern Dining was crowded so I ate fast, masked, and went back to my room. Skipping the dorm hangout since I'm positive; feel guilty and tired but resting.",
+  "messages": [],
+  "thoughts": "I'm positive and the dining room is packed with about 40 people, so I shouldn't linger here. I'll grab food quickly, masked, then head back to my room. My friends are all being careful and I feel guilty, so skipping the dorm hangout is the right call even though I'm a social person and it's tempting. I'll rest and sleep.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

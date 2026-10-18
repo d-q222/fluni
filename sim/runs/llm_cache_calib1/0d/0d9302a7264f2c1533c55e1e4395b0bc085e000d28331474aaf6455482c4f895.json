@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Val! Pretty good, just buried in problem sets and lab. Figured the mask was smart with stuff going around the dorm. You doing okay?",
+  "shared_health": false
+ }
+}

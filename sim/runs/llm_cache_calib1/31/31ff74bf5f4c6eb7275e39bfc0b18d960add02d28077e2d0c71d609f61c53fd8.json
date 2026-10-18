@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Carter I feel fine and am just being careful; Carter also feels fine. We agreed to keep masks handy and tell each other if either gets a cough or fever. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Rain, masked and feeling fine, said Sawyer and Val mentioned a friend got flagged by FlUni and is waiting on a flu test. I'll keep masking indoors and keep my distance; sticking to Green, then lab.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

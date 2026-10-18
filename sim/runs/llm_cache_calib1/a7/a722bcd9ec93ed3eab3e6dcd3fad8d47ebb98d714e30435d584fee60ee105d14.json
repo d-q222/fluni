@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah I'm in! I feel fine too, just masking up. Let's bail from the lounge if people start coughing a lot. See you at Taper!",
+  "shared_health": true
+ }
+}

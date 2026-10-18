@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Max! Feeling fine, just being careful with all the sickness rumors going around. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon. Yeah I feel fine, no symptoms and my app's quiet. Jody said Emerson's friend Jesse has a fever and is getting tested, so I'm staying careful. Good call on the mask. You feeling okay?",
+  "shared_health": true
+ }
+}

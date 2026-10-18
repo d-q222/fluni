@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Eden at Stern Dining that Chris tested positive and Dakota is sick, and that I feel fine but am skipping the party. Eden is masked, will keep distance and watch for symptoms. I'll keep staying low-key at home tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with roommate Finley at 07:55; both feel fine, no word from Wesley yet. We'll text each other if anything changes. Staying watchful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

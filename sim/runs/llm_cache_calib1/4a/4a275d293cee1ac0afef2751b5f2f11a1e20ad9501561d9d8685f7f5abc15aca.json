@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Armani. Yeah, I'm trying to be careful. Scout might be a close contact of someone sick, so I'm keeping my distance. Let me know if you hear anything.",
+  "shared_health": false
+ }
+}

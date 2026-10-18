@@ -1,0 +1,89 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m33"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "home",
+    "start": "09:35"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:35",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Wednesday: classes and study, dinner with Campbell at Stern at 18:30, then home early and skipping the hangout again. Feeling fine, still a bit wary, masking in class.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Dinner sounds good, see you at 6:30! I'll probably head home early after though.",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Campbell invited the group to dinner at Stern at 6:30 and a dorm hangout after. I usually eat at 17:20, but dinner with Campbell is low-key and I like them. Stern gets crowded, so I'll keep my mask handy and leave earlier than the hangout. I'll skip the hangout again for an early night. Otherwise it's a normal day of classes and study.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

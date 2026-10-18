@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler (dorm neighbor) at Taper; invited them to tonight's Taper hangout but they're busy with practice, lifting and Green. Maybe next time.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! Yeah, made it. Gym just wrapped up so I'm kinda wiped but happy to hang. How's your day been?",
+  "shared_health": false
+ }
+}

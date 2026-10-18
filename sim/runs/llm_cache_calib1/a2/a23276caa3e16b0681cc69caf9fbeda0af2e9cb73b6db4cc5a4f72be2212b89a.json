@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Chris at Lakeside; they're coming to Taper tonight and Flo Mo after dinner, and mentioned being wary of the illness going around. I feel fine and my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

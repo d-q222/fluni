@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, same, I'm here till class at 10:30. Hope the problem sets aren't too awful. Good luck!",
+  "shared_health": false
+ }
+}

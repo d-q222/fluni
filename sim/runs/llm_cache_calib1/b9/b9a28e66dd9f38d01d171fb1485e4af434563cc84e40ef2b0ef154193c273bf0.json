@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "12:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:35",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "15:25"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "home",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "20:15",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "18:50"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:25",
+    "place": "event:EV00065",
+    "start": "20:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:25",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:25"
+   }
+  ],
+  "diary": "FlUni said to wear a mask, so I kept my routine with a mask on indoors and stayed distanced. I feel fine but still worried.",
+  "messages": [],
+  "thoughts": "FlUni says to wear a mask. I feel fine and I'm disciplined, so I'll keep my routine, wear a mask indoors, and keep my distance. Lab and the study group matter, so I'm not skipping them. I'll eat a bit off-peak if I can, and relax alone at home in the evening.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

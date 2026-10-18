@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx told me at Stern dinner they were around Dakota Friday, are masked and feel fine, and are heading home after dinner. I told them to get tested at Vaden if anything feels off; we'll text if we hear anything.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "20:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:40"
+   },
+   {
+    "activity": "study",
+    "end": "23:15",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: Learned from Armani that Teagan, Dakota and Chris in the dorm are sick. I feel fine but anxious, so I'm skipping the hangout, masking, and studying in my room tonight.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Armani says Teagan, Dakota and Chris in our dorm are sick or tested positive. I feel fine but I'm masking and skipping the dorm hangout. Stay safe!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Armani says Teagan, Dakota and Chris in my dorm are sick. I feel fine but I'm anxious and was a close contact. I'll finish dinner quickly, mask on, skip the dorm hangout, and go back to my room to study and relax. I'll keep an eye out for symptoms. Maybe I'll warn my friends since sickness is spreading in the dorm.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

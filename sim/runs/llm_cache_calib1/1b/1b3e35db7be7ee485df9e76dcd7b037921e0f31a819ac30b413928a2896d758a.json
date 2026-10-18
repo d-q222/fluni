@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "No worries! Maybe wear a mask if you pop in, just to be safe. I'm heading home after this, see you around!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey True, morning. Heard someone in a dorm has a fever and cough going around, so I'm being a little careful. You doing okay?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:30",
+    "place": "home",
+    "start": "06:25"
+   },
+   {
+    "activity": "eat",
+    "end": "07:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:35"
+   },
+   {
+    "activity": "gym",
+    "end": "10:15",
+    "place": "bld:bld_6593510",
+    "start": "08:05"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:COLLEGE102_SEM70",
+    "start": "10:30"
+   },
+   {
+    "activity": "gym",
+    "end": "12:50",
+    "place": "bld:bld_6593510",
+    "start": "12:05"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:15"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:55"
+   },
+   {
+    "activity": "practice",
+    "end": "17:30",
+    "place": "bld:bld_232715573",
+    "start": "15:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "relax",
+    "end": "19:25",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "gym",
+    "end": "20:30",
+    "place": "bld:bld_6593510",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "bld:bld_232805662",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Thursday: seminar, lifting, practice, and a normal routine. Feel fine, a bit wary because of the dorm fever rumor; watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, a little wary after the rumor of a fever in a dorm. I'll stick with my routine: practice, lifting, meals. The seminar is at 10:30 in Main Quad so I'll go to that instead of the study block. I'll keep the day mostly normal and stay alert for symptoms.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

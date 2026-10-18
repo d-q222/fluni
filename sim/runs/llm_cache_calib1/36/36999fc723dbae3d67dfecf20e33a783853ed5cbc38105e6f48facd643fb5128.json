@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:10"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "home",
+    "start": "08:35"
+   },
+   {
+    "activity": "class",
+    "end": "13:10",
+    "place": "class:ENERGY120_LEC01",
+    "start": "11:55"
+   },
+   {
+    "activity": "eat",
+    "end": "13:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:15"
+   },
+   {
+    "activity": "relax",
+    "end": "14:50",
+    "place": "home",
+    "start": "13:45"
+   },
+   {
+    "activity": "class",
+    "end": "16:10",
+    "place": "class:CLASSICS6G_LNG01",
+    "start": "14:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:40",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:15"
+   },
+   {
+    "activity": "study",
+    "end": "17:50",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "study",
+    "end": "23:20",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "23:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Thu Jan 8: Heard from Ocean that several people in Stern have fevers. I'm skipping the lounge hangout, staying home, masking, and told the group.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: I'm hearing a rumor that several people in Stern have fevers, and someone's waiting on a flu test. I'm skipping the lounge tonight, so mask up and stay careful!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "With fevers rumored in my dorm and Skyler waiting on a flu test, I'm too anxious to sit in the lounge tonight. I'll keep my routine of classes with a mask, eat quickly, and study at home. I'll text the host that I'm bowing out and mention the fever rumor.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

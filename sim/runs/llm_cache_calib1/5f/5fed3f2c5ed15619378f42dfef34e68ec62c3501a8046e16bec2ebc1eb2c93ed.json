@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan! Dinner before lab tonight? I'm heading out soon, but good to see you.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:45",
+    "place": "home",
+    "start": "07:30"
+   },
+   {
+    "activity": "lab",
+    "end": "08:50",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:ARTSTUDI146M_PRA01",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "16:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "15:20"
+   },
+   {
+    "activity": "relax",
+    "end": "17:20",
+    "place": "bld:bld_232841950",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "17:25"
+   },
+   {
+    "activity": "lab",
+    "end": "22:05",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "22:10"
+   },
+   {
+    "activity": "study",
+    "end": "01:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:55"
+   },
+   {
+    "activity": "relax",
+    "end": "02:30",
+    "place": "home",
+    "start": "01:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:30"
+   }
+  ],
+  "diary": "Followed my usual Monday: lab, library, classes, long evening lab. Feeling fine, a bit wary of illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick with my routine. I'm a bit worried about illness going around, but I'll keep up good habits and add a meal or two, since the routine has no eating blocks. Skip nothing important.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

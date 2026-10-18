@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Morgan (masked, feels fine) about Scout's close contact exposure; we're both feeling fine and will watch for symptoms. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

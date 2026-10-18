@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "health_visit",
+    "end": "10:00",
+    "place": "bld:bld_26250731",
+    "start": "09:20"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "10:05"
+   },
+   {
+    "activity": "rest",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Thursday: still feverish and achy, waiting on the flu test at Vaden. I'll isolate in my room until Tuesday as the app advises, skipping class, lab and the hangout.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks everyone. At Vaden waiting on my flu test result. The app says stay home till Tuesday, so I'm isolating in my room. I'll text if I need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm sick with fever and aches, waiting on the flu test at Vaden. The app says stay home until Jan 13, and I always follow health advice. I'll finish at Vaden, go back to my room, isolate and rest, skip classes, lab and the hangout. Maybe I'll grab a quick masked bite from the dorm later, but mostly I'll stay in bed and drink fluids.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

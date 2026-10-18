@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Finley I'm a FlUni close contact via Wesley and feel fine; Finley is also a close contact and feels fine. We agreed to keep masking and text if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

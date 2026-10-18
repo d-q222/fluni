@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate lunch with Onyx at Wilbur; both had good breaks. Onyx is hoping to see Dell at White Plaza later and asked about the Green study group tonight. I said I might drop by late after dinner and my hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

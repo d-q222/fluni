@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:30",
+    "place": "bld:bld_1040629370",
+    "start": "09:40"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:35"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:ME104_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "15:55",
+    "place": "bld:bld_232841950",
+    "start": "13:55"
+   },
+   {
+    "activity": "study",
+    "end": "18:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:55",
+    "place": "home",
+    "start": "18:25"
+   },
+   {
+    "activity": "eat",
+    "end": "20:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:55",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Tue Jan 6: regular classes, Wilbur dinner with Eden, then Taper with the group. Feeling fine, a little worried about sickness going around.",
+  "messages": [],
+  "thoughts": "Tuesday. I'm feeling fine, so I'll mostly keep my usual routine. Sleep in, Lakeside breakfast, study a bit, ME104, lunch at Stern, Taper, Green. Wynn bailed on Wilbur, but Eden and I are still on for dinner at 19:00. Then Taper at 20:25 with the group, which sounds fun. No mask, I'm not sick.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

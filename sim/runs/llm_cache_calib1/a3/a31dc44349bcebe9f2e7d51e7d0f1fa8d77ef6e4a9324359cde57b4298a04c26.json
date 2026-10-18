@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton! Quick update, my flu test came back negative, so I'm good. Thanks for keeping your distance yesterday.",
+  "shared_health": true
+ }
+}

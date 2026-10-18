@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine. Game day vs Cal so I'm keeping my spare mask handy and washing hands. Smart move on your end. Catch you later, good luck today!",
+  "shared_health": true
+ }
+}

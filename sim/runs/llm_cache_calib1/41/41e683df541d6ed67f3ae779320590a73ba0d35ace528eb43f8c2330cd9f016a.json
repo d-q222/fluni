@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning, Finley. Feeling okay today? Any word from Wesley yet?",
+  "shared_health": false
+ }
+}

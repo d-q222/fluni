@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner at Lakeside with Chris, who is masking and wary after Eden's fever warning. We agreed to keep the lounge hangout shorter and bail if anyone is coughing. We both feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

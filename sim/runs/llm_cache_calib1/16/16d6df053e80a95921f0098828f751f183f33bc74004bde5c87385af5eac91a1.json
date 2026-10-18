@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh I feel fine, test came back negative actually. Just masking since it's packed and a couple people in our dorm looked pretty sick. What party, by the way?",
+  "shared_health": true
+ }
+}

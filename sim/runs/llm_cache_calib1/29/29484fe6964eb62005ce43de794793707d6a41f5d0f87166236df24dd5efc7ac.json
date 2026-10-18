@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Doing fine, thanks. Exposure notices in the dorm? I hadn't heard, my app's been quiet. Good call on the mask. Good luck studying!",
+  "shared_health": true
+ }
+}

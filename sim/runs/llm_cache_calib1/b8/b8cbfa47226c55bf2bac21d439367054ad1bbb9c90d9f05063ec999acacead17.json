@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Dell at Lakeside; we both feel fine and agreed to a shorter lounge hangout tonight, bailing if anyone is coughing a lot.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

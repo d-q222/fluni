@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Pretty good, got most of my problem set done earlier. Just hanging out for a bit before I head to a short lab session. You?",
+  "shared_health": false
+ }
+}

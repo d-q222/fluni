@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout. Late night at Taper too? How're you holding up, still being careful?",
+  "shared_health": false
+ }
+}

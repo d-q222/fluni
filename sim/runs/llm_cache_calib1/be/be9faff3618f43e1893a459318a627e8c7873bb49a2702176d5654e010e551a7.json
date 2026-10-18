@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Glad we're finally getting dinner. Dell's joining us in a bit too. How's your first Monday been?",
+  "shared_health": false
+ }
+}

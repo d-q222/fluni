@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon. Glad you're masked too. I tested negative and feel fine, but I'm keeping my distance with Teagan and Dakota sick in our dorm. How are you doing?",
+  "shared_health": true
+ }
+}

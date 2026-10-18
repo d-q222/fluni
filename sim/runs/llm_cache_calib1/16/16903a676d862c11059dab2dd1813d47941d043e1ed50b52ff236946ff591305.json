@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "home",
+    "start": "10:45"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:45",
+    "place": "home",
+    "start": "14:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "study",
+    "end": "19:30",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "20:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Staying in my room per the stay-home advice through Wed Jan 14. Feel fine but worried; studying on a regular schedule and skipping lab, the game, and the dorm hangout.",
+  "messages": [],
+  "thoughts": "I'm still under stay-home advice through Wed Jan 14 and feel fine, but worried. Harper is disciplined, so I'll stay in my room, sleep, eat lightly (no dining hall trips to keep to the advice), and study on a regular schedule. I'll skip lab and the dorm hangout. Maybe a brief check-in with friends is unnecessary.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

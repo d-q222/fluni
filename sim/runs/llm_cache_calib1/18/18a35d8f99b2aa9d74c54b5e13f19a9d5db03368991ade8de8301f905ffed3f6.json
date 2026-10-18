@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh for sure, I'll be there! Gym first, then I'll find you guys at the game. Save me a spot near Onyx, and let's hit Taper after.",
+  "shared_health": false
+ }
+}

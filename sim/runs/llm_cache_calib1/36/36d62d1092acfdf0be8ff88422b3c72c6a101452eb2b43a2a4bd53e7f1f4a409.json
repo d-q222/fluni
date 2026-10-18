@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dylan from my dorm at Mark Taper; they seemed fine and said they're just wary, though I was wrong that they were masking. Nothing changes, I still feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

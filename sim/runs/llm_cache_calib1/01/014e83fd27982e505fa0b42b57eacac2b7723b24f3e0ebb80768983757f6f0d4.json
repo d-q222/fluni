@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I've got a few spares if you want one. Anyway, I'll let you eat. See you around the dorm!",
+  "shared_health": false
+ }
+}

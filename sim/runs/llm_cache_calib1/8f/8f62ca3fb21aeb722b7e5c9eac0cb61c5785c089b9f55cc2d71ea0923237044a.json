@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, thanks for telling me, I really appreciate that. I'll back up a bit. Hope you stay feeling fine! Maybe get tested if anything feels off. I've got to head to study, take care!",
+  "shared_health": false
+ }
+}

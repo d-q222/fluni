@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Teagan (masked, feels fine) said Scout is a close contact of someone sick; I'm staying masked and keeping distance, watching for symptoms. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

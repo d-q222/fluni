@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with True at Stern breakfast; they're masked, feel fine, and are also going to the Cal game. Nothing changes: keep masking and stick to my schedule.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

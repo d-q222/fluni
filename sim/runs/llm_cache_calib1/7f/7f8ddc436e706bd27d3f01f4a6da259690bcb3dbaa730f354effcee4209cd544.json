@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00113",
+    "start": "13:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "bld:bld_232841950",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "lab",
+    "end": "20:05",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "19:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "event:EV00114",
+    "start": "20:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:05",
+    "place": "bld:bld_m_green_library",
+    "start": "21:20"
+   },
+   {
+    "activity": "study",
+    "end": "01:35",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Went to the crowded Cal game, felt fine, then kept to my usual evening of study, lab, and dorm hangout. Still a little wary given dorm exposure notices.",
+  "messages": [],
+  "thoughts": "The stadium is crowded, but I feel fine and I'm disciplined. I'll stay for the game since it's a one-off, then follow my usual routine. I'll keep my distance from anyone who seems sick. Exposure notices in the dorm make me a bit wary, but my app is quiet, so I'll still go to the dorm hangout briefly and keep it short.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

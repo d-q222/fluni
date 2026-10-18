@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Had dinner with Campbell at Stern; both feel fine. Campbell declined the mask while eating and is going to the 19:50 study group, then hanging out with people after, and invited me to join later. I'm sticking with gym then studying at home.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

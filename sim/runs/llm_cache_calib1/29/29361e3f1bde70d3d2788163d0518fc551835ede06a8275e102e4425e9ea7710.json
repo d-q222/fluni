@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx is masked because Chris is sick and Oli is coughing, though Onyx feels fine. I said I'd pop into the dorm hangout and leave early, probably unmasked.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

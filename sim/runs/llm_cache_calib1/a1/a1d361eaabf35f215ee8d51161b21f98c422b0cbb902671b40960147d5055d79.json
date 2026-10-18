@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:55",
+    "place": "home",
+    "start": "04:15"
+   },
+   {
+    "activity": "eat",
+    "end": "11:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "12:45",
+    "place": "bld:bld_26250731",
+    "start": "11:50"
+   },
+   {
+    "activity": "rest",
+    "end": "22:30",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Sick with fever and cough, likely the same bug as Chris. Going to Vaden for a test, masked when out, then resting and skipping the game and party. Friends are all being careful and I feel guilty.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks everyone, really appreciate it. Sorry I was around you all. Heading to Vaden for a test today, will mask when out and then rest in my room. Skipping the game and party. Will update you.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm sick with fever and cough, and Chris testing positive makes it likely the same bug. Everyone is skipping stuff and masking, so I'll do the responsible-ish thing: sleep more, go to Vaden for a test at midday, wear a mask out, and then rest in my room. I'll skip the game and party even though I'm bummed about missing them.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

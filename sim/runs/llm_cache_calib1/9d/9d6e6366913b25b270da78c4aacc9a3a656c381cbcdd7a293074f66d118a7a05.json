@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:25",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "10:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "10:45"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_1040629370",
+    "start": "12:05"
+   },
+   {
+    "activity": "lab",
+    "end": "15:20",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "12:45"
+   },
+   {
+    "activity": "rest",
+    "end": "16:15",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "lab",
+    "end": "17:20",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "19:25"
+   },
+   {
+    "activity": "rest",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: Teagan's positive result was reaffirmed. I still feel fine and am keeping to masked meals, study, lab and my room, skipping the game and outdoor crowds. Still quite worried and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Teagan, feel better soon. I feel fine so far but I'm masking and staying out of the lounge. Will tell you all if I get symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan's positive result was already known, so this changes little. I feel fine but I'm worried and possibly exposed. I'll keep my routine with a mask, skip the lounge, the game and the outdoor crowds, and get dinner a bit off-peak. I'll do lab and study, then rest early. I'll reply to the group to say thanks and wish Teagan well.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

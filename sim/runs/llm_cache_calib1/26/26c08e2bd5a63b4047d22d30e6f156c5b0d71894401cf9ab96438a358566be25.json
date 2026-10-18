@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:35"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Fri: Test came back positive. I'm isolating in my room, told Sawyer and Oli, and skipped the study group. Very anxious about my roommate and the dorm, so I'm staying masked and resting.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Test result came back positive. I'm isolating in my room and skipping everything, so please keep your distance and get checked if you feel off. Thanks for offering to help. I may take you up on a food drop-off outside my door later.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "The test came back positive, so I'm staying in my room. I'll skip the study group at Green Library and tell Sawyer and Oli the result so they can keep their distance. I'll rest, eat in my room (maybe ask a friend to drop food off), and sleep early. I'm anxious about my roommate and the dorm, so I'll mention it to them and keep my mask on around my roommate.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

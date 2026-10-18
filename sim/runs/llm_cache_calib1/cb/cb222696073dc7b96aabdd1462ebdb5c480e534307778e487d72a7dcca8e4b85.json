@@ -1,0 +1,101 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m76",
+   "m77",
+   "m82"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:15"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:EARTHSYS106_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "bld:bld_m_green_library",
+    "start": "10:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:STATS118_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:50",
+    "place": "bld:bld_232805662",
+    "start": "16:25"
+   },
+   {
+    "activity": "relax",
+    "end": "18:10",
+    "place": "home",
+    "start": "17:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:55",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:00",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Thursday: class, study, Coupa, Lakeside dinner with Chris, Taper with Dell, then the Stern lounge at 8. Feeling healthy and not worried.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll keep my usual routine. Dinner at Lakeside at 6:15 with Chris, then Taper at 7:15 with Dell, then the lounge hangouts. Sleep until class, sleep in a bit. Lots of invites; I'll say yes to dinner, Taper, and the Stern lounge at 8 (Onyx), and Dakota's lounge at 7:45 can overlap.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nah, just chilling here till I head to Green later. You're masked up, huh? Are you sick or just playing it safe? Taper's tonight at 8:30 if you want to come.",
+  "shared_health": false
+ }
+}

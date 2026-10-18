@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Zuri! Yeah, I've been masking since there's stuff going around. I feel fine, just a bit anxious. Scout might be a close contact of someone sick, so I'm keeping my distance a bit. You feeling okay?",
+  "shared_health": true
+ }
+}

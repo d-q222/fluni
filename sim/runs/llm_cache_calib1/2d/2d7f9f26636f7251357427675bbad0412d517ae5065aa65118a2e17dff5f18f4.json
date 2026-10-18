@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Bryce before CS 194W; we both feel fine, are anxious about illness, and agreed to sit near the door with masks on.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

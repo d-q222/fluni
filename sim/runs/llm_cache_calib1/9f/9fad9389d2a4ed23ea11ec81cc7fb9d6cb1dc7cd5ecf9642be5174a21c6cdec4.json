@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "rest",
+    "end": "13:00",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "rest",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Still sick and positive, isolating in my room all day, skipping the football game and party. Thanked the group and told them to watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks all. Still positive and staying in my room all day. Dakota, hope your test goes ok. Wynn and Eden, smart to skip the party. Watch for symptoms and mask up.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I tested positive and feel awful with fever and aches. Dakota is sick too, so the spread is real. I'm staying in my room all day, skipping the football game and the party. I'll sleep, rest, and eat in the room. Maybe I'll text a quick thanks to the group.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

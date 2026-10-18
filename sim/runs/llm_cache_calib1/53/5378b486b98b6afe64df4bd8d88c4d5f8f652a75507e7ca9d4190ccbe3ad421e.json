@@ -1,0 +1,105 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m28",
+   "m29",
+   "m30",
+   "m32",
+   "m34"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:55",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:30",
+    "place": "bld:bld_232805662",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:40",
+    "place": "class:DESIGN1_WKS01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "bld:bld_232805662",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "gym",
+    "end": "18:40",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "18:05"
+   },
+   {
+    "activity": "event",
+    "end": "21:05",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:05",
+    "place": "bld:bld_232841950",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Wed Jan 7: Told the group I'm going to the Arizona game. Classes and study, gym, then game and Taper. Feeling fine, a little cautious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "I'm in for the game tonight! See you at Maples at 7, Taper after?",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, just a bit cautious. Everyone is going to the basketball game, and I love that kind of thing. I'll stick to my usual routine: sleep, study, class, gym, then the game and Taper after. I'll say yes to the invites and text the group that I'm in.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

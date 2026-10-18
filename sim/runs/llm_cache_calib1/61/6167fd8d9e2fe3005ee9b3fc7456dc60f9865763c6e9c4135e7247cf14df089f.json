@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:05",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "relax",
+    "end": "20:40",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "20:45"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "23:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Stern Dining was packed at lunch, so I ate fast and left. Feeling fine; keeping my mask on indoors and sticking to class, lab, and study tonight.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll finish eating quickly and keep my mask on when I'm not actively eating. I'll stick to my usual organized schedule: CS103, a break at home, then lab. I feel fine, so there's no need to change much. I'll shorten lunch a bit to get out of the crowd.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

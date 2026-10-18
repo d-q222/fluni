@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Yeah, Lucie Stern. Monday's fine so far, just grabbing lunch before lifting and class. How's yours?",
+  "shared_health": false
+ }
+}

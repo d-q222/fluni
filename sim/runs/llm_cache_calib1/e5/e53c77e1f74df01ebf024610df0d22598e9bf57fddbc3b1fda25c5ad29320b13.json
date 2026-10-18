@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Neo. Heads up, I keep hearing people in the dorm are getting sick. You feeling okay? I'm wearing my mask and heading to lab after this.",
+  "shared_health": false
+ }
+}

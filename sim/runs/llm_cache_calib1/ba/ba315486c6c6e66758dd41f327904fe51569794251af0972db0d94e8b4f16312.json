@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Umi (masked, dorm neighbor) about Sidney's fever and cough; Umi said Skyler is waiting on a flu test at Vaden. Illness is spreading in the dorm, so I'll keep my distance and stay watchful.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Sidney in my dorm has a fever and cough, and Skyler is reportedly waiting on a flu test. I feel fine but I'm keeping my distance. Tell me if you feel off.",
+    "time": "",
+    "to": "A0215"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

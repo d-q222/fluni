@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce! Yeah, I feel fine, thanks for the heads up earlier. I'm just eating and heading back to my room, staying away from the lounge. You doing okay?",
+  "shared_health": true
+ }
+}

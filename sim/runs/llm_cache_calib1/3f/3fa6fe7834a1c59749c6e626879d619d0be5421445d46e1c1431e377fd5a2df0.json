@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do, you too. Alright, I'm heading off to study then lab. Catch you later!",
+  "shared_health": false
+ }
+}

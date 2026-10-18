@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nice, tell Dell I said hi! I'll be at Green this afternoon, but tonight I've got dinner at Flo Mo and then a hangout, so I might swing by the study group late. What time is it?",
+  "shared_health": false
+ }
+}

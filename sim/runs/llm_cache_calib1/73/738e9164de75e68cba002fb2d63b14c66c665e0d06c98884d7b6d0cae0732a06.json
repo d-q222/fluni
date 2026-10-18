@@ -1,0 +1,114 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:55",
+    "place": "home",
+    "start": "07:15"
+   },
+   {
+    "activity": "study",
+    "end": "08:25",
+    "place": "home",
+    "start": "07:55"
+   },
+   {
+    "activity": "eat",
+    "end": "08:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "10:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:MUSIC74C_PRA02",
+    "start": "10:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "11:45",
+    "place": "bld:bld_m_white_plaza",
+    "start": "11:20"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "11:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:30",
+    "place": "class:ARTHIST129_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:10",
+    "place": "bld:bld_232841950",
+    "start": "14:50"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:STATS100_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:55"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "20:00"
+   },
+   {
+    "activity": "gym",
+    "end": "22:45",
+    "place": "plan:bld_232805671_f1_102",
+    "start": "21:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:10",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Followed my usual Tuesday routine of classes, library study and gym. Feeling fine, still a little anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit anxious about illness but no specific warnings. Stick to my usual disciplined Tuesday routine: classes, library study, meals at Stern, gym. No mask indoors, will keep an eye on FlUni.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

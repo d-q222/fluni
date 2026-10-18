@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ocean said Devon mentioned several people in our dorm have fevers and Skyler is waiting on a flu test. I feel fine but I'm skipping the lounge hangout tonight and will keep masking and staying home.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: heard from a dorm neighbor that a few people in Lucie Stern have fevers and one is waiting on a flu test. I feel fine but I'm skipping the lounge hangout tonight and masking. Be careful!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": true,
+  "worry": 4
+ }
+}

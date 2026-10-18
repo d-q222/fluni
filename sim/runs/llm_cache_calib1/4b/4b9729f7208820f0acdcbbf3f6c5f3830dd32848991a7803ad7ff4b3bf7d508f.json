@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Oakley at the Cal game; they're masked and brought up my negative flu test. Invited them to sit with me, True and Ocean near the middle. Plan unchanged: game, study, gym, rest at home.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

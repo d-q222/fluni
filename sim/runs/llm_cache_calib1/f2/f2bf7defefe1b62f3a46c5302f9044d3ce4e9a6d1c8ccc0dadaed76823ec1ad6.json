@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Had dinner chat with Umi at Stern; both feel fine, wearing masks and being careful. Offered Umi a spare mask for their lounge study group. Campbell is joining us for dinner soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

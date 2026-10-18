@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Oakley. Mask on, huh? You feeling okay, or just being careful after last night's hangout?",
+  "shared_health": false
+ }
+}

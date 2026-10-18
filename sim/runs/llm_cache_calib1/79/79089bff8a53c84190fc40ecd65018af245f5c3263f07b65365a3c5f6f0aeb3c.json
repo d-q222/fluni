@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_232715666",
+    "start": "10:40"
+   },
+   {
+    "activity": "study",
+    "end": "12:55",
+    "place": "bld:bld_232805662",
+    "start": "11:40"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:35",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "16:40"
+   },
+   {
+    "activity": "study",
+    "end": "19:15",
+    "place": "bld:bld_232805662",
+    "start": "17:40"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Saturday: Chris and Dakota are sick and I had dinner with Dakota, so I'm worried I'm exposed. I feel fine, will mask at the game, skip the party and lounge, and monitor symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us Chris and Dakota, feel better! I feel fine now but I was around Dakota at dinner, so I'm masking up and watching for symptoms. I'm skipping the party tonight. Will tell you if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris, Dakota, Oli, Sidney and Hadley are all sick, and I was around Dakota at dinner last night, so I might be exposed. I feel fine now and I'm calm, but I'll be more careful. I'll sleep in, skip the packed party and the lounge, and go to the game masked outdoors if I still feel fine. I'll check in on my symptoms and keep the evening low-key.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

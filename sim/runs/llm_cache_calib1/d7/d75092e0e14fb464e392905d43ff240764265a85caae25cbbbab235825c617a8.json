@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:45",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:50"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "11:35"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:45",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "plan:bld_1169967277_f1_103",
+    "start": "16:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:35",
+    "place": "home",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Mika is getting tested after a FlUni warning. I'm skipping the basketball game, staying masked and keeping to my usual quiet routine. Feeling fine but worried about dorm sickness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update, Mika. Hope the test comes back negative. Let us know and feel better!",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Mika is getting tested after a FlUni warning, and people in the dorm are sick. I'm a homebody and a bit worried, so I'll skip the basketball game and stick with my usual routine. I'll wear a mask at meals and in the study room, and send Mika a quick supportive text.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Back at Lakeside again, huh? How was Green earlier?",
+  "shared_health": false
+ }
+}

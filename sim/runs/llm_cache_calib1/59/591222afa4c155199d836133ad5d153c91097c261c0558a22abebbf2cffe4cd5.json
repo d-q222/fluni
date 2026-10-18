@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_333374283",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:35",
+    "place": "plan:bld_232805685_f3_309",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "plan:bld_232805685_f1_114",
+    "start": "12:25"
+   },
+   {
+    "activity": "class",
+    "end": "15:05",
+    "place": "class:CEE285B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:20",
+    "place": "plan:bld_232805685_f1_101",
+    "start": "15:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "16:30"
+   },
+   {
+    "activity": "relax",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "17:30"
+   }
+  ],
+  "diary": "Went with my usual campus routine but masked and left a bit earlier. Feel fine, still a bit worried about being a close contact of Wallace.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Morning! Feeling fine here, masking up on campus today. Let me know if you feel off and I'll do the same.",
+    "time": "",
+    "to": "A0181"
+   }
+  ],
+  "thoughts": "Wallace is a close contact and I feel fine. I'll keep my routine but be more careful: grab a mask for crowded spots, skip the lingering outdoor time, and head home a bit earlier. I'll check in with Marley about symptoms. Class matters, so I'll still go.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

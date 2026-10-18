@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yep, I've got another spare in my bag, here you go! Let's grab that table by the window.",
+  "shared_health": false
+ }
+}

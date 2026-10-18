@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey. Just studying here till class at 11:30, problem sets. You?",
+  "shared_health": false
+ }
+}

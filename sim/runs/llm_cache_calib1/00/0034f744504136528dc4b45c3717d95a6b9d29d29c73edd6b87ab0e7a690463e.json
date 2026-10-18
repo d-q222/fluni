@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Devon I feel fine but am anxious since Wesley is a close contact; Devon and I agreed to keep masking and tell each other right away if anything feels off. Will watch for symptoms and stay home tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

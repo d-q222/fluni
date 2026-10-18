@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, thanks for the heads up. Hope your friend's okay. I feel fine too, just keeping a bit careful with all the dorm fevers going around. Take care, Sawyer.",
+  "shared_health": true
+ }
+}

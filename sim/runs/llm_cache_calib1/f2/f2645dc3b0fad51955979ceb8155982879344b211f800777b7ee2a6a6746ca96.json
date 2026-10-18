@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:10",
+    "place": "home",
+    "start": "09:45"
+   },
+   {
+    "activity": "lab",
+    "end": "13:00",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "10:15"
+   },
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00113",
+    "start": "13:10"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "bld:bld_232841950",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "lab",
+    "end": "20:05",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "19:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "event:EV00114",
+    "start": "20:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:05",
+    "place": "bld:bld_m_green_library",
+    "start": "21:20"
+   },
+   {
+    "activity": "study",
+    "end": "01:35",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Followed my usual Saturday: lab, football game, study, dinner, lab, dorm hangout, then late study. Feeling fine, staying careful given the exposure notices in the dorm.",
+  "messages": [],
+  "thoughts": "Saturday, feeling fine. I'll mostly follow my usual routine: sleep in, lab, the football game I was invited to, study, dinner, lab, dorm hangout. The dorm has exposure notices and my app is quiet, so I'll stay careful and keep distance from anyone who seems sick. The stadium is crowded, but I'm introverted and will probably go for a bit. I'll skip the mask since I rarely wear one indoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

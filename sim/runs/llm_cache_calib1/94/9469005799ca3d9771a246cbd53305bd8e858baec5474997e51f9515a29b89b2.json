@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "rest",
+    "end": "17:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "rest",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Day four of being sick: still fever, cough and aches. I stayed in my room resting all day and kept away from everyone. Very worried, and I'll consider Vaden if I'm not better tomorrow.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks both, really appreciate it. Still feverish with a cough, staying in my room. I'll text if I need anything dropped off. Please keep your distance and stay well.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Day four of being sick, still feverish with cough and aches. I'll stay in my room, sleep in, and rest. Dining hall is out; I'll ask Marley to leave food outside the door if I need it, or eat what I have. If I'm not improving by tonight I'll think about Vaden tomorrow. Keep away from everyone.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

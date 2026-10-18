@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:35",
+    "place": "bld:bld_232715666",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "12:15",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "09:55"
+   },
+   {
+    "activity": "class",
+    "end": "13:05",
+    "place": "class:CHEM31B_LEC02",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "14:40",
+    "place": "home",
+    "start": "14:00"
+   },
+   {
+    "activity": "class",
+    "end": "16:00",
+    "place": "class:POLISCI114S_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:05",
+    "place": "event:EV00000",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "bld:bld_232841950",
+    "start": "20:10"
+   },
+   {
+    "activity": "relax",
+    "end": "22:25",
+    "place": "home",
+    "start": "21:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:25"
+   }
+  ],
+  "diary": "Followed my usual Monday routine with classes, study group and studying. Wore a mask indoors since I'm a bit worried about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I'll follow my usual routine since I'm organized and feel fine. Slightly worried about illness going around, so I'll wear a mask indoors today to be careful.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

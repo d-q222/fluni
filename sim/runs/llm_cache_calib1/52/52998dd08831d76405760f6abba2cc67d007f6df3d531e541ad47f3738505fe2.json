@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Mika my flu test was negative and I feel fine; they're masked, feel fine too, and will tell Campbell. Plan unchanged, keep some distance from sick dorm folks.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

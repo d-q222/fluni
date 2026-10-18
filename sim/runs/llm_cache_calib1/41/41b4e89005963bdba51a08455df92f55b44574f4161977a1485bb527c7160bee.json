@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Sawyer (dormmate, masked) at Stern about the pasta; they said nothing about their health. Nothing changes: finish eating, go to lab, then home early.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

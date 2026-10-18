@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh ok, ENGR248 is probably next door then. Well, I'll catch you after class maybe? Stay safe, Aspen!",
+  "shared_health": false
+ }
+}

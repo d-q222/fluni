@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with roommate Jody; they'll be at Green 4-7 on a different floor, we're both masked and fine. I'll still head to Green around 5:45 and see them back at the room later.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

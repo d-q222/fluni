@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "13:20",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "13:05"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CS22A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "14:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:05",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "14:55"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Sidney tested positive for flu. I feel fine but am worried; keeping class and lab, skipping the dorm hangout, watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Sidney. Rest up. I'm feeling fine but will keep an eye out and keep my distance.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sidney tested positive for flu. I feel fine, but I'm worried. I'll keep class and lab since I've no symptoms, but skip the dorm hangout and avoid crowds. I'll eat and study with less exposure, and keep an eye out for symptoms. I'll reply to the group to thank Sidney and wish them well.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

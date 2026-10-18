@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Pretty good, just busy with problem sets and lab. How about you?",
+  "shared_health": false
+ }
+}

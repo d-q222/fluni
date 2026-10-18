@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli! Morning. Heading to Green after breakfast? I'm still masking up in crowds since Val tested positive, but I feel fine.",
+  "shared_health": true
+ }
+}

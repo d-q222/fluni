@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Stevie, a dorm neighbor in Lucie Stern, at lunch; casual small talk, nothing to change in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

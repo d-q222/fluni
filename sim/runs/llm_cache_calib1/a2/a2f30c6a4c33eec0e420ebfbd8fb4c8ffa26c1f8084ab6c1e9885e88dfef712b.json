@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Sidney texted me too. I'm skipping the hangout, and I feel fine so far. I'm wearing a mask in class now. Let's keep our distance and watch for symptoms, okay?",
+  "shared_health": true
+ }
+}

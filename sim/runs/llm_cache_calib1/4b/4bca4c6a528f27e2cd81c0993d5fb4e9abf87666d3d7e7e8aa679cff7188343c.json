@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Jody about Jesse's fever and test; Jody agreed to mask in the room and asked me to share the result. I'll tell Jody when I hear.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

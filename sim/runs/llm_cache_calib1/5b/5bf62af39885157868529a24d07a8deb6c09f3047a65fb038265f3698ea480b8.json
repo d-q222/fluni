@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:15",
+    "place": "bld:bld_232841950",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Stayed at the Arizona game with everyone; plan is Taper after, then home to sleep. Feeling fine, still a bit wary of the illness going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_232841950",
+    "text": "Great game! Taper after, who's in?",
+    "time": "21:30",
+    "to": "group"
+   }
+  ],
+  "thoughts": "The game is crowded but I feel fine and I'm with everyone. I'll stay for most of the game, then head to Taper with friends, then home to relax and sleep. Not wearing a mask, that's not really me.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

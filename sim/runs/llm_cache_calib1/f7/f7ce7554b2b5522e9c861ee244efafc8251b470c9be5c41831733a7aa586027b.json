@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Eden. Yeah, Devon mentioned a few people have fevers, and Skyler's waiting on a flu test. I feel fine, just keeping some distance. Smart to mask though.",
+  "shared_health": true
+ }
+}

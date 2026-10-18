@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Ready for the first Monday back? I've got Phil class at 10:30 and then practice later.",
+  "shared_health": false
+ }
+}

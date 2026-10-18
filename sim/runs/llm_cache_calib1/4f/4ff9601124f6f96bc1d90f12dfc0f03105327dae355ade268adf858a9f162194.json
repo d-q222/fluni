@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Campbell at lunch; they invited me to White Plaza around 5 but I have practice at 4:20, so I declined. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Honestly it's okay so far, just the first week of setup stuff. I heard Salem say people are wary of some illness going around though, have you heard anything about that? Anyway, we should hang at Taper tonight if you're free!",
+  "shared_health": false
+ }
+}

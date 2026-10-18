@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Just being careful, I feel fine. Oli's been coughing around me and Chris has a fever, so I'm masking and keeping my distance. Still doing Taper though, then heading home early.",
+  "shared_health": true
+ }
+}

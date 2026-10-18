@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Ocean at Stern lunch; they're masked and will find me and True at the Cal game. I told them to keep the mask on in the crowd. Plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

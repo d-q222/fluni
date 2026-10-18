@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jesse! Heading to the hangout too? I'm just popping in briefly, then bed. Have you heard about those fever rumors around Stern?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Salem. Heads up, I'm keeping my distance a bit, a couple friends have the flu.",
+  "shared_health": false
+ }
+}

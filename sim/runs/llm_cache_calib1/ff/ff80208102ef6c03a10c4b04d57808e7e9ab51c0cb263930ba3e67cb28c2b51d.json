@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:35"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "14:40",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "study",
+    "end": "18:20",
+    "place": "plan:bld_m_green_library_f1_104",
+    "start": "14:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_1040629370",
+    "start": "18:25"
+   },
+   {
+    "activity": "relax",
+    "end": "19:25",
+    "place": "home",
+    "start": "18:55"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:55",
+    "place": "event:EV00139",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "21:55",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:20",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:20"
+   }
+  ],
+  "diary": "Sun Jan 11: Feeling fine. Studying at Green with a mask on, going to the PSYCH 50 group tonight, and offered Val a food drop-off. Still a bit worried about Val.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Val, thinking of you. I can drop food or supplies outside your door today. Just tell me what you need and feel better soon!",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Val is sick and isolating; I feel fine and tested negative. I'll keep my usual study routine but mask in crowded spaces, and text Val to follow up on the food drop-off. Sunday, so study at Green and keep the PSYCH 50 study group in the evening.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

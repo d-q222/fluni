@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Feeling fine, just playing it safe with Oli coughing and Chris with a fever. You doing okay? Still up for a short Taper, then home early?",
+  "shared_health": true
+ }
+}

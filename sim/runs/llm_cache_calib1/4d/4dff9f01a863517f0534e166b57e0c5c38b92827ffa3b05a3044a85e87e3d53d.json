@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer said their flu test came back negative and they seemed fine and masked. I invited them to share a table at Green Library later; they'll come after dinner and I'll save a spot, staying masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

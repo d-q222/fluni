@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with True at Stern breakfast; casual small talk, nothing health-related. Sticking with my usual routine today.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

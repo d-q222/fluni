@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm feeling fine too, no symptoms. Just keeping the mask on to be safe. Anyway, I'm gonna finish eating and head to study. Stay healthy!",
+  "shared_health": true
+ }
+}

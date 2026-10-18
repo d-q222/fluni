@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell and I agreed to meet at Taper and then do the lounge; we'll bail if anyone's coughing. I feel fine and kept my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

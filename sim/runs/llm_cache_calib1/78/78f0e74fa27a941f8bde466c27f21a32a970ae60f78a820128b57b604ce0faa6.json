@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Skyler told me this morning their flu test came back negative and they feel fine. They did say a few people in our dorm are sick though, so I'm still masking and staying careful. Skipping the hangout too.",
+  "shared_health": false
+ }
+}

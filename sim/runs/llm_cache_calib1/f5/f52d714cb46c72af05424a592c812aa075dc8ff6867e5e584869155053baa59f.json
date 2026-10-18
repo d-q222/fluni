@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "08:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:15"
+   },
+   {
+    "activity": "gym",
+    "end": "11:10",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "08:50"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "14:50",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:ETHICSOC170_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "practice",
+    "end": "17:40",
+    "place": "plan:bld_18564360_f1_101",
+    "start": "16:30"
+   },
+   {
+    "activity": "relax",
+    "end": "19:15",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:05",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:05"
+   }
+  ],
+  "diary": "Mon Jan 5: Met Lake at Stern Dining and agreed to lift together at 8:50. Then the normal Monday of class and practice. Feeling fine, just a bit wary of bugs going around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "See you at the weight room at 8:50, let's get it.",
+    "time": "",
+    "to": "A0191"
+   }
+  ],
+  "thoughts": "Just ran into Lake at Stern Dining. Gonna finish eating, then meet Lake at the weight room around 8:50 and lift. After that the usual Monday: CS111, lunch, downtime, ETHICSOC, practice. Feeling fine, so nothing changes, just keep an eye out for bugs going around.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

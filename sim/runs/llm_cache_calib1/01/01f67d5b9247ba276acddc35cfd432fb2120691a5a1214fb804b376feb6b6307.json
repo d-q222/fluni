@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with True (masked) at Stern Dining; they and Skyler are sitting together at the Cal game and I said I'd find them there and mask up in the crowd.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

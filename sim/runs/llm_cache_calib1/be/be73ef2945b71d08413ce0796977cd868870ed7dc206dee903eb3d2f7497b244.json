@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Zuri! Good to see you masked too. I heard Teagan and Dakota are sick in our dorm, so I'm avoiding the lounge. You feeling okay?",
+  "shared_health": false
+ }
+}

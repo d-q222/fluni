@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:45",
+    "place": "home",
+    "start": "06:10"
+   },
+   {
+    "activity": "gym",
+    "end": "08:25",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "06:50"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "09:15"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:CHINLANG7_LNG01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:COLLEGE102_SEM47",
+    "start": "13:30"
+   },
+   {
+    "activity": "practice",
+    "end": "18:00",
+    "place": "plan:bld_232715640_f1_101",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "event:EV00040",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Normal Tuesday: lift, classes, practice, dinner at Stern, then the dorm hangout. Feeling fine and not worried.",
+  "messages": [],
+  "thoughts": "Normal Tuesday. Feeling fine, not worried. Stick to routine: lift, meals, study, classes, practice, then the dorm hangout in the evening.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

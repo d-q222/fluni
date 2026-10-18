@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel fine too, no symptoms. Just keeping an eye on the dorm fever rumor. Gonna head to the Cal game later, you going?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Perfect, let's grab that corner one! Tell Chris we're here. And yeah, masks in the lounge crowd are probably smart, I've got a spare if you want one.",
+  "shared_health": false
+ }
+}

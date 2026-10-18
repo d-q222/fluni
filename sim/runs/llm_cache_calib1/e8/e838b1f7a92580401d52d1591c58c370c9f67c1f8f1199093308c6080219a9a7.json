@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:50",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "10:40",
+    "place": "bld:bld_m_the_oval",
+    "start": "09:55"
+   },
+   {
+    "activity": "lab",
+    "end": "12:05",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "10:45"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:10"
+   },
+   {
+    "activity": "eat",
+    "end": "13:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:15"
+   },
+   {
+    "activity": "lab",
+    "end": "17:30",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "13:45"
+   },
+   {
+    "activity": "study",
+    "end": "18:55",
+    "place": "plan:bld_m_green_library_f4_402",
+    "start": "17:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:05"
+   },
+   {
+    "activity": "relax",
+    "end": "00:40",
+    "place": "home",
+    "start": "23:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:40"
+   }
+  ],
+  "diary": "Usual Thursday of lab and studying. Feel fine, only a little aware of Sidney's fever going around.",
+  "messages": [],
+  "thoughts": "I feel fine. Sidney's fever is a bit of a heads-up but I'm not changing much. Stick with my usual routine, no mask, keep busy with lab and problem sets.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

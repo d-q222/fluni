@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "15:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "study",
+    "end": "21:35",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "18:40"
+   },
+   {
+    "activity": "lab",
+    "end": "23:00",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "21:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thursday: Harper got a FlUni stay-home notice and is skipping tonight. I'm fine, kept my routine, a bit careful, aiming for bed before midnight.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Harper. Good call staying in. Feel better and let us know if you need anything!",
+    "time": "",
+    "to": "A0215"
+   }
+  ],
+  "thoughts": "Harper is staying home because FlUni told them to, so the study group tonight is probably off. I feel fine and I'm not a FlUni-flagged contact myself, so I'll keep my routine. I'm still a bit careful, so I'll skip the late lab and sleep earlier. I'll reply to Harper with thanks.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Dakota! Hey, you made it! Dell's here too, we're trying to find Onyx and Carter. Wanna sit with us?",
+  "shared_health": false
+ }
+}

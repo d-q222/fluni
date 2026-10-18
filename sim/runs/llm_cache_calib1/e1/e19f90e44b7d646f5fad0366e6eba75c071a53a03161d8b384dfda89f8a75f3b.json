@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, yeah, figured I'd be careful with everything going around. Morning's good, just relaxing before lunch and the gym. How about you?",
+  "shared_health": false
+ }
+}

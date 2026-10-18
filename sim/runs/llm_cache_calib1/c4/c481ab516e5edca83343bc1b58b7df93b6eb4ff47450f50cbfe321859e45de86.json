@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "14:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:05",
+    "place": "bld:bld_m_the_oval",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: Dakota tested positive and I'm a close contact. I feel fine, so I'm staying low-key, skipping the game and the hangout, masking outside, and monitoring symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Dakota and Chris. I ate with Dakota Friday so I'm watching for symptoms. Feel fine now, skipping the game and the lounge, staying low-key. Will text if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota tested positive and I had dinner with them, so I'm exposed. I feel fine, but I'm not going to risk spreading anything. I'll sleep in, stay mostly home, skip the game and the hangout, and have a quick masked dinner at Stern, then get an early night. I'll text the group to say thanks and that I'm monitoring.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

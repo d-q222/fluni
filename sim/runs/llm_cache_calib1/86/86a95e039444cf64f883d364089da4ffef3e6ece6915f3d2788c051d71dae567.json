@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm fine, no symptoms. Just a little worried about stuff going around, so I'm masking indoors to be safe. Want to grab a library table together later?",
+  "shared_health": true
+ }
+}

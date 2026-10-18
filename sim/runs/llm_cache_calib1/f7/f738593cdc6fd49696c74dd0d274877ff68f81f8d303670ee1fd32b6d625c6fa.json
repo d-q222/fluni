@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dylan. Long night in the lab for you too?",
+  "shared_health": false
+ }
+}

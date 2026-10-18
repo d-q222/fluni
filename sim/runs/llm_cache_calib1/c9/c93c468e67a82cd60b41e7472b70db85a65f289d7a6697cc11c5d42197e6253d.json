@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Aspen, you heading to the hangout too? I'm just staying a short while, then bed.",
+  "shared_health": false
+ }
+}

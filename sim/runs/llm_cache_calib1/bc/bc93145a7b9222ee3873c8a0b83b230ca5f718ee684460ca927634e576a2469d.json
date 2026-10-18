@@ -1,0 +1,114 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:10",
+    "place": "home",
+    "start": "06:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "07:40",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "07:20"
+   },
+   {
+    "activity": "eat",
+    "end": "08:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "08:55",
+    "place": "bld:bld_m_white_plaza",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "09:05"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:PHIL151_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "gym",
+    "end": "14:20",
+    "place": "bld:bld_255490604",
+    "start": "13:05"
+   },
+   {
+    "activity": "study",
+    "end": "15:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:35"
+   },
+   {
+    "activity": "practice",
+    "end": "17:50",
+    "place": "bld:bld_232715573",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "event",
+    "end": "20:35",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Wednesday plan: usual routine of class, gym, practice, then the basketball game. Feeling fine, still keeping an eye out for illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual disciplined Wednesday routine. Practice, gym, class, and the basketball game tonight. Several dorm folks have been masked, so I'll stay aware but I have no symptoms. I'll skip the late gym to rest after the game.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

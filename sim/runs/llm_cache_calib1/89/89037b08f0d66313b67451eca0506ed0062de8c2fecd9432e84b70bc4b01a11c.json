@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Jaden at Wilbur Dining; they're masked, feel fine, and know Sidney has flu. We agreed to skip the dorm hangout, keep distance, and text the group if symptoms show up.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

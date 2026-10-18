@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Skyler (masked, tested negative, feeling fine) heading to the Cal game with True and Ocean. I told them I'm playing and will keep a mask handy afterward.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

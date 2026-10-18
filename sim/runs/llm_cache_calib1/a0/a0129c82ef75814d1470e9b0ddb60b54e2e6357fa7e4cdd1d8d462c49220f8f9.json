@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oakley at breakfast; they're masked, feel fine, and know Skyler tested negative. Nothing changed, I'm still masking and skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Fallon is masked, feels fine, app quiet. Fallon heard via Dylan that Teagan and Dakota are sick in our dorm; we'll both avoid the dorm lounge and text each other if anything pings.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: heard Teagan and Dakota are sick in our dorm. I'm fine, staying masked and avoiding the lounge. Maybe do the same, and tell me if you feel off.",
+    "time": "",
+    "to": "A0179"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

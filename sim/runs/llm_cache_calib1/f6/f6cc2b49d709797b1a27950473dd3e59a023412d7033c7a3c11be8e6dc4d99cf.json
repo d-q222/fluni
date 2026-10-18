@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Not a party exactly, just popping into the dorm lounge hangout for a bit. You coming? Heard a few people in the dorm are sick though, so I'm not staying long.",
+  "shared_health": false
+ }
+}

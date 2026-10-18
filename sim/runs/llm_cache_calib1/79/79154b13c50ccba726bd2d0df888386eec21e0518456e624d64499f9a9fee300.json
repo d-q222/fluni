@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm fine, no symptoms. Heard about Dakota and Chris, so I'm keeping my distance from the dorm crowd. Glad you're feeling okay, maybe mask up too until things calm down.",
+  "shared_health": true
+ }
+}

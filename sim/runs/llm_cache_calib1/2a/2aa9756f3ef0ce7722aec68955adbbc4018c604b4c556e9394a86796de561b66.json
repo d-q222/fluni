@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Eden at Stern Dining; they're masked, feel fine, just anxious, skipping the party and game and heading home. I'm still doing gym then home, skipping Acacia, and told Eden to text me if they want to hang in the dorm.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

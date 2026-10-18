@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:00",
+    "place": "event:EV00144",
+    "start": "20:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Stern was packed. Chris and Dakota are positive and I feel fine but worried. Ate, studied at Green, short dorm hangout, then home to study.",
+  "messages": [],
+  "thoughts": "Stern Dining is packed and Chris and Dakota are positive, plus flu is confirmed in my dorm. I'm not going to mask, that's not me, but I'll eat fast and keep to my plan. Library study for a bit, then a short dorm hangout since I'm social, then home to study and sleep.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

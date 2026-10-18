@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "gym",
+    "end": "14:20",
+    "place": "bld:bld_232805671",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "plan:bld_m_green_library_f2_202",
+    "start": "14:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "23:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Stern was crowded at lunch so I ate masked and quick. Replied to Val about my negative test; keeping gym and Green study plans.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hi Val! Test came back negative and I feel fine. Thanks for checking in, hope you're doing okay too!",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Stern is crowded but I'm healthy and tested negative. I'll finish lunch quickly, reply to Val, then keep my usual gym and Green routine. I'll mask in the crowded dining room, since I'm still a bit worried.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:30",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "relax",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:50",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Chris tested positive and Dakota is sick, and I saw Dakota Thursday. I feel fine, so I'm skipping the game and party, staying in, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Chris, feel better! I'm skipping the party and keeping an eye on symptoms.",
+    "time": "",
+    "to": "A0227"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "I feel fine now but I saw Dakota Thursday, so I'm staying in tonight and skipping the party. Chris and Dakota are sick, so watch for symptoms and mask up.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris tested positive and Dakota is sick, and I saw Dakota Thursday. I feel fine but this is getting close. I'll skip the party tonight and probably the crowded game too, since I may be exposed. I'll sleep in, stay mostly in my room, grab an early dinner, and watch for symptoms. I'll be honest with friends and let them know I'm skipping.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

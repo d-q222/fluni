@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter. Heard a couple people in our dorm tested positive, so I'm keeping my distance. I'll grab my food and head back.",
+  "shared_health": false
+ }
+}

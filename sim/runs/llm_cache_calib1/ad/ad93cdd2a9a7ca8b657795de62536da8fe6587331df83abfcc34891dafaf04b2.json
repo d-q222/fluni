@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "11:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "relax",
+    "end": "17:25",
+    "place": "home",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wallace is still feverish. I'm staying in my room until Wednesday per FlUni, with only quick masked meals at Stern. I still feel fine and I'm watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for letting us know, Wallace. Rest up and text me if you need anything. I'll leave stuff outside your door if that helps. I feel fine, staying in per FlUni.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "Wallace is still sick and I'm a close contact, and FlUni says stay home until Wednesday. I feel fine, so I'll stick to the plan: sleep, stay in my room, and only make short masked trips to Stern Dining. I'll send Wallace a kind reply and keep watching for symptoms.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "I'm feeling fine, actually! Just being careful since it seems like something's going around. I've got a spare mask if you want one. How are you feeling?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "home",
+    "start": "09:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "17:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "16:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Mika got a FlUni stay-home notice after our breakfast. I'm staying in my room, skipping class and the crowds, only going for a quick masked early dinner. Feeling fine but more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Mika. We had breakfast together so I'll keep an eye on how I feel. Hope you stay well!",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Mika got told to stay home by FlUni, and we just ate breakfast together this morning, so I was a close contact. I feel fine, but I'm already wary. I'll stay in my room for now and skip the crowded Stern dining. I'll skip class, since lecture notes can be caught up on later, and keep an eye on the FlUni app. I'll grab an early dinner when it's quiet, masked, or just eat snacks in my room. I'll text Mika to say thanks and check in.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

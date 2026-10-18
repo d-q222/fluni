@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:35",
+    "place": "bld:bld_333374283",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:40"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_333374283",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "14:00",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "relax",
+    "end": "16:40",
+    "place": "home",
+    "start": "14:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:25",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "16:55"
+   },
+   {
+    "activity": "study",
+    "end": "23:35",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "22:40"
+   },
+   {
+    "activity": "relax",
+    "end": "01:05",
+    "place": "home",
+    "start": "23:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:05"
+   }
+  ],
+  "diary": "Wed Jan 7: Stuck to the usual routine of study, class and a long lab block. Feeling fine, still slightly wary about illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine: sleep, breakfast, study, class, lab in the evening. Still a little wary about illness, but nothing is going around that I know of. No need to text anyone or skip the basketball game; lab takes priority.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli! Yeah, I'm doing good, feel fine. I noticed the mask though, you doing okay? Good luck at your study group!",
+  "shared_health": true
+ }
+}

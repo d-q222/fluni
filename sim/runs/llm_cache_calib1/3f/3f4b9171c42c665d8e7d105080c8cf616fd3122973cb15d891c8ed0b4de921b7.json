@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Marley is masked and also a close contact of Wallace; we both feel fine. I said I'd grab a mask and watch for symptoms, and we'll tell each other if either feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

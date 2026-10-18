@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oli my flu test was negative; they're masked and heading to Green to study. I agreed to meet them at Green Library after dinner.",
+  "messages": [],
+  "replan": true,
+  "worry": 2
+ }
+}

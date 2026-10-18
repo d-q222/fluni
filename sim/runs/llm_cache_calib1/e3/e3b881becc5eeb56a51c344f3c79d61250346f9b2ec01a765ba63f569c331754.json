@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Wynn in the lobby; they feel fine and are popping into the hangout briefly, avoiding anyone coughing. I said I'd stay near the door, keep my mask handy and bail if it gets gross.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Yeah, I'm fine, just being careful with all the stuff going around. Mask is more of a habit indoors at this point. How about you?",
+  "shared_health": true
+ }
+}

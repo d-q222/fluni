@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:45",
+    "place": "home",
+    "start": "07:20"
+   },
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_1040629370",
+    "start": "08:05"
+   },
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "10:05"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:20",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:30",
+    "place": "bld:bld_m_the_oval",
+    "start": "15:45"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Stuck to a careful study day with masking in crowds and no gym, still watching for symptoms after the Wesley close contact.",
+  "messages": [],
+  "thoughts": "Feeling fine but anxious after the Wesley close contact. I'll stick to my study routine, mask in crowded dining, skip the gym again, and keep watching for symptoms. I'll go to class since lectures matter for grades, but sit apart. Evenings I'll study quietly instead of the crowded student center.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

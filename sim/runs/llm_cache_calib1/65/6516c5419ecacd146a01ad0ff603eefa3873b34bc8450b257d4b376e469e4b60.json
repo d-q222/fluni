@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, same, I'm not great at masking either. I feel fine, just trying to be careful. Anyway, I gotta finish eating before practice, see you around the dorm!",
+  "shared_health": true
+ }
+}

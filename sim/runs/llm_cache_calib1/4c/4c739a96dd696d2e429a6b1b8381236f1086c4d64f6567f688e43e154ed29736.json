@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Teagan (masked, lives in my dorm, in PSYCH 1) said a couple of people in our dorm got exposure notices; they have lab then Green later. I'm staying masked and keeping my plan, still avoiding a shared table with Sawyer until their test result is back.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

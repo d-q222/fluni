@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, lifting later after class, around 6 probably. Gonna eat then head to MATH107. You should come if you're done studying.",
+  "shared_health": false
+ }
+}

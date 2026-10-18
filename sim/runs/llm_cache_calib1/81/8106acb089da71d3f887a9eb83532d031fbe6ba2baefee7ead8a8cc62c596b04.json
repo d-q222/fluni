@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "07:25"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_333374283",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "home",
+    "start": "09:15"
+   },
+   {
+    "activity": "eat",
+    "end": "11:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:30"
+   },
+   {
+    "activity": "gym",
+    "end": "13:55",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "bld:bld_m_green_library",
+    "start": "14:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "plan:bld_m_green_library_f4_401",
+    "start": "15:35"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:50",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "event:EV00161",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: normal routine of study, lifting and meals, a short stop at the dorm hangout. Feel fine, still a bit careful with illness going around.",
+  "messages": [],
+  "thoughts": "Sunday, I feel fine. Sticking close to my usual routine: sleep in, breakfast, study, lift, library. Might swing by the Women's Basketball game as a new experience, but studying matters. I'll keep the dorm hangout short since a lot of illness is going around, and mask in crowds.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

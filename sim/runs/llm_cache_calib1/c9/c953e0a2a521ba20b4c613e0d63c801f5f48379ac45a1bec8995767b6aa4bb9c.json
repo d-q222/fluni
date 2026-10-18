@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx is masking just to be careful and says they feel fine; they offered me a spare mask for the lounge tonight. I'm texting Chris to join us at Lakeside, still planning Taper then the lounge at 8:45.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Chris, Onyx and I are at Lakeside in the corner table, come find us!",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "replan": false,
+  "worry": 2
+ }
+}

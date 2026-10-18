@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern over breakfast; no health talk. Told them the basketball game is at seven and to come if not wiped. Sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met True at the Arizona game at Maples; they're masking out of caution, feel fine, and mentioned a rumor of someone in a dorm with a fever. I said I feel fine. Sitting together; I need to text Chris that I arrived.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Made it to the Arizona game at Maples, sitting with True. Packed and fun!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 2
+ }
+}

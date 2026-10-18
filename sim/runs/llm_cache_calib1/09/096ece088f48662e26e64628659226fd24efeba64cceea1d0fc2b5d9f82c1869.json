@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "bld:bld_232841950",
+    "start": "21:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:30",
+    "place": "dorm_lounge",
+    "start": "23:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wed night: stayed at the Arizona game with friends, then planned Taper after and the dorm lounge. Feeling healthy and happy.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_232841950",
+    "text": "Great game! Taper after? Meet there around 9:30.",
+    "time": "21:30",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Game's going on and it's crowded but I feel fine and I'm super social. I'll stay for most of the game with friends, then go to Taper with Dakota and friends, then wind down in the dorm. Not worried, no mask.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

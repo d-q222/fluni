@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "bld:bld_232805662",
+    "start": "12:40"
+   },
+   {
+    "activity": "event",
+    "end": "15:55",
+    "place": "event:EV00113",
+    "start": "13:40"
+   },
+   {
+    "activity": "hangout",
+    "end": "18:40",
+    "place": "bld:bld_232841950",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "22:05",
+    "place": "bld:bld_232841950",
+    "start": "19:45"
+   },
+   {
+    "activity": "party",
+    "end": "00:30",
+    "place": "event:EV00131",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Sat Jan 10: Feel fine. Masked for the Cal game, dinner and a shorter party, avoiding the room while Oli coughs. Still a bit worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Home safe, feeling fine. Hope you are too!",
+    "time": "",
+    "to": "A0061"
+   }
+  ],
+  "thoughts": "Oli is coughing and Chris is sick, so I'm staying cautious. I feel fine though. I'll sleep in, then go to the football game masked since it's outdoors and fun, grab dinner, and keep the party shorter. I'll avoid the room and lounge when I can and tell Carter I'm home safe.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

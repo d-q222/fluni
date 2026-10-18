@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with masked Mika at crowded Stern; they're heading back to their room. Nothing learned or agreed, still heading to the Cal game and masking in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

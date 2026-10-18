@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, good call, will do. Text me if you start feeling off and I'll do the same. Catch you later!",
+  "shared_health": false
+ }
+}

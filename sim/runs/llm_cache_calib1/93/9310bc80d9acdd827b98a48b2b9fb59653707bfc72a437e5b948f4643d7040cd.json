@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Dell! Hey, you made it to the game too! Wanna find seats together? Then Taper after?",
+  "shared_health": false
+ }
+}

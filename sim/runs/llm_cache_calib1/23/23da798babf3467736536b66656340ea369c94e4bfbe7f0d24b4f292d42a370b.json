@@ -1,0 +1,75 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:45",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:50"
+   },
+   {
+    "activity": "study",
+    "end": "14:10",
+    "place": "home",
+    "start": "11:35"
+   },
+   {
+    "activity": "health_visit",
+    "end": "15:05",
+    "place": "bld:bld_26250731",
+    "start": "14:15"
+   },
+   {
+    "activity": "rest",
+    "end": "18:00",
+    "place": "home",
+    "start": "15:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "study",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:55",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:55"
+   }
+  ],
+  "diary": "Sun Jan 11: Skipped the UCLA game invite, going to Vaden masked for a test and otherwise staying in my room. Feel fine but still worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the invite, Campbell! I'm going to pass this time and keep my distance from crowds. Have fun at the game!",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Still worried and following FlUni advice. I'll skip the basketball game, since a big crowd isn't worth it for a homebody. I'll keep the Vaden test visit masked in the afternoon, eat quickly at Stern with a mask, and otherwise stay in my room. I'll text Campbell a polite no.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

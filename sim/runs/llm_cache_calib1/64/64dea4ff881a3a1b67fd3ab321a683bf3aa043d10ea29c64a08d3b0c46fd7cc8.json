@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks for the heads up, that's the first actual names I've heard. I'm doing fine, no symptoms. I'll keep masking in crowded spots too. You feeling okay?",
+  "shared_health": true
+ }
+}

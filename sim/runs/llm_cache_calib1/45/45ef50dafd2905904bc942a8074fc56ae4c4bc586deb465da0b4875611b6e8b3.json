@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, nah, gym's never that packed this late. I'll keep my distance from anyone hacking. Stay safe, text me if you want to hang in the dorm later.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden (masked, dorm neighbor) is anxious about the fever rumor and will keep masking and skip tonight's lounge gathering. I feel fine; plans stay the same, staying careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

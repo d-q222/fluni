@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah I feel fine right now, just being careful since Chris tested positive and I saw Dakota Thursday. Heading home after dinner to stay in. You doing okay?",
+  "shared_health": true
+ }
+}

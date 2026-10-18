@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Dakota about Taper then a short lounge hangout; Dakota feels fine, a bit wary but in. Agreed we bail from the lounge if anyone's coughing.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

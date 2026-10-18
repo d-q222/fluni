@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Didn't you lift with Max yesterday? I'm just grabbing breakfast before heading to Green. You got practice later too?",
+  "shared_health": false
+ }
+}

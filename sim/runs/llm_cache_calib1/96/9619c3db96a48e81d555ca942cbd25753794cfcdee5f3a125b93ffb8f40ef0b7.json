@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "FlUni told me to stay home until Wed Jan 14. I feel fine but I'm skipping the dorm hangout and staying in my room, masked if anyone comes by, and I told the group.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "FlUni told me to stay home until Wed since I'm a close contact of Wallace. I feel fine but I'm staying in. Wallace, feel better! Lux, tell me if anything feels off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "FlUni says to stay home until Wed. I feel fine, but Wallace is sick and I'm a close contact, so I'll follow the advice. I'll skip the dorm hangout and order my dinner plans around staying in. I can't really avoid eating, though; Stern Dining is close, but I'd rather minimize exposure. I'll go grab food quickly masked at an off-peak time, then come back. Actually the advice is to stay home, so I'll stay in, snack on what I have, and rest. Texting Lux and Wallace to check in is reasonable.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

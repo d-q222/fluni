@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Yeah, I'm definitely in, gym first and then the game. Lounge after sounds great, save me a seat!",
+  "shared_health": false
+ }
+}

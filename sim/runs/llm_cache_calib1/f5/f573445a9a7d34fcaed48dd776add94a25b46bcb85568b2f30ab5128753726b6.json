@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:30",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Staying in my room per FlUni until Wed, only quick masked meals. Still feel fine; keeping an eye on symptoms and checking on Wallace.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "No worries Wallace, get some rest. Text me if you need anything, I can drop something off at your door masked.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "FlUni told me to stay home until Wed. I feel fine, but I'm a homebody and Wallace is sick, so staying in my room is easy. I'll sleep, study and relax at home. I'll still need meals, so I'll grab food at off-peak times with a mask, or just keep it short. No need to text much.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

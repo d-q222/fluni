@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh wow, Skyler's waiting on results? Hope it's nothing. I feel totally fine, just a little paranoid lately. Are we still doing Taper tonight or is everyone bailing?",
+  "shared_health": true
+ }
+}

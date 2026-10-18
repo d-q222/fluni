@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nice, yeah I'll be at Taper too, after a quick study session at Green. Then I'll be in the lounge later, so we'll def cross paths. Let's go grab food!",
+  "shared_health": false
+ }
+}

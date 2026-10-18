@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Finley. Yeah, problem sets before lab. Good luck with the reading.",
+  "shared_health": false
+ }
+}

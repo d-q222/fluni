@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "21:30"
+   },
+   {
+    "activity": "health_visit",
+    "end": "22:45",
+    "place": "bld:bld_26250731",
+    "start": "22:00"
+   },
+   {
+    "activity": "study",
+    "end": "00:45",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "FlUni app told me to get tested, so I cut lab short and went to Vaden masked, then back to the dorm to study. Feel fine but a bit worried; will keep masking and watch for symptoms.",
+  "messages": [],
+  "thoughts": "I feel fine, but the FlUni app says to get tested at Vaden. I'm organized and honest, and a little worried. Vaden is probably still open or I can go right after lab. A quick test is cheap, so I'll finish lab a bit early, bike to Vaden with a mask on, then head home to study and sleep. I'll stay in the dorm after that.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

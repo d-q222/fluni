@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Onyx at Lakeside; we both feel fine and are masking. Still on for Taper, then the lounge at 8:45, and we'll bail if people are coughing a lot.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

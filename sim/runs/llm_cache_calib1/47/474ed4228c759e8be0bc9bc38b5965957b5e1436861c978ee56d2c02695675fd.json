@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ari wore a mask at Stern Dining, said a friend got sick and their own test was negative. I mentioned Sidney's fever and cough. I feel fine and am keeping my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

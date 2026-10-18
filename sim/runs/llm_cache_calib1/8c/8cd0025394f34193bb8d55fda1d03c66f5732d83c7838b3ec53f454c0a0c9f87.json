@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:40",
+    "place": "home",
+    "start": "09:05"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "09:45"
+   },
+   {
+    "activity": "class",
+    "end": "12:25",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "13:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:15",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "14:35"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:15",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Wednesday: usual routine of study, DANCE, CS106A and long lab. Feeling fine, still a bit wary of illness; aiming to sleep earlier tonight.",
+  "messages": [],
+  "thoughts": "Feeling fine, just a bit wary of illness going around. I'll stick with my usual Wednesday routine: sleep in, study, classes, lab. No need for a mask. I'll grab meals where it fits and try to get to bed a bit earlier than 03:00.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

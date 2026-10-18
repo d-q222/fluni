@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yes, let's bike over together! I'll meet you at the dorm around 8:10. Save me a seat at dinner, I'm grabbing food first.",
+  "shared_health": false
+ }
+}

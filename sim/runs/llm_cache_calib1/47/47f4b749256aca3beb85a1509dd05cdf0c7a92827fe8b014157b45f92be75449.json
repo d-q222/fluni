@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Totally get that, better safe than sorry. I'll miss you there though! Maybe we can hang in the lounge later if you're up for it. Stay healthy!",
+  "shared_health": false
+ }
+}

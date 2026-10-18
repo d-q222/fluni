@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Umi just told me Skyler's waiting on a flu test and Sidney's sick, so I'm skipping the hangout tonight. You still going?",
+  "shared_health": false
+ }
+}

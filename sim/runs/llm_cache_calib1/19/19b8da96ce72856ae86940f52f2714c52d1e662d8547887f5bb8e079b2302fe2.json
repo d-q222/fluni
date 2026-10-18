@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Perfect, I'll grab us a table by the window. See you in a sec!",
+  "shared_health": false
+ }
+}

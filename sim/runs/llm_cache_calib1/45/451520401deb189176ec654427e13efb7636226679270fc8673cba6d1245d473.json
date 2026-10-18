@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with True from my dorm at crowded Stern; they're heading to Green to study. Nothing changes, I'm going home to study and skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

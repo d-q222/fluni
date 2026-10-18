@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah I'm good, feel totally fine. Ocean said Skyler tested negative for flu, so that's a relief. You feeling okay, or just being careful with the mask?",
+  "shared_health": true
+ }
+}

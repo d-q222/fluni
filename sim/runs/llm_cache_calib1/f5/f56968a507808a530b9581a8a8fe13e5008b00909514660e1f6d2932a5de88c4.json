@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, my plan says 3:35, but I could be wrong. Let me double check the team chat. Maybe it's a different session, honestly. Either way, see you there!",
+  "shared_health": false
+ }
+}

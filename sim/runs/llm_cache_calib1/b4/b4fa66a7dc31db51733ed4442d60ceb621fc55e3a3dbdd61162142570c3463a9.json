@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "13:00",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "rest",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Tested positive. Feeling feverish and achy, isolating at home all day and skipping the party and gym. Told the group so they can watch for symptoms.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my test came back positive. I'm isolating at home today, skipping the party and everything else. If you were around me Thursday, watch for symptoms and get tested if you feel off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I tested positive and feel awful with fever and aches. Even though I usually push through, staying home is the right call. I won't go to the party or the gym, and I'll avoid crowded dining. I'll rest, drink fluids, and maybe have someone bring food, or make a quick masked trip for food. I'll text the group so the people I was around know.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

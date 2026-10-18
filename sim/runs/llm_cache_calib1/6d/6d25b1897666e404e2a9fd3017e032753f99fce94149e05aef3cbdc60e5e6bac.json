@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Good call. I've got class at 11:30, then practice later, so gym's tonight for me. Stay safe, Ocean, see you around!",
+  "shared_health": false
+ }
+}

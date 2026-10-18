@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dell at Lakeside; they're masked, feel fine, Oli is still coughing and Dell is avoiding the room. I feel fine too. Still on for Taper, masks on, bail from the lounge if people cough.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

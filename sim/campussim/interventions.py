@@ -167,7 +167,8 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
                   compliance=None) -> list:
     """Apply {agent_idx: [Action]} in sorted agent order; each action accepted w.p.
     compliance[i] * compliance_scale (capped at 1); compliance defaults to pop.compliance (the engine
-    passes the worry-adjusted one when worry is on). isolate_until never shortens an isolation.
+    passes the worry-adjusted one when worry is on), times pop.compliance_kind_mult[kind] when set
+    (personality.rates_source = calibrated, capped at 1). isolate_until never shortens an isolation.
     Returns len-N list of timeline strings ("" = no action), multiple joined with "|".
     Pass `reports` so isolate_until survives recovery handling and go_to_vaden yields a test."""
     out = [""] * pop.N
@@ -178,10 +179,11 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
     spd = 1440 // step_min
     comp = np.asarray(pop.compliance if compliance is None else compliance, dtype=float)
     comp = np.minimum(comp * float(compliance_scale), 1.0)
+    kmult = getattr(pop, "compliance_kind_mult", None) or {}   # rates.py, rates_source = calibrated
     for i in sorted(int(k) for k in actions):
         parts = []
         for a in actions[i]:
-            if rng.random() >= comp[i]:
+            if rng.random() >= (min(comp[i] * kmult[a.kind], 1.0) if a.kind in kmult else comp[i]):
                 parts.append(f"declined:{a.kind}")
                 continue
             if a.kind == "isolate_until":

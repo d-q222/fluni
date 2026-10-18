@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Rain at Stern: both still feeling fine and masking, nothing new on Teagan beyond the positive test. We'll tell each other if symptoms start.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

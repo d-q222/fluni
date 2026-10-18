@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Still masking up? Hope you're feeling okay.",
+  "shared_health": false
+ }
+}

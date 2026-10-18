@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Mask, huh? You feeling okay, or just being careful after Eden's fever warning? I'm good, just finishing dinner before the lounge later.",
+  "shared_health": true
+ }
+}

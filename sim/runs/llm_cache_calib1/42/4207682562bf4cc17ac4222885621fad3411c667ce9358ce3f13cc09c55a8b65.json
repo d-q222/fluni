@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley! Pretty good, just busy with problem sets and lab later. Yeah, I'm masking since I'm kind of anxious about stuff going around. How about you?",
+  "shared_health": false
+ }
+}

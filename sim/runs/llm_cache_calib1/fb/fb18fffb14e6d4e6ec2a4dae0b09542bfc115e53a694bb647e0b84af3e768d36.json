@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:05",
+    "place": "home",
+    "start": "08:15"
+   },
+   {
+    "activity": "lab",
+    "end": "11:25",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "10:10"
+   },
+   {
+    "activity": "class",
+    "end": "12:25",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:30",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "13:35"
+   },
+   {
+    "activity": "lab",
+    "end": "17:50",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "14:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_232715666",
+    "start": "17:55"
+   },
+   {
+    "activity": "lab",
+    "end": "19:50",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "22:20",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "22:25"
+   },
+   {
+    "activity": "study",
+    "end": "00:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "22:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Busy Monday of lab, DANCE 46 and CS106A. Feeling fine, a bit wary of illness going around, so I'm keeping to my routine and heading to bed a little earlier.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll mostly follow my usual routine. Heavy lab day, with classes in the middle. I'll sleep a bit more instead of staying up until 2am, since it's the first week back. No mask needed, but I'll keep my distance in the lab and stay calm.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

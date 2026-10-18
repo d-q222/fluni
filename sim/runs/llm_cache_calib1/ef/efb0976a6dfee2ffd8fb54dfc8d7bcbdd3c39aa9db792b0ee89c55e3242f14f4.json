@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "gym",
+    "end": "11:25",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "11:20"
+   },
+   {
+    "activity": "class",
+    "end": "12:40",
+    "place": "class:FRENLANG1_LNG02",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "21:15",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Teagan has fever and is getting tested; I was near them Thursday at Stern. I feel fine but I'm masking, keeping distance, and skipping the dorm hangout tonight. Worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Feel better and let us know your test result. I'll watch for symptoms and keep my mask on.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan is sick and I saw them Thursday evening at Stern, so I may have been exposed. I feel fine and I'm organized, so I'll keep my routine but stay masked and keep my distance. I'll skip the crowded dorm hangout and rest at home instead to lower the risk to others. I'll text Teagan to wish them well and tell the group I was near them yesterday.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

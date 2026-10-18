@@ -95,6 +95,9 @@ test('5 room size: bigger room -> lower (same distance, ventilation)', () => {
   const u = (id) => d({ distance_m: 3, distance_tier: 3, duration_s: 3600, room_id: id, indoor: true });
   gt(u('small'), u('big'), 'dose small vs big room');
   gt(run({ contact: { room_id: 'small', distance_m: 3 } }), run({ contact: { room_id: 'big', distance_m: 3 } }), 'P(i) small vs big');
+  // roomVolume 'fixed' (opt-in; the phone mirrors the default 'map'): every room is the default room
+  const f = doseModel({ roomVolume: 'fixed' }, rooms), uf = (id) => f({ distance_m: 3, distance_tier: 3, duration_s: 3600, room_id: id, indoor: true });
+  if (Math.abs(uf('small') - uf('big')) > 1e-15) throw new Error(`roomVolume fixed: small ${uf('small')} != big ${uf('big')}`);
 });
 
 test('6 indoors vs outdoors: outdoors lower', () => {

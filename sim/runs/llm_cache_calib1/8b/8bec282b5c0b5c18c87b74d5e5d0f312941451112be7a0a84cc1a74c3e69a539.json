@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate lunch at Stern with Onyx, who's saving group seats at the Arizona game around 7. I said I'd be there and at the lounge after. Feeling fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

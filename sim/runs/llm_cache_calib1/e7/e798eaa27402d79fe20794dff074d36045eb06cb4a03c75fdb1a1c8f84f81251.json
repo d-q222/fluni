@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:20",
+    "place": "home",
+    "start": "09:45"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:HUMBIO88_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:COLLEGE102_SEM10",
+    "start": "12:00"
+   },
+   {
+    "activity": "class",
+    "end": "15:05",
+    "place": "class:SYMSYS195B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "bld:bld_m_green_library",
+    "start": "15:20"
+   },
+   {
+    "activity": "gym",
+    "end": "17:45",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "dorm_lounge",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Thu Jan 8: Classes, study, gym, dinner at Stern, then Taper with the group. Feeling fine, a little cautious about illness.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_232841950",
+    "text": "Taper tonight after dinner around 7:15? Come hang!",
+    "time": "19:15",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Thursday, feeling fine. I'll sleep in a bit, go to my three classes, get lunch and some study, gym in the afternoon, dinner at Stern, then hang out with friends at Taper in the evening. Not too worried, just being normally careful.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

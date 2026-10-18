@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton. Heads up, Teagan tested symptomatic with flu and I might've been exposed Wednesday. I feel fine, but I'm masking and skipping the dorm hangout tonight. You doing okay?",
+  "shared_health": true
+ }
+}

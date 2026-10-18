@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Emerson! Heading to the dorm hangout? I'm just popping in for a bit with my mask on, then bed. Heard some rumors about fevers going around Stern, so stay careful.",
+  "shared_health": false
+ }
+}

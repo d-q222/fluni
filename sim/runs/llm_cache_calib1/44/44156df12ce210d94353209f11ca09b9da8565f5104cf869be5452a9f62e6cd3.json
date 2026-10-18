@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same, I feel fine. Just keeping an eye on it. Smart move with the mask, honestly. I've got lab all evening so I can't afford to get sick.",
+  "shared_health": true
+ }
+}

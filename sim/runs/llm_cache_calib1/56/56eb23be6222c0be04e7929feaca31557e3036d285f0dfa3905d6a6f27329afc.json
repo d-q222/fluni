@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "13:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "isolate",
+    "end": "18:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Still sick and positive, isolating in my room all day, skipping the game and dorm hangout. Dakota is positive too; I told the group to watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Dakota! I'm still sick and positive too, staying in my room today. If you were around me Thursday, please watch for symptoms and get tested.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm still sick and positive, and Dakota just confirmed they have it too. Time to stay in, sleep, and rest. I'm not going to the game or the dorm hangout. I'll send a quick reply to the group so people know I'm isolating and tell anyone who was around me to get tested.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

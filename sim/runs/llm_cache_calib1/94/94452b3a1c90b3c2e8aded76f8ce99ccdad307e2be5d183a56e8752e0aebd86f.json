@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:55"
+   },
+   {
+    "activity": "gym",
+    "end": "10:30",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:35"
+   },
+   {
+    "activity": "hangout",
+    "end": "11:30",
+    "place": "bld:bld_m_white_plaza",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "relax",
+    "end": "14:30",
+    "place": "dorm_lounge",
+    "start": "12:25"
+   },
+   {
+    "activity": "class",
+    "end": "16:10",
+    "place": "class:COLLEGE102_SEM37",
+    "start": "15:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:20",
+    "place": "bld:bld_232805662",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:30",
+    "place": "dorm_lounge",
+    "start": "18:40"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "plan:bld_232805691_f1_101",
+    "start": "20:35"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:35"
+   }
+  ],
+  "diary": "First Monday of the quarter. Planned gym, seminar, and dinner at Lakeside with friends. Feeling fine.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_1040629370",
+    "text": "Dinner at Lakeside tonight? First Monday of the quarter, let's catch up!",
+    "time": "17:30",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter, feeling fine. I'll sleep in a bit, grab breakfast, hit the gym, go to my seminar, and spend the evening with friends. Not very worried about illness, so I'll invite a few friends to dinner.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

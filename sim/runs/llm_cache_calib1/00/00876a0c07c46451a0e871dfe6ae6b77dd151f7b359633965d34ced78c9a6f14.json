@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Just grabbing dinner before heading back to the dorm. How's your weekend going?",
+  "shared_health": false
+ }
+}

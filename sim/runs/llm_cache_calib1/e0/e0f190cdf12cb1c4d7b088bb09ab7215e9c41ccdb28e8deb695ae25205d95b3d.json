@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just studying for a bit before PWR. You?",
+  "shared_health": false
+ }
+}

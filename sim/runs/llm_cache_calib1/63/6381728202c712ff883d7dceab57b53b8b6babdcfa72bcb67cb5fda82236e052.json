@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, fair, you can't really eat in a mask. Not sure about the study group, I've got the gym at 19:50 and then I'll probably just study at home. Are you going?",
+  "shared_health": false
+ }
+}

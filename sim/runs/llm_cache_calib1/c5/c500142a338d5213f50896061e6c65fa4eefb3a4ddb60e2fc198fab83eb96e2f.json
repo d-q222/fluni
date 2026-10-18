@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Yeah, I saw Eden's text, kinda sketchy. I feel fine though, so I'm in for dinner. Good call on the mask, though. Still down for the lounge later?",
+  "shared_health": true
+ }
+}

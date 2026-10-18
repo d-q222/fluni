@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh good, that's a relief! I'm feeling fine too, just staying careful. Thanks for letting me know, I'll tell Campbell so they're not waiting on it.",
+  "shared_health": true
+ }
+}

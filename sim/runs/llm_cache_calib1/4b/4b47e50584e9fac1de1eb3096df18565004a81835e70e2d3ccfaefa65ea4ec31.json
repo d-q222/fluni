@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "15:15",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "14:05"
+   },
+   {
+    "activity": "study_group",
+    "end": "16:10",
+    "place": "event:EV00133",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "lab",
+    "end": "21:00",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:20",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:55"
+   }
+  ],
+  "diary": "Sunday Jan 11: Flu confirmed in my dorm (Dakota, Chris). I feel fine, so I'm keeping my routine of lab, study group, study, and dinner while staying careful and keeping my distance.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Armani. I feel fine and my app is quiet. Keeping distance and will text if anything changes. Jody, any word on Jesse's test?",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Flu is in my dorm, but I feel fine and my app is quiet. I'm disciplined, so I'll keep my routine: lab, study group, study, dinner, lab. I'll skip masking indoors per habit but keep distance. I'll cut the late lab short and head home to rest and avoid the dorm lounge. A quick reply to the group is reasonable to say I'm fine and ask about Jesse's result.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Pretty good, just settling in to study for a while. You heading home early because of the dorm sickness stuff, or just tired?",
+  "shared_health": false
+ }
+}

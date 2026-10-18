@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:05",
+    "place": "bld:bld_232841950",
+    "start": "19:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:50",
+    "place": "event:EV00060",
+    "start": "21:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "bld:bld_232841950",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Finished crowded Stern dinner, then Taper and a brief dorm hangout before bed. A bit more worried than usual; still need to text Mika and Umi if I hear Skyler's result.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Ha ok, I'll only pop into the hangout briefly. Will text you the second I hear Skyler's result!",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Stern is crowded and everyone's wary about Skyler's flu test. I'm social and rarely follow advice, but I'm a bit more worried than usual. I'll finish dinner, go to Taper for a bit, pop into the dorm hangout briefly, then sleep at a reasonable hour. I'll text Mika a quick reply, no mask since it's indoors and I feel fine.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

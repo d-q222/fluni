@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told True about Dakota and Chris testing positive; True feels fine, has no symptoms and will mask in crowds. I'm staying masked and heading back to my room to study.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Oakley (masked, feels fine, worried) told me Dakota and Chris tested positive and suggested I get tested at Vaden tomorrow. I said I'm a close contact but feel fine; I'll consider testing tomorrow and keep staying low-key.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

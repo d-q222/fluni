@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Devon I feel fine but I'm masking and keeping Taper short because of Oli's cough and Chris's fever, and suggested staying out of the Stern lounge. Still heading home early after Taper.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter said they feel fine but are worried since Dakota and Chris tested positive; I feel fine and told them to text me if they need anything. I'll keep distance in the dorm and stay careful.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Winter says Dakota and Chris both tested positive for flu in our dorm. Stay careful, mask up and keep distance. I feel fine.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

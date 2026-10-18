@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good. Problem 1 looks like a conservation of momentum setup, so I'll sketch the diagram first and you can check my numbers.",
+  "shared_health": false
+ }
+}

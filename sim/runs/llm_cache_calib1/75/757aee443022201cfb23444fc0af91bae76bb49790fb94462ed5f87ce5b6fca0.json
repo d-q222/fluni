@@ -1,0 +1,116 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:05",
+    "place": "home",
+    "start": "06:15"
+   },
+   {
+    "activity": "gym",
+    "end": "08:15",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "07:10"
+   },
+   {
+    "activity": "eat",
+    "end": "08:45",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "10:35",
+    "place": "home",
+    "start": "08:50"
+   },
+   {
+    "activity": "relax",
+    "end": "11:30",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:00",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "13:05"
+   },
+   {
+    "activity": "class",
+    "end": "16:10",
+    "place": "class:CS182_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "practice",
+    "end": "17:55",
+    "place": "plan:bld_232715573_f1_101",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:55",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "20:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:50",
+    "place": "event:EV00100",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:10",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:10"
+   }
+  ],
+  "diary": "Friday: sticking to my normal routine of gym, class, practice and the dorm hangout. Feeling fine, still keeping a bit careful about the dorm fevers.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Skyler's flu test came back negative. Still staying careful with the dorm fevers though.",
+    "time": "",
+    "to": "A0191"
+   }
+  ],
+  "thoughts": "Feeling fine, so I'll stick close to my usual Friday routine. Dorm fevers are still going around, so I'll keep my distance from anyone who seems sick. Skyler tested negative, so I'll pass that along to Lake as I promised.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

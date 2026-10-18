@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Good to know. Let's do that. I'll text if anything changes. I'm going to finish eating and head back to study, so I'll keep my distance.",
+  "shared_health": false
+ }
+}

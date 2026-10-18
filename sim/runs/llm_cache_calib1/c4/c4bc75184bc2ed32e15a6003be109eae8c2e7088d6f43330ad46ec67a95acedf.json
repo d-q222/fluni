@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain. Crowded in here today, huh? Good call on the mask.",
+  "shared_health": false
+ }
+}

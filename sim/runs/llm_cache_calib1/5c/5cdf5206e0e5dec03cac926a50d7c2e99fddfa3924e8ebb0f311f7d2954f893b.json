@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Perfect, let's eat! I'll grab a tray and meet you at the table, mask off while we eat though, ha.",
+  "shared_health": false
+ }
+}

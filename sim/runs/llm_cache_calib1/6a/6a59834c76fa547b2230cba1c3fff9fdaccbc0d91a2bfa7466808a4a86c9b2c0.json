@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Rain! Yeah, super crowded, I'm eating fast. Thanks for the heads up. I'm feeling fine, just masking and keeping some distance too. I'm waiting to hear back on a friend's flu test actually. Hope you stay well!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler at Stern Dining; they confirmed practice is 3:30 like my schedule, so Max probably mixed up the time. Nothing health-related shared; I feel fine. Still want to glance at the team chat.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

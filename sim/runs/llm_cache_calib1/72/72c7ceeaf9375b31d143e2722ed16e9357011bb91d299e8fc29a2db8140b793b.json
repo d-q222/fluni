@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Neo! Didn't expect to run into you here. How's your night going, getting any studying done?",
+  "shared_health": false
+ }
+}

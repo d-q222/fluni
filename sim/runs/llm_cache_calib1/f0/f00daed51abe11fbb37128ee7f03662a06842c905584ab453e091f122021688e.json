@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Okay, looks like I'm actually in the room next door, my bad. Thanks for being cool about it, good luck studying!",
+  "shared_health": false
+ }
+}

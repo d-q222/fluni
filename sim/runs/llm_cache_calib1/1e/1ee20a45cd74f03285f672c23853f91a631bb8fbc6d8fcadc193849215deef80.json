@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:20",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:00",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "lab",
+    "end": "12:50",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "11:05"
+   },
+   {
+    "activity": "study",
+    "end": "13:40",
+    "place": "plan:bld_m_green_library_f3_308",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "14:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:45"
+   },
+   {
+    "activity": "lab",
+    "end": "18:15",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "20:35",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "lab",
+    "end": "23:25",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "20:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Teagan's positive result is confirmed again. I feel fine and tested negative, but I'm still worried. I'm masking, doing lab and study, avoiding the lounge and the game, and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Teagan's text is a repeat of news I already knew. I feel fine and my test was negative, but I'm still worried. I'll stick with my routine: masked lab and study, skip the lounge and the game, and watch for symptoms. I'll sleep in, since it's 4am.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

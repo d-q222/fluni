@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Yeah, I'm good, feel fine. True warned me about Dakota and Chris too. Smart on the mask, I'm keeping my distance and eating quick before the gym. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

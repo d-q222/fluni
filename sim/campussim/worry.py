@@ -37,6 +37,8 @@ def _shift_logit(p, d):
 
 class Worry:
     def __init__(self, cfg, pop):
+        from . import rates
+        cfg, _ = rates.adjusted(cfg)    # personality.rates_source = "calibrated": fitted jumps / half-life
         c = self.c = cfg["worry"]
         self.pop, self.N = pop, pop.N
         self.step_min = int(cfg["run"]["step_min"])

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Onyx at Lakeside; they're masking out of caution after Eden's warning but feel fine. Still on for Taper with Onyx and Carter, then a shorter lounge hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

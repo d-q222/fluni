@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Smart. I've got practice later so I'm trying to stay healthy too. Hope the rumors fizzle out. See you around, Eden!",
+  "shared_health": false
+ }
+}

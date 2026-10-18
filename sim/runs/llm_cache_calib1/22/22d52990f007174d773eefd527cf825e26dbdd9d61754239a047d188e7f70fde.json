@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good. Go ahead and sketch it, I'll check the numbers. Pretty sure we need to treat it as an inelastic collision, so kinetic energy won't be conserved.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for telling me, that's good of you. I feel fine too, just winding down before heading back to sleep. I'll keep some distance, hope you stay clear. Get some rest!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oakley at Stern Dining that I was around Dakota and feel fine; Oakley feels fine too, is masked and skipping the hangout. Agreed to text if we hear anything and go to Vaden if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

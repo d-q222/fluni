@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "13:00",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:MATH20_LEC04",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "18:50",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Still sick with fever, cough and aches. Masked for MATH, quick dinner, otherwise resting at home and skipping the hangouts. Worried it spread from Stern.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up everyone. I'm sick with fever and cough so I'm skipping the lounge tonight too. Feel better and stay well!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I woke up with fever, chills, cough and aches. I already told the group, so I'll keep it low-key. I'm sick and worried, but I usually push through, so I'll go to MATH in a mask, then come straight home. I'll skip dinner out and the hangouts, and maybe grab food quickly or have it brought. I should also think about a Vaden visit, but I'll just rest and see how I feel.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

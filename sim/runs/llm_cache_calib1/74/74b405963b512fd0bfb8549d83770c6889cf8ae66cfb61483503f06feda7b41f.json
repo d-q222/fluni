@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "15:10"
+   },
+   {
+    "activity": "study",
+    "end": "17:05",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "16:05"
+   },
+   {
+    "activity": "eat",
+    "end": "17:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:10"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "home",
+    "start": "17:55"
+   },
+   {
+    "activity": "rest",
+    "end": "21:20",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:30",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "21:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sun Jan 11 afternoon: Bailey is still feverish and staying in. I'm fine and negative but anxious; staying masked, doing lab, study, then an earlier night. Told Bailey I can drop off supplies.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update, Bailey. Rest up and drink lots of fluids. Text me if you need anything and I'll leave it outside your door.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "Bailey is still sick and I'm fine and negative, but anxious. I'll stay disciplined: finish lab masked, then study, eat at a quieter time, and keep distance from everyone. I'll text Bailey a short supportive reply and offer to leave food/supplies outside without going in. Skipping the late lab session would be safer, but I'll keep it short and masked, then sleep early.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

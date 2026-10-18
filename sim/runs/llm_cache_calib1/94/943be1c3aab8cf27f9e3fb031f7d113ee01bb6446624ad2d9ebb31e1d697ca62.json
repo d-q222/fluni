@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! I feel fine, just being careful with the fever rumors. Skipping the lounge, keeping meals short, then heading home to study. You feeling okay?",
+  "shared_health": true
+ }
+}

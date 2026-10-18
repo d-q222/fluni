@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "09:45"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "16:50",
+    "place": "bld:bld_232841950",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wednesday: classes, hang at Taper, then the Arizona basketball game with friends. Feeling healthy and happy.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "event:EV00047",
+    "text": "Basketball vs Arizona tonight at 7, who's in?",
+    "time": "19:00",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Wednesday, feeling fine. I'll sleep in, go to my classes, hang out with friends at Taper and maybe catch the basketball game since I love being social. Not worried about illness.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

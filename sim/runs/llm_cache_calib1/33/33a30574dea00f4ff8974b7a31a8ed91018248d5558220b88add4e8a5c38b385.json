@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh good, that's a relief about Skyler! Yeah I feel fine, just masking to be safe. Are you going to the dorm hangout tonight?",
+  "shared_health": true
+ }
+}

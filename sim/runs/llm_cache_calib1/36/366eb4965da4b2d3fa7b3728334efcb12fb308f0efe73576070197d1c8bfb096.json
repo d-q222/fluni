@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Finley at Stern breakfast; we both feel fine and are masking up because of illness on campus. No one sick in our dorm that I know of.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

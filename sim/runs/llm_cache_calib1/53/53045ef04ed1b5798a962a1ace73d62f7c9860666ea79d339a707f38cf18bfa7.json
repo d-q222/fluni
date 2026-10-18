@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Salem from my dorm at Flomo that I'm keeping distance because friends have the flu; Salem feels fine and will keep distance too. Nothing agreed, plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

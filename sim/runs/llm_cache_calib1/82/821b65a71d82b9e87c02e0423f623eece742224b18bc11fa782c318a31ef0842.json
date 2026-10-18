@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "10:00",
+    "place": "bld:bld_26250731",
+    "start": "08:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "10:05"
+   },
+   {
+    "activity": "rest",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Thursday: woke up with fever, chills, cough and body aches after Sidney's flu. I told the group, am getting checked at Vaden, and will isolate in my room and skip class and the hangout.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Heads up, I woke up with fever, chills, cough and sore throat. Probably the flu like Sidney. I'm going to Vaden then staying in my room. Stay safe, everyone.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I woke up with fever, chills, cough, sore throat and body aches, and Sidney tested positive for flu yesterday. I almost always follow health advice, so I'm going to Vaden to get checked this morning, then going home to rest and isolate. I'll skip classes and the dorm hangout, and tell the group honestly that I'm sick. I can email my professors later and catch up on problem sets when I feel better.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

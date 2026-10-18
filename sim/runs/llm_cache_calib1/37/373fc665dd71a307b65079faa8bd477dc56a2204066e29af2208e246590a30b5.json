@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh good, glad it came back negative! Thanks for letting me know. I'm fine too, just still masking up in crowded spots like this.",
+  "shared_health": true
+ }
+}
