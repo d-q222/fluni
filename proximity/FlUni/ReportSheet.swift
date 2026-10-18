@@ -1,146 +1,268 @@
 import SwiftUI
 
-enum ReportKind: String, Identifiable {
-    case symptoms, positive, negative
+/// Where the report sheet opens: the first question, or straight at one answer's details (from You).
+enum ReportStart: String, Identifiable, Hashable {
+    case choose, symptoms, positive, negative
     var id: String { rawValue }
 }
 
-/// The detail screen behind "I have symptoms", "I tested positive" and "I tested negative".
-struct ReportSheet: View {
-    let kind: ReportKind
+/// "I don't feel well", as one sheet in two steps (C-6, then C-7 / D-6):
+///   1. How are you feeling? I feel fine / I have symptoms / I tested positive / I tested negative.
+///   2. The details: Lisa's symptom stickers and the day they started ("That makes today Day N"), or the test
+///      and its date. Saving symptoms presses Lisa's SELF-REPORTED stamp onto the sheet, then it closes.
+/// Nearby phones only ever see the 3-level status; symptoms, dates and test kinds stay on this phone.
+struct ReportFlow: View {
+    let start: ReportStart
     @ObservedObject var model: ProximityModel
     @ObservedObject var store: SelfReportStore
     @Environment(\.dismiss) private var dismiss
-
-    @State private var picked: Set<Symptom> = []
-    @State private var date = Date()
-    @State private var test = TestKind.rapid
-    @State private var confirmPositive = false
-    @State private var error: String?
-    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var stamped = false   // Lisa's "Self-reported" stamp lands before the sheet closes
+    @State private var path: [ReportStart] = []
+    @State private var stamped = false
+    @State private var blocked: String?
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Space.l) {
-                    switch kind {
-                    case .symptoms: symptomsBody
-                    case .positive: testBody(question: "When did you test?")
-                    case .negative: testBody(question: "When did you test?")
+        NavigationStack(path: $path) {
+            ChooseStep(model: model, store: store, pick: pick)
+                .navigationDestination(for: ReportStart.self) { step in
+                    switch step {
+                    case .symptoms: SymptomsStep(model: model, store: store, saved: saved)
+                    case .positive, .negative: TestStep(positive: step == .positive, model: model, store: store, saved: { dismiss() })
+                    case .choose: EmptyView()
                     }
-                    if let error { Text(error).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk)
-                        .accessibilityLabel("Problem: \(error)") }
                 }
-                .padding(.horizontal, Space.m).padding(.top, Space.m).padding(.bottom, Space.l)
+                .toolbar { close }
+        }
+        .tint(Theme.ink)
+        .overlay { stampOverlay }
+        .onAppear { if start != .choose && path.isEmpty { path = [start] } }
+        // Closes a moment after the stamp lands. A task, so it's cancelled if the sheet goes away first.
+        .task(id: stamped) {
+            guard stamped else { return }
+            try? await Task.sleep(for: .milliseconds(1100))
+            if !Task.isCancelled { dismiss() }
+        }
+        .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(blocked ?? "") }
+    }
+
+    private var close: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { dismiss() } label: {
+                Image(systemName: "xmark").font(.system(.body, weight: .semibold)).foregroundStyle(Theme.ink)
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(Theme.surface2).frame(width: 36, height: 36))
             }
-            // The one action stays in reach: no scrolling past the form to find it.
-            .safeAreaInset(edge: .bottom) {
-                submitButton
-                    .padding(.horizontal, Space.m).padding(.top, Space.s).padding(.bottom, Space.xs)
-                    .background(Theme.paper)
-                    .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
-            }
-            .background(Theme.paper)
-            .overlay { stampOverlay }
-            // Closes 0.8 s after the stamp lands. A task, so it's cancelled if the sheet goes away first.
-            .task(id: stamped) {
-                guard stamped else { return }
-                try? await Task.sleep(for: .milliseconds(800))
-                if !Task.isCancelled { dismiss() }
-            }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
-            .confirmationDialog("Tell nearby phones you tested positive?", isPresented: $confirmPositive, titleVisibility: .visible) {
-                Button("Share that I tested positive", role: .destructive) { submit() }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Phones near you will see \"contagious\" (nothing else about you) and may alert their owners. Staying home is the best thing you can do now.")
-            }
+            .accessibilityLabel("Close")
+            .accessibilityIdentifier("report.close")
         }
     }
 
-    private var title: String {
-        switch kind {
-        case .symptoms: return "I have symptoms"
-        case .positive: return "I tested positive"
-        case .negative: return "I tested negative"
+    private func pick(_ s: ReportStart) {
+        guard s == .choose else { path = [s]; return }
+        // "I feel fine": nothing to fill in.
+        if model.myRisk == .none { dismiss(); return }
+        do { try store.feelFine(model: model); dismiss() } catch {
+            blocked = "You tested positive, so you stay marked contagious until your \(IsolationPolicy.days) days are up and you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours. Today will ask you then."
         }
     }
 
-    @ViewBuilder private var submitButton: some View {
-        switch kind {
-        case .symptoms:
-            Button("Set status to possibly sick") { submit() }
-                .buttonStyle(PrimaryButtonStyle(fill: Theme.sun))
-                .disabled(picked.isEmpty).opacity(picked.isEmpty ? 0.5 : 1)
-                .accessibilityIdentifier("report.submit")
-                .accessibilityHint(picked.isEmpty ? "Pick at least one symptom first" : "Shares \"possibly sick\" with phones near you")
-        case .positive:
-            Button("Review and share") { confirmPositive = true }
-                .buttonStyle(PrimaryButtonStyle(fill: Theme.fireInk, text: Theme.paper))
-                .accessibilityIdentifier("report.submit")
-                .accessibilityHint("Asks you to confirm before anything is shared")
-        case .negative:
-            Button("Save negative result") { submit() }
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityIdentifier("report.submit")
-        }
+    private func saved() {
+        if reduceMotion { stamped = true } else { withAnimation(.spring(response: 0.32, dampingFraction: 0.5)) { stamped = true } }
     }
 
-    // MARK: symptoms
-
-    @ViewBuilder private var symptomsBody: some View {
-        HStack(alignment: .bottom, spacing: Space.s) {
-            VStack(alignment: .leading, spacing: Space.xs) {
-                Text("What are you feeling?").font(.fluni(.section)).accessibilityAddTraits(.isHeader)
-                Text("Tap every sticker that fits. One is enough.").font(.fluni(.note)).foregroundStyle(Theme.ink2)
+    /// Lisa's stamp, pressed onto the sheet after a symptoms report is saved, large enough to read.
+    private var stampOverlay: some View {
+        ZStack {
+            if stamped {
+                Theme.paper.opacity(0.82).ignoresSafeArea().transition(.opacity)
+                VStack(spacing: Space.m) {
+                    Image("StampSelfReported").resizable().scaledToFit().frame(width: 230)
+                        .rotationEffect(.degrees(reduceMotion ? 0 : -12))
+                        .accessibilityHidden(true)
+                    Text("Saved. Phones near you now see \"possibly sick\".").font(.fluni(.heading)).foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(Space.l)
+                .transition(reduceMotion ? .opacity : .scale(scale: 2.2).combined(with: .opacity))
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("report.stamp")
             }
-            Spacer(minLength: 0)
         }
-        .foregroundStyle(Theme.ink)
-        // Two columns of tick boxes; one column when large text needs the width.
-        LazyVGrid(columns: typeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible(), spacing: Space.xs), GridItem(.flexible())],
-                  alignment: .leading, spacing: Space.xs) {
-            ForEach(Symptom.allCases, id: \.self) { sticker($0) }
-        }
-        DatePicker("When did it start?", selection: $date, in: ...Date(), displayedComponents: .date)
-            .font(.fluni(.heading)).foregroundStyle(Theme.ink)
-            .frame(minHeight: 44)
-        sharedBox("Phones near you will only see \"possibly sick\". Your symptoms, the date and your name are never shared. They stay on this phone.")
+        .allowsHitTesting(false)
+    }
+}
+
+// MARK: Step 1
+
+private struct ChooseStep: View {
+    @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
+    let pick: (ReportStart) -> Void
+
+    private struct Choice {
+        let id: ReportStart
+        let title: String
+        let detail: String
+        let art: String?
+        let shares: Risk?
     }
 
-    /// One control: Lisa's sticker for the symptom, with a tick box and the word under it. Picked = ink tick,
-    /// a 2 pt ink edge and a slight tilt of the sticker (no tilt with Reduce Motion); never colour alone.
-    private func sticker(_ s: Symptom) -> some View {
-        let on = picked.contains(s)
-        let lift = on && !reduceMotion
-        return Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
-            VStack(alignment: .leading, spacing: Space.xs) {
-                Image(s.art).resizable().scaledToFit()
-                    .frame(height: typeSize.isAccessibilitySize ? 96 : 72)
-                    .rotationEffect(.degrees(lift ? -6 : 0))
-                    .scaleEffect(lift ? 1.06 : 1)
-                    .padding(Space.xxs)   // room for the tilt, so the drawing never clips
-                    .frame(maxWidth: .infinity)
-                    .accessibilityHidden(true)
-                HStack(alignment: .firstTextBaseline, spacing: Space.xs) {
-                    Tick(on: on)
-                    Text(s.label).font(on ? .fluni(.strong) : .fluni(.reading)).multilineTextAlignment(.leading)
+    private var choices: [Choice] {
+        [Choice(id: .choose, title: "I feel fine", detail: model.myRisk == .none ? "Nothing changes. Nearby phones see \"healthy\"." : "Sets you back to \"healthy\".", art: "Tissue", shares: Risk.none),
+         Choice(id: .symptoms, title: "I have symptoms", detail: "Nearby phones see \"possibly sick\"", art: "SymptomCough", shares: .possible),
+         Choice(id: .positive, title: "I tested positive", detail: "Rapid or PCR, plus the date", art: "StampSelfReported", shares: .contagious),
+         Choice(id: .negative, title: "I tested negative", detail: "Clears \"possibly sick\" if the test came after your symptoms", art: nil, shares: nil)]
+    }
+
+    private func isCurrent(_ c: Choice) -> Bool { c.shares == model.myRisk }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Space.l) {
+                StepHeader(step: 1, title: "How are you feeling?", subtitle: "Pick the one that fits. You can change it any time.")
+                VStack(spacing: Space.s) {
+                    ForEach(choices, id: \.title) { row($0) }
+                }
+            }
+            .padding(.horizontal, Space.m).padding(.bottom, Space.l)
+        }
+        .safeAreaInset(edge: .bottom) {
+            PrivacyNote(text: "Nearby phones only ever see one of three words: healthy, possibly sick or contagious. Never your symptoms or dates.")
+                .padding(.horizontal, Space.m).padding(.vertical, Space.s)
+                .background(Theme.paper)
+        }
+        .background(Theme.paper)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func row(_ c: Choice) -> some View {
+        let current = isCurrent(c)
+        return Button { pick(c.id) } label: {
+            HStack(spacing: Space.s) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12).fill(Theme.surface2)
+                    if let art = c.art {
+                        Image(art).resizable().scaledToFit().padding(6)
+                    } else {
+                        Image(systemName: "checkmark.circle").font(.system(size: 26, weight: .regular)).foregroundStyle(Theme.ink)
+                    }
+                }
+                .frame(width: 58, height: 58)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Space.xxs) {
+                    Text(c.title).font(.fluni(.strong))
+                    Text(current ? "Your status now. " + c.detail : c.detail).font(.fluni(.note)).foregroundStyle(Theme.ink2)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2)
+                    .accessibilityHidden(true)
             }
             .foregroundStyle(Theme.ink)
             .padding(Space.s)
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .background(on ? Theme.surface2 : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radius))
-            .overlay(RoundedRectangle(cornerRadius: Theme.radius)
-                .stroke(on ? Theme.ink : Theme.hairline, lineWidth: on ? Theme.selectedStroke : 1))
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(current ? Theme.ink : Theme.ink.opacity(0.18), lineWidth: current ? Theme.selectedStroke : 1))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(current ? [.isSelected, .isButton] : .isButton)
+        .accessibilityIdentifier("choose.\(c.id == .choose ? "fine" : c.id.rawValue)")
+    }
+}
+
+// MARK: Step 2: symptoms
+
+private struct SymptomsStep: View {
+    @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
+    let saved: () -> Void
+    @State private var picked: Set<Symptom> = []
+    @State private var onset = Calendar.current.startOfDay(for: Date())
+    @State private var error: String?
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var columns: [GridItem] {
+        let n = typeSize >= .accessibility3 ? 1 : typeSize.isAccessibilitySize ? 2 : 3
+        return Array(repeating: GridItem(.flexible(), spacing: Space.s), count: n)
+    }
+
+    var body: some View {
+        let r = store.reporter
+        let day = r.dayCount(from: onset, now: Date())
+        let last = r.lastDay(from: onset)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Space.l) {
+                StepHeader(step: 2, title: "What's going on?", subtitle: nil)
+                Text("Tap the stickers that fit. One is plenty.").font(.fluni(.voice)).foregroundStyle(Theme.ink2)
+                    .padding(.top, -Space.m)
+                LazyVGrid(columns: columns, spacing: Space.s) {
+                    ForEach(Symptom.allCases, id: \.self) { sticker($0) }
+                }
+                VStack(alignment: .leading, spacing: Space.s) {
+                    Text("When did it start?").font(.fluni(.heading)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                    DayChips(date: $onset)
+                    Text("That makes today Day \(day). Home through \(last.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())).")
+                        .font(.fluni(.note)).foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("report.dayLine")
+                }
+                if let error { Text(error).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk) }
+            }
+            .padding(.horizontal, Space.m).padding(.bottom, Space.l)
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(alignment: .leading, spacing: Space.s) {
+                PrivacyNote(text: "Nearby phones will only see \"possibly sick\". Never which stickers you picked.")
+                Button("Report and start staying home") { submit() }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .disabled(picked.isEmpty)
+                    .accessibilityIdentifier("report.submit")
+                    .accessibilityHint(picked.isEmpty ? "Pick at least one sticker first" : "Shares \"possibly sick\" with phones near you")
+            }
+            .padding(.horizontal, Space.m).padding(.top, Space.s).padding(.bottom, Space.xs)
+            .background(Theme.paper)
+            .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
+        }
+        .background(Theme.paper)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// One sticker: Lisa's drawing and its word. Picked = a 2.5 pt ink edge, an ink tick badge and a small tilt
+    /// (no tilt with Reduce Motion). Never colour alone; unpicked words stay full ink.
+    private func sticker(_ s: Symptom) -> some View {
+        let on = picked.contains(s)
+        let tilt = on && !reduceMotion
+        return Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
+            VStack(spacing: Space.xs) {
+                Image(s.art).resizable().scaledToFit()
+                    .frame(height: typeSize.isAccessibilitySize ? 96 : 70)
+                    .accessibilityHidden(true)
+                Text(s.short).font(on ? .fluni(.strong) : .fluni(.reading)).foregroundStyle(Theme.ink)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.vertical, Space.s).padding(.horizontal, Space.xs)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(on ? Theme.surface : Theme.surface.opacity(0.6), in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(on ? Theme.ink : Theme.ink.opacity(0.22), lineWidth: on ? 2.5 : 1.25))
+            .overlay(alignment: .topTrailing) {
+                if on {
+                    Image(systemName: "checkmark").font(.system(size: 12, weight: .heavy)).foregroundStyle(Theme.paper)
+                        .frame(width: 26, height: 26).background(Circle().fill(Theme.ink))
+                        .offset(x: 6, y: -6)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .rotationEffect(.degrees(tilt ? -2.5 : 0))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableStyle())
         .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.6), value: on)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(s.label)
@@ -148,101 +270,211 @@ struct ReportSheet: View {
         .accessibilityIdentifier("symptom.\(s.rawValue)")
     }
 
-    /// Lisa's "Self-reported" stamp, pressed onto the sheet after a symptoms report is saved, large enough to read.
-    private var stampOverlay: some View {
-        ZStack {
-            if stamped {
-                Theme.paper.opacity(0.7).ignoresSafeArea().transition(.opacity)
-                VStack(spacing: Space.s) {
-                    Image("StampSelfReported").resizable().scaledToFit().frame(width: 220)
-                        .rotationEffect(.degrees(reduceMotion ? 0 : -12))
-                        .accessibilityHidden(true)
-                    Text("Saved. Phones near you now see \"possibly sick\".").font(.fluni(.heading)).foregroundStyle(Theme.ink)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(Space.l)
-                .transition(reduceMotion ? .opacity : .scale(scale: 1.8).combined(with: .opacity))
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .allowsHitTesting(false)
-    }
-
-    // MARK: tests
-
-    @ViewBuilder private func testBody(question: String) -> some View {
-        VStack(alignment: .leading, spacing: Space.s) {
-            Text("Which test did you take?").font(.fluni(.section)).foregroundStyle(Theme.ink)
-                .accessibilityAddTraits(.isHeader)
-            Picker("Test type", selection: $test) {
-                ForEach(TestKind.allCases, id: \.self) { Text($0.label).tag($0) }
-            }
-            .pickerStyle(.segmented)
-        }
-        DatePicker(question, selection: $date, in: ...Date(), displayedComponents: .date)
-            .font(.fluni(.heading)).foregroundStyle(Theme.ink)
-            .frame(minHeight: 44)
-        if kind == .positive {
-            sharedBox("Phones near you will see \"contagious\" and may warn their owners. The test type and date are never shared. They stay on this phone. A test is more reliable than symptoms alone, so nearby phones treat it as a stronger signal.")
-        } else {
-            sharedBox(negativeNote)
-        }
-    }
-
-    private var negativeNote: String {
-        switch model.myRisk {
-        case .possible: return "This sets you back to healthy. A single rapid negative test isn't conclusive, especially in the first days. If you still feel sick, test again in 1 to 2 days or visit Vaden."
-        case .contagious: return "You tested positive earlier, so a negative test won't clear your status. It changes once your isolation period is over."
-        case .none: return "You're already shown as healthy, so nothing changes. Nothing about the test is shared."
-        }
-    }
-
-    /// What is and isn't shared, as a quiet panel: an aside, not the point of the form.
-    private func sharedBox(_ text: String) -> some View {
-        Text(text).font(.fluni(.fine)).foregroundStyle(Theme.ink)
-            .fixedSize(horizontal: false, vertical: true)
-            .panel()
-    }
-
     private func submit() {
         do {
-            switch kind {
-            case .symptoms:
-                try store.symptoms(picked, onset: date, model: model)
-                // Saved: the stamp shows for a moment, then the sheet closes (the .task above). Straight away with Reduce Motion.
-                if reduceMotion { dismiss() } else { withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { stamped = true } }
-                return
-            case .positive: try store.positive(test, date: date, model: model)
-            case .negative: try store.negative(test, date: date, model: model)
-            }
-            dismiss()
+            try store.symptoms(picked, onset: onset, model: model)
+            saved()
         } catch ReportError.dateInFuture {
             error = "That date is in the future. Pick today or earlier."
         } catch ReportError.noSymptoms {
-            error = "Pick at least one symptom."
+            error = "Pick at least one sticker."
         } catch {
             self.error = "Couldn't save that. Please try again."
         }
     }
 }
 
-/// A drawn-style tick box: ink outline, filled ink with a paper tick when on.
-private struct Tick: View {
-    let on: Bool
-    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 20
+// MARK: Step 2: a test
+
+private struct TestStep: View {
+    let positive: Bool
+    @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
+    let saved: () -> Void
+    @State private var test = TestKind.rapid
+    @State private var date = Calendar.current.startOfDay(for: Date())
+    @State private var confirm = false
+    @State private var error: String?
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 5)
-            .fill(on ? Theme.ink : Color.clear)
-            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Theme.ink, lineWidth: Theme.stroke))
-            .overlay { if on { Image(systemName: "checkmark").font(.system(size: size * 0.6, weight: .bold)).foregroundStyle(Theme.paper) } }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Space.l) {
+                StepHeader(step: 2, title: positive ? "I tested positive" : "I tested negative", subtitle: nil)
+                VStack(alignment: .leading, spacing: Space.s) {
+                    Text("Which test?").font(.fluni(.heading)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                    ForEach(TestKind.allCases, id: \.self) { k in
+                        Button { test = k } label: {
+                            HStack(spacing: Space.s) {
+                                Radio(on: test == k)
+                                Text(k.label).font(test == k ? .fluni(.strong) : .fluni(.reading))
+                                Spacer(minLength: 0)
+                            }
+                            .foregroundStyle(Theme.ink)
+                            .padding(Space.s)
+                            .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(test == k ? Theme.ink : Theme.ink.opacity(0.18), lineWidth: test == k ? 2 : 1))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PressableStyle())
+                        .accessibilityAddTraits(test == k ? [.isSelected, .isButton] : .isButton)
+                        .accessibilityIdentifier("test.\(k.rawValue)")
+                    }
+                }
+                VStack(alignment: .leading, spacing: Space.s) {
+                    Text("When did you test?").font(.fluni(.heading)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                    DayChips(date: $date)
+                }
+                if let error { Text(error).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk) }
+            }
+            .padding(.horizontal, Space.m).padding(.bottom, Space.l)
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(alignment: .leading, spacing: Space.s) {
+                PrivacyNote(text: positive
+                    ? "Nearby phones will see \"contagious\" and may warn their owners. The test and its date stay on this phone."
+                    : negativeNote)
+                Button(positive ? "Review and share" : "Save negative result") { positive ? (confirm = true) : submit() }
+                    .buttonStyle(PrimaryButtonStyle(fill: positive ? Theme.fireInk : Theme.ink))
+                    .accessibilityIdentifier("report.submit")
+                    .accessibilityHint(positive ? "Asks you to confirm before anything is shared" : "")
+            }
+            .padding(.horizontal, Space.m).padding(.top, Space.s).padding(.bottom, Space.xs)
+            .background(Theme.paper)
+            .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
+        }
+        .background(Theme.paper)
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Tell nearby phones you tested positive?", isPresented: $confirm, titleVisibility: .visible) {
+            Button("Share that I tested positive", role: .destructive) { submit() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Phones near you will see \"contagious\" (nothing else about you) and may alert their owners. Staying home is the best thing you can do now.")
+        }
+    }
+
+    private var negativeNote: String {
+        switch model.myRisk {
+        case .possible: return "This sets you back to healthy. One rapid negative test isn't conclusive, especially early on. If you still feel sick, test again in 1 to 2 days or visit Vaden."
+        case .contagious: return "You tested positive earlier, so a negative test won't clear your status. It changes once your 5 days are over."
+        case .none: return "You're already shown as healthy, so nothing changes. Nothing about the test is shared."
+        }
+    }
+
+    private func submit() {
+        do {
+            if positive { try store.positive(test, date: date, model: model) } else { try store.negative(test, date: date, model: model) }
+            saved()
+        } catch ReportError.dateInFuture {
+            error = "That date is in the future. Pick today or earlier."
+        } catch {
+            self.error = "Couldn't save that. Please try again."
+        }
+    }
+}
+
+// MARK: Shared pieces
+
+/// "Step 1 of 2" in sentence case, then the question in the serif.
+private struct StepHeader: View {
+    let step: Int
+    let title: String
+    let subtitle: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Space.xs) {
+            Text("Step \(step) of 2").font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.ink2)
+            Text(title).font(.fluni(.display)).foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("report.title")
+            if let subtitle {
+                Text(subtitle).font(.fluni(.reading)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Today / Yesterday / the day before by name / Earlier (a date picker). Selected = ink fill, paper text.
+private struct DayChips: View {
+    @Binding var date: Date
+    @State private var earlier = false
+    private let cal = Calendar.current
+
+    private var days: [(String, Date)] {
+        let today = cal.startOfDay(for: Date())
+        let d1 = cal.date(byAdding: .day, value: -1, to: today)!
+        let d2 = cal.date(byAdding: .day, value: -2, to: today)!
+        return [("Today", today), ("Yesterday", d1), (d2.formatted(.dateTime.weekday(.wide)), d2)]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Space.s) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: Space.xs)], alignment: .leading, spacing: Space.xs) {
+                ForEach(days, id: \.1) { label, d in
+                    chip(label, on: !earlier && cal.isDate(date, inSameDayAs: d)) { earlier = false; date = d }
+                }
+                chip("Earlier", on: earlier) { earlier = true; date = cal.date(byAdding: .day, value: -3, to: cal.startOfDay(for: Date()))! }
+            }
+            if earlier {
+                DatePicker("Pick the day", selection: $date, in: ...Date(), displayedComponents: .date)
+                    .font(.fluni(.reading)).foregroundStyle(Theme.ink)
+                    .frame(minHeight: 44)
+            }
+        }
+    }
+
+    private func chip(_ label: String, on: Bool, _ act: @escaping () -> Void) -> some View {
+        Button(action: act) {
+            Text(label).font(.fluni(on ? .strong : .reading))
+                .foregroundStyle(on ? Theme.paper : Theme.ink)
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .padding(.horizontal, Space.s)
+                .frame(maxWidth: .infinity, minHeight: 46)
+                .background(Capsule().fill(on ? Theme.ink : Theme.surface))
+                .overlay(Capsule().stroke(Theme.ink.opacity(on ? 1 : 0.35), lineWidth: 1.25))
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
+        .accessibilityIdentifier("day.\(label)")
+    }
+}
+
+/// A quiet panel with a lock: what is and isn't shared.
+private struct PrivacyNote: View {
+    let text: String
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+            Image(systemName: "lock").font(.system(.footnote, weight: .semibold)).foregroundStyle(Theme.ink).accessibilityHidden(true)
+            Text(text).font(.fluni(.fine)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+        }
+        .panel()
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct Radio: View {
+    let on: Bool
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 22
+    var body: some View {
+        Circle().stroke(Theme.ink, lineWidth: Theme.stroke)
+            .overlay { if on { Circle().fill(Theme.ink).padding(size * 0.24) } }
             .frame(width: size, height: size)
-            .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 3 }
             .accessibilityHidden(true)
     }
 }
 
-private extension Symptom {
+/// A press state for custom-drawn buttons: a slight dip, nothing else.
+struct PressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.75 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+extension Symptom {
     /// Lisa's drawing for each symptom (FlUni asset catalog; sources in heatmap/assets/illustrations/symptoms).
     var art: String {
         switch self {
@@ -252,6 +484,18 @@ private extension Symptom {
         case .aches: return "SymptomAches"
         case .fatigue: return "SymptomFatigue"
         case .runnyNose: return "SymptomRunnyNose"
+        }
+    }
+
+    /// The word under a sticker; VoiceOver reads the full label.
+    var short: String {
+        switch self {
+        case .fever: return "Fever"
+        case .cough: return "Cough"
+        case .soreThroat: return "Sore throat"
+        case .aches: return "Aches"
+        case .fatigue: return "Fatigue"
+        case .runnyNose: return "Runny nose"
         }
     }
 }

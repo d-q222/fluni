@@ -180,6 +180,12 @@ struct SettingsView: View {
     private func deleteEverything() {
         hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
         heatmapURL = ""
+        Self.deleteEverything(model: model)
+    }
+
+    /// "Delete my data" (Settings and You): radios off, every store forgets, files and defaults erased.
+    static func deleteEverything(model: ProximityModel) {
+        UserDefaults.standard.set(false, forKey: "hasOnboarded")  // back to onboarding first, so the view updates
         model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
         BuildingWatcher.shared.sync(paused: true)
         WalkInMonitor.shared.forgetEverything()

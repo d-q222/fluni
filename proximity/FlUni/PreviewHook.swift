@@ -7,8 +7,10 @@ import SwiftUI
 ///
 /// FLUNI_PREVIEW_STATE: allClear | nearby | closeContact | walkIn | paused | sick (= sickPossible) | sickPossible |
 ///   sickPositive | onboarding
-/// FLUNI_PREVIEW_SCREEN: today (default) | me | closeSheet | report | positive | history | settings | how | calc |
-///   onboarding1 | onboarding2 | onboarding3
+/// FLUNI_PREVIEW_SCREEN: today (default) | you | campus | report (step 1) | symptoms (step 2) | positive | history |
+///   settings | how | calc | onboarding1 | onboarding2 | onboarding3
+///
+/// Today's timeline is seeded with a realistic day through the real PlaceLog rules (observations every few minutes).
 ///
 /// The local data is wiped at launch so every capture starts clean. The model's exposure is private to Core, so
 /// Today reads `PreviewHook.exposure` / `peerCount` instead when set. The radios never start.
@@ -63,18 +65,25 @@ enum PreviewHook {
     }
 
     @MainActor static func seed(model: ProximityModel, store: SelfReportStore, router: AppRouter) {
-        let now = Date(), day = 86_400.0
+        let now = Date()
         func episode(_ start: Date, minutes: Int, _ risk: Risk) {
             for m in 0..<minutes {
                 model.exposureHistory.record(simSeconds: 60, contacts: [(0.95, risk)], at: start.addingTimeInterval(Double(m) * 60))
             }
             model.exposureHistory.finishOngoing(now: start.addingTimeInterval(Double(minutes) * 60))
         }
+        func ongoing(minutes: Int, _ risk: Risk) {
+            for m in 0..<minutes {
+                model.exposureHistory.record(simSeconds: 60, contacts: [(0.9, risk)], at: now.addingTimeInterval(Double(m - minutes + 1) * 60))
+            }
+        }
+        if state != .onboarding { seedDay(now: now) }
         switch state {
         case .nearby:
-            episode(now.addingTimeInterval(-1.6 * day), minutes: 4, .possible)
+            episode(now.addingTimeInterval(-140 * 60), minutes: 4, .possible)
+            ongoing(minutes: 6, .possible)
         case .closeContact:
-            episode(now.addingTimeInterval(-3 * day), minutes: 6, .possible)
+            episode(now.addingTimeInterval(-140 * 60), minutes: 4, .possible)
             episode(now.addingTimeInterval(-25 * 60), minutes: 18, .contagious)
         case .walkIn:
             if let heat = BuildingHeatStore.shared.heat {
@@ -88,11 +97,30 @@ enum PreviewHook {
         default: break
         }
         switch screen {
-        case "me": router.tab = .me
-        case "closeSheet": router.sheet = .closeContact
-        case "report": router.tab = .me; router.sheet = .reportSymptoms
+        case "you", "me": router.tab = .you
+        case "campus", "map": router.tab = .campus
         default: break
         }
+    }
+
+    /// A morning on campus, oldest first: through the Quad, a lecture in Gates, lunch at Arrillaga, then Green Library now.
+    @MainActor private static func seedDay(now: Date) {
+        let places = PlaceLogStore.shared
+        func stay(_ id: String, _ name: String, from: Double, to: Double, phones: Int) {
+            var t = from
+            while t <= to {
+                places.debugObserve(id, name, phones: phones, at: now.addingTimeInterval(t * 60))
+                t += 4
+            }
+            places.debugObserve(id, name, phones: phones, at: now.addingTimeInterval(to * 60))
+            places.debugObserve(nil, nil, phones: 0, at: now.addingTimeInterval(to * 60 + 1))
+        }
+        stay("main-quad", "Main Quad", from: -292, to: -289, phones: 0)
+        stay("gates", "Gates", from: -252, to: -172, phones: 4)
+        stay("arrillaga", "Arrillaga Dining", from: -152, to: -107, phones: 11)
+        var t = -95.0
+        while t <= 0 { places.debugObserve("green-library", "Green Library", phones: peerCount ?? 3, at: now.addingTimeInterval(t * 60)); t += 4 }
+        places.debugObserve("green-library", "Green Library", phones: peerCount ?? 3, at: now)
     }
 }
 
@@ -110,15 +138,17 @@ struct PreviewHookModifier: ViewModifier {
                 seeded = true
                 try? await Task.sleep(for: .milliseconds(300))
                 PreviewHook.seed(model: model, store: store, router: AppRouter.shared)
-                if ["positive", "history", "settings", "how", "calc"].contains(PreviewHook.screen) { shown = PreviewHook.screen }
+                if ["report", "symptoms", "positive", "history", "settings", "how", "calc"].contains(PreviewHook.screen) { shown = PreviewHook.screen }
             }
             .sheet(item: Binding(get: { shown.map(Shown.init) }, set: { shown = $0?.id })) { s in
                 switch s.id {
-                case "positive": ReportSheet(kind: .positive, model: model, store: store)
+                case "report": ReportFlow(start: .choose, model: model, store: store)
+                case "symptoms": ReportFlow(start: .symptoms, model: model, store: store)
+                case "positive": ReportFlow(start: .positive, model: model, store: store)
                 case "history": NavigationStack { ExposureHistoryView(store: model.exposureHistory) }
                 case "settings": NavigationStack { SettingsView(model: model) }
                 case "how": HowItWorksSheet()
-                default: let e = PreviewHook.exposure ?? model.exposure; CalculationSheet(minutes: e.minutes, dose: e.dose, p: e.probability)
+                default: CalculationSheet(model: model)
                 }
             }
     }

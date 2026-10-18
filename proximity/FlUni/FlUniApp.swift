@@ -22,7 +22,8 @@ struct FlUniApp: App {
         #else
         skipRadios = false
         #endif
-        RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
+        RouteInbox.handler = { AppRouter.shared.handle($0) }
+        Self.styleNavigationBars()  // also delivers a tap that cold-launched the app
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
         // iOS can also relaunch FlUni in the background for a Bluetooth event after it ended it. No window
@@ -49,29 +50,24 @@ struct FlUniApp: App {
                 } else {
                     TabView(selection: $router.tab) {
                         TodayView(model: model, store: reportStore)
-                            .tabItem { Label("Today", systemImage: "sun.max") }
+                            .tabItem { Label("Today", systemImage: "calendar.day.timeline.left") }
                             .tag(AppRouter.Tab.today)
                             .accessibilityIdentifier("tab.today")
+                        // The heat map team's real campus map, unchanged inside.
                         BundledMapView()
-                            .tabItem { Label("Map", systemImage: "map") }
-                            .tag(AppRouter.Tab.map)
-                            .accessibilityIdentifier("tab.map")
-                        MeView(model: model, store: reportStore)
-                            .tabItem { Label("Me", systemImage: "person.crop.circle") }
-                            .tag(AppRouter.Tab.me)
-                            .accessibilityIdentifier("tab.me")
+                            .tabItem { Label("Campus", systemImage: "map") }
+                            .tag(AppRouter.Tab.campus)
+                            .accessibilityIdentifier("tab.campus")
+                        YouView(model: model, store: reportStore)
+                            .tabItem { Label("You", systemImage: "person") }
+                            .tag(AppRouter.Tab.you)
+                            .accessibilityIdentifier("tab.you")
                     }
                     .tint(Theme.ink)
                     .onAppear { startOnce(); router.becomeReady() }
-                    // At the tab level so the close-contact moment shows whichever tab is open.
+                    // At the tab level, so the close contact opens on Today from whichever tab is open.
                     .onChange(of: model.exposure.level) { old, new in
                         if new == .closeContact && old < .closeContact { router.showCloseContact() }
-                    }
-                    .fullScreenCover(isPresented: Binding(get: { router.sheet == .closeContact }, set: { if !$0 { router.sheet = nil } })) {
-                        CloseContactSheet { router.sheet = nil }
-                    }
-                    .sheet(isPresented: Binding(get: { router.sheet == .reportSymptoms }, set: { if !$0 { router.sheet = nil } })) {
-                        ReportSheet(kind: .symptoms, model: model, store: reportStore)
                     }
                 }
             }
@@ -91,6 +87,28 @@ struct FlUniApp: App {
                 #endif
             }
         }
+    }
+
+    /// Navigation titles in the Fraunces serif, ink on paper, so "You" and "Settings" match the rest.
+    private static func styleNavigationBars() {
+        let ink = UIColor(Theme.ink)
+        let a = UINavigationBarAppearance()
+        a.configureWithTransparentBackground()
+        a.backgroundColor = UIColor(Theme.paper)
+        if let large = UIFont(name: Face.serif, size: 34), let small = UIFont(name: Face.serif, size: 17) {
+            a.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large), .foregroundColor: ink]
+            a.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: small), .foregroundColor: ink]
+        }
+        let bar = UINavigationBar.appearance()
+        bar.standardAppearance = a
+        bar.compactAppearance = a
+        let scrolled = a.copy()
+        scrolled.configureWithDefaultBackground()
+        scrolled.backgroundColor = UIColor(Theme.paper).withAlphaComponent(0.94)
+        scrolled.largeTitleTextAttributes = a.largeTitleTextAttributes
+        scrolled.titleTextAttributes = a.titleTextAttributes
+        bar.standardAppearance = scrolled
+        bar.scrollEdgeAppearance = a
     }
 
     private func startOnce() {

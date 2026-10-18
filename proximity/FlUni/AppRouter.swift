@@ -8,12 +8,14 @@ import Combine
 final class AppRouter: ObservableObject {
     static let shared = AppRouter()
 
-    enum Tab: Hashable { case today, map, me }
-    enum Sheet: Identifiable { case closeContact, reportSymptoms; var id: Self { self } }
+    enum Tab: Hashable { case today, campus, you }
 
     @Published var tab: Tab = .today
-    @Published var sheet: Sheet?
-    /// Building the Map tab should centre on and open the card for; the map clears it once applied.
+    /// Bumped to open the newest close contact in place on Today's timeline.
+    @Published private(set) var closeContactRequest = 0
+    /// Bumped to open the report sheet on Today.
+    @Published private(set) var reportRequest = 0
+    /// Building the Campus tab should centre on and open the card for; the map clears it once applied.
     @Published var focusBuilding: String?
 
     /// Fires when every open sheet must close (child views with their own sheets listen).
@@ -33,21 +35,26 @@ final class AppRouter: ObservableObject {
         if let p = pending { pending = nil; apply(p) }
     }
 
-    /// The full-screen close-contact cover can't present over an open sheet: close the sheet first, then present.
-    /// (A sheet that is still dismissing would swallow the change, so the cover waits one animation.)
+    /// The close contact opens in place on Today's timeline (B-2): close any sheet, go to Today, open it.
     func showCloseContact() {
-        if sheet == .closeContact { return }
-        sheet = nil
         dismissSheets.send()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.sheet = .closeContact }
+        tab = .today
+        closeContactRequest += 1
+    }
+
+    /// "I don't feel well" from a notification: Today's report sheet, once any open sheet has gone.
+    func showReport() {
+        dismissSheets.send()
+        tab = .today
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.reportRequest += 1 }
     }
 
     private func apply(_ route: Route) {
         switch route {
         case .openToday: tab = .today
         case .closeContact: showCloseContact()
-        case .reportSymptoms: tab = .me; sheet = .reportSymptoms
-        case .mapFocus(let id): sheet = nil; tab = .map; focusBuilding = id
+        case .reportSymptoms: showReport()
+        case .mapFocus(let id): dismissSheets.send(); tab = .campus; focusBuilding = id
         case .ignore: break
         }
     }
