@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FlUni: pitch demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="top">
+    <b>FlUni</b>
+    <a href="#problem">Problem</a>
+    <a href="#live">Live demo</a>
+    <a href="#phones">Two phones</a>
+    <a href="#math">The math</a>
+    <a href="#results">Simulations</a>
+  </nav>
+  <section class="slide" id="problem"></section>
+  <section class="slide" id="live"></section>
+  <section class="slide" id="phones"></section>
+  <section class="slide" id="math"></section>
+  <section class="slide" id="results"></section>
+  <script type="module">
+    const parts = ['problem', 'live', 'phones', 'math', 'results'];
+    for (const id of parts) {
+      const el = document.getElementById(id);
+      import(`./sections/${id}.js`).then((m) => m.mount(el)).catch((e) => {
+        el.innerHTML = `<h2>${id}</h2><p class="muted">Not built yet (${e.message}).</p>`;
+      });
+    }
+    const links = [...document.querySelectorAll('nav.top a')];
+    const spy = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.hash === `#${e.target.id}`));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    parts.forEach((id) => spy.observe(document.getElementById(id)));
+  </script>
+</body>
+</html>
