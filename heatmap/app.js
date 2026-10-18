@@ -964,11 +964,15 @@ async function main() {
   const riskQ = MODEL.quantaPeak * MF_DEFAULTS.lambdaScale * MODEL.breathingRate / MODEL.nearFieldQ; // hazard at 1 m, 1 h, per unit shed
   let riskField = null;
   const riskAt = (t, states, truth) => {
-    riskField ||= new RiskField(bounds, DEMO.cellM);
+    if (!riskField) {
+      riskField = new RiskField(bounds, 2); // 2 m cells: small wings get a smoother edge
+      if (zoneHeat) riskField.setZones(Z.zones, rasterZone); // walls: indoor heat stays in its building, outdoor heat outside
+    }
     const src = [];
     for (const st of states) {
       const shed = truth ? Number(st.infectious) || 0 : model.mf().shedAt(st.id, t);
-      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, h0: (riskQ * shed) / (st.buildingId ? 1 : MODEL.outdoorNearDilution) });
+      const zone = st.buildingId && !st.walking ? Z.zoneFor(st.buildingId) : -1; // their building, or open air
+      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, zone, h0: (riskQ * shed) / (st.buildingId ? 1 : MODEL.outdoorNearDilution) });
     }
     return riskField.compute(src, RISK.fadeM, RISK.vmax);
   };
