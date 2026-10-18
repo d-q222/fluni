@@ -348,8 +348,10 @@ async function loadRooms(dataUrl) {
 async function loadBuildings(dataUrl) {
   try {
     const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)),
-      ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt']);
+      ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt', 'floors']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
+    // The sim's floor count per building (OSM building:levels where mapped, else its type's default; sim/campussim/campus.py).
+    const floors = new Map(data.filter((b) => Number(b.floors) > 0).map((b) => [b.location_id, Number(b.floors)]));
     // No boxes for outdoor spaces; manual boxes on a real building take its outline (footprints.js).
     const features = cleanFootprints(data).map(({ row: b, geometry, box }) => ({
       type: 'Feature',
@@ -360,9 +362,9 @@ async function loadBuildings(dataUrl) {
     // The sim's outdoor places on water (Lake Lagunita): nobody is drawn standing in them (seats.js).
     const water = data.filter((b) => b.source === 'manual' && !/^(true|1)$/i.test(b.indoor) && /lake|lagunita|pond|reservoir/i.test(b.name) && b.footprint_wkt)
       .map((b) => wktGeometry(b.footprint_wkt));
-    return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null, water };
+    return { names, floors, outlines: features.length ? { type: 'FeatureCollection', features } : null, water };
   } catch {
-    return { names: new Map(), outlines: null, water: [] };
+    return { names: new Map(), floors: new Map(), outlines: null, water: [] };
   }
 }
 
@@ -983,31 +985,34 @@ async function main() {
   };
 
   // Building shading (the default presenter view, when the run has outlines): each building's darkness is linear in
-  // the expected number of infected people in it now, Σ P(infected) over everyone inside (the dots' P, model.risk.pAt),
-  // divided by the building's footprint area: expected infected per 1,000 m², so a crowded small building reads darker
-  // than the same count spread through a big one. truth: the number actually infected (sim), per 1,000 m².
+  // the expected number of infected people in it above the baseline, Σ max(0, P - prior) over everyone inside (the
+  // dots' P, model.risk.pAt), divided by its floor space, footprint area x floors: expected infected per 1,000 m² of
+  // floor, so a crowded small building reads darker than the same count spread through a big or tall one, and a
+  // building of healthy people at the baseline stays clear. truth: the number actually infected (sim), per 1,000 m².
   // People outdoors or walking count nowhere; empty buildings stay plain.
   const shading = zoneHeat;
-  const areaM2 = footprintAreas(outlines); // buildingId -> footprint m² (one floor's outline; floors aren't known)
+  const footprint = footprintAreas(outlines); // buildingId -> footprint m² (the outline: one floor)
+  const floorsOf = (id) => runBuildings.floors.get(id) || 1;
+  const floorArea = new Map([...footprint].map(([id, a]) => [id, a * floorsOf(id)]));
   const buildingSums = (states, truth = false) => {
     const out = new Map();
-    for (const s of states) if (s.buildingId && !s.walking) out.set(s.buildingId, (out.get(s.buildingId) || 0) + (truth ? Number(Boolean(s.sick)) : s.p));
+    for (const s of states) if (s.buildingId && !s.walking) out.set(s.buildingId, (out.get(s.buildingId) || 0) + (truth ? Number(Boolean(s.sick)) : Math.max(0, s.p - MODEL.prior)));
     return out;
   };
   const buildingDensity = (states, truth = false) => {
     const out = new Map();
-    for (const [id, e] of buildingSums(states, truth)) { const a = areaM2.get(id); if (a) out.set(id, (1000 * e) / a); }
+    for (const [id, e] of buildingSums(states, truth)) { const a = floorArea.get(id); if (a) out.set(id, (1000 * e) / a); }
     return out;
   };
-  // Fixed scale, the same at every moment: the 95th percentile of every occupied building's sum over ~100 moments
-  // of the run (everyone at their latest sample, cheap), so the busiest buildings saturate and the rest spread out.
+  // Fixed scale, the same at every moment: the 95th percentile of the buildings above zero over ~100 moments of the
+  // run (everyone at their latest sample, cheap), so the hottest buildings saturate and the rest spread out.
   const shadeMax = (() => {
     if (!shading) return 1;
     const all = [], N = 100;
     for (let k = 0; k < N; k++) {
       const t = t0 + ((t1 - t0) * (k + 0.5)) / N, states = [];
       for (const track of tracks.values()) { const s = stayNow(track, t); if (s) states.push(s); }
-      for (const e of buildingDensity(states).values()) all.push(e);
+      for (const e of buildingDensity(states).values()) if (e > 0) all.push(e);
     }
     all.sort((a, b) => a - b);
     const q = all[Math.floor(0.95 * (all.length - 1))] || 1;
@@ -1656,18 +1661,18 @@ async function main() {
     for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
     here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
     const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
-    const area = areaM2.get(h.id);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here, area, density: area ? (1000 * expected) / area : null };
+    const area = floorArea.get(h.id), floors = floorsOf(h.id);
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here, area, floors, density: area ? (1000 * excess) / area : null };
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
   function buildingCard(h, full) {
     const i = buildingInfo(h);
-    const per = i.density == null ? '' : ` · ${i.density.toPrecision(2)} per 1,000 m²`;
+    const per = i.density == null ? '' : ` · ${i.density.toPrecision(2)} above baseline per 1,000 m²`;
     if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtSick(i.expected)} expected infected${per} · ${i.n} ${i.n === 1 ? 'person' : 'people'}`;
     const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
     return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
       <div class="row"><span>Expected infected (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
-      ${i.density == null ? '' : `<div class="row"><span>Per 1,000 m² (footprint ${Math.round(i.area).toLocaleString()} m²)</span><b>${i.density.toPrecision(2)}</b></div>`}
+      ${i.density == null ? '' : `<div class="row"><span>Above baseline per 1,000 m² of floor (${Math.round(i.area / i.floors).toLocaleString()} m² × ${i.floors} floor${i.floors === 1 ? '' : 's'})</span><b>${i.density.toPrecision(2)}</b></div>`}
       <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
       <div class="row"><span>People here now</span><b>${i.n}</b></div>
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
@@ -1927,7 +1932,7 @@ async function main() {
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
     const shade = shading && v === 'demo';
-    if (shade) { // linear: darkness proportional to the building's expected infected per 1,000 m²
+    if (shade) { // linear: darkness proportional to the building's expected infected above baseline per 1,000 m² of floor
       $('vmid').textContent = num(shadeMax / 2);
       $('vmax').textContent = `${num(shadeMax)}+`;
     }
@@ -1936,7 +1941,7 @@ async function main() {
       $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
     }
     document.querySelector('.legend h2').innerHTML = shade
-      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : 'expected infected people (Σ P of everyone inside)'} per 1,000 m² of the building's footprint</span>`
+      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : `expected infected people above the ${Math.round(MODEL.prior * 100)}% baseline (Σ of everyone's P − ${Math.round(MODEL.prior * 100)}%)`} per 1,000 m² of floor space (footprint × floors)</span>`
       : v === 'airborne'
       ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
       : v === 'airflow'
