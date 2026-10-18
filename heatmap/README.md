@@ -16,15 +16,26 @@ Caching is off, so a reload always runs the latest code:
 cd fluni && git pull && python3 heatmap/tools/serve.py   # port 8000
 ```
 
-Open http://localhost:8000/heatmap/. It loads the sim's real 10-agent, 14-day run from GitHub
-(`sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`). If that isn't reachable it says so on screen; it no
-longer falls back silently to mock or fake data (use `?run=mock_boring10` or `?data=data/fake_agents.csv`
-on purpose). Building outlines come from the run's
+Open http://localhost:8000/heatmap/. It loads the sim's 1,000-agent, 4-day run
+(`sim/runs/influenza_none_n1000_d4_s42_73b8452c/`, the one [DEMO.md](DEMO.md) is timed on). To play
+**2 weeks**, pick "2 weeks" in the **run picker** next to "Fluni" in the header
+(`influenza_none_n1000_d14_s42_25fe957a`: the same scenario and seed, only 14 days; about 5 s and ~1.2 GB of
+JS heap to open), or open `?run=influenza_none_n1000_d14_s42_25fe957a` (`heatmap/tools/demo.sh --run <id>`
+does the same). The picker reloads the page with `?run=`, keeping the other URL options except `?at=` and
+`?agent=`. If the run isn't reachable it says so on
+screen; it never falls back silently to mock or fake data (use `?run=mock_boring10` or
+`?data=data/fake_agents.csv` on purpose). Building outlines come from the run's
 `map/buildings.csv` footprints, which cover places missing from OSM such as Green Library.
+
+The 2-week run is a big run (see "Big runs"), so it has no "Why this %?" panel and no contact-based phone
+alerts. It reads the precomputed `model/out/<run>/p_sick.csv`,
+`model/out/<run>/meanfield.csv` (`?model=meanfield`) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
+After a change to `model/` or the user map's totals, regenerate them (commands under "Big runs").
 
 URL options, which can be combined:
 
-- `?run=<name>`: load `sim/runs/<name>/`, e.g. `?run=mock_boring10`.
+- `?run=<name>`: load `sim/runs/<name>/`, e.g. `?run=influenza_none_n1000_d14_s42_25fe957a` (2 weeks, the same as
+  "2 weeks" in the run picker) or `?run=mock_boring10`. Runs not in the picker get their own entry in it.
 - `?why=1` (with `?agent=`): open the "Why this %?" panel (the same as the button on the presenter
   bar). It shows the model's contact graph, the formula with that person's numbers, and the
   evidence on record (`mathpanel.js`).
@@ -217,14 +228,22 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 ## Big runs (thousands of agents)
 
-From 2,000 agents (`BIG_RUN` in `app.js`) the page reads precomputed files instead of computing in the
+From 2,000 agents (`BIG_RUN` in `app.js`), or 8,000 agent-days (`BIG_AGENT_DAYS`: the 2-week 1,000 agents ×
+14 days), the page reads precomputed files instead of computing in the
 browser. In the page, the model alone downloads tens of millions of contacts: the 7,500-agent run
 took 52 s and a 4 GB JS heap to open.
 
 ```bash
 node --max-old-space-size=12000 heatmap/tools/precompute.mjs sim/runs/<run> --out heatmap/out/<run>
 mkdir -p model/out/<run> && mv heatmap/out/<run>/p_sick.csv model/out/<run>/
+node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # for ?model=meanfield
 ```
+
+`precompute.mjs` reads whole `timeline.csv.gz` and `contacts.csv.gz` files. For a run the sim split into
+`parts/`, rebuild them first (`sim/scripts/run_parts.py join`, or join the parts into a scratch copy of the
+run and point `precompute.mjs` at it; the output depends only on the run's name and data).
+The 2-week run (`influenza_none_n1000_d14_s42_25fe957a`) opens in about 5 s headless (4 days: about 4 s),
+~1.2 GB JS heap; its building-shade scale (100 sampled moments) takes ~35 ms.
 
 - P(sick) comes from `model/out/<run>/p_sick.csv`. There is no "Why this %?" and no
   contact-based phone alerts then.

@@ -65,6 +65,7 @@
     .brand { display: flex; align-items: baseline; gap: 8px; margin-right: 4px; }
     .brand h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
     .brand span { color: var(--ink-3); font-size: 13px; }
+    .brand select { align-self: center; margin-left: 4px; }
 
     .playback { display: flex; align-items: center; gap: 10px; flex: 1 1 380px; min-width: 0; }
     .play {
@@ -387,7 +388,12 @@
   </svg>
 
   <header class="bar">
-    <div class="brand"><h1>Fluni</h1><span>Stanford heat map</span></div>
+    <div class="brand"><h1>Fluni</h1><span>Stanford heat map</span>
+      <select id="run" aria-label="Simulation length">
+        <option value="influenza_none_n1000_d4_s42_73b8452c">4 days</option>
+        <option value="influenza_none_n1000_d14_s42_25fe957a">2 weeks</option>
+      </select>
+    </div>
     <div class="playback">
       <button id="play" class="play" aria-label="Play" data-playing="false">
         <svg class="icon i-play"><use href="#i-play"/></svg><svg class="icon i-pause"><use href="#i-pause"/></svg>

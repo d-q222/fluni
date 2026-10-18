@@ -46,6 +46,7 @@ export class BuildingTotalsLayer {
     this.map = map;
     this.group.addTo(map);
     this.haloGroup.addTo(map);
+    map.getPane('ub-fill').style.pointerEvents = '';
     this.added = true;
     if (this.last) this.update(...this.last);
     return this;
@@ -56,6 +57,9 @@ export class BuildingTotalsLayer {
     this.haloGroup?.remove();
     this.labels?.setItems([]);
     this.map?.closePopup(this.pop);
+    // Leaflet keeps the pane's canvas after its layers go: without this it sits above the people (z 430) and eats
+    // their clicks once "What users see" has been opened and closed.
+    if (this.map) this.map.getPane('ub-fill').style.pointerEvents = 'none';
     this.map = null;
     this.added = false;
     this._labelsBuilt = false;
