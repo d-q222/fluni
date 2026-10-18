@@ -34,7 +34,7 @@ final class WalkInMonitor: ObservableObject {
         self.model = model
         bag = [
             model.$lastFix.sink { [weak self] _ in self?.schedule() },
-            model.$pauseState.sink { [weak self] _ in self?.schedule(); BuildingWatcher.shared.sync() },
+            model.$pauseState.sink { [weak self] p in self?.schedule(); BuildingWatcher.shared.sync(paused: p != nil) },  // fires before the value is stored
             clock.$simTime.sink { [weak self] _ in self?.schedule() },
             store.$heat.sink { [weak self] _ in self?.schedule(); BuildingWatcher.shared.sync() },
         ]
@@ -80,6 +80,19 @@ final class WalkInMonitor: ObservableObject {
         let reading = store.heat?.reading(id, at: clock.simTime)
         let o = warning.evaluate(now: Date(), building: b, reading: reading, paused: paused)
         if o.notify { post(b); save() }
+    }
+
+    /// Forget every walk-in cooldown, in memory and on disk (Delete my data, and the Demo's "Reset warnings").
+    func resetCooldowns() {
+        warning.resetCooldowns()
+        UserDefaults.standard.removeObject(forKey: Self.key)
+    }
+
+    /// Delete my data: cooldowns, the demo "pretend" place and the banner.
+    func forgetEverything() {
+        resetCooldowns()
+        pretend = nil
+        banner = nil
     }
 
     private func save() {

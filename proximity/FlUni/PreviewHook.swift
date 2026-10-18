@@ -34,7 +34,7 @@ enum PreviewHook {
             record = try? r.reportPositive(SelfReportRecord(), kind: .rapid, date: now.addingTimeInterval(-86_400), now: now)
         default: record = nil
         }
-        if let record, let data = try? JSONEncoder().encode(record) { UserDefaults.standard.set(data, forKey: "selfReportRecord") }
+        if let record, let url = SelfReportStore.defaultURL { SelfReportFile.save(record, to: url) }
         return true
     }
 

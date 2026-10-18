@@ -30,7 +30,7 @@ struct ExposureHistory: Equatable {
     static let gapSeconds = 120.0
     static let minListedMinutes = 0.5
 
-    private struct Open: Equatable {
+    struct Open: Codable, Equatable {
         var start: Date
         var weighted = 0.0
         var maxRisk = Risk.none
@@ -39,6 +39,21 @@ struct ExposureHistory: Equatable {
         var quiet = 0.0        // simulated seconds since the last risky tick
     }
     private var open: Open?
+
+    /// The episode in progress in a form that can be saved (e.g. when the app goes to the background).
+    var openSnapshot: Open? { open }
+
+    /// Continue a saved episode after a relaunch. The time the app was away counts as quiet time, so the same
+    /// 2-minute gap rule decides whether it carries on (returns []) or is over (returns the finished episode).
+    mutating func restore(_ saved: Open, savedAt: Date, now: Date) -> [ExposureEpisode] {
+        var o = saved
+        let away = max(0, now.timeIntervalSince(savedAt))
+        o.elapsed += away
+        o.quiet += away
+        if o.quiet >= Self.gapSeconds - 1e-6 { return Self.finish(o) }
+        open = o
+        return []
+    }
 
     /// The episode in progress, if any (not yet finished or filtered).
     var ongoing: ExposureEpisode? {
@@ -127,13 +142,17 @@ final class ExposureHistoryStore: ObservableObject {
     @Published private(set) var ongoing: ExposureEpisode?
     private var history = ExposureHistory()
     private let url: URL?
+    private var openURL: URL? { url?.deletingLastPathComponent().appendingPathComponent("exposure-open.json") }
 
-    init(url: URL? = ExposureHistoryStore.defaultURL) {
+    init(url: URL? = ExposureHistoryStore.defaultURL, now: Date = Date()) {
         self.url = url
         if let url, let data = try? Data(contentsOf: url) {
-            episodes = ExposureLog.pruned(ExposureLog.decode(data), now: Date())
+            episodes = ExposureLog.pruned(ExposureLog.decode(data), now: now)
         }
+        restoreOpen(now: now)
     }
+
+    private struct SavedOpen: Codable { var open: ExposureHistory.Open; var savedAt: Date }
 
     static var defaultURL: URL? {
         try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
@@ -146,6 +165,35 @@ final class ExposureHistoryStore: ObservableObject {
         if history.ongoing != ongoing { ongoing = history.ongoing }
     }
 
+    /// The app is going to the background and may be killed: save the episode in progress instead of closing it,
+    /// so a relaunch continues it. It is finished only when the 2-minute gap rule says so (see `restore`).
+    func saveOngoing(now: Date = Date()) {
+        guard let openURL else { return }
+        guard let o = history.openSnapshot else { try? FileManager.default.removeItem(at: openURL); return }
+        let enc = JSONEncoder(); enc.dateEncodingStrategy = .secondsSince1970
+        if let data = try? enc.encode(SavedOpen(open: o, savedAt: now)) {
+            try? data.write(to: openURL, options: [.atomic, .completeFileProtectionUnlessOpen])
+        }
+    }
+
+    private func restoreOpen(now: Date) {
+        guard let openURL, let data = try? Data(contentsOf: openURL) else { return }
+        try? FileManager.default.removeItem(at: openURL)
+        let dec = JSONDecoder(); dec.dateDecodingStrategy = .secondsSince1970
+        guard let saved = try? dec.decode(SavedOpen.self, from: data) else { return }
+        let done = history.restore(saved.open, savedAt: saved.savedAt, now: now)
+        if !done.isEmpty { add(done, now: now) }
+        ongoing = history.ongoing
+    }
+
+    /// Delete my data: forget everything in memory and on disk, so nothing can rewrite the file afterwards.
+    func reset() {
+        history = ExposureHistory()
+        episodes = []
+        ongoing = nil
+        for u in [url, openURL] { if let u { try? FileManager.default.removeItem(at: u) } }
+    }
+
     /// Closes the episode in progress (used by the reset button).
     func finishOngoing(now: Date = Date()) {
         let done = history.finishOpen()
@@ -155,6 +203,6 @@ final class ExposureHistoryStore: ObservableObject {
 
     private func add(_ done: [ExposureEpisode], now: Date) {
         episodes = ExposureLog.pruned(episodes + done, now: now)
-        if let url, let data = try? ExposureLog.encode(episodes) { try? data.write(to: url, options: .atomic) }
+        if let url, let data = try? ExposureLog.encode(episodes) { try? data.write(to: url, options: [.atomic, .completeFileProtectionUnlessOpen]) }
     }
 }
