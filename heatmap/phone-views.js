@@ -96,7 +96,7 @@ const howLink = () => `<button class="howlink" data-act="calc"><i>f(x)</i>How yo
 
 function strip(d) {
   const close = d.level === 'close', a = close ? ADVICE.close : ADVICE.nearby;
-  return `<div class="strip ${close ? 'cc' : ''}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.500" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.800"/><path d="M12 6.800v6.200M12 16.800v.2" stroke="var(--ink)" stroke-width="2.600" stroke-linecap="round"/></svg>
+  return `<div class="strip ${close ? 'cc' : ''}"><img class="ico" src="${ASSET.replace('illustrations/', 'icons/')}alert.png" alt="">
     <div><p class="st">${esc(a.title)}</p><p class="sl">${esc(close ? a.body[1] : a.body[0])}</p></div></div>`;
 }
 
