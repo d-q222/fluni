@@ -327,7 +327,7 @@ export class DiffusionField {
       }
       const inv = 1 / (this.cellM * this.cellM);
       for (let y = 0, l = 0; y < h; y++) for (let i = (y0 + y) * nx + x0, end = i + w; i < end; i++, l++) if (u[l]) { u[l] *= inv; out[i] += u[l] / inv; }
-      this.zoneOut.push({ z, x0, y0, w, h, own, u });
+      this.zoneOut.push({ z, x0, y0, w, h, own, u, total }); // total: the zone's expected sick (its mass)
       this.live.push({ x0, y0, x1: x0 + w - 1, y1: y0 + h - 1 });
     }
   }

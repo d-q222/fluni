@@ -169,6 +169,9 @@ final class IntroArt: @unchecked Sendable {
         }
     }
 
+    /// The intro plays in about 1.1 s after a 0.45 s hold; nothing may cover an active app longer than this.
+    static let maxOnScreen = 4.0
+
     @MainActor func uncover() {
         covers.forEach { $0.removeFromSuperview() }
         covers.removeAll()

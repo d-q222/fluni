@@ -1,0 +1,35 @@
+/* Shared look for the pitch demo: the heat map's "campfire" palette (heatmap/index.html :root). */
+:root {
+  --sage: #acbc8b; --sun: #ebd187; --ember: #e99569; --fire: #db6c59; --fire-ink: #8e3a28;
+  --paper: #faf4e8; --surface: #fffaf1; --surface-2: #f4ead6; --surface-3: #ecdfc6;
+  --ink: #33241c; --ink-2: #6a5244; --ink-3: #7a6152; --hairline: rgba(51, 36, 28, 0.12);
+  --shadow: 0 1px 2px rgba(51, 36, 28, 0.07), 0 8px 24px -6px rgba(51, 36, 28, 0.16);
+  --radius: 12px; --font: "Hanken Grotesk", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 56px; }
+body { margin: 0; font: 16px/1.55 var(--font); color: var(--ink); background: var(--paper); }
+a { color: var(--fire-ink); }
+nav.top { position: sticky; top: 0; z-index: 10; display: flex; gap: 4px; align-items: center; padding: 8px 20px;
+  background: rgba(250, 244, 232, 0.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--hairline); }
+nav.top b { margin-right: auto; font-size: 18px; }
+nav.top a { text-decoration: none; color: var(--ink-2); padding: 6px 10px; border-radius: 999px; font-size: 14px; }
+nav.top a:hover, nav.top a.on { background: var(--surface-3); color: var(--ink); }
+section.slide { min-height: calc(100vh - 49px); padding: 56px max(24px, calc((100vw - 1200px) / 2)); border-bottom: 1px solid var(--hairline); }
+section.slide:nth-of-type(even) { background: var(--surface); }
+section.slide > h2 { margin: 0 0 6px; font-size: 36px; line-height: 1.15; font-weight: 600; }
+section.slide > .lede { margin: 0 0 28px; color: var(--ink-2); font-size: 18px; max-width: 760px; }
+.card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+section.slide:nth-of-type(even) .card { background: var(--paper); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--surface-3); font-size: 13px; }
+button.btn { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--hairline);
+  background: var(--surface); color: var(--ink); cursor: pointer; }
+button.btn:hover { background: var(--surface-3); }
+button.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.muted { color: var(--ink-3); }
+.risk-low { color: #5d6d3c; } .risk-mid { color: #8a6a12; } .risk-high { color: var(--fire-ink); }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+.math { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.05em; }
+@media (max-width: 720px) { section.slide > h2 { font-size: 28px; } nav.top a { display: none; } }

@@ -116,9 +116,9 @@ header.bar { gap: 10px 18px; }
   box-shadow: 0 10px 28px -8px rgba(51, 36, 28, .4), 0 0 0 1px rgba(51, 36, 28, .08); animation: bannerIn 360ms cubic-bezier(.2, .9, .3, 1.1); cursor: pointer; }
 .ph-banner-icon { flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--sage); padding: 4px; object-fit: contain; }
 .ph-banner-body { min-width: 0; flex: 1; }
-.ph-banner-head { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-3); }
+.ph-banner-head { display: flex; justify-content: space-between; font-size: 16px; color: var(--ink-3); }
 .ph-banner-app { font-weight: 600; color: var(--ink); }
-.ph-banner p { margin: 1px 0 0; font-size: 15px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ph-banner p { margin: 1px 0 0; font-size: 16px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 @keyframes bannerIn { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* the selected person */

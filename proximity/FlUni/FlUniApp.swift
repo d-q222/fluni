@@ -65,10 +65,26 @@ struct FlUniApp: App {
         introHeld = false
     }
 
+    private func introFailsafe() async {
+        var activeFor = 0.0, shownFor = 0.0
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .milliseconds(500))
+            let active = UIApplication.shared.applicationState == .active
+            activeFor = active ? activeFor + 0.5 : 0
+            shownFor = showIntro && active ? shownFor + 0.5 : 0
+            guard activeFor >= 1 else { continue }
+            IntroArt.shared.uncover()
+            if showIntro && introHeld { introHeld = false }                     // a held poster plays now
+            if shownFor >= IntroArt.maxOnScreen { showIntro = false; introHeld = false }  // never stuck
+        }
+    }
+
     /// Covers the app with the intro's still poster as it leaves, so the app-switcher snapshot and the first frame of
     /// the next open are the poster rather than the app. It only plays once IntroGate says so.
     private func coverWithPoster() {
-        guard introAllowed, !(showIntro && introHeld) else { return }
+        // A late didEnterBackground after the app is already active again must not hold a poster no phase change
+        // would ever release (the "stuck on the poster" bug).
+        guard introAllowed, !(showIntro && introHeld), UIApplication.shared.applicationState != .active else { return }
         introRun += 1
         showIntro = true
         introHeld = true
@@ -117,11 +133,16 @@ struct FlUniApp: App {
             // A new id each time restarts it from the poster, however quickly the app came up.
             .overlay { if showIntro { LaunchIntro(held: introHeld) { showIntro = false; Signposts.poi.emitEvent("intro done") }.id(introRun) } }
             .onAppear { introPhase(phase) }
+            // Failsafe: whatever the order of lifecycle events, once the app has been active for a moment the poster
+            // plays, and nothing covers the app for more than a few seconds.
+            .task { await introFailsafe() }
             // SwiftUI draws the held poster only after iOS has taken the app-switcher snapshot, so a plain UIKit copy of
             // the poster covers the window at once (IntroArt.cover) and comes off when the app is active again.
             .onReceive(NotificationCenter.default.publisher(for: UIScene.didEnterBackgroundNotification)) { n in
                 coverWithPoster()
-                if introAllowed, let scene = n.object as? UIWindowScene { IntroArt.shared.cover(scene) }
+                if introAllowed, UIApplication.shared.applicationState != .active, let scene = n.object as? UIWindowScene {
+                    IntroArt.shared.cover(scene)
+                }
             }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)

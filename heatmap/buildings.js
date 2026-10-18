@@ -8,8 +8,9 @@ import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
 export class BuildingTotalsLayer {
   // avoid: () => [DOMRect, ...] the labels must stay clear of (legend, chip)
-  constructor(geojson, { avoid = () => [], badges = true } = {}) {
+  constructor(geojson, { avoid = () => [], badges = true, names = true } = {}) {
     this.geojson = geojson;
+    this.names = names;
     this.badges = badges; // the presenter's count badges (FlUni's own map has none)
     this.avoid = avoid;
     this.totals = new Map();
@@ -95,7 +96,7 @@ export class BuildingTotalsLayer {
   _setLabels() {
     const out = [];
     for (const [id, it] of this.items) {
-      if (it.name) out.push({ key: 'n:' + id, lat: it.center.lat, lon: it.center.lng, html: esc(it.name.slice(0, 28)), cls: 'ub-name',
+      if (it.name && this.names) out.push({ key: 'n:' + id, lat: it.center.lat, lon: it.center.lng, html: esc(it.name.slice(0, 28)), cls: 'ub-name',
         p: it.badge ? 1 : 2, minZoom: it.badge ? 16 : 17 });
     }
     this.labels.setItems(out);
