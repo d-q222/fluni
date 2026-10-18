@@ -211,7 +211,8 @@ private struct PeriodOver: View {
 /// Always next to the status in words; colour is never the only cue.
 struct StatusSwatch: View {
     let risk: Risk
-    @ScaledMetric(relativeTo: .subheadline) private var size: CGFloat = 12
+    @ScaledMetric private var size: CGFloat
+    init(risk: Risk, size: CGFloat = 12) { self.risk = risk; _size = ScaledMetric(wrappedValue: size, relativeTo: .subheadline) }
 
     var body: some View {
         Circle()

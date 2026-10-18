@@ -17,6 +17,7 @@ struct ReportSheet: View {
     @State private var test = TestKind.rapid
     @State private var confirmPositive = false
     @State private var error: String?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         NavigationStack {
@@ -89,12 +90,15 @@ struct ReportSheet: View {
                 Text("Pick any that fit. One is enough.").font(.fluni(.note)).foregroundStyle(Theme.ink2)
             }
             Spacer(minLength: 0)
-            Image("FeelingSick").resizable().scaledToFit().frame(width: 96)
-                .accessibilityHidden(true)  // Lisa's illustration
+            if !typeSize.isAccessibilitySize {
+                Image("FeelingSick").resizable().scaledToFit().frame(width: 96)
+                    .accessibilityHidden(true)  // Lisa's illustration
+            }
         }
         .foregroundStyle(Theme.ink)
         // Two columns of tick boxes; one column when large text needs the width.
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: Space.xs)], alignment: .leading, spacing: Space.xs) {
+        LazyVGrid(columns: typeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible(), spacing: Space.xs), GridItem(.flexible())],
+                  alignment: .leading, spacing: Space.xs) {
             ForEach(Symptom.allCases, id: \.self) { s in
                 let on = picked.contains(s)
                 Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {

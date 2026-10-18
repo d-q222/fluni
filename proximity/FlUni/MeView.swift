@@ -131,7 +131,7 @@ struct MeView: View {
         VStack(alignment: .leading, spacing: Space.xs) {
             Text("Phones near you see").font(.fluni(.note)).foregroundStyle(Theme.ink2)
             HStack(alignment: .firstTextBaseline, spacing: Space.s) {
-                StatusSwatch(risk: model.myRisk).scaleEffect(1.6)
+                StatusSwatch(risk: model.myRisk, size: 18)
                 Text(model.myRisk == .contagious ? "contagious" : model.myRisk == .possible ? "possibly sick" : "healthy")
                     .font(.fluni(.display))
             }
@@ -177,7 +177,7 @@ struct MeView: View {
     @ViewBuilder private func trailing(_ c: Choice, selected: Bool) -> some View {
         if selected || c == .fine {
             Circle().stroke(Theme.ink, lineWidth: Theme.stroke)
-                .overlay { if selected { Circle().fill(Theme.ink).padding(5) } }
+                .overlay { if selected { Circle().fill(Theme.ink).padding(markSize * 0.25) } }
                 .frame(width: markSize, height: markSize)
                 .accessibilityHidden(true)
         } else {

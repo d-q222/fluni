@@ -165,14 +165,13 @@ struct CloseContactSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Space.l) {
                 VStack(alignment: .leading, spacing: Space.s) {
-                    HStack(alignment: .top, spacing: Space.s) {
-                        Text("You were close to someone who may be sick")
-                            .font(.fluni(.display)).fixedSize(horizontal: false, vertical: true)
-                            .accessibilityAddTraits(.isHeader)
-                        Spacer(minLength: 0)
-                        Image("Tissue").resizable().scaledToFit().frame(width: 64).rotationEffect(.degrees(10))
-                            .offset(x: 4, y: -6).accessibilityHidden(true)
-                    }
+                    Image("Tissue").resizable().scaledToFit().frame(width: 72).rotationEffect(.degrees(10))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(.bottom, -Space.l)
+                        .accessibilityHidden(true)
+                    Text("You were close to someone who may be sick")
+                        .font(.fluni(.display)).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
                     if let first = lines.first { Text(first).font(.fluni(.reading)) }
                 }
                 .foregroundStyle(Theme.ink)

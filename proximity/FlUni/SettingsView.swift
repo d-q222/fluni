@@ -24,8 +24,7 @@ struct SettingsView: View {
             dataSection
             aboutSection
         }
-        // Visual only: the type roles and a calmer rhythm, with no changes to what any row does.
-        .font(.fluni(.reading))
+        // Visual only: larger section titles and a calmer rhythm, with no changes to what any row does.
         .headerProminence(.increased)
         .listSectionSpacing(Space.l)
         .scrollContentBackground(.hidden)
