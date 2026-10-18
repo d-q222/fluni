@@ -65,6 +65,12 @@ struct FlUniApp: App {
             .tint(Theme.ink)
             // The app may be killed in the background: save an exposure that is still going on.
             .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.finishOngoing() } }
+            // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
+            .onChange(of: model.speed) { _, s in
+                #if DEBUG
+                UserDefaults.standard.set(s, forKey: "demoSpeed")
+                #endif
+            }
         }
     }
 
@@ -74,6 +80,10 @@ struct FlUniApp: App {
         started = true
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
         model.sharesLocationWithPeers = false  // privacy promise: precise location never leaves the phone
+        #if DEBUG
+        let saved = UserDefaults.standard.double(forKey: "demoSpeed")
+        if saved > 1 { model.speed = saved }
+        #endif
         model.start()
     }
 }
