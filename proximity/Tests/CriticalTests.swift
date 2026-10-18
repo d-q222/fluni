@@ -495,11 +495,11 @@ final class CriticalExposureTests: XCTestCase {
 }
 
 final class CriticalBeaconWireTests: XCTestCase {
-    // S7: any 16-byte UUID with a mutated magic byte is rejected.
+    // S7: any 16-byte UUID with a mutated magic byte is rejected (except "FLU2", the v2 magic).
     func testWrongMagicRejectedExhaustively() {
         var rng = SplitMix(30)
         for pos in 0..<4 {
-            for v in 0...255 where UInt8(v) != BLEBeacon.magic[pos] {
+            for v in 0...255 where UInt8(v) != BLEBeacon.magic[pos] && !(pos == 3 && UInt8(v) == BLEBeacon.magic2[3]) {
                 var b = BLEBeacon.magic + [1] + rng.bytes(11)
                 b[pos] = UInt8(v)
                 XCTAssertNil(BLEBeacon.decode(CBUUID(data: Data(b))), "S7 magic byte \(pos)=\(v) accepted")
@@ -507,7 +507,7 @@ final class CriticalBeaconWireTests: XCTestCase {
         }
         for i in 0..<2000 {
             var b = rng.bytes(16)
-            if Array(b[0..<4]) == BLEBeacon.magic { b[Int(rng.int(4))] ^= 0x01 }
+            if Array(b[0..<4]) == BLEBeacon.magic || Array(b[0..<4]) == BLEBeacon.magic2 { b[Int(rng.int(4))] ^= 0x01 }
             XCTAssertNil(BLEBeacon.decode(CBUUID(data: Data(b))), "S7 random non-magic uuid \(i) accepted")
         }
     }

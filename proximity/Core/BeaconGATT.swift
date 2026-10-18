@@ -4,19 +4,25 @@ import Foundation
 /// The background-visible half of the beacon (FlUni only). Pure parts, so they are unit-testable.
 ///
 /// iOS moves a backgrounded app's advertised service UUIDs to an "overflow" area that only a scanner
-/// looking for that exact UUID can match. The per-ID payload UUID (FLU1, risk, 11-byte ID) can't be
-/// looked for, so it is invisible in the background. FlUni therefore also advertises one fixed service
-/// UUID and serves the same 16 payload bytes from a read-only GATT characteristic under it.
+/// looking for that exact UUID can match. The per-ID payload UUID (FLU2: status + days, score, 10-byte ID;
+/// see BLEBeacon) can't be looked for, so it is invisible in the background. FlUni therefore also
+/// advertises one fixed service UUID and serves the same 16 payload bytes from a read-only GATT
+/// characteristic under it.
 ///
-/// Privacy is unchanged: a reader gets exactly what the advert carries (the rotating random ID and the
-/// 3-level status), just over a short connection instead of in the advert.
+/// Privacy is unchanged: a reader gets exactly what the advert carries (the rotating random ID, status,
+/// days since onset and score), just over a short connection instead of in the advert.
 enum BeaconGATT {
     /// Fixed FlUni service UUID (random, picked once). Advertised next to the payload UUID.
     static let service = CBUUID(string: "142C3940-E33C-4D62-BE25-1C4A883EE402")
     /// Read-only characteristic holding the 16 payload bytes.
     static let characteristic = CBUUID(string: "2F02CED2-60A0-41AC-A335-07D1603177E4")
 
-    /// The characteristic value: the same 16 bytes as the advertised payload UUID.
+    /// The characteristic value: the same 16 bytes as the advertised payload UUID (v2).
+    static func value(id: Data, risk: Risk, score: Double, days: Int?) -> Data? {  // [sharerisk]
+        BLEBeacon.payload(id: id, risk: risk, score: score, days: days).map(bytes)
+    }
+
+    /// A v1 value, as older builds serve.
     static func value(id: Data, risk: Risk) -> Data? {
         BLEBeacon.payload(id: id, risk: risk).map(bytes)
     }
@@ -29,7 +35,7 @@ enum BeaconGATT {
 
     /// Decodes a characteristic value. Anything that isn't exactly 16 bytes is rejected before CBUUID
     /// sees it (CBUUID(data:) throws an Objective-C exception on other lengths).
-    static func decode(_ value: Data) -> (id: String, risk: Risk)? {
+    static func decode(_ value: Data) -> BLEBeacon.Hit? {  // [sharerisk] v1 and v2
         guard value.count == 16 else { return nil }
         return BLEBeacon.decode(CBUUID(data: Data(value)))
     }
