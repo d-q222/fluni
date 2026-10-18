@@ -13,9 +13,9 @@
 //   - duration, distance, indoors/outdoors, room type: D, the near-field dose per quantum of a logged pair,
 //     f * B * h / Q(d): the exhaled plume, diluted Q(d) = nearQ1 * d (d < 1 m) or nearQ1 * d^2 (d >= 1 m) m^3/h
 //     (two-zone near field, see nearQ1), 5x more outdoors; f = activity in that room type (data/room-activity.js)
-//   - room size, ventilation: the room's air, not a pair term. Each room is a well-mixed box
-//     dC/dt = sum_j shed_j / V - loss * C, loss = ACH + deposition + virus decay, filled by everyone the contacts
-//     put in the room this hour (one 5-min row with anyone is enough) and carried over between hours, so
+//   - shared room air, ventilation: the room's air, not a pair term. Each room is a well-mixed box
+//     dC/dt = sum_j shed_j / V - loss * C, V = occupants x perPersonM3 (no room size: a phone can't know it),
+//     loss = ACH + deposition + virus decay, filled by everyone the contacts put in the room this hour (one 5-min row with anyone is enough) and carried over between hours, so
 //     people more than 5 m apart in a big room (capacity > 150: the sim logs no such pair) and someone who
 //     arrives after a sick person left still share air. Occupant i breathes q * f * B * h_i * C.
 //   - outdoor humidity: that day's weather (config.json) -> indoor RH -> virus decay, part of the room's loss
@@ -47,8 +47,8 @@ export const MF_DEFAULTS = {
   lrOther: 4,             // ... of a report by someone else
   negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
                           //   the online pass can rerun this far back)
-  lambdaScale: 0.836,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
-                          //   (0.135 with legacyDose)
+  lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
+                          //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
   // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
   // air, so outdoor passers-by and crowded lounges outweighed roommates (the sim's most common infections).
   // A two-zone model (Nicas, Am. Ind. Hyg. Assoc. J. 57:542, 1996) treats the air within d of the source as a
@@ -60,6 +60,14 @@ export const MF_DEFAULTS = {
   // 600 beat 68 / 200 (AUC, dose-only AUC); see model/README.md.
   nearQ1: 600,            // m^3/h at 1 m
   nearPuffExp: 2,         // Q ~ d^this beyond 1 m
+  // Room size. A phone knows at best the building (GPS), never the room, and map/rooms.csv volumes are the sim's
+  // own procedural sizes (sim/campussim/campus.py: capacity x m^2/person by room type, footprint fractions), which
+  // its aerosol route then uses, so 'map' scores well on sim runs by construction only. 'occupancy' (default) sizes
+  // each room's air by the people the contacts put in it that hour: V = max(1, occupants) x perPersonM3, so the
+  // room term is the occupants' mean shed / (perPersonM3 x loss), with no room or building size. 'fixed': the
+  // default room (defaultRoomM2 x ceilingM) everywhere; 'none': no room term. See model/README.md "Room size".
+  roomVolume: 'occupancy',
+  perPersonM3: 40,        // m^3 of room air per occupant (~13 m^2 floor at 3 m); 40-100 scored the same on the sim
   roomAir: true,          // room term from each room's occupancy (false: per logged pair, as infer.js)
   legacyDose: false,      // true: infer.js doseModel per pair (plume 1/(30 d^2) + room term), the old dose
   activity: true,         // f by room type (data/room-activity.js; roomActivity: {type: f} overrides); false: 1
@@ -106,14 +114,16 @@ export function meanFieldRisk(input, params = {}) {
     return doseByKey.get(key);
   };
 
-  // Rooms: volume, ventilation and activity from map/rooms.csv; an id it lacks gets infer.js's default room.
+  // Rooms: ventilation and activity from map/rooms.csv (volume only with roomVolume 'map'); an id it lacks gets
+  // infer.js's default room.
   const roomRows = input.rooms || null, roomIx = new Map(), rmV = [], rmAch = [], rmF = [];
+  const defV = R.defaultRoomM2 * R.ceilingM;
   const roomOf = (id) => {
     let r = roomIx.get(id);
     if (r === undefined) {
       const s = roomRows && roomRows.get(id), v = Number(s?.volume_m3), a = Number(s?.ventilation_ach);
       r = rmV.length; roomIx.set(id, r);
-      rmV.push(v > 0 ? v : R.defaultRoomM2 * R.ceilingM); rmAch.push(a > 0 ? a : R.defaultAch); rmF.push(P.activity ? (P.roomActivity?.[s?.room_type] ?? activityOf(s?.room_type)) : 1);
+      rmV.push(P.roomVolume === 'map' && v > 0 ? v : defV); rmAch.push(a > 0 ? a : R.defaultAch); rmF.push(P.activity ? (P.roomActivity?.[s?.room_type] ?? activityOf(s?.room_type)) : 1);
     }
     return r;
   };
@@ -134,7 +144,7 @@ export function meanFieldRisk(input, params = {}) {
   const stepsPerDay = 1440 / stepMin, stepH = stepMin / 60;
   const sorted = contacts.every((c, k) => k === 0 || +c.t >= +contacts[k - 1].t);
   const rows = sorted ? contacts : contacts.slice().sort((x, y) => x.t - y.t);
-  const legacy = P.legacyDose, roomAir = P.roomAir && !legacy;
+  const legacy = P.legacyDose, roomAir = P.roomAir && !legacy && P.roomVolume !== 'none';
   for (const c of rows) {
     const t = +c.t, n = Math.floor(t / W);
     if (n >= nSteps) continue;
@@ -155,7 +165,7 @@ export function meanFieldRisk(input, params = {}) {
       const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, Number(c.distance_tier) || 4)) - 1]);
       const f = r >= 0 ? rmF[r] : 1;
       unit = (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
-      if (!shared && r >= 0) unit += (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
+      if (!shared && r >= 0 && P.roomVolume !== 'none') unit += (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
     }
     if (!(unit > 0)) continue;
     if (a > b) [a, b] = [b, a];
@@ -276,8 +286,10 @@ export function meanFieldRisk(input, params = {}) {
       for (let p = 0, n = o ? o.r.length : 0; p < n;) {
         const r = o.r[p];
         let e = p, E = 0;
-        for (; e < n && o.r[e] === r; e++) E += shedOf(st, o.ag[e], s) * o.h[e];
-        const loss = rmAch[r] + R.deposition + dec, VL = rmV[r] * loss, a = Math.exp(-loss * dt), avgf = (1 - a) / (loss * dt);
+        let hs = 0;
+        for (; e < n && o.r[e] === r; e++) { E += shedOf(st, o.ag[e], s) * o.h[e]; hs += o.h[e]; }
+        const V = P.roomVolume === 'occupancy' ? Math.max(1, hs / dt) * P.perPersonM3 : rmV[r];
+        const loss = rmAch[r] + R.deposition + dec, VL = V * loss, a = Math.exp(-loss * dt), avgf = (1 - a) / (loss * dt);
         const css = E / dt / VL, cavg = css + (C[r] - css) * avgf, g = q * rmF[r] * R.breathingRate;
         for (let k = p; k < e; k++) {
           const own = (shedOf(st, o.ag[k], s) * o.h[k]) / dt / VL;

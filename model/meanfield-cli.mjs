@@ -1,7 +1,7 @@
 // Run the mean-field model (meanfield.js, Baker et al. PNAS 2021) on a sim run folder, score it against
 // the sim's truth, and write what the heat map reads for big runs.
 // Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate] [--set key=value ...]
-//   --set overrides an MF_DEFAULTS / infer.js DEFAULTS parameter (numbers and true/false), e.g. --set legacyDose=true
+//   --set overrides an MF_DEFAULTS / infer.js DEFAULTS parameter (numbers, true/false, strings), e.g. --set roomVolume=map
 //   writes model/out/<run>/meanfield.csv: agent_id,t_iso,p_sick,shed change points (P as in
 //   docs/p-sick-format.md, plus shed = expected infectiousness, sum over ages of P(age) * stage(age)).
 //   --calibrate fits lambdaScale: started from the sim's true seeds, with no reports, the model's expected
@@ -17,7 +17,7 @@ const args = process.argv.slice(2), dir = args.find((a) => !a.startsWith('--') &
 if (!dir) { console.error('usage: node model/meanfield-cli.mjs <run_dir> [--scale x] [--calibrate]'); process.exit(1); }
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
 const over = {};
-args.forEach((a, i) => { if (a === '--set') { const [k, v] = args[i + 1].split('='); over[k] = v === 'true' ? true : v === 'false' ? false : Number(v); } });
+args.forEach((a, i) => { if (a === '--set') { const [k, v] = args[i + 1].split('='); over[k] = v === 'true' ? true : v === 'false' ? false : isNaN(Number(v)) ? v : Number(v); } });
 if (Object.keys(over).length) console.log('params', over);
 const run = basename(dir.replace(/\/$/, ''));
 const out = join(dirname(fileURLToPath(import.meta.url)), 'out', run, 'meanfield.csv');
