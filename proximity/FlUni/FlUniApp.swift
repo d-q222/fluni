@@ -6,7 +6,10 @@ import UserNotifications
 struct FlUniApp: App {
     @UIApplicationDelegateAdaptor private var delegate: AppDelegate
     private static let sharedModel = ProximityModel()
-    @StateObject private var model = FlUniApp.sharedModel
+    /// Deliberately not observed here: the scene body holds the TabView, and observing the model redrew it (and
+    /// rebuilt UIKit's tab bar) on every model change, i.e. every 1 s tick near someone sick. The views that show
+    /// model state observe it themselves; ModelReactions below handles the app-level reactions.
+    private var model: ProximityModel { Self.sharedModel }
     @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var started = false
     @StateObject private var router = AppRouter.shared
@@ -14,7 +17,9 @@ struct FlUniApp: App {
     @Environment(\.scenePhase) private var phase
     /// Lisa's opening animation, played each time the student opens FlUni (Core/IntroGate.swift); off for UI
     /// tests and unit-test hosts so they never wait on it.
-    @State private var showIntro = false
+    @State private var showIntro: Bool
+    /// The intro is showing its still poster and waiting to play (see LaunchIntro.held).
+    @State private var introHeld = true
     @State private var introGate = IntroGate()
     private let introAllowed: Bool
 
@@ -37,20 +42,35 @@ struct FlUniApp: App {
                                                    object: nil, queue: nil) { _ in
                 // Posted on the main thread (queue nil runs it right there).
                 MainActor.assumeIsolated {
+                    // A launch someone will see: decode the intro's poster off the main thread before the first frame.
+                    if UIApplication.shared.applicationState != .background { IntroArt.shared.preparePoster() }
                     if UserDefaults.standard.bool(forKey: "hasOnboarded") { FlUniApp.startDetection() }
                 }
             }
         }
         introAllowed = !skipRadios && !LaunchMode.isUnitTestHost
+        _showIntro = State(initialValue: introAllowed)  // the poster covers the very first frame, held until active
     }
     private let skipRadios: Bool  // test-only: UI tests never broadcast
     @State private var introRun = 0
 
     private func introPhase(_ p: ScenePhase) {
         let phase: IntroGate.Phase = p == .active ? .active : p == .background ? .background : .inactive
+        if phase == .background { coverWithPoster() }
+        if phase == .active { IntroArt.shared.uncover() }  // SwiftUI's held poster is on screen beneath it by now
         guard introGate.phase(phase), introAllowed else { return }
+        if !(showIntro && introHeld) { introRun += 1 }  // a held poster plays as it is; otherwise start one
+        showIntro = true
+        introHeld = false
+    }
+
+    /// Covers the app with the intro's still poster as it leaves, so the app-switcher snapshot and the first frame of
+    /// the next open are the poster rather than the app. It only plays once IntroGate says so.
+    private func coverWithPoster() {
+        guard introAllowed, !(showIntro && introHeld) else { return }
         introRun += 1
         showIntro = true
+        introHeld = true
     }
 
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
@@ -73,15 +93,17 @@ struct FlUniApp: App {
                     .overlay { TissueTabBar(selection: $router.tab) }
                     .tint(Theme.ink)
                     .onAppear {
+                        Signposts.poi.emitEvent("tabs on screen")
                         startOnce(); router.becomeReady()
                         #if DEBUG
                         model.startDemoPeerFromLaunchArguments()  // -demoPeer contagious@0.5: watch p climb live
+                        PerfTour.startIfAsked(router)
+                        // -keepAwake YES: the screen doesn't auto-lock while FlUni is open (Instruments needs it unlocked).
+                        if UserDefaults.standard.bool(forKey: "keepAwake") { UIApplication.shared.isIdleTimerDisabled = true }
                         #endif
                     }
                     // At the tab level so the close-contact moment shows whichever tab is open.
-                    .onChange(of: model.exposure.level) { old, new in
-                        if new == .closeContact && old < .closeContact { router.showCloseContact() }
-                    }
+                    .background { ModelReactions(model: model, onCloseContact: { router.showCloseContact() }) }
                     .fullScreenCover(isPresented: Binding(get: { router.sheet == .closeContact }, set: { if !$0 { router.sheet = nil } })) {
                         CloseContactSheet { router.sheet = nil }
                     }
@@ -92,8 +114,14 @@ struct FlUniApp: App {
             }
             // Lisa's opening animation over whatever the first screen is (design pass).
             // A new id each time restarts it from the poster, however quickly the app came up.
-            .overlay { if showIntro { LaunchIntro { showIntro = false }.id(introRun) } }
+            .overlay { if showIntro { LaunchIntro(held: introHeld) { showIntro = false; Signposts.poi.emitEvent("intro done") }.id(introRun) } }
             .onAppear { introPhase(phase) }
+            // SwiftUI draws the held poster only after iOS has taken the app-switcher snapshot, so a plain UIKit copy of
+            // the poster covers the window at once (IntroArt.cover) and comes off when the app is active again.
+            .onReceive(NotificationCenter.default.publisher(for: UIScene.didEnterBackgroundNotification)) { n in
+                coverWithPoster()
+                if introAllowed, let scene = n.object as? UIWindowScene { IntroArt.shared.cover(scene) }
+            }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
@@ -102,12 +130,6 @@ struct FlUniApp: App {
             .onChange(of: phase) { _, p in
                 if p == .background { model.exposureHistory.saveOngoing() }
                 introPhase(p)
-            }
-            // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
-            .onChange(of: model.speed) { _, s in
-                #if DEBUG
-                UserDefaults.standard.set(s, forKey: "demoSpeed")
-                #endif
             }
         }
     }
@@ -136,3 +158,54 @@ struct FlUniApp: App {
         model.start()
     }
 }
+
+/// The app-level reaction to the model, in a view of its own so only this empty view redraws on a model change.
+private struct ModelReactions: View {
+    @ObservedObject var model: ProximityModel
+    let onCloseContact: () -> Void
+
+    var body: some View {
+        Color.clear
+            .onChange(of: model.exposure.level) { old, new in
+                if new == .closeContact && old < .closeContact { onCloseContact() }
+            }
+            // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
+            .onChange(of: model.speed) { _, s in
+                #if DEBUG
+                UserDefaults.standard.set(s, forKey: "demoSpeed")
+                #endif
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+#if DEBUG
+/// Debug only: `-perfTour YES` walks the app the way a person would (Map, Me, the report sheet open and closed,
+/// back to Today) on a loop, so Instruments can record tab switches and sheets on a phone with nobody tapping.
+/// Each step is a Points of Interest interval named after it. Pair it with `-skipOnboarding YES` (a test launch
+/// keeps nothing) so the owner's data is never read or written.
+@MainActor
+enum PerfTour {
+    static func startIfAsked(_ router: AppRouter) {
+        guard UserDefaults.standard.bool(forKey: "perfTour") else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))  // after the intro
+            let steps: [(String, () -> Void)] = [
+                ("tab map", { router.tab = .map }), ("tab me", { router.tab = .me }),
+                ("sheet open", { router.sheet = .reportSymptoms }), ("sheet close", { router.sheet = nil }),
+                ("tab today", { router.tab = .today }),
+            ]
+            for _ in 0 ..< 5 {
+                for (name, step) in steps {
+                    let s = Signposts.poi.beginInterval("tour", "\(name)")
+                    step()
+                    try? await Task.sleep(for: .seconds(1.5))
+                    Signposts.poi.endInterval("tour", s)
+                }
+            }
+            Signposts.poi.emitEvent("tour done")
+        }
+    }
+}
+#endif

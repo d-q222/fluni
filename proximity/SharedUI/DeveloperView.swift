@@ -31,7 +31,7 @@ struct DeveloperView: View {
             .navigationTitle("Developer")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { if showsDone { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } } }
-            .animation(.default, value: model.exposure.level)
+            .animation(Motion.gentle, value: model.exposure.level)  // follows Reduce Motion
         }
     }
 

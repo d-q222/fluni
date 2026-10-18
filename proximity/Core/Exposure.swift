@@ -140,6 +140,12 @@ struct ExposureTracker: Equatable {
     }
 
     mutating func reset() { self = ExposureTracker() }
+
+    /// Same on screen: equal in everything a view can read. Unlike `==` it ignores the clock and the minute
+    /// buckets, which move on every tick even with nobody around.
+    func showsSame(as o: ExposureTracker) -> Bool {
+        minutes == o.minutes && dose == o.dose && probability == o.probability && level == o.level && sources == o.sources
+    }
 }
 
 enum Advice {

@@ -32,7 +32,9 @@ final class ProximityModel: ObservableObject {
     @Published var speed = 1.0  // real time; demo/test launches pass -speed
     @Published var enabled: Set<Source> = Set(Source.allCases)
     @Published private(set) var peers: [PeerState] = []
-    @Published private(set) var exposure = ExposureTracker() {
+    /// Not @Published: the tracker's clock moves on every 1 s tick, so publishing every change redrew every view
+    /// that watches the model once a second with nobody around. `setExposure` announces only what a view can see.
+    private(set) var exposure = ExposureTracker() {
         didSet { if liveRisk != exposure.probability { liveRisk = exposure.probability } }
     }
     /// This phone's risk estimate p (RiskEstimate, Rio's formula), recomputed on every 1 s tick while a
@@ -62,7 +64,8 @@ final class ProximityModel: ObservableObject {
     private var uwbDropAt: [String: Date] = [:]
     private var myFix: CLLocation?
     /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
-    @Published private(set) var lastFix: CLLocation?
+    /// @Unobserved: WalkInMonitor subscribes to `$lastFix`; no view reads it, so a fix (~1 Hz) redraws nothing.
+    @Unobserved private(set) var lastFix: CLLocation?
     private var lastTick = Date()
     private var lastRotation = Date()
     private var lastSummary = Date.distantPast
@@ -224,7 +227,7 @@ final class ProximityModel: ObservableObject {
     }
 
     func resetExposure() {
-        exposure.reset()
+        setExposure(ExposureTracker())
         accrual.reset()
         notifiedLevel = .none
     }
@@ -468,6 +471,8 @@ final class ProximityModel: ObservableObject {
         #if DEBUG
         if demoTimer != nil { return }  // -demoPeer: the pretend peer is the only exposure source
         #endif
+        let signpost = Signposts.poi.beginInterval("tick")
+        defer { Signposts.poi.endInterval("tick", signpost) }
         let now = Date()
         if let p = pauseState {
             lastTick = now  // so the first tick after resume doesn't count the paused time
@@ -511,7 +516,7 @@ final class ProximityModel: ObservableObject {
             }
         }
         if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
-        if e != exposure { exposure = e }  // unchanged ticks don't republish; any change in p does
+        setExposure(e)  // unchanged ticks don't republish; any change in p does
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
         notifiedLevel = next.notified
@@ -523,6 +528,13 @@ final class ProximityModel: ObservableObject {
 
         let sorted = byID.values.sorted { $0.id < $1.id }
         if sorted != peers { peers = sorted }
+    }
+
+    /// Stores the tracker; tells observers only when something they can show changed (any change in p does).
+    private func setExposure(_ e: ExposureTracker) {
+        guard e != exposure else { return }
+        if !e.showsSame(as: exposure) { objectWillChange.send() }
+        exposure = e
     }
 
     private func logSummary() {
@@ -564,13 +576,15 @@ final class ProximityModel: ObservableObject {
         var last = Date()
         let t = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, !self.isPaused else { return }
+            let signpost = Signposts.poi.beginInterval("tick")
+            defer { Signposts.poi.endInterval("tick", signpost) }
             let now = Date()
             let wall = min(max(now.timeIntervalSince(last), 0), ExposureTracker.window / self.speed)
             last = now
             var e = self.exposure
             ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
                              accrues: true, accrual: &self.demoAccrual, exposure: &e)
-            if e != self.exposure { self.exposure = e }
+            self.setExposure(e)
         }
         demoTimer = t
     }
