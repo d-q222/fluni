@@ -76,9 +76,11 @@ kept because the heat map loads it by default (`heatmap/app.js` DEFAULT_RUN).
 `runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
 cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 
-`runs/influenza_none_n7000_d2_s42_5423d1a4/` is a full-size run: 7,000 agents, 2 days, seed 42,
-default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
-are committed in parts; rebuild them after cloning (see "Large runs in git").
+The full-size 7,000-agent, 2-day run (`influenza_none_n7000_d2_s42_5423d1a4`) is archived: it was made
+before the `report_other` rate fix, humidity and calibration, so 303 of its 303 `report_other`s are
+false. It's kept, with all its parts, at the git tag `archive/sim-n7000-5423d1a4`:
+`git checkout archive/sim-n7000-5423d1a4 -- sim/runs/influenza_none_n7000_d2_s42_5423d1a4`, then
+`run_parts.py join` it (see "Large runs in git").
 
 Two 1,000-agent, 14-day runs (seed 42, `output.by_agent=false`) have spread boosted above the
 calibrated default so more of campus gets infected:
@@ -132,7 +134,7 @@ invented catalog and time grid.
 header, and `parts/manifest.json` records the sha256 of every original and part. After cloning:
 
 ```bash
-.venv/bin/python scripts/run_parts.py join runs/influenza_none_n7000_d2_s42_5423d1a4   # ~10 s
+.venv/bin/python scripts/run_parts.py join runs/<run>   # ~10 s for a 7,000-agent, 2-day run
 ```
 
 This rebuilds `contacts.csv.gz` and `timeline.csv.gz` byte-for-byte (checked against the manifest)

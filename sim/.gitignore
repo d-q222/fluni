@@ -4,12 +4,6 @@ runs/*
 !runs/influenza_none_n10_d14_s2_f1f772f6/
 !runs/influenza_none_n10_d14_s2_bc5cae7a/
 !runs/influenza_none_n500_d2_s42_aea9db72/
-!runs/influenza_none_n7000_d2_s42_5423d1a4/
-# Full-size run: big files are committed as parts/ (scripts/run_parts.py join rebuilds them).
-runs/influenza_none_n7000_d2_s42_5423d1a4/contacts.csv.gz
-runs/influenza_none_n7000_d2_s42_5423d1a4/timeline.csv.gz
-runs/influenza_none_n7000_d2_s42_5423d1a4/*.parquet
-runs/influenza_none_n7000_d2_s42_5423d1a4/timeline_by_agent/
 viewer.html
 data/osm/ways.json
 # 1,000-agent, 14-day runs with boosted spread (see README "Sample run"); big files committed as parts/.
