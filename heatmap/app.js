@@ -887,10 +887,11 @@ async function main() {
   function busiestMoment() {
     const sample = [...tracks.values()].slice(0, 500), DAY = 24 * 3600000;
     // Risk above the baseline (what the heat shows) at each day's noon; open on the first day with at least
-    // half the highest. Plain Σ P counted everyone's 2% prior, so a quiet first day passed and opened blank.
+    // a quarter of the highest: heat on screen, and in a growing outbreak days left to play (half opened the
+    // 4-day run on its last day). Plain Σ P counted everyone's 2% prior, so a quiet first day opened blank.
     const totals = [];
     for (let d = t0; d < t1; d += DAY) totals.push(sample.reduce((sum, tr) => sum + Math.max(0, (stateNow(tr, d + DAY / 2)?.p || 0) - MODEL.prior), 0));
-    const day = Math.max(0, totals.findIndex((x) => x >= 0.5 * Math.max(...totals)));
+    const day = Math.max(0, totals.findIndex((x) => x >= 0.25 * Math.max(...totals)));
     const dayStart = t0 + day * DAY, dayEnd = Math.min(t1, dayStart + DAY);
     let best = Math.max(dayStart, firstMove(tracks, dayStart) - 10 * 60000), most = 0;
     for (let t = dayStart; t < dayEnd; t += 5 * 60000) {
