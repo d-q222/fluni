@@ -140,7 +140,8 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(el("report.fine").isSelected)
         XCTAssertTrue(el("athome.card").waitForExistence(timeout: 5), "At home card appears")
         XCTAssertTrue(app.staticTexts["What to do"].exists)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 1 of'")).firstMatch.exists)
+        // Day 0 is the day symptoms started (the card says so); reported today, so Day 0.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 0 of'")).firstMatch.exists)
     }
 
     func testPositiveNeedsConfirmationAndCancelKeepsOldStatus() {
