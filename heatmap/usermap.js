@@ -94,7 +94,7 @@ async function main() {
   // Bounded to the campus extent + 250 m. Beyond that the user never goes, but a few roads, the Shopping
   // Center and downtown are drawn faintly in the margin (data/context.geojson, from OSM).
   const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
-    preferCanvas: true, maxBoundsViscosity: 1.0, worldCopyJump: false, inertia: true });
+    preferCanvas: true, worldCopyJump: false, inertia: true });
   const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
   const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440), PHALO = pane('halo', 425);
   map.getPane('halo').style.filter = 'blur(2.5px)';
@@ -142,7 +142,7 @@ async function main() {
   const fine = ((labels && labels.fine) || []).map(([t, lat, lon]) => ({ t, lat, lon, p: 4, c: 'f' }));
   const rectOf = (el) => el.getBoundingClientRect();
   function placeLabels() {
-    const mapBox = rectOf($('map')), z = map.getZoom(), z0 = map.getMinZoom(), mb = map.options.maxBounds;
+    const mapBox = rectOf($('map')), z = map.getZoom(), z0 = map.getMinZoom();
     const avoid = [rectOf(document.querySelector('.legend')), rectOf(document.querySelector('.chip')),
       { left: mapBox.left, right: mapBox.right, top: mapBox.bottom - map.getSize().y * 0.09, bottom: mapBox.bottom }]; // FlUni's sheet
     if (z >= 16.5) {
@@ -158,7 +158,7 @@ async function main() {
       const pt = map.latLngToContainerPoint([l.lat, l.lon]);
       const r = { l: mapBox.left + pt.x - l.w / 2, t: mapBox.top + pt.y - l.h / 2, r: mapBox.left + pt.x + l.w / 2, b: mapBox.top + pt.y + l.h / 2 };
       const hit = (o) => r.l < o.right && r.r > o.left && r.t < o.bottom && r.b > o.top;
-      const ok = (l.p === 4 ? z >= 16.5 : z >= z0 + (l.p - 1) * 0.75) && (!mb || mb.contains([l.lat, l.lon]))
+      const ok = (l.p === 4 ? z >= 16.5 : z >= z0 + (l.p - 1) * 0.75)
         && r.l >= mapBox.left + 4 && r.r <= mapBox.right - 4 && r.t >= mapBox.top && r.b <= mapBox.bottom
         && !avoid.some(hit) && !placed.some((o) => hit({ left: o.l, right: o.r, top: o.t, bottom: o.b }));
       el.style.visibility = ok ? 'visible' : 'hidden';
@@ -166,22 +166,10 @@ async function main() {
     }
   }
 
-  // the bounded view: on load the whole campus fits between the top chip and the legend; that zoom is
-  // also the furthest out the user can go, and the pan limit is campus + 250 m (grown only as much as the
-  // screen needs to stay filled, never leaving a void)
+  // the view: on load the whole campus fits between the top chip and the legend strip, that zoom is also
+  // the furthest out, and panning is held to campus + 10% by Leaflet's default (soft, rubber-band) limit
   const vig = L.layerGroup().addTo(map); // (filled below)
   const pad = (b, dLat, dLon) => L.latLngBounds([b.getSouth() - dLat, b.getWest() - dLon], [b.getNorth() + dLat, b.getEast() + dLon]);
-  const padded = pad(campus, 0.00225, 0.0028);
-  let shiftY = 0;
-  // Pan limit at the current zoom: campus + 250 m, grown only where the screen itself is bigger (zoomed all
-  // the way out on a tall phone), so zoomed in the user can never reach the margin.
-  function limits() {
-    const z = map.getZoom(), size = map.getSize();
-    const c = map.project(campus.getCenter(), z).add([0, shiftY]);
-    const box = L.bounds(map.project(padded.getSouthWest(), z), map.project(padded.getNorthEast(), z))
-      .extend(c.subtract(size.divideBy(2).add([1, 1]))).extend(c.add(size.divideBy(2).add([1, 1])));
-    map.setMaxBounds(L.latLngBounds(map.unproject(box.min, z), map.unproject(box.max, z)));
-  }
   // Everything outside the campus extent fades toward paper: six translucent masks, each with a hole that
   // starts a little further out, so the margin gets paler the further it is from campus.
   const outer = pad(campus, 0.05, 0.06);
@@ -193,16 +181,14 @@ async function main() {
   function frame() {
     const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.09); // the slim legend strip + tab bar
     const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));
-    shiftY = (bottom - top) / 2;
     map.setMinZoom(z);
-    map.setMaxBounds(null);
-    map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, shiftY]), z), z, { animate: false });
-    limits();
+    map.setMaxBounds(campus.pad(0.1));
+    map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, (bottom - top) / 2]), z), z, { animate: false });
     placeLabels();
   }
   frame();
   if (P.get('debug') !== null) window.__map = map; // for the bounds test
-  map.on('zoomend', () => { if (pathLayer) pathLayer.setStyle(pathStyle()); limits(); map.panInsideBounds(map.options.maxBounds, { animate: false }); });
+  map.on('zoomend', () => { if (pathLayer) pathLayer.setStyle(pathStyle()); });
   map.on('moveend zoomend', placeLabels);
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { map.invalidateSize(); frame(); }, 150); });
 

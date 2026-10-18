@@ -220,9 +220,9 @@ The folder (about 2.2 MB) holds `index.html` (= `usermap.html`), `usermap.js`, `
 `paths.geojson` (the run's footpaths, faint), `labels.json` (anchor places) and `context.geojson` (OSM roads,
 rail, parks, water, Shopping Center, hospital, downtown edge; regenerate with `node heatmap/tools/fetch_context.mjs`).
 The map is vector only: the illustrated `campus_trace.webp` is no longer bundled (the vectors read better and save
-0.37 MB). It is bounded to the campus + 250 m: the first view fits the whole campus between the top chip and
-the legend (20% of the height kept clear at the bottom), that is also the furthest zoom out, and the margin
-beyond is drawn (faint, with a soft vignette) but unreachable. `?debug` exposes `window.__map` for tests. Load `index.html?clock=live` from a custom scheme such as
+0.37 MB). The first view fits the whole campus between the top chip and the slim legend strip (about 9% of the
+height kept clear at the bottom); that is also the furthest zoom out. Panning is held to the campus + 10% by
+Leaflet's default soft limit (it rubber-bands back). The margin beyond campus is drawn faint, fading toward paper. `?debug` exposes `window.__map` for tests. Load `index.html?clock=live` from a custom scheme such as
 `fluni://app/index.html?clock=live`; relative URLs only, no network. Other flags: `?at=<minutes from run
 start>` (fixed moment, for screenshots), `?horizon=60` (start on "In 1 hour"). Which moment "live" shows is
 defined in `docs/building-heat-format.md`.
