@@ -460,7 +460,7 @@ function dotColor(a, mode) {
   return riskColor(Math.min(1, a.p));
 }
 
-function advice(p) {
+function advice(p) { // FlUni RiskEstimate.summary
   if (riskTier(p) === 'high') return 'High. Consider getting tested at Vaden and staying home.';
   if (riskTier(p) === 'elevated') return 'Elevated. Wear a mask in crowded rooms and watch for symptoms.';
   return 'Low. No action needed.';
@@ -475,6 +475,33 @@ function formatTime(ms, numeric) {
 }
 
 const pct = (p) => `${Math.round(p * 100)}%`;
+// FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
+const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
+// The phone's own estimate from its weighted close-contact minutes (FlUni RiskEstimate: beta .015, xMax .3, prior .02).
+const phoneEstimate = (dose) => 1 - 0.98 * (1 - Math.min(1 - Math.exp(-0.015 * Math.max(0, dose)), 0.3));
+const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+// FlUni's Advice strings (proximity/Core/Exposure.swift).
+const ADVICE = {
+  nearby: { title: 'Someone within 6 ft may be sick', body: ['Put 6 ft or more between you, or step outside.', 'Consider wearing a mask while you\'re here.'] },
+  close: { title: 'You were close to someone who may be sick', body: ["You've spent about 15 minutes within 6 ft of someone who may be sick.", 'Leave the room now, or move well away and put on a mask.', 'Wash your hands; avoid touching your face.', 'Watch for fever, cough or sore throat over the next 1–4 days.', 'If symptoms start, get tested and report it in FlUni.'] },
+};
+const STATUS = {
+  none: ['All clear', 'Nobody nearby has reported symptoms or a positive test.'],
+  nearby: ['Someone nearby may be sick', 'A few things that help right now.'],
+  close: ['Close contact', 'You spent about 15 minutes near someone who may be sick.'],
+};
+const ICON = {
+  info: '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 11v6" stroke="#faf4e8" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.4" r="1.4" fill="#faf4e8"/>',
+  alert: '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 6.5v6.5" stroke="#faf4e8" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.4" fill="#faf4e8"/>',
+  building: '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 17V8l5-1.500v10M13 10l3 1v6M6.500 17h11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
+  walk: '<circle cx="13" cy="4.500" r="1.800" fill="currentColor"/><path d="M10 21l2-6-2-2 1-5 3 2 2 2M9 11l-2 3M12 15l3 2.500" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/>',
+  arrow: '<path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevron: '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"/>',
+  fn: '<path d="M15 4c-3-1-4 1-4.500 4L9 18c-.5 2.500-1.500 3-4 2M6 11h9M13 14l5 6M18 14l-5 6" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/>',
+  people: '<circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.700"/><circle cx="16.500" cy="9" r="2.500" fill="none" stroke="currentColor" stroke-width="1.700"/><path d="M2.500 19c.5-4 3-5.500 5.500-5.500s5 1.500 5.500 5.500M15 14c3 0 5 1.500 6 5" fill="none" stroke="currentColor" stroke-width="1.700" stroke-linecap="round"/>',
+  info2: '<circle cx="12" cy="12" r="9.500" fill="none" stroke="currentColor" stroke-width="1.700"/><path d="M12 11v6" stroke="currentColor" stroke-width="1.900" stroke-linecap="round"/><circle cx="12" cy="7.500" r="1.200" fill="currentColor"/>',
+};
+const ico = (name, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
 const mPerDegLon = (lat) => 111320 * Math.cos((lat * Math.PI) / 180);
 
 // ---------- app ----------
@@ -682,7 +709,7 @@ async function main() {
   // Otherwise open on the first day's busiest walking moment (a class change), not a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
   let now = at ? Math.min(t1, t0 + at * 60000) : busiestMoment(), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true, heatInterval = 0;
-  let phoneMap = null, phoneBuildings = null, phoneYou = null, airflowTruth = false;
+  let phoneMap = null, phoneBuildings = null, phoneTab = new URLSearchParams(location.search).get('tab') || 'today', airflowTruth = false;
 
   function busiestMoment() {
     const sample = [...tracks.values()].slice(0, 500), DAY = 24 * 3600000;
@@ -754,28 +781,103 @@ async function main() {
     return total;
   }
 
-  // What the phone tells this person right now. Proximity uses nearby phones (an immediate heads-up,
-  // then a close-contact alert at 15 weighted minutes); the walk-in warning uses room totals only.
-  function phoneAlerts(me) {
-    const msgs = [];
-    if (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) {
-      msgs.push('The person next to you is sick. (Demo: uses the simulation\'s true status.)');
-    } else if (someoneNear(me, NEARBY_M, (a) => a.p >= RISKY)) {
-      msgs.push('Heads-up: someone within 6 ft may be sick.');
-    }
+  // What the phone tells this person right now, as FlUni's Today computes it. Proximity uses nearby phones
+  // (a heads-up, then a close-contact alert at 15 weighted minutes); the walk-in warning uses building
+  // totals only (the building's high flag: heat = sqrt(expected / colour max) >= 0.5).
+  function phoneState(me) {
     const live = model ? exposureMinutes(me.id, now, EXPOSURE_WINDOW_MS, false) : 0;
     const later = model ? exposureMinutes(me.id, now, NOTICE_WINDOW_MS, true) : 0;
-    if (live >= CLOSE_CONTACT_MIN) {
-      msgs.push(`Close contact: about ${Math.round(live)} min within 6 ft of someone who may be sick in the last 24 h. Wear a mask and consider a test at Vaden.`);
-    } else if (later >= CLOSE_CONTACT_MIN) {
-      msgs.push(`Exposure notice: in the last 3 days you spent about ${Math.round(later)} min within 6 ft of someone who has since reported being sick. Watch for symptoms; a test at Vaden is a good idea.`);
+    const near = (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) || someoneNear(me, NEARBY_M, (a) => a.p >= RISKY);
+    const level = live >= CLOSE_CONTACT_MIN || later >= CLOSE_CONTACT_MIN ? 'close' : near ? 'nearby' : 'none';
+    let walkIn = null;
+    const b = !me.walking && me.buildingId && totalsAt(totals, now).buildings.get(me.buildingId);
+    if (b && b.n >= MIN_PEOPLE && Math.sqrt(Math.min(1, b.expected / vmax.public)) >= 0.5) walkIn = b.name || me.building || 'This building';
+    // Other phones within Bluetooth range (~10 m, same room indoors) that run the app.
+    let peers = 0;
+    for (const a of current.values()) {
+      if (a.id === me.id) continue;
+      const hasApp = model && model.traits.get(a.id)?.has_app;
+      if (hasApp !== undefined && /^(0|false|no)$/i.test(String(hasApp))) continue;
+      if (data.hasRoom && !me.walking && (a.building !== me.building || a.room !== me.room)) continue;
+      const dy = (a.lat - me.lat) * 110574, dx = (a.lon - me.lon) * mPerDegLon(me.lat);
+      if (Math.hypot(dx, dy) <= 10) peers++;
     }
-    const room = !me.walking && me.room && totalsAt(totals, now).rooms.get(me.room);
-    const others = room ? room.expected - me.p : 0;
-    if (others >= ROOM_HOT) {
-      msgs.push(`You walked into a room where someone is likely sick (about ${others.toFixed(1)} expected). A mask or another room would be safer.`);
+    return { live, later, level, walkIn, peers };
+  }
+
+  // "Recent contacts": risky-contact episodes in the last 14 days, as FlUni's exposure history groups them.
+  const episodeCache = { key: '', list: [] };
+  function recentEpisodes(id) {
+    const key = `${id}@${Math.floor(now / (5 * 60000))}`;
+    if (episodeCache.key === key) return episodeCache.list;
+    const list = [];
+    for (const e of model ? exposureLog.get(id) || [] : []) {
+      if (e.tMs > now) break;
+      if (e.tMs < now - 14 * 24 * 3600000) continue;
+      const p = model.risk.pAt(e.other, e.tMs), w = p >= CONTAGIOUS ? 1 : p >= RISKY ? 0.5 : 0;
+      if (!w) continue;
+      const last = list[list.length - 1];
+      if (last && e.tMs - last.end <= 30 * 60000) { last.min += e.min; last.weighted += w * e.min; last.end = e.tMs; last.contagious ||= w === 1; }
+      else list.push({ start: e.tMs, end: e.tMs, min: e.min, weighted: w * e.min, contagious: w === 1 });
     }
-    return msgs;
+    episodeCache.key = key;
+    return (episodeCache.list = list.reverse());
+  }
+  const episodeText = (ep) => {
+    const when = data.numericTime ? formatTime(ep.start, true).split(', ')[1] // no sim dates on the phone
+      : new Date(ep.start).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }).replace(' AM', ' am').replace(' PM', ' pm').replace(',', '');
+    return `${when} · about ${Math.max(1, Math.round(ep.min))} min near ${ep.contagious ? 'someone who tested positive' : 'someone with symptoms'}${ep.weighted >= CLOSE_CONTACT_MIN ? ' · close contact' : ''}`;
+  };
+
+  // The Today tab, top to bottom as in FlUni's TodayView.
+  const SPOOF = new URLSearchParams(location.search).get('spoof') === '1';
+  function todayHtml(me, st) {
+    const out = [];
+    const card = (cls, tint, inner) => `<div class="card ${cls}"${tint ? ` style="--tint:${tint}"` : ''}>${inner}</div>`;
+    if (st.walkIn) {
+      out.push(card('peach', '', `<div class="row">${ico('building')}<p class="grow t-sub semi">${esc(st.walkIn)} has a lot of illness right now. Consider a mask, or a different spot.</p></div>`));
+    }
+    if (SPOOF) { // presenter flag ?spoof=1: FlUni's UnusualSignalsBanner (shown only while its guard has paused Bluetooth-only alerts)
+      out.push(card('', 'rgba(235,209,135,.5)', `<div class="row" style="align-items:center"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M7.5 7.5a6.400 6.400 0 0 0 0 9M16.500 7.500a6.400 6.400 0 0 1 0 9M4.500 4.500a10.600 10.600 0 0 0 0 15M19.500 4.500a10.600 10.600 0 0 1 0 15" fill="none" stroke="currentColor" stroke-width="1.700" stroke-linecap="round"/></svg><p class="grow t-foot ink2">Unusual Bluetooth signals nearby; alerts paused for a few minutes</p></div>`));
+    }
+    if (st.level === 'nearby') {
+      out.push(card('peach', '', `<div class="row">${ico('walk')}<div class="grow"><p class="t-sub semi">${ADVICE.nearby.title}</p><p class="t-foot">${esc(ADVICE.nearby.body.join(' '))}</p></div></div>`));
+    }
+    const [title, sub] = st.level === 'later' ? STATUS.close : STATUS[st.level];
+    const lines = st.level === 'none' ? [] : ADVICE[st.level].body;
+    const subtitle = st.level === 'close' && st.live < CLOSE_CONTACT_MIN
+      ? `In the last 3 days you spent about ${Math.round(st.later)} minutes near someone who has since reported being sick.` : sub;
+    out.push(card(st.level === 'none' ? '' : 'peach', st.level === 'none' ? 'rgba(172,188,139,.45)' : '', `
+      <div class="vstack" style="gap:10px"><div class="row"><div class="grow vstack" style="gap:5px"><p class="t-title2">${title}</p><p class="t-sub">${subtitle}</p></div>
+        ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
+        ${lines.length ? `<div class="vstack">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`));
+
+    const p = me.p, tier = riskTier(p), phoneP = phoneEstimate(st.live);
+    const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[tier];
+    const note = tier === 'high' ? 'fireink' : 'ink2';
+    out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
+      <p class="t-title2" style="font-variant-numeric:tabular-nums">Campus model: ${percentText(p)}</p>
+      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${percentText(phoneP)}</p>
+      <p class="t-sub">${advice(p)}</p>
+      <p class="t-foot ${note}">Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.</p>
+      ${model ? `<button class="link ${note}" data-act="why">${ico('fn')}See how this is worked out</button>` : ''}</div>`));
+
+    const mins = st.live, goal = CLOSE_CONTACT_MIN, done = mins >= goal;
+    const caption = done ? `You've reached the ${goal}-minute close-contact mark.`
+      : mins > 0 ? `About ${Math.ceil(goal - mins)} more minutes would make this a close contact.` : 'No time near someone with symptoms or a positive test.';
+    out.push(card('', '', `<div class="vstack" style="gap:8px"><p class="t-head">Close-contact time</p>
+      <div style="display:flex;align-items:baseline;gap:6px"><span class="t-large">${Math.floor(Math.min(mins, 99))}</span><span class="t-sub ink2">of ${goal} min</span></div>
+      <div class="progress ${done ? 'done' : ''}" role="progressbar" aria-valuenow="${Math.min(mins, goal).toFixed(0)}" aria-valuemax="${goal}"><i style="width:${Math.min(1, mins / goal) * 100}%"></i></div>
+      <p class="t-foot ink2">${caption}</p></div>`));
+
+    out.push(card('', '', `<div class="row" style="align-items:center"><span class="ink2">${ico('people')}</span><p class="grow" style="font-size:14px;font-weight:600;margin:0">${st.peers === 0 ? 'No other FlUni phones nearby' : st.peers === 1 ? '1 other FlUni phone nearby' : `${st.peers} other FlUni phones nearby`}</p></div>`));
+
+    const eps = recentEpisodes(me.id);
+    out.push(card('', '', `<div class="vstack" style="gap:8px"><p class="t-head">Recent contacts</p>${eps.length
+      ? eps.slice(0, 3).map((ep) => `<p class="t-sub ink2">${esc(episodeText(ep))}</p>`).join('') + `<span class="link between">See the last 14 days${ico('chevron')}</span>`
+      : '<p class="t-sub ink2">No time near someone sick in the last 14 days.</p>'}</div>`));
+    out.push(`<span class="link how">${ico('info2')}How FlUni works and what it shares</span>`);
+    return out.join('');
   }
 
   // The user-facing map's input: totals now, or a forecast. Never agent data.
@@ -789,7 +891,7 @@ async function main() {
   // "Why this %?": the model's explanation for the selected person, beside the phone (presenter only).
   const mathBox = Object.assign(document.createElement('aside'), { id: 'math', hidden: true });
   mathBox.setAttribute('aria-label', 'Why this risk');
-  mathBox.style.cssText = 'position:absolute;top:16px;right:328px;z-index:1100;width:340px;max-height:calc(100% - 32px);overflow:auto';
+  mathBox.style.cssText = 'position:absolute;top:16px;right:445px;z-index:1100;width:340px;max-height:calc(100% - 32px);overflow:auto';
   document.querySelector('main').append(mathBox);
   let mathOpen = false, mathKey = '';
   function renderMath() {
@@ -806,6 +908,18 @@ async function main() {
     });
   }
 
+  function setPhoneTab(tab) {
+    phoneTab = tab;
+    for (const t of ['today', 'map', 'me']) $(`ph-tab-${t}`).hidden = t !== tab;
+    for (const b of document.querySelectorAll('.tabbar button')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
+    renderPhone(true);
+    if (tab === 'map' && phoneMap) {
+      phoneMap.invalidateSize();
+      const me = selected && current.get(selected);
+      if (me) phoneMap.setView([me.lat, me.lon], 16);
+    }
+  }
+
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
     renderMath();
@@ -814,28 +928,23 @@ async function main() {
     $('ph-time').textContent = data.numericTime
       ? formatTime(now, true).split(', ')[1]
       : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    const alerts = phoneAlerts(me);
-    $('ph-alert').hidden = !alerts.length;
-    $('ph-alert').querySelector('span').replaceChildren(...alerts.map((t) => Object.assign(document.createElement('div'), { textContent: t })));
-    $('ph-risk').textContent = pct(me.p);
-    $('ph-advice').textContent = advice(me.p);
-    $('ph-risk').closest('.risk').dataset.tier = riskTier(me.p);
+    const st = phoneState(me);
+    if (phoneTab === 'today') $('ph-today').innerHTML = todayHtml(me, st);
     const where = me.walking ? 'walking' : me.building;
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
 
-    if (!phoneMap) {
+    if (!phoneMap && phoneTab === 'map') {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
       if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines).addTo(phoneMap);
-      phoneYou = L.circleMarker([me.lat, me.lon], { radius: 6, weight: 3, color: COLORS.ring, fillColor: '#33241c', fillOpacity: 1 }).addTo(phoneMap);
       phoneMap.setView([me.lat, me.lon], 16);
       withHeat = true;
     }
-    phoneYou.setLatLng([me.lat, me.lon]);
-    if (withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
+    if (phoneMap && withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
     const h = Number($('horizon').value);
-    document.querySelector('#phone .ph-section').textContent = h
-      ? `Forecast for ${new Date(now + h * 60000).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
-      : 'Around campus now';
+    if (phoneMap) {
+      const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
+      document.querySelector('#phone .ph-section').innerHTML = h ? `Forecast for ${clock(now + h * 60000)}` : `<b>Now</b> · updated ${clock(now)}`;
+    }
   }
 
   // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
@@ -917,11 +1026,7 @@ async function main() {
     selected = id;
     if (!current.size) render(performance.now()); // the user map skipped positions until now
     renderPhone(true);
-    if (phoneMap) {
-      phoneMap.invalidateSize();
-      const me = current.get(id);
-      if (me) phoneMap.setView([me.lat, me.lon], 16);
-    }
+    setPhoneTab(phoneTab);
   }
 
   function renderLegend() {
@@ -991,9 +1096,10 @@ async function main() {
   if (params.get('view')) $('view').value = params.get('view');
   if (params.get('horizon')) horizon.value = params.get('horizon');
   if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
-  document.querySelector('#phone .screen .fine').textContent =
+  const mapNote =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
+  document.querySelector('#phone .screen .fine').textContent = 'Grey areas: not enough people to show'; // FlUni's map key
   if (EMBED) {
     // User map only, slowest speed, playing; the time and forecast picker float over the map.
     $('view').value = 'public';
@@ -1001,7 +1107,7 @@ async function main() {
     const chip = Object.assign(document.createElement('div'), { className: 'embed-chip' });
     chip.append($('time'), horizon);
     document.querySelector('main').append(chip);
-    document.querySelector('.legend .fine').textContent = document.querySelector('#phone .screen .fine').textContent;
+    document.querySelector('.legend .fine').textContent = mapNote;
     setPlaying(true);
   }
 
@@ -1015,7 +1121,19 @@ async function main() {
     why.addEventListener('click', () => { mathOpen = !mathOpen; mathKey = ''; renderMath(); });
   }
   // Short windows: the phone scrolls inside its frame instead of running off the bottom.
-  Object.assign($('phone').style, { maxHeight: 'calc(100% - 32px)', overflowY: 'auto' });
+  // The phone is a fixed 393 x 852 pt screen; only scaled down (never reflowed) to fit short windows.
+  function fitPhone() {
+    const room = (document.querySelector('main').clientHeight || innerHeight) - 24;
+    const sc = Math.min(1, room / ($('phone').offsetHeight || 960));
+    $('phone').style.transform = sc < 1 ? `scale(${sc})` : '';
+    mathBox.style.right = `${16 + 417 * sc + 12}px`;
+  }
+  addEventListener('resize', fitPhone);
+  new ResizeObserver(fitPhone).observe($('phone'));
+  for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => setPhoneTab(b.dataset.tab));
+  $('ph-today').addEventListener('click', (e) => {
+    if (e.target.closest('[data-act="why"]')) { mathOpen = !mathOpen; mathKey = ''; renderMath(); }
+  });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 

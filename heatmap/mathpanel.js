@@ -1,4 +1,4 @@
-// The maths behind one person's risk, for the presenter: a contact graph, the transmission formula
+// The maths behind one person's risk, for the presenter: a contact graph, Rio's exposure formula
 // with the real numbers filled in, and the evidence on record. Everything comes from the model's
 // explain() result (what a phone could know); nothing here reads the simulation's ground truth.
 //
@@ -7,7 +7,7 @@
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 280, H = 180, MAX_NODES = 6;
-const TIER_LABEL = ['<1 m', '1-2 m', '2-5 m', 'same room'];
+const TIER_LABEL = ['under 1 m', '1–2 m', '2–5 m', 'farther in the room'];
 // edge look per distance tier: closer = more solid
 const TIER_LOOK = [
   { dash: '', op: 1 }, { dash: '', op: 0.7 }, { dash: '5 3', op: 0.6 }, { dash: '1.5 3.5', op: 0.5 },
@@ -76,7 +76,7 @@ export function renderMathPanel(container, { agentId, tMs, explain, params, form
     root.append(el('h4', { text: 'Contact graph' }), graph(agentId, contribs));
     root.append(el('p', { class: 'mp-key', text: 'Thicker = more minutes. Solid = closer. Red = risk the app knew.' }));
     root.append(el('h4', { text: 'Top contact, with numbers' }), formula(contribs[0], explain, params));
-    root.append(el('h4', { text: 'All contacts together' }), combined(contribs, explain, params));
+    root.append(el('h4', { text: 'All contacts together' }), combined(contribs, explain));
   }
 
   root.append(el('h4', { text: 'Evidence on record' }), evidenceList(explain.evidence || [], formatTime));
@@ -128,27 +128,42 @@ function graph(agentId, contribs) {
   return s;
 }
 
+// Rio's exposure model (exposure/flu_risk.py, after Baker et al. 2021) with this contact's numbers.
 function formula(c, explain, params) {
-  const beta = params.beta, w = params.tierWeight[c.distanceTier - 1];
-  const lam = beta * w * c.durationMin;
-  const pi = c.transmission, s = c.otherRisk, base = explain.prior;
-  const after = 1 - (1 - base) * (1 - s * pi);
-  const f1 = el('p', { class: 'mp-f' }, [
-    'π = 1 − e', sup('−β·w·min'), ' = 1 − e',
-    sup(`−${num(beta)}·${num(w)}·${num(c.durationMin, 0)}`), ' = ',
-    el('b', { text: num(pi) }),
-  ]);
-  const f2 = el('p', { class: 'mp-f' }, [
-    'p ← 1 − (1 − p)(1 − s·π) = 1 − (1 − ', num(base), ')(1 − ',
-    num(s), '·', num(pi), ') = ', el('b', { text: num(after) }),
-  ]);
-  const why = `${c.other}, ${num(c.durationMin, 0)} min at ${TIER_LABEL[c.distanceTier - 1] || 'unknown range'}`
-    + `${c.retro ? ', counted after a later report' : ''}. Adds ${pct(c.delta)} to p.`;
-  const note = el('p', { class: 'mp-note', text: why });
-  const out = [f1, f2, note];
-  if (Math.abs(1 - Math.exp(-lam) - pi) > 0.005) {
-    out.push(el('p', { class: 'mp-key', text: 'Minutes sum merged contacts; π is the model’s combined value.' }));
+  const B = params.breathingRate, h = c.durationMin / 60, d = Math.max(c.distanceM, 0.3);
+  const q = c.quanta * c.stage, qNear = params.nearFieldQ * d * d * (c.indoor ? 1 : params.outdoorNearDilution);
+  const room = c.indoor && c.roomVolume ? 1 / (c.roomVolume * c.roomLoss) : 0;
+  const shown = q * B * h * (1 / qNear + room);
+  const lam = 1 - Math.exp(-c.pairDose), s = c.otherRisk, base = explain.prior;
+  const after = base + (1 - base) * s * lam;
+  const near = c.indoor ? `30·${num(d, 2)}²` : `30·${num(d, 2)}²·${num(params.outdoorNearDilution)}`;
+  const f1 = el('p', { class: 'mp-f' }, c.indoor
+    ? ['dose = q·B·t·(1/q', sub('near'), ' + 1/(V·loss)) = ', num(q), '·', num(B), '·', num(h, 2),
+      '·(1/', near, ' + 1/(', num(c.roomVolume, 0), '·', num(c.roomLoss, 2), ')) = ', el('b', { text: num(c.dose, 4) })]
+    : ['dose = q·B·t/q', sub('near'), ' = ', num(q), '·', num(B), '·', num(h, 2), '/', near, ' (outdoors) = ',
+      el('b', { text: num(c.dose, 4) })]);
+  const f2 = el('p', { class: 'mp-f' }, ['λ = 1 − e', sup('−dose'), ' = 1 − e', sup(`−${num(c.dose, 4)}`), ' = ',
+    el('b', { text: num(c.transmission, 4) })]);
+  const out = [f1, f2];
+  if (c.pairDose > c.dose * 1.001) {
+    out.push(el('p', { class: 'mp-f' }, [`All contacts with ${c.other} so far: dose `, num(c.pairDose, 4), ', λ = ',
+      el('b', { text: num(lam, 4) })]));
   }
+  out.push(el('p', { class: 'mp-f' }, ['p ← p + (1 − p)·s·λ = ', num(base), ' + (1 − ', num(base), ')·', num(s), '·',
+    num(lam, 4), ' = ', el('b', { text: num(after) })]));
+  const quiet = c.quanta < params.quantaPeak ? ` (quiet in a dorm room: ${num(c.quanta)})` : '';
+  out.push(el('p', { class: 'mp-key', text: `q = ${num(c.quanta)} q/h${quiet} × stage ${num(c.stage, 2)} `
+    + `(how contagious ${c.other} was then: ${c.stage === params.stageMean ? 'unknown, illness average' : 'days from their first report'}); `
+    + `B = ${num(B)} m³/h breathed; t = ${num(h, 2)} h; q_near = 30·d² m³/h; V = room m³; `
+    + `loss = ${num(c.roomAch ?? 0)} ventilation + ${num(params.deposition)} settling + ${num(params.virusDecay, 2)} virus decay at `
+    + `${num(params.indoorRH, 0)}% indoor humidity, per hour. s = ${c.other}'s risk; λ counts every contact with them once.` }));
+  const why = `${c.other}, ${num(c.durationMin, 0)} min at ${num(c.distanceM, 1)} m${c.indoor ? '' : ' outdoors'}`
+    + `${c.retro ? ', counted after a later report' : ''}. Adds ${pct(c.delta)} to p.`;
+  out.push(el('p', { class: 'mp-note', text: why }));
+  if (c.pieces > 1 && Math.abs(shown - c.dose) > 0.01 * c.dose) {
+    out.push(el('p', { class: 'mp-key', text: 'Several contacts merged: minutes and dose are their sums; distance and room are the biggest one’s.' }));
+  }
+  out.push(el('p', { class: 'mp-key', text: 'Rio’s exposure model (Baker et al. 2021, Wells-Riley aerosol dose).' }));
   return el('div', {}, out);
 }
 
@@ -193,21 +208,19 @@ function traitBox(t) {
   ]);
 }
 
-// From one contact to the headline: every contact folds into one exposure x (capped), then the prior.
+// From one contact to the headline: every person's share s·λ folds into one exposure x, then the prior.
 // x is read back from p, so it is exact whenever exposure (not a report or test) sets p.
-function combined(contribs, explain, params) {
+function combined(contribs, explain) {
   const { p, prior } = explain;
   const evidenceSets = (explain.evidence || []).some((e) => e.active !== false) && p >= 0.35;
   if (evidenceSets) return el('p', { class: 'mp-note', text: `Here the evidence below, not contact, sets ${pct(p)}.` });
   const x = Math.max(0, 1 - (1 - p) / (1 - prior));
-  const capped = params.xMax != null && x >= params.xMax - 0.005;
   const people = new Set(contribs.map((c) => c.other)).size;
   return el('div', {}, [
-    el('p', { class: 'mp-f' }, ['x = 1 − ∏(1 − s·π) = ', el('b', { text: num(x) }),
-      capped ? ` (direct contact capped at ${num(params.xMax)}${x > params.xMax + 0.005 ? ', plus second-hand risk' : ''})` : '']),
+    el('p', { class: 'mp-f' }, ['x = 1 − ∏(1 − s·λ), less what has run its course = ', el('b', { text: num(x) })]),
     el('p', { class: 'mp-f' }, ['p = 1 − (1 − ', num(prior), ')(1 − ', num(x), ') = ', el('b', { text: num(p) })]),
     el('p', { class: 'mp-note', text: `${contribs.length} contact${contribs.length > 1 ? 's' : ''} with ${people} `
-      + `${people > 1 ? 'people' : 'person'} listed, plus smaller ones and second-hand risk.`
-      + (capped ? ' Contact alone never takes anyone past this: household flu attack rates are 10–40%.' : '') }),
+      + `${people > 1 ? 'people' : 'person'} listed, plus smaller ones and second-hand risk. One person never adds more `
+      + 'than their own risk s, and each exposure fades as flu runs its course (about a week).' }),
   ]);
 }
