@@ -65,12 +65,15 @@ const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
   const certain = at(run(reps, contacts, { recoveredCertain: true }), 'B', 130);
   check('recovered, recoveredCertain: a later meeting with a case leaves P(flu) at 0', 1e-9, certain);
 }
-{ // 3. negative test: P_S = 1 back to 3 days before it, so what A "passed on" then is gone
-  const contacts = meet(40);
-  const exposed = at(run([rep(46, 'A', 'self_report', 'might_be_sick')], contacts), 'B', 60);
-  const cleared = at(run([rep(46, 'A', 'self_report', 'might_be_sick'), rep(50, 'A', 'test_result', 'negative')], contacts), 'B', 60);
-  const alone = at(run([]), 'B', 60);
-  check('negative test: clears the meeting\'s risk back to baseline', exposed - alone, 10 * Math.abs(cleared - alone));
+{ // 3. negative test. Default: a likelihood (infected mass x negFnr) at the result. negFnr 0: the SI's P_S = 1 back
+  //    to 3 days before it, so what A "passed on" then is gone.
+  const contacts = meet(40), sick = rep(46, 'A', 'self_report', 'might_be_sick'), neg = rep(50, 'A', 'test_result', 'negative');
+  const exposed = at(run([sick], contacts), 'B', 60), alone = at(run([]), 'B', 60);
+  const cleared = at(run([sick, neg], contacts, { negFnr: 0 }), 'B', 60);
+  check('negative test, negFnr 0: clears the meeting\'s risk back to baseline', exposed - alone, 10 * Math.abs(cleared - alone));
+  const pA = at(run([sick], contacts), 'A', 60), pAneg = at(run([sick, neg], contacts), 'A', 60);
+  check('negative test (soft): lowers A\'s P', pA, pAneg);
+  check('negative test (soft): but not to near zero (false negatives happen)', pAneg, 0.05 * pA);
 }
 { // 4. a self-reported positive after the test result doesn't re-date the infection
   const contacts = meet(90);

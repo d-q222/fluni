@@ -23,3 +23,4 @@ Means over the 12 runs (per-run numbers in the commit messages):
 | # | Change | Test run | mean KL before → after | final AUC before → after |
 |---|---|---|---|---|
 | 2 | "recovered" ends an infection without asserting one (keeps P_S; `recoveredCertain` restores the SI's P_R = 1); likelihood ratios 60 / 20 (were 20 / 4) | `689ae9f0` (fixed 1k) | 0.1345 → 0.1038 (oracle const 0.1164) | 0.710 → 0.691 |
+| 3 | negative test as a likelihood (infected mass × 0.3, the sim test's miss rate); `negFnr: 0` restores the SI's P_S = 1 | `25fe957a` | 0.3295 → 0.3228 (oracle const 0.3812) | 0.717 → 0.739 |

@@ -48,7 +48,10 @@ export const MF_DEFAULTS = {
   lrSym: 60,              // likelihood ratio of a symptom self-report (was 20; on 3 sim runs 60 beat 20 and the
   lrOther: 20,            // ... of a report by someone else (was 4)       measured per-day ratios, 270 and 90)
   recoveredCertain: false, // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
-  negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
+  negFnr: 0.3,            // negative test: false-negative rate. > 0: a likelihood at the result (infected mass x this,
+                          //   renormalised); the sim's test has 70% sensitivity and every negative in twelve runs was
+                          //   a false negative. 0: the SI's P_S = 1 over negDays (eq. 4).
+  negDays: 3,             // negative test (negFnr 0): P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
                           //   the online pass can rerun this far back)
   // Self-calibration (calibrateFromReports): the reporting process, fitted on twelve 1,000-agent sim runs with
   // 5-79% infected (model/README.md "Self-calibration"); it is about people, not the epidemic, so it barely varies.
@@ -362,6 +365,11 @@ export function meanFieldRisk(input, params = {}) {
       if (k0 < K) A[o + k0] = wgt; else Rr[i] += wgt;
     } else if (c[0] === 'sus') { // negative test (SI eq. 4): P_S = 1 at this step, so nothing was caught or passed on
       S[i] = 1; Rr[i] = 0; A.fill(0, o, o + K);
+    } else if (c[0] === 'negsoft') { // negative test as a likelihood: infected mass x the false-negative rate
+      let z = S[i] + Rr[i];
+      for (let k = 0; k < K; k++) { A[o + k] *= P.negFnr; z += A[o + k]; }
+      S[i] /= z; Rr[i] /= z;
+      for (let k = 0; k < K; k++) A[o + k] /= z;
     } else if (c[0] === 'rec') { // recovered: an infection, if there was one, is over
       if (P.recoveredCertain) { S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1; } // SI eq. 6: P_R = 1
       else { let a = 0; for (let k = 0; k < K; k++) { a += A[o + k]; A[o + k] = 0; } Rr[i] += a; } // keeps P_S: the
@@ -372,6 +380,7 @@ export function meanFieldRisk(input, params = {}) {
   // An observation learned in step n -> a list of [effect step, clamp] (empty: nothing new).
   function clampsFor(kind, i, n, st) {
     if (kind === 'rec') return [[n, ['rec', i]]];
+    if (kind === 'neg' && P.negFnr > 0) return [[n, ['negsoft', i]]];
     if (kind === 'neg') { // P_S = 1 at every step from negBack before the result up to it
       const out = [];
       for (let s = Math.max(0, n - negBack); s <= n; s++) out.push([s, ['sus', i]]);
