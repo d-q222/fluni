@@ -211,5 +211,8 @@
 #ph-map .lbl span { font: 600 10.5px/1 -apple-system, system-ui, sans-serif; color: var(--ink-2); }
 #ph-map .lbl-g span { font-style: italic; font-weight: 500; color: #5d6b3c; }
 #ph-map .lbl-x span { font-weight: 500; color: var(--ink-3); opacity: .8; }
-/* Lisa's tissue-box tab bar, a little smaller so the screen keeps about the reference's height */
-#phone .tabbar { width: 74%; margin: -4px auto 0; }
+/* Lisa's tissue-box tab bar stays as drawn (her tissue alert is layered over it); the screen runs down under its empty top edge instead */
+#phone .tabbar { z-index: 6; }
+#phone .screen { margin-bottom: -46px; padding-bottom: 46px; }
+#phone .tab { padding-bottom: 28px; }
+#phone .tab.bleed { height: calc(100% + 0px); }
