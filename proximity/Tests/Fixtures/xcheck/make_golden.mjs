@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { inferRisk, doseModel, indoorRH, virusDecay, DEFAULTS } from '../../../../model/infer.js'; // the real model
+import { inferRisk, doseModel, indoorRH, virusDecay, stageFactor, DEFAULTS } from '../../../../model/infer.js'; // the real model
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PHONE_KEYS = ['prior', 'selfReport', 'posTest', 'quantaPeak', 'breathingRate', 'nearFieldQ', 'deposition',
@@ -128,6 +128,130 @@ for (const d of [9.99, 10, 10.01, 12]) {
   out.webReference = { run: 'influenza_none_n10_d14_s2_bc5cae7a', agent: me, atMin, sources, p: phoneP(sources) };
 }
 
+// ---------- (a2) shared risk: peer scores, per-source stage, this phone's room ----------
+// The phone rule since the product owner's 2026-10-17 ruling (proximity/Core/RiskEstimate.swift):
+// per peer s = max(status s, max(0, P_peer - prior)) with P_peer the peer's broadcast score; each contact's
+// dose is stageFactor(days since the peer's onset) * unitDose when the peer reports a status and broadcasts
+// its days, else stageMean * unitDose; unitDose uses this phone's room (the representative room of the
+// building it is in, from FlUni/Resources/building_rooms.csv; outdoors -> indoor = false). Checked against the
+// REAL inferRisk: a score source is a self_report whose level is P - prior (params.selfReport), so it carries
+// the score's s; recovery is off (the phone has none).
+{
+  const csv2 = (text) => { const L = text.split(/\r?\n/).filter(Boolean), h = L[0].split(','); return L.slice(1).map((l) => { const f = l.split(','), r = {}; h.forEach((c, i) => (r[c] = f[i])); return r; }); };
+  const RUN_MAP = join(here, '../../../../sim/runs/influenza_none_n1000_d4_s42_73b8452c/map');
+  const roomsCsv = csv2(readFileSync(join(RUN_MAP, 'rooms.csv'), 'utf8'));
+  const rooms = new Map(roomsCsv.map((r) => [r.room_id, r]));
+  const placeRows = csv2(readFileSync(join(here, '../../../FlUni/Resources/building_rooms.csv'), 'utf8'));
+  const place = new Map(placeRows.map((r) => [r.building_id, r]));
+  // building_rooms.csv must carry each room's own rooms.csv values (tools/make_building_rooms.py).
+  for (const r of placeRows) {
+    const src = rooms.get(r.room_id);
+    if (!src || src.volume_m3 !== r.volume_m3 || src.ventilation_ach !== r.ventilation_ach || src.room_type !== r.room_type) throw new Error(`building_rooms ${r.building_id}`);
+  }
+  const DR = doseModel({}, rooms);
+  const OUT = 'outdoors'; // not in any building
+  // The contact row infer.js reads for a phone in `building` (null = default room, OUT = outdoors).
+  const row = (building) => {
+    if (building === null) return { indoor: true };
+    if (building === OUT) return { indoor: false, room_id: '' };
+    const pl = place.get(building);
+    if (!pl) throw new Error(`no place ${building}`);
+    return pl.indoor === '1' ? { indoor: true, room_id: pl.room_id } : { indoor: false, room_id: '' };
+  };
+  const unitR = (d, durS, building) => DR({ distance_m: d, duration_s: durS, ...row(building) });
+  const statusS = { none: 0, possible: DEFAULTS.selfReport, contagious: DEFAULTS.posTest };
+  const sRule = (status, score) => (score == null ? statusS[status] : Math.max(statusS[status], Math.max(0, score - DEFAULTS.prior)));
+  const stageOf = (status, days) => (status !== 'none' && days != null ? stageFactor(days) : stageMean);
+
+  const BLD = { generic: 'bld_1029436493', dorm: 'bld_1040231570', classroom: 'bld_109151789', outdoorPlace: 'bld_m_white_plaza', arena: 'bld_18564360' };
+  out.roomDose = [];
+  for (const [kind, b] of [['default', null], ['outdoors', OUT], ...Object.entries(BLD)]) {
+    for (const [d, sec] of [[0.2, 60], [0.5, 900], [1, 60], [2, 3600], [5, 600], [9.99, 60]]) {
+      out.roomDose.push({ kind, building: b, distance: d, seconds: sec, dose: unitR(d, sec, b), info: { indoor: DR.info.indoor, quanta: DR.info.quanta,
+        volume: DR.info.room ? DR.info.room.volume : 0, far: DR.info.room ? DR.info.room.far : 0 } });
+    }
+  }
+  if (out.roomDose.find((x) => x.kind === 'dorm').info.quanta !== DEFAULTS.quietQuanta) throw new Error('dorm room must be quiet');
+  if (out.roomDose.find((x) => x.kind === 'outdoorPlace').info.indoor !== false) throw new Error('outdoor place');
+
+  // A scenario: sources { id, status, score (null = FLU1 / none broadcast), contacts [{ distance, seconds, day, days, building }] }.
+  // `day`: whole days after the source's onset when the contact happens; `days`: what its beacon says then (null = unknown).
+  const phoneP2 = (sources) => {
+    let p = DEFAULTS.prior;
+    for (const src of [...sources].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+      const s = sRule(src.status, src.score);
+      let w = 0;
+      for (const c of src.contacts) if (c.distance <= BT_RANGE_M) w += stageOf(src.status, c.days) * unitR(c.distance, c.seconds, c.building);
+      if (s > 0 && w > 0) p += (1 - p) * s * (1 - Math.exp(-w));
+    }
+    return p;
+  };
+  // inferRisk: a source with status contagious = a positive test at step 0, otherwise a "might be sick" self-report
+  // at step 0 whose level is the scenario's s (params.selfReport). flatStage: every day at stageMean (sources
+  // whose phone stage is the average). One selfReport level per scenario.
+  function inferP2(sources, flatStage) {
+    const lv = [...new Set(sources.filter((x) => x.status !== 'contagious').map((x) => sRule(x.status, x.score)))];
+    if (lv.length > 1) throw new Error('one selfReport level per scenario');
+    for (const x of sources) if (x.status === 'contagious' && sRule(x.status, x.score) !== DEFAULTS.posTest) throw new Error('contagious s');
+    const reports = sources.map((x) => (x.status === 'contagious'
+      ? { t: 0, agent_id: x.id, event: 'test_result', value: 'positive', target_agent_id: '' }
+      : { t: 0, agent_id: x.id, event: 'self_report', value: 'might_be_sick', target_agent_id: '' }));
+    const contacts = [];
+    const perDay = new Map();
+    for (const x of sources) for (const c of x.contacts) {
+      const k = (perDay.get(c.day) || 0) + 1; perDay.set(c.day, k);
+      if (k >= 288) throw new Error('too many contacts in a day');
+      contacts.push({ t: c.day * 288 + k, agent_a: x.id, agent_b: 'B', distance_m: c.distance, distance_tier: 4, duration_s: c.seconds, ...row(c.building) });
+    }
+    contacts.sort((a, b) => a.t - b.t);
+    const end = contacts.length ? contacts.at(-1).t + 1 : 1;
+    const params = { minDelta: 0, illnessMeanDays: Infinity, ...(lv.length ? { selfReport: lv[0] } : {}),
+      ...(flatStage ? { stageProfile: DEFAULTS.stageProfile.map(() => stageMean) } : {}) };
+    const risk = inferRisk({ agentIds: ['B', ...sources.map((x) => x.id)], stepMin: STEP_MIN, startMs: START, reports, contacts, rooms }, params);
+    return risk.pAt('B', START + end * STEP_MIN * 60000);
+  }
+  const C = (distance, minutes, extra = {}) => ({ distance, seconds: Math.round(minutes * 60), day: 0, days: null, building: null, ...extra });
+  const shared = [];
+  const add = (name, sources, flatStage) => {
+    const p = phoneP2(sources), ip = inferP2(sources, flatStage);
+    if (Math.abs(p - ip) > 1e-12) throw new Error(`phone rule disagrees with inferRisk: ${name} ${p} vs ${ip}`);
+    shared.push({ name, sources: sources.map((x) => ({ ...x, s: sRule(x.status, x.score) })), p, inferP: ip });
+  };
+  // s from a peer's score (status none): s = P - 0.02.
+  for (const P of [0.02, 0.023, 0.05, 0.1, 0.3, 0.5, 0.85]) for (const [d, m] of [[0.5, 15], [1, 60], [3, 60]]) {
+    add(`score ${P} ${d}m/${m}min`, [{ id: 'A', status: 'none', score: P, contacts: [C(d, m)] }], true);
+  }
+  // Moving closer to a peer with P = 0.3: 3 m, then 1 m, then 0.5 m (cumulative).
+  add('P=0.3 at 3m', [{ id: 'A', status: 'none', score: 0.3, contacts: [C(3, 10)] }], true);
+  add('P=0.3 at 3m then 1m', [{ id: 'A', status: 'none', score: 0.3, contacts: [C(3, 10), C(1, 10)] }], true);
+  add('P=0.3 at 3m then 1m then 0.5m', [{ id: 'A', status: 'none', score: 0.3, contacts: [C(3, 10), C(1, 10), C(0.5, 10)] }], true);
+  // Status vs score: the larger wins.
+  add('possible, score 0.3 (status wins)', [{ id: 'A', status: 'possible', score: 0.3, contacts: [C(1, 30)] }], true);
+  add('possible, score 0.85 (score wins)', [{ id: 'A', status: 'possible', score: 0.85, contacts: [C(1, 30)] }], true);
+  add('contagious, score 0.5', [{ id: 'A', status: 'contagious', score: 0.5, contacts: [C(1, 30)] }], true);
+  add('score source + positive source', [{ id: 'A', status: 'none', score: 0.4, contacts: [C(0.8, 20)] },
+    { id: 'C', status: 'contagious', score: 0.97, contacts: [C(2, 45)] }], true);
+  // Per-source stage from the days the peer broadcasts (real stageProfile).
+  for (const status of ['contagious', 'possible']) for (const day of [0, 1, 2, 3, 4, 5, 6]) {
+    add(`${status} day ${day}`, [{ id: 'A', status, score: null, contacts: [C(1, 30, { day, days: day })] }], false);
+  }
+  add('contagious days 0..6 in one week', [{ id: 'A', status: 'contagious', score: null,
+    contacts: [0, 1, 2, 3, 4, 5, 6].map((day) => C(0.7, 20, { day, days: day })) }], false);
+  add('two sources at different stages', [{ id: 'A', status: 'contagious', score: null, contacts: [C(1, 30, { day: 1, days: 1 })] },
+    { id: 'C', status: 'contagious', score: 0.9, contacts: [C(2, 60, { day: 4, days: 4 })] }], false);
+  // This phone's room.
+  for (const [kind, b] of [['outdoors', OUT], ...Object.entries(BLD)]) {
+    add(`room ${kind}`, [{ id: 'A', status: 'contagious', score: null, contacts: [C(1, 30, { building: b }), C(3, 120, { building: b })] }], true);
+  }
+  add('room changes between contacts', [{ id: 'A', status: 'contagious', score: null,
+    contacts: [C(1, 30, { building: BLD.classroom }), C(1, 30, { building: OUT }), C(1, 30, { building: BLD.dorm })] }], true);
+  add('everything at once', [{ id: 'A', status: 'contagious', score: null, contacts: [C(0.6, 25, { day: 2, days: 2, building: BLD.classroom })] },
+    { id: 'C', status: 'possible', score: 0.7, contacts: [C(1.5, 40, { day: 1, days: 1, building: OUT })] }], false);
+  out.shared = shared;
+  out.stageFactor = [-3, -2, -1, 0, 1, 2, 5, 7, 8, 14].map((day) => ({ day, stage: stageFactor(day) }));
+  out.quietQuanta = DEFAULTS.quietQuanta; out.outdoorNearDilution = DEFAULTS.outdoorNearDilution;
+}
+
 // ---------- (b) tiers and advice: heatmap/app.js:448-466 (copied) ----------
 const TIERS = { elevated: 0.1, high: 0.4 };                                                        // app.js:448
 const riskTier = (p) => (p >= TIERS.high ? 'high' : p >= TIERS.elevated ? 'elevated' : 'low');     // app.js:449
@@ -226,4 +350,4 @@ if (bq.filter((x) => x.reading === null).length < 3) throw new Error('need some 
 out.heatQueryCount = bq.length;
 
 writeFileSync(join(here, 'golden.json'), JSON.stringify(out, null, 1) + '\n');
-console.log(`golden.json: ${out.unitDose.length} unitDose, ${out.scenarios.length} scenarios (web reference p ${out.webReference.p}), ${out.tiers.length} tiers, ${out.psick.length} p_sick, ${out.heat.length} heat`);
+console.log(`golden.json: ${out.unitDose.length} unitDose, ${out.scenarios.length} scenarios, ${out.shared.length} shared-risk scenarios, ${out.roomDose.length} room doses (web reference p ${out.webReference.p}), ${out.tiers.length} tiers, ${out.psick.length} p_sick, ${out.heat.length} heat`);
