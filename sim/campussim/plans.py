@@ -99,6 +99,34 @@ class _Rooms:
         self.library_all = np.concatenate(lib) if lib else all_r[:0]
         if len(self.library_all) == 0:
             self.library_all = self._global(self.lib_types, "library")
+        # capacity-checked flex picks: planned flex occupants per (room, step), allocated lazily
+        self.cap_check = bool(f.get("capacity_check", True))
+        self.cap = np.maximum(campus.rooms["capacity"].to_numpy().astype(np.int64), 1)
+        self._occ = {}
+
+    def occ(self, r, T):
+        a = self._occ.get(r)
+        if a is None:
+            a = self._occ[r] = np.zeros(T, np.int16)
+        return a
+
+    def pick_free(self, pools, u, s, e, T):
+        """First pool (in order) with a room that has a free place for all of steps [s, e); within it,
+        pick a room weighted by free places (big reading rooms take most people). Books the place.
+        Returns -1 if every pool is full."""
+        for pool in pools:
+            if len(pool) == 0:
+                continue
+            free = np.array([self.cap[r] - (int(self.occ(int(r), T)[s:e].max()) if e > s else 0)
+                             for r in pool.tolist()], np.int64)
+            w = np.maximum(free, 0)
+            if w.sum() == 0:
+                continue
+            c = np.cumsum(w)
+            r = int(pool[min(int(np.searchsorted(c, u * c[-1], side="right")), len(pool) - 1)])
+            self.occ(r, T)[s:e] += 1
+            return r
+        return -1
 
     def _global(self, types, btype):
         r = np.flatnonzero(np.isin(self.rtype, list(types)))
@@ -434,6 +462,8 @@ def build_plans(cfg, campus, pop, sections, events, rng) -> Plans:
                         r_ = home
                     else:
                         continue
+                    if r_ in rooms._occ:  # staying on in a capacity-checked room holds the place
+                        rooms._occ[r_][a0:a1] += 1
                     row[a0:a1] = len(s_act)
                     s_act.append(A_RELAX if r_ == home else A_IDLE); s_room.append(r_); s_ev.append(-1); s_sec.append(-1)
                     continue
@@ -480,6 +510,19 @@ def build_plans(cfg, campus, pop, sections, events, rng) -> Plans:
                         n = min(n, max(short, int((hi_h - hr) * 60 / step)))
                     if a1 - (pos + n) < min_rem:
                         n = a1 - pos
+                    if rooms.cap_check and kname in ("library", "common_room"):
+                        # favourite pool, then any library; all full -> study at home (commuters: lobby/lounge
+                        # pool, else the least-full library room)
+                        pools = (lpool, rooms.library_all) if kname == "library" else (cpool, rooms.library_all)
+                        r_ = rooms.pick_free(pools, fu[2], pos, pos + n, T)
+                        if r_ < 0:
+                            if not is_comm and home >= 0:
+                                r_, a_ = home, A_STUDY
+                            elif len(rooms.library_all):
+                                la = rooms.library_all
+                                load = [rooms.occ(int(r), T)[pos:pos + n].max() / rooms.cap[r] for r in la.tolist()]
+                                r_ = int(la[int(np.argmin(load))])
+                                rooms.occ(r_, T)[pos:pos + n] += 1
                     row[pos:pos + n] = len(s_act)
                     s_act.append(a_); s_room.append(r_); s_ev.append(-1); s_sec.append(-1)
                     pos += n

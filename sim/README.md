@@ -120,8 +120,11 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 
 - **Not calibrated.** At 7,500 agents × 7 days: 50 infections (27 imports); spread rate by day
   infected was about 1.5–1.8 for days 2–4, but `measured_R` needs a 14-day run.
-- **Library study rooms are overfilled.** Plans send solo library study to study rooms with no
-  capacity check (up to 114 agents in a room for 4–8), which makes them the main aerosol hotspot.
+- **Study rooms can still run up to 2× capacity.** Library and common-room flex picks now check
+  capacity (`plans.flex.capacity_check`): each block books a place in a room with space for the whole
+  block, weighted by free places, so Green Library's big reading rooms take most solo study. When
+  everything is full, agents study at home. At 7,000 agents the worst planned room went from 22.5× to
+  2× capacity. What's left comes from bookings outside flex (study groups and similar).
 - **Too many `report_other` events** (about 50 per real self-report at full scale).
 - **Large output.** 7,500 agents × 7 days is 4.5 GB, of which 3.0 GB is `timeline_by_agent/` and
   657 MB `contacts.csv.gz`. Turn per-agent files off with `--set output.by_agent=false`.
