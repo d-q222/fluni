@@ -7,12 +7,17 @@
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <style>
+    /* Type (design pass): Nunito for text, Fredoka for headings and big numbers. Both bundled in
+       vendor/fonts (SIL OFL), so the page needs no internet. */
+    @font-face { font-family: "Nunito"; src: url("vendor/fonts/nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
+    @font-face { font-family: "Fredoka"; src: url("vendor/fonts/fredoka.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+  
   /* The user map for the app: reads only per-building totals. Palette from index.html (Lisa's campfire tokens). */
   :root {
     --sun: #ebd187; --ember: #e99569; --fire: #db6c59; --fire-ink: #8e3a28;
     --paper: #faf4e8; --surface: #fffaf1; --surface-2: #f4ead6; --surface-3: #ecdfc6;
     --ink: #33241c; --ink-2: #6a5244; --ink-3: #7a6152; --hairline: rgba(51, 36, 28, 0.12);
-    --font: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", sans-serif;
+    --font: "Nunito", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", sans-serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink);
