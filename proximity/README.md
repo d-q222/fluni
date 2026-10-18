@@ -101,7 +101,7 @@ twice. Log lines: `bg launch`, `bg restore …`, `bg gatt read …`, `bg gatt se
 | FlUni open | yes, every second | yes |
 | In the background | yes, via Bluetooth, less often (when iOS delivers a sighting); a phone with FlUni open sees it best | yes (geofences) |
 | Ended by iOS (memory) | yes: iOS keeps advertising/scanning and relaunches FlUni on a Bluetooth event | yes (relaunched on region entry) |
-| Swiped away by the user | no, until FlUni is opened again | yes (region monitoring still relaunches it) |
+| Swiped away by the user | not reliable: only after a location relaunch (Always only; may not happen on iOS 26), else when FlUni is opened again | same: region relaunch, not guaranteed (RISKS.md) |
 
 Two phones that are both in the background find each other only now and then (iOS mostly matches
 overflow adverts while the scanning phone's screen is on).

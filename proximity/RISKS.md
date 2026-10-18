@@ -55,9 +55,22 @@ mention it in the presentation. Last updated 2026-10-17.
 
 ## Platform limits
 
+- **Where nearby (heads-up / close-contact) notifications fire.** One tick path posts them in every case
+  (`ProximityModel.tick` → `AlertGate` → `UNPoster` → `SystemNotifier`), so the rules and the student's settings
+  are the same everywhere:
+  - FlUni open, in the background or on the lock screen: yes. iOS keeps FlUni running through Bluetooth wake-ups and
+    held GATT links, and with Always location through the coarse keep-alive. Two phones that are both off screen find
+    each other only now and then.
+  - Ended by iOS (memory): yes. Bluetooth state restoration relaunches FlUni and detection restarts.
+  - **Swiped away by the student: not reliable.** iOS never relaunches a force-quit app for Bluetooth (TN3115).
+    With Always location, FlUni asks for significant-change, Visits and building-geofence launches; on such a
+    relaunch it restarts Bluetooth detection and the keep-alive, and alerts work again. Apple engineers have said
+    significant-change and region launches survive a force quit, but developers report that on iOS 26 a force-quit
+    app was not relaunched for either. The demo phones run iOS 26.6, and a real force quit can't be scripted from the
+    Mac, so this is unverified. Without Always nothing relaunches FlUni. Either way nothing runs until the phone moves
+    (about 500 m, a visit, or a building entry). Settings says it plainly: don't swipe FlUni away.
+  - Busy-building warnings follow the same rules (geofences; they need Always).
 - A powered-off phone can't be detected.
-- A force-quit app is not relaunched for Bluetooth state restoration. Location-based relaunch (geofences) may still
-  work; the details belong here once verified on the phones.
 - iOS background Bluetooth is slower and coarser than foreground (overflow-area advertising, no UWB, no
   MultipeerConnectivity).
 
