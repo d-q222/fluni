@@ -14,7 +14,15 @@ extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo ru
 - **Runs of 2,000+ agents, or agents × days ≥ 8,000,** read precomputed files: `model/out/<run>/p_sick.csv`
   and `heatmap/out/<run>/totals.json.gz`. They load in about 5 s but have no "Why this %?". These
   include the 14-day runs `…_f12e71fa`, `…_183f262b` and `…_25fe957a`.
-- **Heat (Room-level view):**
+- **Rio's PR #22 is merged (3b31e5c).**
+  - It added building shading: expected infected above the 2% baseline per 1,000 m² of floor, using
+    researched floor counts in `data/building-floors.json`.
+  - It added a Baker et al. mean-field model (`model/meanfield.js`, `?model=meanfield`) and a
+    "4 days" / "2 weeks" run picker.
+  - As merged, shading replaced the Gaussian heat in the default view. The product owner asked for the
+    Gaussian heat to be the default again, with Rio's shading kept as a toggle under Display. The model
+    session (fluni-01) is making that change. Check main for whether it has landed.
+- **Gaussian heat (demo view):**
   - One zone per building at every zoom; no rooms, and no rectangles or lines.
   - Each person adds max(0, P − 2%) · exp(−d²/2σ²), where d is the walking distance through their own
     building's cells. Walls, wing gaps and courtyards stop it: links across a wall are cut, so it
@@ -32,22 +40,36 @@ extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo ru
   - Every agent is drawn up to 2,000 agents (MAX_DOTS), seated inside their building and sized in
     metres (2 px at campus zoom).
   - The dot fill is the app's estimate; a dark red ring means actually infected (sim truth).
+  - Close up they fade to see-through over zoom 17–18.5 (`seeThroughAt`), so the heat shows under them.
   - Every dot is clickable, nearest wins, and opens that person's phone.
 - **Building click:** shows Σ P, the tiers, and **everyone inside** (estimate, truth, why). Clicking a row
   opens that person's phone.
 - **Views:**
-  - **Room-level:** the above.
+  - **Demo view** (the first switcher button): the above.
   - **What users see:** the user map, the same as FlUni's bundle: building totals, soft shading, tap for
     stats, a minimum of 4 people (privacy), and no ×7 scaling.
   - "Air by room" was removed. The experimental airflow view is still reachable with `?view=airflow`.
-- **Phone mock:** mirrors FlUni.
-  - It shows the "your day" timeline, Lisa's tissue alert and her tab bar (Today / Map / Me), the
-    stay-home card, and night mode.
-  - "This phone's estimate" follows the product owner's risk-sharing rule:
-    - each phone broadcasts its own score, max(estimate, status floor), with floors of 0.97 for a
-      positive test and 0.6 for symptoms;
-    - other phones use it but never show it;
+- **Phone mock:** mirrors FlUni, in Nunito and Fredoka, with Lisa's tissue alert and her tab bar
+  (Today / Map / Me), and night mode.
+  - **Today** is FlUni's new home (owner-approved mock v4: `/Users/dqi26/fluni-screens/home-v2/`; the
+    real build: `home-built/`):
+    - a speech bubble with the tissue;
+    - a card with only the big %, the band, and "I don't feel well";
+    - an alert strip inside the card during a heads-up or close contact;
+    - the f(x) link;
+    - "Your day so far", from the agent's real track and contacts (`todayStays()`);
+    - sick mode: Day N of 5, Better / The same / Worse, "Your recovery", the Vaden line, and the
+      privacy line.
+  - The Map tab is the presenter's map without people: same base, landmarks, building heat and moment.
+  - **Shown risk:** the campus model's P (`model.risk.pAt`), the same number as the presenter bar (Rio,
+    4772dd8, as the product owner ruled).
+  - `phoneEstimate` (the on-device dose estimate) is no longer shown. It stays as
+    `window.fluni.phoneScore` for proximity's cross-check, and for the broadcast score:
+    - each phone broadcasts max(estimate, status floor), with floors of 0.97 for a positive test and
+      0.6 for symptoms;
     - per peer, s = max(status, score − prior).
+  - Close-contact time is weighted minutes in the last 24 h. FlUni is switching to a 2-h reset
+    (`flu-clock`, product owner); the mock doesn't have it yet.
 - **User map bundle** (`tools/build_app_bundle.mjs` → `out/app-bundle/`, which FlUni ships):
   - totals are thinned to 15-minute steps;
   - outlines shared by two places (a dining hall inside its dorm) are one tap target;
@@ -84,20 +106,24 @@ extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo ru
 
 ## Open items (product owner's priorities first)
 
-1. **In flight:** the views agent is updating the phone mock to the actual app look.
-   - Fonts: Nunito and Fredoka.
-   - References: FlUni's fresh screenshots in `/Users/dqi26/fluni-screens/phoneref2/`.
-   - The phone's Map tab = the presenter map without dots.
-   - Delivery: one local commit for review, then push.
-2. **Remaining zoom pop:** from zoom 18, dots switch to see-through in one frame at settle.
-3. **Keyboard zoom:** keyboard +/− still uses Leaflet's discrete zoom.
-4. **Presenter "What users see":** shared outlines (a dining hall in its dorm) aren't merged into one
-   tap target as they are in usermap.js. Not silent, but it can show the dining hall alone.
-5. **Phone mock and sick users:** FlUni now shows sick users the stay-home card with no risk %
-   (9d1b919). Check that the mock matches; the views agent's task covers it.
-6. **Pitch page contrast:** `demo/` has contrast failures, posted for Aiden in WORKSTREAMS Requests.
+1. **Phone mock's Today, v5:** the product owner asked FlUni for a text-light pass on the home screens.
+   fluni-11 will send the v5 mock once it's approved; then redo Today to match. Until then, the mock
+   matches the v4 build (`/Users/dqi26/fluni-screens/phonecmp3/` side by side), except that the app's
+   timelines now sit about 15 pt further left.
+2. **Gaussian heat as the default again** (product owner): the model session (fluni-01) is making this
+   change, keeping Rio's building shading as a Display toggle. Update "What it is now" once it lands.
+   The team takes Rio's edits and solutions over other sessions' versions. The SMF session's
+   `model/smf*.js` was dropped.
+3. **Pitch page contrast:** `demo/` has contrast failures, posted for Aiden in WORKSTREAMS Requests.
    The heat map itself passes in light and dark (audit scripts `audit.mjs` and `inpage.js` in the
    scratchpad).
+
+Closed by the product owner on 2026-10-18:
+- Keyboard +/− zoom staying stepwise is fine.
+- The presenter's "What users see" doesn't need shared outlines merged.
+
+Fixed:
+- The see-through dot pop at zoom 18 (dots now fade over zoom 17–18.5).
 
 ## How to work in this repo (product owner's rules)
 

@@ -35,7 +35,9 @@ import { activityOf } from './data/room-activity.js';
 
 export const MF_DEFAULTS = {
   dtH: 1,                 // MF step, hours
-  prior: 0.02,            // P(infected) at the start, ages spread evenly (same as infer.js)
+  prior: 0.02,            // P(infected) at the start, ages spread evenly (same as infer.js). Only a fallback: input.initialPrevalence
+                          //   (see initialPrevalence(config)) replaces it when given. 2% was 30x the 7,500-agent runs' 5 seeds
+                          //   (0.07%), and with R ~ 1.5-2 those phantom cases made mean P ~0.40 vs 4-10% infected.
   importPerDay: 0.0005,   // community infection hazard (the paper's self-infection term)
   onsetDays: 2.5,         // infection -> symptom onset (sim influenza: latent 1.5 + presymptomatic 1.0)
   illnessDays: 10,        // infection age after which a case is over (R)
@@ -49,6 +51,8 @@ export const MF_DEFAULTS = {
                           //   the online pass can rerun this far back)
   lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
+                          //   Per run: the 7,500-agent runs need their own (node model/meanfield-cli.mjs <run> --calibrate);
+                          //   0.901 with the 2% prior put mean P at ~0.40 on runs with 5-10% infected.
   // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
   // air, so outdoor passers-by and crowded lounges outweighed roommates (the sim's most common infections).
   // A two-zone model (Nicas, Am. Ind. Hyg. Assoc. J. 57:542, 1996) treats the air within d of the source as a
@@ -88,10 +92,19 @@ function stageCurve(K, dtDays, P, R) {
   return s;
 }
 
-// input: { contacts, reports, rooms, agentIds, stepMin, startMs, weather?, days? } (as inferRisk; weather is
-// config.json params.weather; seeds, for calibration only: ids infected at the start). Returns { pAt, shedAt, shedStep, stepOf, changes, explain: null, flags: [], params }.
+// Share of people infected at the start, from a sim config (params.run.initial_seeds / n_agents): a count, not who.
+// A phone app would use a community prevalence estimate instead. null if the config doesn't say.
+export function initialPrevalence(config) {
+  const run = config?.params?.run || {}, n = Number(run.n_agents ?? config?.n_agents), k = Number(run.initial_seeds);
+  return n > 0 && k >= 0 ? k / n : null;
+}
+
+// input: { contacts, reports, rooms, agentIds, stepMin, startMs, weather?, days?, initialPrevalence? } (as inferRisk;
+// weather is config.json params.weather; initialPrevalence replaces MF_DEFAULTS.prior unless params.prior is set;
+// seeds, for calibration only: ids infected at the start). Returns { pAt, shedAt, shedStep, stepOf, changes, explain: null, flags: [], params }.
 export function meanFieldRisk(input, params = {}) {
-  const P = { ...MF_DEFAULTS, ...params }, R = { ...RIO, ...params };
+  const start = input.initialPrevalence != null ? { prior: input.initialPrevalence } : {};
+  const P = { ...MF_DEFAULTS, ...start, ...params }, R = { ...RIO, ...params };
   const { agentIds, stepMin, startMs } = input;
   const N = agentIds.length, idx = new Map(agentIds.map((id, i) => [id, i]));
   const dtMs = P.dtH * HOUR, dtDays = P.dtH / 24, W = Math.max(1, Math.round((P.dtH * 60) / stepMin)); // sim steps per MF step
