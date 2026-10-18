@@ -26,7 +26,7 @@ struct MeView: View {
         case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", icon: "face.smiling", tint: Theme.sage)
         case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Time near you counts half toward their close contact.", icon: "thermometer.medium", tint: Theme.sun)
         case .positive: return Option(title: "I tested positive", detail: "Phones near you see: contagious, and may alert their owners.", icon: "cross.case", tint: Theme.fire)
-        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative test isn't conclusive.", icon: "checkmark.shield", tint: Theme.sage)
+        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. A negative PCR clears a positive. One rapid test isn't conclusive.", icon: "checkmark.shield", tint: Theme.sage)
         }
     }
 

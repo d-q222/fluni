@@ -153,12 +153,27 @@ struct SelfReporter {
     }
 
     /// Clears `possible` only when the test is on or after symptom onset (an earlier negative says nothing
-    /// about this illness). Never touches `contagious`: a negative after a positive doesn't undo it.
+    /// about this illness). Clears `contagious` only for a PCR dated on or after the positive test's day:
+    /// a rapid negative never undoes a positive, and neither does a PCR from before it. If symptoms were
+    /// also reported they stay (back to `possible`, so IsolationPolicy still applies); otherwise healthy.
     func reportNegative(_ r: SelfReportRecord, kind: TestKind, date: Date, now: Date) throws -> SelfReportRecord {
         let day = try validated(date, now: now)
-        guard r.risk == .possible else { return r }
-        if let onset = r.onset, day < onset { return r }
-        return SelfReportRecord()
+        switch r.risk {
+        case .none:
+            return r
+        case .possible:
+            if let onset = r.onset, day < onset { return r }
+            return SelfReportRecord()
+        case .contagious:
+            guard kind == .pcr, let positive = r.positiveDate, day >= positive else { return r }
+            guard r.onset != nil, !r.symptoms.isEmpty else { return SelfReportRecord() }
+            var n = r
+            n.risk = .possible
+            n.positiveKind = nil
+            n.positiveDate = nil
+            n.lastCheckIn = now
+            return n
+        }
     }
 
     /// The daily check-in. Fever resets the 24 h clock. "No symptoms" clears `possible`; contagious stays

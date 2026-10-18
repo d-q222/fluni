@@ -65,7 +65,7 @@ struct SettingsView: View {
             .accessibilityIdentifier("settings.pause")
             .confirmationDialog("Pause detection", isPresented: $choosePause, titleVisibility: .visible) {
                 Button("For 1 hour") { model.pause(.oneHour) }
-                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until tomorrow, 6 AM") { model.pause(.untilTomorrow) }
                 Button("Until I turn it back on") { model.pause(.untilResumed) }
                 Button("Cancel", role: .cancel) {}
             }
