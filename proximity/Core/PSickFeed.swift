@@ -98,6 +98,15 @@ struct PSickFeed: Equatable {
     /// "YYYY-MM-DDTHH:MM:SS" (optional fraction) as seconds since 1970, naive time read as UTC. Nil if malformed.
     static func simSeconds(iso: String) -> Double? { simSeconds(bytes: Array(iso.utf8)[...]) }
 
+    /// Gregorian month length, so 2026-02-31 is rejected instead of rolling into March (found by mutation review).
+    static func daysInMonth(_ month: Int, year: Int) -> Int {
+        switch month {
+        case 2: return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28
+        case 4, 6, 9, 11: return 30
+        default: return 31
+        }
+    }
+
     private static func simSeconds(bytes b: ArraySlice<UInt8>) -> Double? {
         let a = Array(b)
         guard a.count >= 19, a[4] == 0x2D, a[7] == 0x2D, a[10] == 0x54, a[13] == 0x3A, a[16] == 0x3A else { return nil }
@@ -108,7 +117,7 @@ struct PSickFeed: Equatable {
         }
         guard let y = num(0..<4), let mo = num(5..<7), let d = num(8..<10),
               let h = num(11..<13), let mi = num(14..<16), let s = num(17..<19) else { return nil }
-        guard (1...12).contains(mo), (1...31).contains(d), h < 24, mi < 60, s < 60 else { return nil }
+        guard (1...12).contains(mo), (1...daysInMonth(mo, year: y)).contains(d), h < 24, mi < 60, s < 60 else { return nil }
         var frac = 0.0
         if a.count > 19 {
             guard a[19] == 0x2E, a.count > 20 else { return nil }
