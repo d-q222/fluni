@@ -1,0 +1,267 @@
+// Simple Mean-Field (SMF) flu probability: Baker et al., PNAS 2021, "Epidemic mitigation by statistical
+// inference from contact tracing data" (doi:10.1073/pnas.2106548118), SI Appendix section 3.
+// Each person is S, I or R. Their risk is P_I(t), propagated a day at a time with the product form
+//   P_S,j(t+1) = P_S,j(t) * prod_k (1 - P_I,k(t) * lambda_kj(t))            (SI eq. 1)
+// and recovery P_R += mu * P_I (SI eq. 2). Transmission and recovery depend on the time since infection
+// (the paper's non-Markovian case), so I is split into infection-age compartments I[g], g = days.
+// lambda for a source at age g over a day's contact rows = 1 - exp(-stage(g) * sum of unit doses).
+//
+// Observations (SI eqs. 4-6) clamp a person's state: a positive test or symptoms put them in I back to
+// tau days before the report, a negative test caps them (=> S), "recovered" moves them to R. As in the
+// paper, every output day D is a fresh run over the window [D - tMF, D] from the i.i.d. prior, using only
+// evidence known by then, so a report reaches back to the reporter's earlier contacts at the next midnight
+// (retroactive tracing) and the output never uses evidence before it was known.
+
+import { DEFAULTS, stageFactor } from './infer.js';
+
+export const SMF_DEFAULTS = {
+  prior: DEFAULTS.prior,        // P_I at the window start: a few percent of a campus is sick at any time
+  priorR: 0,                    // P(already had this season's flu / immune) at the window start
+  community: null,              // daily S -> I hazard from off-campus (our addition, not in the paper);
+                                //   null = computed so a contact-free campus stays at `prior`
+  selfReport: DEFAULTS.selfReport,   // P(flu | "might be sick"): the SI's P(infected | same syndromes)
+  reportOther: DEFAULTS.reportOther, // per distinct reporter, noisy-or with the self-report
+  posTest: DEFAULTS.posTest,    // P(I | positive), from test sensitivity/specificity (paper's P[O|q])
+  negTest: DEFAULTS.negTest,    // P(I | negative) ceiling: false negatives happen
+  recoverDays: DEFAULTS.recoverDays, // a "recovered" claim sooner than this after sick evidence is deferred
+  stageProfile: DEFAULTS.stageProfile, // infectiousness by days since symptom onset -2..7; incubation is
+                                //   ~2 d, so index g = days since infection; peak at g = 2 (Carrat 2008)
+  illnessMeanDays: DEFAULTS.illnessMeanDays, illnessShape: DEFAULTS.illnessShape, // Erlang illness length
+  ages: 14,                     // G: infection-age compartments (days); everyone left at G-1 recovers
+  tauDays: 2,                   // infection -> report/test (flu incubation ~2 d): how far a report reaches back
+  windowDays: 10,               // tMF: each day's run starts this many days back, from the prior
+  minDelta: 0.005,              // change points are written when P_I moved at least this much
+  probe: null,                  // tests only: probe(phase 'start'|'end', D, d, {S, R, I, pend, G})
+};
+
+const MIN = 60000, DAY = 86400000;
+const CAP = 0, RAISE = 1, REC = 2;
+
+// Erlang survival: P(illness lasts longer than t days).
+function erlangSurv(t, mean, k) {
+  const x = (k / mean) * t;
+  let term = 1, sum = 1;
+  for (let i = 1; i < k; i++) { term *= x / i; sum += term; }
+  return Math.exp(-x) * sum;
+}
+
+export function smfRisk(input, params = {}) {
+  const P = { ...SMF_DEFAULTS, ...params };
+  const { agentIds, startMs, stepMin, nSteps, rows, reports = [] } = input;
+  const n = agentIds.length, G = P.ages, tau = P.tauDays, stepMs = stepMin * MIN;
+  const nDays = Math.max(1, Math.ceil((nSteps * stepMin) / 1440));
+  const dayOf = (t) => Math.floor((t - startMs) / DAY);
+
+  // ---- disease constants: stage(g), removal hazard h[g], prior age mix, community hazard ----
+  const st = new Float64Array(G);
+  for (let g = 0; g < G; g++) st[g] = stageFactor(g - 2, P.stageProfile) || 0;
+  let GS = G; while (GS > 0 && st[GS - 1] === 0) GS--; // ages past the profile do not transmit
+  const surv = Array.from({ length: G + 1 }, (_, g) => erlangSurv(g, P.illnessMeanDays, P.illnessShape));
+  const h = new Float64Array(G);
+  for (let g = 0; g < G; g++) h[g] = g === G - 1 ? 1 : 1 - surv[g + 1] / surv[g];
+  let sumSurv = 0;
+  for (let g = 0; g < G; g++) sumSurv += surv[g];
+  const priorS = 1 - P.prior - P.priorR;
+  // stationary: I[g] = prior * Surv(g) / sumSurv, so the daily inflow c * S must equal prior / sumSurv
+  const comm = P.community ?? (priorS > 0 ? P.prior / (sumSurv * priorS) : 0);
+  const resolved = { ...P, community: comm };
+
+  // ---- evidence per agent: raises {t, L}, negatives [t], recoveries {t, te} ----
+  const items = Array.from({ length: n }, () => []);
+  const ok = (i) => Number.isInteger(i) && i >= 0 && i < n;
+  for (const r of reports) {
+    const { tMs: t, agent: a, event: e, value: v, target: tg } = r;
+    if (e === 'self_report' && ok(a)) {
+      if (v === 'might_be_sick') items[a].push({ t, k: 'sym' });
+      else if (v === 'tested_positive') items[a].push({ t, k: 'pos' });
+      else if (v === 'recovered') items[a].push({ t, k: 'rec' });
+    } else if (e === 'test_result' && ok(a)) {
+      if (v === 'positive') items[a].push({ t, k: 'pos' });
+      else if (v === 'negative') items[a].push({ t, k: 'neg' });
+    } else if (e === 'report_other' && v === 'might_be_sick' && ok(tg) && tg !== a) {
+      items[tg].push({ t, k: 'oth', who: a });
+    }
+  }
+  const ev = [];
+  for (let i = 0; i < n; i++) {
+    if (!items[i].length) continue;
+    const raises = [], negs = [], recs = [];
+    let pos = false, sym = false, lastSick = -Infinity;
+    const who = new Set();
+    for (const it of items[i]) {
+      if (it.k === 'neg' || it.k === 'rec') {
+        if (it.k === 'neg') negs.push(it.t);
+        else recs.push({ t: it.t, te: Math.max(it.t, lastSick + P.recoverDays * DAY) });
+        pos = sym = false; who.clear(); // a test or recovery starts a new episode
+        continue;
+      }
+      if (it.k === 'pos') pos = true; else if (it.k === 'sym') sym = true; else who.add(it.who);
+      const L = pos ? P.posTest : 1 - (sym ? 1 - P.selfReport : 1) * (1 - P.reportOther) ** who.size;
+      raises.push({ t: it.t, L });
+      lastSick = it.t;
+    }
+    ev.push({ i, raises, negs, recs });
+  }
+
+  // ---- rows: day ranges and a per-day slot for each unordered pair (cumulative dose lives there) ----
+  const { t: rt, a: ra, b: rb, dose } = rows;
+  const nRows = rt.length, stepsPerDay = 1440 / stepMin;
+  const dayR0 = new Int32Array(nDays + 1), slot = new Int32Array(nRows), daySlots = new Int32Array(nDays);
+  {
+    let r = 0;
+    for (let d = 0; d < nDays; d++) {
+      dayR0[d] = r;
+      const m = new Map();
+      for (; r < nRows && Math.floor(rt[r] / stepsPerDay) <= d; r++) {
+        const a = ra[r], b = rb[r], key = a < b ? a * n + b : b * n + a;
+        let s = m.get(key);
+        if (s === undefined) { s = m.size; m.set(key, s); }
+        slot[r] = s;
+      }
+      daySlots[d] = m.size;
+    }
+    dayR0[nDays] = r; // rows past the run are ignored
+  }
+  let maxSlots = 0;
+  for (let d = 0; d < nDays; d++) maxSlots = Math.max(maxSlots, daySlots[d]);
+  const sD = new Float64Array(maxSlots), sAlo = new Float64Array(maxSlots), sAhi = new Float64Array(maxSlots);
+
+  // ---- state ----
+  const I = new Float64Array(n * G), I0 = new Float64Array(n * G);
+  const S = new Float64Array(n), R = new Float64Array(n), pend = new Float64Array(n);
+  const pI = (i) => { let s = pend[i]; for (let g = 0, o = i * G; g < G; g++) s += I[o + g]; return s; };
+  const wI = surv.slice(0, G).map((s) => (P.prior * s) / sumSurv);
+  function reset() {
+    for (let i = 0; i < n; i++) {
+      S[i] = priorS; R[i] = P.priorR; pend[i] = 0;
+      for (let g = 0; g < G; g++) I[i * G + g] = wI[g];
+    }
+  }
+  // clamps (SI eqs. 4-6)
+  function raise(i, L, g0) { // P_I >= L, new mass at age g0, taken from S and R in proportion
+    const p = pI(i), avail = S[i] + R[i];
+    if (p >= L || avail <= 0) return;
+    const take = Math.min(L - p, avail), f = 1 - take / avail;
+    S[i] *= f; R[i] *= f; I[i * G + g0] += take;
+  }
+  function cap(i, L) { // P_I <= L, the removed mass becomes S (tested negative => susceptible)
+    const p = pI(i);
+    if (p <= L) return;
+    const f = L / p;
+    for (let g = 0, o = i * G; g < G; g++) I[o + g] *= f;
+    pend[i] *= f; S[i] += p - L;
+  }
+  function recover(i) { // certainly R from here on
+    R[i] = 1; S[i] = 0; pend[i] = 0;
+    for (let g = 0, o = i * G; g < G; g++) I[o + g] = 0;
+  }
+  const act = (x) => (x.k === CAP ? cap(x.i, P.negTest) : x.k === RAISE ? raise(x.i, x.L, x.g0) : recover(x.i));
+  const lambdaSum = (o, D) => { // A = sum_g I_src[g] * (1 - exp(-stage(g) * D)), source snapshot at offset o
+    let A = 0;
+    for (let g = 0; g < GS; g++) { const x = I0[o + g]; if (x > 0) A -= x * Math.expm1(-st[g] * D); }
+    return A;
+  };
+
+  // ---- output ----
+  const ch = Array.from({ length: n }, () => []), lastW = new Float64Array(n);
+  const note = (i, t) => {
+    const p = pI(i);
+    if (Math.abs(p - lastW[i]) < P.minDelta) return;
+    const c = ch[i], last = c[c.length - 1];
+    if (last && last.tMs === t) last.p = p; else c.push({ tMs: t, p });
+    lastW[i] = p;
+  };
+  const daily = [];
+
+  // ---- the causal daily re-run ----
+  for (let D = 0; D < nDays; D++) {
+    const cut = startMs + D * DAY, endD = cut + DAY, w = Math.max(0, D - P.windowDays);
+    const dayAct = Array.from({ length: D - w + 1 }, () => []), timed = Array.from({ length: D - w + 1 }, () => []);
+    for (const { i, raises, negs, recs } of ev) {
+      for (const { t, te } of recs) {
+        if (t >= endD) break;
+        if (te < startMs + w * DAY) dayAct[0].push({ k: REC, i, t: -Infinity });
+        else if (te < endD) timed[dayOf(te) - w].push({ k: REC, i, t: te });
+      }
+      for (const tn of negs) {
+        if (tn >= endD) break;
+        const dn = dayOf(tn);
+        if (tn < cut) for (let d = w; d <= dn; d++) dayAct[d - w].push({ k: CAP, i, t: tn });
+        // a newer raise reaching back over the test's day wins over it (it is applied after the caps)
+        const beaten = tn < cut && raises.some((r) => r.t > tn && r.t < cut && dayOf(r.t) - tau <= dn);
+        if (dn >= w && !beaten) timed[dn - w].push({ k: CAP, i, t: tn });
+      }
+      for (const { t, L } of raises) {
+        if (t >= endD) break;
+        if (t >= cut) { timed[D - w].push({ k: RAISE, i, t, L, g0: Math.min(tau, G - 1) }); continue; }
+        const dr = dayOf(t);
+        for (let d = Math.max(w, dr - tau); d <= dr; d++) {
+          if (negs.some((tn) => tn > t && tn < cut && dayOf(tn) >= d)) continue; // a newer negative wins
+          dayAct[d - w].push({ k: RAISE, i, t, L, g0: Math.min(d - (dr - tau), G - 1) });
+        }
+      }
+    }
+    // day start: recoveries, then caps, then raises (each in time order)
+    for (const l of dayAct) l.sort((x, y) => (x.k === y.k ? x.t - y.t : x.k === REC ? -1 : y.k === REC ? 1 : x.k - y.k));
+    for (const l of timed) l.sort((x, y) => x.t - y.t);
+
+    reset();
+    for (let d = w; d <= D; d++) {
+      const out = d === D, dMs = startMs + d * DAY;
+      for (const x of dayAct[d - w]) act(x);
+      if (out) for (let i = 0; i < n; i++) {
+        if (D === 0) { lastW[i] = pI(i); ch[i].push({ tMs: startMs, p: lastW[i] }); } else note(i, dMs);
+      }
+      I0.set(I); // sources use the day-start state: today's infections transmit from tomorrow
+      if (P.probe) P.probe('start', D, d, { S, R, I, pend, G });
+      const acts = timed[d - w], r0 = dayR0[d], r1 = dayR0[d + 1];
+      sD.fill(0, 0, daySlots[d]); sAlo.fill(0, 0, daySlots[d]); sAhi.fill(0, 0, daySlots[d]);
+      let ai = 0, nextAct = acts.length ? acts[0].t : Infinity;
+      for (let r = r0; r < r1; r++) {
+        const rowMs = startMs + rt[r] * stepMs;
+        while (nextAct <= rowMs) {
+          const x = acts[ai++]; act(x); if (out) note(x.i, x.t);
+          nextAct = ai < acts.length ? acts[ai].t : Infinity;
+        }
+        const a = ra[r], b = rb[r];
+        if (a === b) continue;
+        const lo = a < b ? a : b, hi = a < b ? b : a, s = slot[r], Dn = sD[s] + dose[r];
+        sD[s] = Dn;
+        // lo -> hi: S_hi *= (1 - A_new) / (1 - A_old); what leaves S is today's infection (pend)
+        let An = lambdaSum(lo * G, Dn), Ao = sAlo[s];
+        sAlo[s] = An;
+        if (Ao < 1) { const s1 = (S[hi] * (1 - An)) / (1 - Ao); pend[hi] += S[hi] - s1; S[hi] = s1; }
+        An = lambdaSum(hi * G, Dn); Ao = sAhi[s];
+        sAhi[s] = An;
+        if (Ao < 1) { const s1 = (S[lo] * (1 - An)) / (1 - Ao); pend[lo] += S[lo] - s1; S[lo] = s1; }
+        if (out) { note(lo, rowMs); note(hi, rowMs); }
+      }
+      for (; ai < acts.length; ai++) { act(acts[ai]); if (out) note(acts[ai].i, acts[ai].t); }
+      if (P.probe) P.probe('end', D, d, { S, R, I, pend, G });
+      // day end: community infections, then age everyone by a day (SI eq. 2 with mu = h[g])
+      for (let i = 0; i < n; i++) {
+        const lost = S[i] * comm, o = i * G;
+        S[i] -= lost; pend[i] += lost;
+        for (let g = G - 1; g >= 0; g--) {
+          R[i] += I[o + g] * h[g];
+          if (g + 1 < G) I[o + g + 1] = I[o + g] * (1 - h[g]);
+        }
+        I[o] = pend[i]; pend[i] = 0;
+      }
+    }
+    let sumI = 0, sumR = 0, sumS = 0;
+    for (let i = 0; i < n; i++) { sumI += pI(i); sumR += R[i]; sumS += S[i]; }
+    daily.push({ day: D, tMs: startMs + (D + 1) * DAY, sumI, sumR, sumS });
+  }
+
+  const changes = new Map();
+  for (let i = 0; i < n; i++) changes.set(agentIds[i], ch[i]);
+  function pAt(id, tMs) {
+    const c = changes.get(id);
+    if (!c || !c.length || tMs < c[0].tMs) return P.prior;
+    let lo = 0, hi = c.length - 1;
+    while (lo < hi) { const m = (lo + hi + 1) >> 1; if (c[m].tMs <= tMs) lo = m; else hi = m - 1; }
+    return c[lo].p;
+  }
+  return { pAt, changes, daily, params: resolved };
+}
