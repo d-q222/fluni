@@ -847,7 +847,7 @@ async function main() {
         if (!w) continue;
         q.push([e.tMs, w * e.min]); sum += w * e.min;
         while (q[0][0] < e.tMs - EXPOSURE_WINDOW_MS) sum -= q.shift()[1];
-        if (sum >= CLOSE_CONTACT_MIN) { best = { id, tMs: e.tMs }; break; }
+        if (sum >= CLOSE_CONTACT_MIN) { best = { id, tMs: e.tMs + e.min * 60000 }; break; } // the alert lands when that contact has fully counted
       }
     }
     return best;
