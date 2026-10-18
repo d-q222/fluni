@@ -7,12 +7,14 @@ import SwiftUI
 
 /// How the tissue feels, from the state of the app. Each mood has its own drawing or marks, its own line.
 enum TissueMood: Equatable {
-    case calm, headsUp, alert, paused, sick
+    /// `careful`: nobody sick near you now, but today's estimate is elevated or high (same drawing as calm).
+    case calm, careful, headsUp, alert, paused, sick
 
     /// The one kind line the tissue says. Calm and specific, never alarmist.
     var line: String {
         switch self {
         case .calm: return "Calm day. Nobody near you has said they feel sick, so I'm off duty."
+        case .careful: return "Nobody sick near you right now. Earlier today still counts, so go easy on yourself."
         case .headsUp: return "Someone close by may be sick. A little space goes a long way."
         case .alert: return "Okay, eyes up. We'll handle this together, one step at a time."
         case .paused: return "I'm napping while detection is paused. Wake me whenever you're ready."
@@ -67,11 +69,11 @@ struct TissueNarrator: View {
                     }
             default:
                 Image("Tissue").resizable().scaledToFit()
-                    .padding(mood == .calm ? 6 : 14)
+                    .padding(mood == .calm || mood == .careful ? 6 : 14)
                     .saturation(mood == .paused ? 0.35 : 1)
                     .opacity(mood == .paused ? 0.75 : 1)
                     .rotationEffect(.degrees(mood == .alert ? 6 : mood == .headsUp ? 3 : -4))
-                    .offset(y: bob && mood == .calm ? -3 : 0)
+                    .offset(y: bob && (mood == .calm || mood == .careful) ? -3 : 0)
                     .animation(FlMotion.idle(reduceMotion), value: bob)
                     .scaleEffect(hop ? 1.08 : 1, anchor: .bottom)
                     .animation(FlMotion.bouncy(reduceMotion), value: hop)

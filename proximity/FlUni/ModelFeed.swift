@@ -17,6 +17,8 @@ final class ModelFeed: ObservableObject {
     @Published private(set) var myRisk = Risk.none
     @Published private(set) var statusSetAt: Date?
     @Published private(set) var unusualSignals = false
+    /// The live risk estimate's band (low / elevated / high): changes rarely, unlike the number.
+    @Published private(set) var riskBand = RiskEstimate.Band.low
     var isPaused: Bool { pauseState != nil }
 
     private var bag: [AnyCancellable] = []
@@ -37,7 +39,14 @@ final class ModelFeed: ObservableObject {
             #endif
             return m.$peers.map(\.count).eraseToAnyPublisher()
         }()
+        let risk: AnyPublisher<Double, Never> = {
+            #if DEBUG
+            if let e = PreviewHook.exposure { return Just(e.probability).eraseToAnyPublisher() }
+            #endif
+            return m.$liveRisk.eraseToAnyPublisher()
+        }()
         bag = [
+            risk.map(RiskEstimate.band).removeDuplicates().sink { [weak self] in self?.riskBand = $0 },
             exposure.map(\.level).removeDuplicates().sink { [weak self] in self?.level = $0 },
             exposure.map { Int(min($0.minutes, 99)) }.removeDuplicates().sink { [weak self] in self?.minutes = $0 },
             peers.removeDuplicates().sink { [weak self] in self?.peerCount = $0 },

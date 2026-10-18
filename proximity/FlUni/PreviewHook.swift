@@ -63,12 +63,14 @@ enum PreviewHook {
         case .nearby: t.advance(simSeconds: 6 * 60, contacts: [(0.8, .possible)], doses: [DosePeer(id: "a", distance: 1.2)])
         case .closeContact: t.advance(simSeconds: 18 * 60, contacts: [(0.95, .contagious)], doses: [DosePeer(id: "b", distance: 0.8)])
         case .riskElevated, .riskHigh:
-            // Earlier time near someone who tested positive, mostly just outside 6 ft: the dose (and so the risk)
-            // builds while close-contact minutes stay low. Stops at the target, then nobody is near now.
+            // Hours in the same room as someone who tested positive, beyond 6 ft: shared air builds the dose (and so
+            // the risk) while no close-contact minutes count. Stops at the target, then nobody is near now.
             let target = state == .riskHigh ? 0.45 : 0.18
+            // Two people for the high case; at most 16 h, so nothing ages out of the 24 h window on the way.
+            let people = state == .riskHigh ? [DosePeer(id: "c", distance: 2.0), DosePeer(id: "d", distance: 2.2)] : [DosePeer(id: "c", distance: 2.5)]
             var n = 0
-            while t.probability < target && n < 5000 {
-                t.advance(simSeconds: 20, contacts: [(0.04, .contagious)], doses: [DosePeer(id: "c", distance: 1.6)])
+            while t.probability < target && n < 2900 {
+                t.advance(simSeconds: 20, contacts: people.map { _ in (0, .contagious) }, doses: people)
                 n += 1
             }
             t.advance(simSeconds: 0, contacts: [])

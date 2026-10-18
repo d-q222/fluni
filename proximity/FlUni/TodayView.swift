@@ -62,7 +62,7 @@ struct TodayView: View {
         if isSick { return .sick }
         if feed.isPaused { return .paused }
         switch level {
-        case .none: return .calm
+        case .none: return feed.riskBand == .low ? .calm : .careful
         case .nearby: return .headsUp
         case .closeContact: return .alert
         }
@@ -457,13 +457,12 @@ private struct LiveRiskBlock: View {
         let word = band == .low ? "low" : band == .elevated ? "elevated" : "high"
         Button(action: onRisk) {
             VStack(alignment: .leading, spacing: Space.xs) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(RiskEstimate.liveText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
-                        .contentTransition(reduceMotion ? .identity : .numericText(value: risk))
-                        .animation(FlMotion.number(reduceMotion), value: risk)
-                    Text(word).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.ink)
-                }
-                Text("risk estimate,\nlast 24 h").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
+                Text(RiskEstimate.liveText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
+                    .contentTransition(reduceMotion ? .identity : .numericText(value: risk))
+                    .animation(FlMotion.number(reduceMotion), value: risk)
+                (Text(word).fontWeight(.semibold).foregroundColor(band == .low ? Theme.ink : Theme.fireInk)
+                 + Text(" risk estimate, last 24 h").foregroundColor(Theme.ink2))
+                    .font(.fluni(.fine))
                     .fixedSize(horizontal: false, vertical: true)
                 Text("Why this number").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.ink2)
                     .underline(true, color: Theme.ink2.opacity(0.5))

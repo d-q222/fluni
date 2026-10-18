@@ -145,6 +145,7 @@ private struct TodayCheckIn: View {
     @ObservedObject var store: SelfReportStore
     @State private var changing = false
     @State private var feverNoted = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         let due = store.reporter.checkInDue(record, now: Date())
@@ -158,9 +159,10 @@ private struct TodayCheckIn: View {
                 }
             }
             if due || changing {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: Space.xs) { answers }
+                if typeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: Space.xs) { answers }
+                } else {
+                    HStack(spacing: Space.xs) { answers }
                 }
             } else {
                 answered
@@ -213,16 +215,16 @@ private struct TodayCheckIn: View {
     }
 }
 
-/// One of three equal answers (B-5): an ink-outlined pill, 50 pt tall, sized to its word.
+/// One of three equal answers (B-5): ink-outlined pills of equal width, 50 pt tall, side by side.
 private struct PillStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.fluni(.heading))
+            .font(.fluni(.note).weight(.semibold))
             .foregroundStyle(Theme.ink)
             .lineLimit(1)
-            .fixedSize()
-            .padding(.horizontal, Space.m)
-            .frame(minHeight: 50)
+            .minimumScaleFactor(0.85)
+            .padding(.horizontal, Space.xs)
+            .frame(maxWidth: .infinity, minHeight: 50)
             .background(Capsule().fill(configuration.isPressed ? Theme.surface2 : Theme.surface))
             .overlay(Capsule().stroke(Theme.ink, lineWidth: Theme.stroke))
             .contentShape(Capsule())
