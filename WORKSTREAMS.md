@@ -55,6 +55,12 @@ Claim a row before you start. Update the status as you go. Agents should name th
   can't load the full 28 M-row timeline. Proposal: the sim also writes `timeline_changes.csv.gz`
   ([docs/timeline-changes-format.md](docs/timeline-changes-format.md)), and the heat map precomputes
   `totals.json.gz` (building totals and forecasts). The full timeline stays the source of truth.
+- **2026-10-18 — Mean-field starting prevalence from the run (@aidenyj, edited `model/` and one line of
+  `heatmap/app.js` directly).** `model/meanfield.js` takes `input.initialPrevalence` (the CLI and `?model=meanfield`
+  pass `initial_seeds / n_agents`) instead of the fixed 2% prior, which overpredicted ~10x on the 7,500-agent runs.
+  `meanfield-cli.mjs --calibrate --holdout` fits `lambdaScale` without held-out agents. Default `lambdaScale` update
+  to follow. `infer.js` and the heat map's 2% baseline are unchanged. The committed `model/out/*/meanfield.csv`
+  were made with the old prior and are not regenerated yet.
 - **2026-10-17 — Demo phone alerts follow the proximity app.** 6 ft distance; an immediate heads-up;
   a close-contact alert at 15 weighted minutes in 24 h (contagious 1, possibly sick 0.5). Added on
   the heat map phone: a retroactive "exposure notice" for contacts who later report sick.

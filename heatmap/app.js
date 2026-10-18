@@ -13,7 +13,7 @@ import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
-import { meanFieldRisk } from '../model/meanfield.js';
+import { meanFieldRisk, initialPrevalence } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -291,7 +291,7 @@ async function loadModel(dataUrl, agentIds) {
     // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
     let mfRisk = null;
     const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
-      weather: config.params?.weather, days: config.days }));
+      weather: config.params?.weather, days: config.days, initialPrevalence: initialPrevalence(config) }));
     if (MEAN_FIELD) risk = mf();
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
