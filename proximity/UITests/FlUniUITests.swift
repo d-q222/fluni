@@ -27,10 +27,10 @@ final class FlUniUITests: FlUniUITestCase {
     func testTabsSwitchAndShowTheirScreens() {
         launchPastOnboarding()
         XCTAssertTrue(tab("Today").isSelected)
-        XCTAssertEqual(app.tabBars.buttons.count, 3, "Today, Campus, You")
-        openTab("Campus")
+        XCTAssertEqual(app.tabBars.buttons.count, 3, "Today, Map, Me")
+        openTab("Map")
         XCTAssertFalse(el("today.now").isHittable, "Today is behind")
-        openTab("You")
+        openTab("Me")
         XCTAssertTrue(app.staticTexts["How are you feeling?"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["What nearby phones see about you"].exists)
         openTab("Today")
@@ -159,7 +159,7 @@ final class FlUniUITests: FlUniUITestCase {
     /// reads "Day 0 of 5", and the last day home is five days later.
     func testSymptomsSubmitNeedsASymptomThenSetsPossiblySick() {
         launchPastOnboarding()
-        openTab("You")
+        openTab("Me")
         XCTAssertTrue(el("report.fine").isSelected, "starts healthy")
         XCTAssertFalse(el("athome.card").exists)
 
@@ -246,12 +246,32 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(el("report.fine").isSelected)
     }
 
+    /// Owner's ruling: someone who reported a positive test (or symptoms) never sees a risk percentage or band.
+    func testAfterAPositiveReportNoRiskPercentageAnywhere() {
+        launchPastOnboarding()
+        XCTAssertTrue(el("risk.card").exists, "healthy: the estimate is there")
+        reportPositive()
+        let percent = NSPredicate(format: "label MATCHES %@", #".*\d+(\.\d)?\s?%.*"#)
+        let band = NSPredicate(format: "label CONTAINS[c] 'risk estimate'")
+        func noRisk(_ screen: String) {
+            XCTAssertEqual(app.descendants(matching: .any).matching(percent).count, 0, "no % on \(screen)")
+            XCTAssertEqual(app.descendants(matching: .any).matching(band).count, 0, "no risk estimate on \(screen)")
+            XCTAssertFalse(el("risk.card").exists, screen)
+            XCTAssertFalse(el("risk.advice").exists, screen)
+        }
+        noRisk("Me")
+        openTab("Today")
+        XCTAssertTrue(el("athome.heading").waitForExistence(timeout: 5))
+        XCTAssertTrue(el("athome.heading").label.contains("contagious"), el("athome.heading").label)
+        for _ in 0..<3 { noRisk("Today"); app.swipeUp() }
+    }
+
     // MARK: Pause and data
 
     func testPauseForOneHourShowsPausedStateAndResumeRemovesIt() {
         launchPastOnboarding()
         XCTAssertFalse(el("banner.paused").exists)
-        openTab("You")
+        openTab("Me")
         scrollTo(el("you.pause")).tap()
         let hour = dialogButton("For 1 hour")
         XCTAssertTrue(hour.waitForExistence(timeout: 5), "pause choices")
@@ -271,7 +291,7 @@ final class FlUniUITests: FlUniUITestCase {
     /// Settings keeps its own pause menu too.
     func testSettingsPauseMenuStillWorks() {
         launchPastOnboarding()
-        openTab("You")
+        openTab("Me")
         scrollTo(el("settings.row")).tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         let pause = el("settings.pause")
@@ -297,7 +317,7 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(app.tabBars.firstMatch.exists)
         // And the saved status is gone once onboarding is done again.
         completeOnboarding()
-        openTab("You")
+        openTab("Me")
         XCTAssertTrue(el("report.fine").isSelected)
         XCTAssertFalse(el("athome.card").exists)
     }
@@ -311,7 +331,7 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         completeOnboarding()
         XCTAssertTrue(el("today.now").exists, "Today's day timeline, not the stay-home track")
-        openTab("You")
+        openTab("Me")
         XCTAssertTrue(el("report.fine").isSelected, "status back to healthy")
     }
 
@@ -340,12 +360,12 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(scrollTo(el("today.reportSymptoms")).isHittable, "I don't feel well")
 
         // Campus
-        XCTAssertTrue(tab("Campus").isHittable)
-        openTab("Campus")
+        XCTAssertTrue(tab("Map").isHittable)
+        openTab("Map")
 
         // You
-        XCTAssertTrue(tab("You").isHittable)
-        openTab("You")
+        XCTAssertTrue(tab("Me").isHittable)
+        openTab("Me")
         for id in ["report.fine", "report.symptoms", "report.positive", "report.negative", "you.pause", "settings.row", "you.delete", "developer.row"] {
             XCTAssertTrue(scrollTo(el(id)).isHittable, "\(id) hittable at XXXL")
         }

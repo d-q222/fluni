@@ -4,7 +4,7 @@ import XCTest
 /// via the test-only environment variables read in FlUni/FlUniApp.swift.
 ///
 /// Screens are found by accessibility identifier, not navigation-bar titles: Today and You draw their own
-/// headers (the wordmark, "You"), and Campus is the bundled web map with no bar.
+/// headers (the wordmark, "Me"), and Map is the bundled web map with no bar.
 class FlUniUITestCase: XCTestCase {
     var app: XCUIApplication!
 
@@ -43,7 +43,7 @@ class FlUniUITestCase: XCTestCase {
         switch tabName {
         // Today is the day timeline, or the stay-home track while sick.
         case "Today": return app.descendants(matching: .any).matching(NSPredicate(format: "identifier IN %@", ["today.now", "today.athome"])).firstMatch
-        case "Campus": return app.webViews.firstMatch
+        case "Map": return app.webViews.firstMatch
         default: return el("you.title")
         }
     }
@@ -86,10 +86,10 @@ class FlUniUITestCase: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)).tap()  // inside the sheet, away from the dialog
     }
 
-    /// You > I have symptoms (opens the report at its stickers step) > Cough > submit. The sheet shows Lisa's
+    /// Me > I have symptoms (opens the report at its stickers step) > Cough > submit. The sheet shows Lisa's
     /// "Self-reported" stamp for a moment before it closes.
     func reportSymptoms(file: StaticString = #filePath, line: UInt = #line) {
-        openTab("You", file: file, line: line)
+        openTab("Me", file: file, line: line)
         let row = el("report.symptoms")
         XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
         row.tap()
@@ -103,9 +103,9 @@ class FlUniUITestCase: XCTestCase {
         XCTAssertTrue(el("you.title").waitForExistence(timeout: 5), file: file, line: line)
     }
 
-    /// You > I tested positive > Review and share > confirm.
+    /// Me > I tested positive > Review and share > confirm.
     func reportPositive(file: StaticString = #filePath, line: UInt = #line) {
-        openTab("You", file: file, line: line)
+        openTab("Me", file: file, line: line)
         el("report.positive").tap()
         XCTAssertTrue(el("report.title").waitForExistence(timeout: 5), file: file, line: line)
         XCTAssertTrue(el("report.title").label.contains("I tested positive"), el("report.title").label, file: file, line: line)

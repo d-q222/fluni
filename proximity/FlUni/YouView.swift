@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// You: what nearby phones see about you, how to change it, your recent contacts, pause, settings and
+/// Me (the third tab, lettered to match Lisa's tab art): what nearby phones see about you, how to change it, your recent contacts, pause, settings and
 /// deleting your data. One page, in that order: the thing this tab exists for first.
 struct YouView: View {
     let model: ProximityModel
@@ -25,7 +25,7 @@ struct YouView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.xl) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text("You").font(.fluni(.display)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                        Text("Me").font(.fluni(.display)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
                             .accessibilityIdentifier("you.title")
                         Spacer()
                         Wordmark(size: 22).accessibilityHidden(true)
@@ -50,7 +50,7 @@ struct YouView: View {
             }
             .contentMargins(.bottom, Space.xl, for: .scrollContent)
             .background(Theme.paper)
-            .navigationTitle("You")
+            .navigationTitle("Me")
             .toolbar(.hidden, for: .navigationBar)
             #if DEBUG
             .sheet(isPresented: $showDeveloper) { DeveloperView(model: model, demoOverride: AnyView(DemoOverrideLink())) }

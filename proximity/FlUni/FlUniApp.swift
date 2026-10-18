@@ -73,13 +73,13 @@ struct FlUniApp: App {
                         // The heat map team's real campus map, unchanged inside.
                         BundledMapView()
                             .background(Theme.paper.ignoresSafeArea())
-                            .tabItem { Label("Campus", systemImage: "map") }
-                            .tag(AppRouter.Tab.campus)
-                            .accessibilityIdentifier("tab.campus")
+                            .tabItem { Label("Map", systemImage: "map") }
+                            .tag(AppRouter.Tab.map)
+                            .accessibilityIdentifier("tab.map")
                         YouView(model: model, store: reportStore)
-                            .tabItem { Label("You", systemImage: "person") }
-                            .tag(AppRouter.Tab.you)
-                            .accessibilityIdentifier("tab.you")
+                            .tabItem { Label("Me", systemImage: "person") }
+                            .tag(AppRouter.Tab.me)
+                            .accessibilityIdentifier("tab.me")
                     }
                     .tint(Theme.ink)
                     .onAppear {
@@ -119,7 +119,7 @@ struct FlUniApp: App {
         }
     }
 
-    /// Navigation titles in the Fraunces serif, ink on paper, so "You" and "Settings" match the rest.
+    /// Navigation titles in the Fraunces serif, ink on paper, so "Settings" and the other pushed screens match the rest.
     private static func styleNavigationBars() {
         let ink = UIColor(Theme.ink)
         let a = UINavigationBarAppearance()

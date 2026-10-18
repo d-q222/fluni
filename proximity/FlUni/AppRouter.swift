@@ -8,14 +8,14 @@ import Combine
 final class AppRouter: ObservableObject {
     static let shared = AppRouter()
 
-    enum Tab: Hashable { case today, campus, you }
+    enum Tab: Hashable { case today, map, me }
 
     @Published var tab: Tab = .today
     /// Bumped to open the newest close contact in place on Today's timeline.
     @Published private(set) var closeContactRequest = 0
     /// Bumped to open the report sheet on Today.
     @Published private(set) var reportRequest = 0
-    /// Building the Campus tab should centre on and open the card for; the map clears it once applied.
+    /// Building the Map tab should centre on and open the card for; the map clears it once applied.
     @Published var focusBuilding: String?
 
     /// Fires when every open sheet must close (child views with their own sheets listen).
@@ -54,7 +54,7 @@ final class AppRouter: ObservableObject {
         case .openToday: tab = .today
         case .closeContact: showCloseContact()
         case .reportSymptoms: showReport()
-        case .mapFocus(let id): dismissSheets.send(); tab = .campus; focusBuilding = id
+        case .mapFocus(let id): dismissSheets.send(); tab = .map; focusBuilding = id
         case .ignore: break
         }
     }

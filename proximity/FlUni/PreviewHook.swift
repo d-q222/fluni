@@ -127,8 +127,8 @@ enum PreviewHook {
         default: break
         }
         switch screen {
-        case "you", "me": router.tab = .you
-        case "campus", "map": router.tab = .campus
+        case "you", "me": router.tab = .me
+        case "campus", "map": router.tab = .map
         case "moment": router.showCloseContact()
         case "askNotifications":  // screenshots of a real notification need permission on the simulator
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }

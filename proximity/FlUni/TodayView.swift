@@ -485,10 +485,15 @@ private struct LiveRiskBlock: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        // Someone who reported symptoms or a positive test never sees a risk of catching it (owner's ruling).
+        if model.myRisk != .none { EmptyView() } else { estimate }
+    }
+
+    private var estimate: some View {
         let risk = model.shownRisk
         let band = RiskEstimate.band(risk)
         let word = band == .low ? "low" : band == .elevated ? "elevated" : "high"
-        Button(action: onRisk) {
+        return Button(action: onRisk) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text(RiskEstimate.liveText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
                     .contentTransition(reduceMotion ? .identity : .numericText(value: risk))
@@ -517,7 +522,7 @@ private struct LiveRiskAdvice: View {
     @ObservedObject var model: ProximityModel
     var body: some View {
         let p = model.shownRisk
-        if RiskEstimate.band(p) != .low {
+        if model.myRisk == .none, RiskEstimate.band(p) != .low {
             Text(RiskEstimate.summary(p)).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("risk.advice")
@@ -529,6 +534,10 @@ private struct LiveRiskAdvice: View {
 private struct LiveRiskLine: View {
     @ObservedObject var model: ProximityModel
     var body: some View {
+        if model.myRisk == .none { line }
+    }
+
+    private var line: some View {
         Text(RiskEstimate.changeLine(to: model.shownRisk)).font(.fluni(.note)).foregroundStyle(Theme.ink)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("closeContact.risk")
@@ -741,12 +750,35 @@ struct CalculationSheet: View {
     @ObservedObject private var store = PSickStore.shared
 
     var body: some View {
+        if model.myRisk != .none { ownState } else { numbers }
+    }
+
+    /// After a report there is no risk of catching it to show: their own state instead.
+    private var ownState: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Space.m) {
+                    Text(model.myRisk == .contagious ? "You've reported a positive test" : "You've reported symptoms")
+                        .font(.fluni(.section)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                    Text("So there's no risk estimate to show: it's about catching flu, and that no longer applies. Nearby phones see you as \(model.myRisk == .contagious ? "contagious" : "possibly sick"). Today has your stay-home plan.")
+                        .font(.fluni(.reading)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, Space.m).padding(.vertical, Space.l)
+            }
+            .background(Theme.paper)
+            .navigationTitle("How is this calculated?")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+    }
+
+    private var numbers: some View {
         let e = model.shownExposure
         let p = model.shownRisk
         let m = String(format: "%.1f", e.minutes)
         let d = String(format: "%.3f", e.dose)
         let pos = Int((RiskEstimate.posTest * 100).rounded()), sym = Int((RiskEstimate.selfReport * 100).rounded())
-        NavigationStack {
+        return NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.l) {
                     block("Close contact",
