@@ -38,10 +38,17 @@ struct LinkPeer: Hashable, CustomStringConvertible {
 /// 2.4-4.5 s; failed ones hang until the invite timeout; the success rate fell from 39 % with no other
 /// handshake in progress on the phone to 0 % with three, and was 0 of 12 when discovery restarted
 /// mid-handshake. So: at most ONE handshake in progress per phone (we neither invite nor accept while
-/// another is connecting), a 6 s invite timeout, short backoff, peers with fewer failures first, and
-/// discovery restarts only when nothing is connecting, at least 5 s apart, never stop+start in one
-/// run-loop turn. One browser and advertiser per identity, released 2 s after stopping (a crash showed
-/// CFNetwork cancelling a Bonjour browse whose owner was already gone).
+/// another is connecting), a 6 s invite timeout, short backoff, peers with fewer failures first.
+///
+/// Browsers are never stopped (crash fix, 2026-10-17). 19 SIGTRAPs on one day all had the stack
+/// `_CFAssertMismatchedTypeID < CFRunLoopSourceInvalidate < CFNetwork _BrowserCancel`, and every crash
+/// that had a console log followed a "link discovery restart" by under 1 s. MPC's stop (and dealloc) stops
+/// its NSNetServiceBrowser from MPC's background queue while that browser is scheduled on the main run
+/// loop; CFNetwork's deferred cancel then sometimes runs on freed memory. Apple bug r. 60399638, no fix, see
+/// developer.apple.com/forums/thread/663772. Keeping our wrapper alive (the first fix) can't help, because
+/// the freed object is MPC's own. So there are no discovery restarts. A retired identity's browser is parked
+/// (BrowserLedger) until MPC has stopped it itself in the background. Browsing only starts while the app is
+/// active. Advertisers have no browser inside, so they are stopped and started freely.
 ///
 /// All state on the main queue. One MCSession per remote, fresh per attempt; callbacks from a session
 /// that is no longer current are ignored. Every message is size-capped, rate-limited and validated
@@ -61,10 +68,9 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     // Tuning (see the type comment for the field data behind them).
     static let watchdogSlack: TimeInterval = 1        // a handshake still connecting this long past the invite timeout is dead
     static let largerNameWait: TimeInterval = 4       // the larger name invites too if the smaller hasn't by then
-    static let minRestartGap: TimeInterval = 5        // discovery restarts at least this far apart
     static let restartDelay: TimeInterval = 0.5       // stop, then start on a later main-queue turn
-    static let releaseDelay: TimeInterval = 120       // keep a stopped browser/advertiser alive this long (see below)
-    static let minBrowseBeforeStop: TimeInterval = 5  // never stop a browser that started less than this ago
+    static let releaseDelay: TimeInterval = 120       // keep a released identity's sessions/advertiser alive this long
+    static let browseRetryDelay: TimeInterval = 30    // after a browse error, park that browser and try a fresh one
     static let retireAfterRelink: TimeInterval = 3    // old identity kept this long after the new link is up (UWB tokens)
     static let retireDeadline: TimeInterval = 15
 
@@ -82,9 +88,9 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         let gen: Int
         let me: MCPeerID
         let advertiser: MCNearbyServiceAdvertiser
-        /// Replaced (never stopped and restarted) on a discovery restart; see `restartDiscovery`.
-        var browser: MCNearbyServiceBrowser
-        var browsingSince = Date.distantPast
+        /// Created when browsing starts (only while the app is active), parked when the identity stops
+        /// discovering. Never stopped, never started twice.
+        var browser: MCNearbyServiceBrowser?
         var found: [MCPeerID: Date] = [:]   // peer -> first seen
         var slots: [MCPeerID: Slot] = [:]
         var retireBy: Date?                 // non-nil once replaced by a newer identity
@@ -95,23 +101,18 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
             // Random per identity, never the device name. 8 hex digits, as before.
             me = MCPeerID(displayName: String(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8)))
             advertiser = MCNearbyServiceAdvertiser(peer: me, discoveryInfo: nil, serviceType: PeerLink.serviceType)
-            browser = MCNearbyServiceBrowser(peer: me, serviceType: PeerLink.serviceType)
         }
     }
 
     private var gens = 0
     private lazy var current = makeIdentity()
     private var retiring: [Identity] = []
-    private var graveyard: [Identity] = []   // stopped, kept alive until CFNetwork's cancel has run
-    /// Stopped browsers kept alive the same way. Field crash (6 on 2026-10-17, all in the foreground): CFNetwork posts
-    /// `_BrowserCancel` as a deferred run-loop source when a browse stops; if the browser (or the CFNetServiceBrowser
-    /// a restart of the same MCNearbyServiceBrowser throws away) is gone when it runs, CFRunLoopSourceInvalidate traps.
-    /// So: a stopped browser is never started again and lives on here for `releaseDelay`.
-    private var browserGraveyard: [MCNearbyServiceBrowser] = []
+    private var graveyard: [Identity] = []   // released identities (sessions, advertiser), kept a while
+    private var ledger = BrowserLedger()
+    private var parkedBrowsers: [Int: MCNearbyServiceBrowser] = [:]   // keyed like the ledger
+    private var lastBrowseRetry = Date.distantPast
+    private var observing = false
     private var tick: Timer?
-    private var lastDiscoveryRestart = Date.distantPast
-    private var restartPending = false
-    private var totalFailures = 0
     private var started = false
     private var paused = false
 
@@ -126,7 +127,6 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         gens += 1
         let id = Identity(gen: gens)
         id.advertiser.delegate = self
-        id.browser.delegate = self
         return id
     }
 
@@ -135,14 +135,72 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     func start() {
         started = true
         paused = false
+        observeAppState()
         startDiscovery(current)
         startTimer()
+    }
+
+    /// MPC itself stops browsing when the app goes to the background and restarts it on return. The ledger
+    /// mirrors that, so parked browsers are released only after MPC has stopped them.
+    private func observeAppState() {
+        guard !observing else { return }
+        observing = true
         #if canImport(UIKit)
-        // MPC resumes advertising/browsing by itself on return to the foreground, but it can come back
-        // idle; restart through the safe path (debounced, skipped mid-handshake).
-        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
-                                               queue: .main) { [weak self] _ in self?.restartDiscovery("foreground") }
+        ledger = BrowserLedger(inBackground: UIApplication.shared.applicationState == .background)
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self else { return }
+            self.ledger.enteredBackground(at: Date())
+            self.log("link app background, parked=\(self.ledger.parkedCount)")
+            guard self.ledger.parkedCount > 0 else { return }
+            // Stay awake past the grace period (the harness has no background mode), then release.
+            if self.releaseTask == .invalid {
+                self.releaseTask = UIApplication.shared.beginBackgroundTask(withName: "fluni.link.release") { [weak self] in
+                    self?.endReleaseTask()
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + BrowserLedger.grace + 1) { [weak self] in
+                self?.releaseParked()
+                self?.endReleaseTask()
+            }
+        }
+        nc.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.ledger.willEnterForeground()
+        }
+        // An identity made in the background (rotation, Bluetooth relaunch) starts browsing now.
+        nc.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self else { return }
+            // A launch into the background may become active without willEnterForeground. Treating MPC-stopped
+            // browsers as browsing again is the safe direction (they are just released later).
+            if self.ledger.inBackground { self.ledger.willEnterForeground() }
+            guard self.started, !self.paused else { return }
+            self.startBrowsing(self.current)
+        }
         #endif
+    }
+
+    #if canImport(UIKit)
+    private var releaseTask = UIBackgroundTaskIdentifier.invalid
+    private func endReleaseTask() {
+        guard releaseTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(releaseTask)
+        releaseTask = .invalid
+    }
+    #endif
+
+    /// Deallocates the parked browsers MPC has stopped (see BrowserLedger).
+    private func releaseParked() {
+        let gone = ledger.releasable(at: Date())
+        for k in gone { parkedBrowsers[k] = nil }
+        if !gone.isEmpty { log("link released \(gone.count) parked browsers, \(ledger.parkedCount) left") }
+    }
+
+    /// Retires a browser without stopping it (see type comment).
+    private func park(_ b: MCNearbyServiceBrowser) {
+        b.delegate = nil
+        let k = ObjectIdentifier(b).hashValue
+        if !ledger.park(k) { parkedBrowsers[k] = b }  // never started: let it go now
+        releaseParked()
     }
 
     private func startTimer() {
@@ -154,28 +212,33 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         guard !id.discovering else { return }
         id.discovering = true
         id.advertiser.startAdvertisingPeer()
-        id.browser.startBrowsingForPeers()
-        id.browsingSince = Date()
+        startBrowsing(id)
     }
 
+    /// A fresh browser, only while the app is active and under the parked cap. Otherwise the identity only
+    /// advertises (peers can still invite it) until the app is next active with room.
+    private func startBrowsing(_ id: Identity) {
+        guard id.discovering, id.browser == nil, id === current else { return }
+        guard ledger.canStartBrowser else {
+            if !ledger.inBackground { log("link browse deferred: \(ledger.parkedCount) parked browsers (cap)") }
+            return
+        }
+        let b = MCNearbyServiceBrowser(peer: id.me, serviceType: PeerLink.serviceType)
+        b.delegate = self
+        let k = ObjectIdentifier(b).hashValue
+        ledger.add(k)
+        ledger.started(k)
+        id.browser = b
+        b.startBrowsingForPeers()
+        log("link browse start gen=\(id.gen) parked=\(ledger.parkedCount)")
+    }
+
+    /// Stops advertising (safe: no browser inside) and parks the browser (never stopped, see type comment).
     private func stopDiscovery(_ id: Identity) {
         guard id.discovering else { return }
         id.discovering = false
         id.advertiser.stopAdvertisingPeer()
-        id.browser.stopBrowsingForPeers()
-    }
-
-    /// Swaps in a fresh browser for the same peer ID, so the stopped one is never started again, and keeps the old
-    /// one alive until its deferred cancel has run.
-    private func retireBrowser(of id: Identity) {
-        let old = id.browser
-        old.delegate = nil
-        browserGraveyard.append(old)
-        id.browser = MCNearbyServiceBrowser(peer: id.me, serviceType: PeerLink.serviceType)
-        id.browser.delegate = self
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.releaseDelay) { [weak self] in
-            self?.browserGraveyard.removeAll { $0 === old }
-        }
+        if let b = id.browser { id.browser = nil; park(b) }
     }
 
     /// Disconnects and forgets an identity, keeping its objects alive for a moment (see type comment).
@@ -202,7 +265,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         tick?.invalidate()
         tick = nil
         for id in retiring { release(id, notify: false) }
-        if current.discovering { stopDiscovery(current); retireBrowser(of: current) }  // resume() starts a fresh one
+        stopDiscovery(current)  // the browser is parked; resume() starts a fresh one
         for slot in current.slots.values { slot.session.delegate = nil; slot.session.disconnect() }
         current.slots.removeAll()
         current.found.removeAll()
@@ -242,7 +305,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         } else {
             release(old, notify: false)
         }
-        log("link identity gen=\(current.gen) retiring=\(retiring.count)")
+        log("link identity gen=\(current.gen) retiring=\(retiring.count) parked=\(ledger.parkedCount)")
         guard started, !paused else { return }
         let cur = current
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.restartDelay) { [weak self] in
@@ -284,44 +347,39 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         DispatchQueue.main.async { self.identity(of: b)?.found[peer] = nil }
     }
 
+    /// The browse never started. Park that browser (not stopped, see type comment) and try a fresh one,
+    /// at most every `browseRetryDelay`.
     func browser(_ b: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         DispatchQueue.main.async {
             self.log("link browse failed: \(error.localizedDescription)")
-            self.restartDiscovery("browse error")
+            guard let id = self.identity(of: b), id === self.current, id.browser === b else { return }
+            id.browser = nil
+            id.found.removeAll()
+            self.park(b)
+            let wait = max(0, Self.browseRetryDelay - Date().timeIntervalSince(self.lastBrowseRetry))
+            DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
+                guard !self.paused, id === self.current else { return }
+                self.lastBrowseRetry = Date()
+                self.startBrowsing(id)
+            }
         }
     }
 
+    /// Advertisers hold no browser, so restarting one is safe: stop now, start a few seconds later.
     func advertiser(_ a: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         DispatchQueue.main.async {
             self.log("link advertise failed: \(error.localizedDescription)")
-            self.restartDiscovery("advertise error")
+            guard let id = self.identity(of: a), id === self.current, id.discovering else { return }
+            a.stopAdvertisingPeer()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                guard !self.paused, id === self.current, id.discovering else { return }
+                a.startAdvertisingPeer()
+            }
         }
     }
 
     private var anyConnecting: Bool {
         identities.contains { $0.slots.values.contains { $0.state == .connecting } }
-    }
-
-    /// Stop now, start on a later main-queue turn. Same objects (no re-creation), ≥ 5 s apart, and never
-    /// while a handshake is in progress (field data: 0 of 12 survived one).
-    private func restartDiscovery(_ why: String) {
-        guard started, !paused, !restartPending, !anyConnecting,
-              Date().timeIntervalSince(lastDiscoveryRestart) >= Self.minRestartGap else { return }
-        let id = current
-        // Right after start (e.g. launch, then didBecomeActive) a stop would race CFNetwork's own start-up.
-        guard Date().timeIntervalSince(id.browsingSince) >= Self.minBrowseBeforeStop else { return }
-        lastDiscoveryRestart = Date()
-        restartPending = true
-        log("link discovery restart (\(why))")
-        stopDiscovery(id)
-        retireBrowser(of: id)
-        id.found.removeAll()  // foundPeer fires again for peers still around
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.restartDelay) { [weak self] in
-            guard let self else { return }
-            self.restartPending = false
-            guard !self.paused, id === self.current else { return }
-            self.startDiscovery(id)
-        }
     }
 
     // MARK: Attempts
@@ -344,13 +402,11 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         slot.session.delegate = nil
         slot.session.disconnect()
         slot.failures += 1
-        totalFailures += 1
         slot.nextTry = Date().addingTimeInterval(Self.backoff(slot.failures))
         slot.state = .notConnected
         slot.since = Date()
         id.slots[peer] = slot
         log("link attempt failed \(peer.displayName) (\(why)) failures=\(slot.failures)")
-        if totalFailures % 6 == 0 { restartDiscovery("repeated failures") }
     }
 
     private func activeCount(_ id: Identity) -> Int {
@@ -364,7 +420,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         slot.failures = failures
         id.slots[peer] = slot
         log("link connecting \(peer.displayName) (invite, attempt \(failures + 1))")
-        id.browser.invitePeer(peer, to: slot.session, withContext: nil, timeout: inviteTimeout)
+        id.browser?.invitePeer(peer, to: slot.session, withContext: nil, timeout: inviteTimeout)
     }
 
     /// Every second (and on discovery events): expire stuck attempts, retire old identities, prune
@@ -395,7 +451,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
                 release(old, notify: true)
             }
         }
-        guard !anyConnecting, activeCount(current) < LinkGuard.maxPeers else { return }
+        guard current.browser != nil, !anyConnecting, activeCount(current) < LinkGuard.maxPeers else { return }
         // One handshake at a time; the peer that has failed least goes first (a stale Bonjour entry
         // that never answers can't starve the real phones).
         let me = current.me.displayName

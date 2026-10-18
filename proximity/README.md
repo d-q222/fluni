@@ -169,7 +169,9 @@ Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagi
 `-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`; FlUni Debug also takes `-demoPeer contagious@0.5`.
 
 **Link and UWB uptime.** One MPC handshake at a time per phone (field logs: concurrent handshakes
-mostly hung), 6 s invite timeout, discovery restarts only when nothing is connecting. The app logs
+mostly hung), 6 s invite timeout. No discovery restarts, and an MPC browser is never stopped: stopping one
+crashes the app now and then inside Apple's code (`_BrowserCancel` SIGTRAP, see `Core/BrowserLedger.swift`).
+Retired browsers are parked until iOS backgrounds the app. The app logs
 `[fluni] link metric handshake=…` per link and `link metric uwb_resume gap=… after_drop=…` when UWB comes
 back; `tools/stress.py` reports them (`handshake_med`, `link_failed`, `uwb_gap_max`, `uwb_after_drop_max`).
 

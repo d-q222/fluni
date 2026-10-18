@@ -219,7 +219,7 @@ final class PeerLinkBackoffTests: XCTestCase {
         let link = PeerLink()
         XCTAssertGreaterThanOrEqual(link.inviteTimeout, 5)
         XCTAssertLessThanOrEqual(link.inviteTimeout + PeerLink.watchdogSlack, 8, "a hung handshake blocks the phone; keep it short")
-        XCTAssertGreaterThanOrEqual(PeerLink.minRestartGap, 5)
+        XCTAssertGreaterThanOrEqual(PeerLink.browseRetryDelay, 5, "a failing browse must not spin up browsers")
         XCTAssertGreaterThan(PeerLink.restartDelay, 0, "stop and start must not share a run-loop turn")
     }
 }
