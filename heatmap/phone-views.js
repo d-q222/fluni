@@ -1,8 +1,8 @@
 // HTML for the presenter's phone mock, in the shape of the current FlUni app (flu-design2): Today as a "your day"
 // timeline narrated by Lisa's tissue, the stay-home track, You, and the report / calculation sheets. Pure
 // functions of a plain data object (built in app.js from the sim); no state, no DOM access. Copy is FlUni's own.
-// Numbers are the same ones the mock always showed: this phone's estimate (liveText), close-contact minutes,
-// campus model P (only in the calculation sheet and the presenter bar).
+// Numbers: the person's risk estimate d.p is the campus model's P (model.risk.pAt, the same number the presenter
+// shows for that person), drawn with liveText; plus close-contact minutes.
 
 export const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 // "FlUni" in a sentence is set in the wordmark serif, so its "l" never reads as "I".
@@ -84,7 +84,7 @@ function metrics(d) {
       <div class="ticks ${reached ? 'reached' : ''}" aria-hidden="true">${ticks}</div><div class="fine2">close to someone sick</div></div>
     <div class="vr"></div>
     <div class="rk"><div class="fig ${hi ? 'hi' : ''}" data-live="risk">${esc(liveText(d.p))}<span class="band ${hi ? 'hi' : ''}">${b}</span></div>
-      <div class="lbl">risk estimate, last 24 h</div><button class="why" data-act="calc">Why this number</button></div></div>`;
+      <div class="lbl">risk estimate</div><button class="why" data-act="calc">Why this number</button></div></div>`;
 }
 
 function nowBlock(d, ccOpen) {
@@ -243,10 +243,9 @@ export function calcSheetHtml(d) {
   const block = (t, body, num) => `<div class="block"><h2>${esc(t)}</h2><p>${brand(body)}</p>${num ? `<div class="num">${esc(num)}</div>` : ''}</div>`;
   return `<div class="sheet" role="dialog" aria-label="How is this calculated?"><div class="bar2"><span></span><button class="circ" data-act="sheet-close" aria-label="Close">✕</button></div><h1 style="font-size:28px">How is this calculated?</h1>
     ${block('Close contact', `Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At ${CLOSE_MIN} of these in a day, you get a close-contact alert.`, `You: ${d.exactMinutes.toFixed(1)} of ${CLOSE_MIN}`)}
-    ${block('What adds to your risk', 'Time near each person, how close you were (closer counts much more), the room air you shared, and whether they reported symptoms or a positive test. Together these make your exposure dose. Phones up to about 10 m away (Bluetooth range) count.', `Your exposure dose: ${d.dose.toFixed(3)}`)}
-    ${block('The estimate', `Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at ${Math.round(d.posTest * 100)}%, someone with symptoms at ${Math.round(d.selfReport * 100)}%. Those chances are added on top of a ${Math.round(PRIOR * 100)}% everyday baseline. It's the same exposure formula as the campus model.`, `This phone's estimate: ${liveText(d.p)}`)}
-    ${block('What counts', "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", null)}
-    ${block('Campus model and this phone', "The campus model is worked out from everyone's contacts, reports and tests, including second-hand risk and the actual rooms. This phone's estimate uses only what this phone detected in the last 24 hours, so the two can differ.", d.campusP != null ? `For comparison, campus model: ${d.campusP <= 0 ? '0%' : `${Math.round(d.campusP * 100) < 1 ? '<1' : Math.min(100, Math.round(d.campusP * 100))}%`}` : null)}
+    ${block('What adds to your risk', 'Time near each person, how close you were (closer counts much more), the room air you shared, and how likely each of them is to be sick. Phones up to about 10 m away (Bluetooth range) count.', null)}
+    ${block('The estimate', `Each contact becomes a chance that person passed flu on to you, weighted by how likely they are to be sick: from their reports and tests, and from who they were near, so second-hand risk counts too. Your own reports and tests count as well. Those chances are added on top of a ${Math.round(PRIOR * 100)}% everyday baseline and fade as flu runs its course (about a week). It's worked out from everyone's contacts, reports and tests on campus, not just what this phone detected.`, `Your risk estimate: ${liveText(d.p)}`)}
+    ${block('What counts', `GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do. The close-contact count uses only the last 24 hours.`, null)}
     <p class="fineprint">This is an estimate to help you decide what to do. It isn't a diagnosis.</p></div>`;
 }
 

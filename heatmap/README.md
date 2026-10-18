@@ -59,8 +59,11 @@ Demo scenes on the sim's mock run:
 - **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
   buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
-  app's fonts (`assets/fonts/`, OFL). Campus is the user map. Numbers are unchanged: this phone's estimate (doseModel) is the one number
-  on Today; the campus-model P is shown only in the presenter bar and in the calculation sheet "for comparison". Taps are visual only.
+  app's fonts (`assets/fonts/`, OFL). Campus is the user map. The risk number on Today (and its Low/Elevated/High
+  tier, the advice line, Lisa's mood and "How is this calculated?") is the campus model's P for that person, `model.risk.pAt(id, now)`
+  (infer.js, or the mean-field with `?model=meanfield`): the same number as the dot's tooltip, the building card's list and the presenter
+  bar. The on-device estimate (`phoneEstimate`, doseModel over the last 24 h, mirrored by `proximity/`) is no longer shown; it stays as
+  `window.fluni.phoneScore` for proximity's cross-check. Taps are visual only.
 - **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
   (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
   numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Expected infected per

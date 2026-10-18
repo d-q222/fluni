@@ -807,7 +807,6 @@ function formatTime(ms, numeric) {
   return new Date(ms).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
-const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
 // FlUni's RiskEstimate.liveText: the live on-screen number, one decimal below 10% so it visibly moves, whole percent from 10%.
 const liveText = PV.liveText;
@@ -1298,7 +1297,7 @@ async function main() {
       if (!a) return id;
       const where = a.walking ? 'walking' : [a.building, a.room && (roomNames.get(a.room) || `room ${a.room}`)].filter(Boolean).join(', ');
       const truth = a.sick === null ? '' : ` · ${a.sick ? 'infected' : 'healthy'} (sim)`;
-      return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${pct(a.p)}${truth}`;
+      return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${liveText(a.p)}${truth}`;
     });
     m.on('click', () => select(id));
     m.on('mouseover', () => { hoverDot = id; if (m.options.fillOpacity !== 1) m.setStyle({ fillOpacity: 1, opacity: 1 }); });
@@ -1390,11 +1389,12 @@ async function main() {
     }
     return v;
   }
-  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h. Per peer
-  // s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
+  // The on-device estimate (see PHONE_DOSE), as proximity/ computes it. The phone mock no longer shows it (Today and
+  // "How is this calculated?" show the campus model's P, the presenter's number); kept for window.fluni.phoneScore,
+  // the reference proximity/'s cross-check replays. Peers in Bluetooth range over the last 24 h.
+  // Per peer s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
   // getting closer to anyone who may be sick raises it. depth: how many hops of shared scores to follow
   // (peers' own scores use their status only; the loop gain is small).
-  let lastPhoneDose = 0; // the dose behind the last phoneEstimate, for "How is this calculated?"
   function phoneEstimate(id, t, depth = 1) {
     const dose = new Map();
     for (const e of exposureLog.get(id) || []) {
@@ -1410,9 +1410,7 @@ async function main() {
       dose.set(e.other, k);
     }
     let p = MODEL.prior;
-    let total = 0;
-    for (const { s, dose: x } of dose.values()) { p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x)); total += x; }
-    if (depth === 1) lastPhoneDose = total; // the top-level call, not a peer's nested score
+    for (const { s, dose: x } of dose.values()) p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x));
     return p;
   }
 
@@ -1466,7 +1464,7 @@ async function main() {
   };
 
   // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
-  // (views in phone-views.js; same numbers as before: campus model P, this phone's estimate, close-contact minutes)
+  // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
   const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
   const DAYMS = 24 * 3600000;
   const cache = { key: '', v: null };
@@ -1523,7 +1521,6 @@ async function main() {
   function phoneData(me, st) {
     const v = visitsFor(me.id);
     const sr = selfStatus(me.id);
-    const phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
     const dayNo = sr.startMs == null ? 0 : Math.round((midnight(now) - midnight(sr.startMs)) / DAYMS);
     const stay = sr.startMs == null ? null : {
       day: dayNo, over: dayNo > 5, positive: sr.positive, startMs: sr.startMs, lastMs: midnight(sr.startMs) + 5 * DAYMS + 12 * 3600000,
@@ -1533,7 +1530,7 @@ async function main() {
       now, dateText: data.numericTime ? `Day ${Math.floor((now - t0) / DAYMS) + 1}` : new Date(now).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
       place: v.current ? { name: v.current.name, startMs: v.current.startMs } : (me.building ? { name: me.building, startMs: now } : null),
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
-      p: phoneP, campusP: me.p, dose: lastPhoneDose, posTest: MODEL.posTest, selfReport: MODEL.selfReport,
+      p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt), the same number as the presenter bar and the dot's tooltip
       entries: v.entries, placeTone: v.placeTone, openKey: ph.openKey, seen: ph.seen,
       status: sr.status, stamp: sr.status === 'possible', stay,
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
@@ -1792,7 +1789,7 @@ async function main() {
   function personRow(a, top) {
     const truth = a.sick == null ? '' : a.sick ? '<span class="truth"><i class="truth-ring"></i>infected</span>' : '<span class="truth">healthy</span>';
     return `<button class="who${top ? ' top' : ''}" data-id="${esc(a.id)}"><span class="line"><i class="chip" style="background:${riskColor(Math.min(1, a.p))}"></i>`
-      + `<span class="id">${esc(a.id)}</span><b>${pct(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
+      + `<span class="id">${esc(a.id)}</span><b>${liveText(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
   }
   let hover = null, hoverAt = 0, openBld = null, openAt = 0, rowDot = null;
   const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 320 });
