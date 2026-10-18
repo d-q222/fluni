@@ -43,11 +43,13 @@ or three people holding them works too).
 7. **Pre-set FlUni on every phone:**
    - Map address: Me > Settings > Map address, type the `.local` URL printed in step 3
      (`http://<laptop>.local:8000/heatmap/?embed=app`). Open the Map tab: the campus map should load.
-   - **Demo speed 60x:** Me > Developer tools > Demo controls > Time speed > 60x. **This is not saved:
-     set it again after every launch or relaunch of FlUni**, on all three phones (A too).
-   - **Persona** (phone B, optional but shown in step 4 of the script): Today > "See how this is worked
-     out" > Demo settings... > "Load from the laptop" (default run is fine), then "Play as" > Student > pick
-     one agent. Leave "Follow the map" on.
+   - **Demo speed 60x:** Me > Developer tools > Demo controls > Time speed > 60x. Saved across launches
+     in Debug builds (set once per phone; Release builds always run at 1x).
+   - **Demo override and persona** (phone B, optional but shown in step 4 of the script): Me > Developer
+     tools > Demo controls > Demo override. Turn it on (Today and Map then show a "Demo time" badge), type
+     the run under "Model output" and "Load from the laptop" (default run is fine), then "Play as" >
+     Student > pick one agent. Leave "Follow the map" on. Also saved across launches. With the override
+     off, the app follows the phone's own clock (what students see).
    - Leave A at "I feel fine" (the default). Do not tap "I tested positive" until the script says so; it
      cannot be undone from the UI (see Reset).
 8. **Rehearsal check (30 s):** put the phones together; each Today tab should say "1 other FlUni phone
@@ -99,11 +101,11 @@ Total 5 minutes. Say the italic lines; do the bold actions.
   other person tested positive, half if only symptoms) turned into a percentage.
 - *"It is an estimate, not a diagnosis. Two numbers when a persona is set: the phone's own, from what it
   sensed, and the campus model's, from the whole population."*
-- **Fallback:** no persona number: Demo settings... > "Load from the laptop" (needs the server); otherwise
+- **Fallback:** no persona number: Developer tools > Demo controls > Demo override > "Load from the laptop" (needs the server); otherwise
   show the phone's own estimate only.
 
 ### 3:00 Walk-in warning (C, "Pretend I'm at...")
-- **Do:** on C: Today > "See how this is worked out" > Demo settings... > "Pretend I'm at..." > pick a
+- **Do:** on C: Me > Developer tools > Demo controls > Demo override > "Pretend I'm at..." > pick a
   building that is red on the Map tab right now (search by name) > Done > back to Today.
 - **Audience sees:** a banner (and one notification): "<Building> has a lot of illness right now.
   Consider a mask, or a different spot."
@@ -154,7 +156,7 @@ Leave the laptop map on screen. Do not reset until the room has left.
 | App won't open: "Untrusted Developer" | Settings > General > VPN & Device Management > your Apple ID > Trust. |
 | App stopped opening after about a week | Free-team builds expire in 7 days: run `demo_reset.sh`. |
 | Phones show "No other FlUni phones nearby" | Both must be foreground, unlocked, Bluetooth and Wi-Fi on, Local Network allowed (Settings > FlUni > Local Network). Keep them within 1 m and wait 10 to 15 s. Still none: force-quit and reopen both. |
-| Nearby works but no close-contact alert | Time speed is back to real time: set 60x on the listener (Developer tools > Demo controls). |
+| Nearby works but no close-contact alert | Time speed is back to real time: set 60x on the listener (Developer tools > Demo controls); it is saved, so check the phone was not reinstalled. |
 | Alerts without any Wi-Fi/link | Fine: alerts travel over Bluetooth and the phone link, not the laptop. Only the Map tab, persona and building warnings need the laptop. |
 | Map tab blank or "Couldn't find that address" | Try the IP URL printed by `serve_heatmap.sh` instead of `<laptop>.local` (some networks block .local). Same Wi-Fi, no VPN, no client isolation (try the laptop's hotspot). |
 | Map loads but no data / blank buildings | The server must serve the repo root, not `heatmap/`. Run `proximity/tools/serve_heatmap.sh` (or `python3 -m http.server 8000` in the repo root). `http://<host>:8000/model/out/<run>/p_sick.csv` should download. |

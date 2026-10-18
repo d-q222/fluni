@@ -62,7 +62,13 @@ P(within 6 ft), not a yes/no.
 **Exposure** (`Exposure.swift`): minutes += dt × P(≤ 6 ft) × weight, where weight is 1 for
 contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risky phone is probably
 within 6 ft, and a **close-contact alert with advice at 15 cumulative minutes** (the CDC rule).
-Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds.
+Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds. In Debug builds the speed is saved across launches.
+
+**Clock.** Students see live time only: the device's local weekday and time of day mapped onto the run
+(`Core/LiveClock.swift`, rule in `docs/building-heat-format.md`), recomputed every 15 s and on any system clock,
+time zone or date change. The Map tab says "Now · updated 4:30 PM". In Debug builds, Me > Developer tools > Demo
+controls > Demo override replaces it with a chosen sim time (persona, run, follow, "Pretend I'm at…"), and Today and
+Map show a "Demo time" badge while it is on.
 
 The **Map tab** loads the heat map workstream's page (`heatmap/`) over the local network
 rather than copying it:
