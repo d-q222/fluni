@@ -125,7 +125,6 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
   block, weighted by free places, so Green Library's big reading rooms take most solo study. When
   everything is full, agents study at home. At 7,000 agents the worst planned room went from 22.5× to
   2× capacity. What's left comes from bookings outside flex (study groups and similar).
-- **Too many `report_other` events** (about 50 per real self-report at full scale).
 - **Large output.** 7,500 agents × 7 days is 4.5 GB, of which 3.0 GB is `timeline_by_agent/` and
   657 MB `contacts.csv.gz`. Turn per-agent files off with `--set output.by_agent=false`.
 - **Small residual wall-crossing.** About 0.5 m per trip still runs through a footprint (500 agents,

@@ -30,8 +30,9 @@
   "report_other": {
     "require_app": true,
     "severity_threshold": 0.3,
-    "p_per_step": 0.01,
-    "false_p_per_step": 0.00005,
+    "p_per_step": 0.003,
+    "max_tier": 2,
+    "false_daily_p": 0.002,
     "cooldown_days": 3
   }
 }

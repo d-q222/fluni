@@ -93,6 +93,8 @@ class Reports:
         self.p_false_sick = _daily_to_step(sr["false_sick_daily_p"], self.spd)
         self.p_early_rec = _daily_to_step(sr["early_recovered_daily_p"], self.spd)
         self.ro_cooldown = int(ro["cooldown_days"] * self.spd)
+        self.ro_max_tier = int(ro.get("max_tier", 2))
+        self.p_ro_false = _daily_to_step(ro.get("false_daily_p", 0.0), self.spd)
         self.ro_app = (np.asarray(pop.has_app, dtype=bool) if ro.get("require_app", True)
                        else np.ones(N, dtype=bool))
 
@@ -310,23 +312,36 @@ class Reports:
         a = np.asarray(contacts["a"], dtype=np.int64)
         b = np.asarray(contacts["b"], dtype=np.int64)
         sr = np.asarray(contacts["same_room"], dtype=bool)
-        a, b = a[sr], b[sr]
+        tier = np.asarray(contacts["tier"], dtype=np.int64)
+        a, b, tier = a[sr], b[sr], tier[sr]
         if not len(a):
             return
         rep = np.concatenate([a, b])
         tgt = np.concatenate([b, a])
+        near = np.concatenate([tier, tier]) <= self.ro_max_tier
         state = np.asarray(disease.state)
         sev = np.asarray(disease.severity, dtype=float)
         visible = (state == codes.I_SYM) & (sev > ro["severity_threshold"])
         sick_truth = infectious | (sev > 0)
         ok = self.ro_app[rep]
-        # true-ish reports on visibly symptomatic targets
-        cand = np.flatnonzero(ok & visible[tgt])
+        # true-ish reports on visibly symptomatic targets, only from people close enough to notice
+        cand = np.flatnonzero(ok & near & visible[tgt])
         hits_true = cand[self.rng.random(len(cand)) < ro["p_per_step"]] if len(cand) else cand
-        # rare false reports on healthy targets (scaled by reporter dishonesty)
+        # rare false reports: a per-reporter daily rate (scaled by dishonesty), aimed at one healthy
+        # same-room contact, so it doesn't grow with crowd size
         cand = np.flatnonzero(ok & ~sick_truth[tgt])
-        pf = float(ro["false_p_per_step"])
-        hits_false = _thin_draw(self.rng, cand, pf * (1.0 - self.honesty[rep[cand]]), pf)
+        hits_false = cand[:0]
+        if len(cand) and self.p_ro_false > 0:
+            o = np.lexsort((tgt[cand], rep[cand]))
+            cand = cand[o]
+            first = np.flatnonzero(np.r_[True, rep[cand][1:] != rep[cand][:-1]])
+            starts = np.r_[first, len(cand)]
+            r_ids = rep[cand[first]]
+            sel = self.rng.random(len(r_ids)) < self.p_ro_false * (1.0 - self.honesty[r_ids])
+            if sel.any():
+                k = np.flatnonzero(sel)
+                n_each = starts[k + 1] - starts[k]
+                hits_false = cand[starts[k] + (self.rng.random(len(k)) * n_each).astype(np.int64)]
         hits = np.concatenate([hits_true, hits_false])
         if not len(hits):
             return
