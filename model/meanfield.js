@@ -49,6 +49,16 @@ export const MF_DEFAULTS = {
   lrOther: 4,             // ... of a report by someone else
   negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
                           //   the online pass can rerun this far back)
+  // Self-calibration (calibrateFromReports): the reporting process, fitted on twelve 1,000-agent sim runs with
+  // 5-79% infected (model/README.md "Self-calibration"); it is about people, not the epidemic, so it barely varies.
+  reportRate: 0.47,       // share of infections that are ever reported (symptoms, a positive test, or by someone else)
+  // P(first report <= k/2 days after infection | reported), k = 0..14 (median 2.7 days)
+  reportDelayCdf: [0.022, 0.023, 0.023, 0.033, 0.116, 0.358, 0.661, 0.816, 0.92, 0.953, 0.984, 0.992, 0.997, 0.998, 0.999],
+  falseReportPerDay: 0.0007, // reports about people who were never infected, per agent-day
+  priorMean: 0.01,        // Gamma prior on the starting prevalence (mean, shape) before the first reports say otherwise
+  priorShape: 1,
+  priorEarlyDays: 3.5,    // reports up to this many days in come almost all from people infected at the start
+  priorAge: 'uniform',    // the starting cases' infection ages: 'uniform' over the illness, or 'new' (just infected)
   lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
                           //   Per run: the 7,500-agent runs need their own (node model/meanfield-cli.mjs <run> --calibrate);
@@ -97,6 +107,90 @@ function stageCurve(K, dtDays, P, R) {
 export function initialPrevalence(config) {
   const run = config?.params?.run || {}, n = Number(run.n_agents ?? config?.n_agents), k = Number(run.initial_seeds);
   return n > 0 && k >= 0 ? k / n : null;
+}
+
+// Self-calibration from reports, without ground truth or the sim's seed count: the starting prevalence and lambdaScale
+// that make the model's expected reports match the reports seen up to untilMs. Reports per person: a first report
+// (symptoms, positive test, or by someone else) comes a delay after infection (reportDelayCdf) with probability
+// reportRate, plus falseReportPerDay for people never infected.
+// - prior: reports in the first priorEarlyDays come almost all from people infected at the start, R ~ Poisson(N
+//   (prior reportRate F(d) + falseReportPerDay d)); with a Gamma(priorShape, priorShape / priorMean) prior, its
+//   posterior mean.
+// - lambdaScale: bisection on log scale so that the model run forward from that prior without reports (reports
+//   would pin reporters and bias it) expects as many reports by untilMs as were seen: N f D + rho sum_t F(D - t) dE(t).
+//   Kept at the default until 3 true-ish reports beyond the false-report background and 4 days of data.
+// Returns { prior, lambdaScale, reports: count used }.
+export function calibrateFromReports(input, params = {}, untilMs = Infinity) {
+  const P = { ...MF_DEFAULTS, ...params }, N = input.agentIds.length, stepMs = input.stepMin * 60000, DAYMS = 86400000;
+  const firsts = new Map();
+  for (const r of input.reports || []) {
+    const ev = r.event, v = r.value;
+    let who = r.agent_id;
+    if (ev === 'report_other' && v === 'might_be_sick') who = r.target_agent_id;
+    else if (!((ev === 'self_report' && (v === 'might_be_sick' || v === 'tested_positive')) || (ev === 'test_result' && v === 'positive'))) continue;
+    const t = input.startMs + Number(r.t) * stepMs;
+    if (t <= untilMs && (!firsts.has(who) || t < firsts.get(who))) firsts.set(who, t);
+  }
+  const times = [...firsts.values()];
+  const end = Math.min(untilMs, input.startMs + (input.days || 14) * DAYMS), D = (end - input.startMs) / DAYMS;
+  const F = (days) => { // CDF of the infection -> first report delay, linear between half days
+    const x = Math.max(0, days) * 2, k = Math.floor(x), c = P.reportDelayCdf;
+    return k >= c.length - 1 ? c[c.length - 1] : c[k] + (c[k + 1] - c[k]) * (x - k);
+  };
+  const dE = Math.min(D, P.priorEarlyDays), early = times.filter((t) => t <= input.startMs + dE * DAYMS).length;
+  const prior = Math.min(0.5, Math.max(1e-5, (P.priorShape + Math.max(0, early - N * P.falseReportPerDay * dE))
+    / (P.priorShape / P.priorMean + N * P.reportRate * F(dE))));
+  let lambdaScale = P.lambdaScale;
+  const seen = times.length, background = N * P.falseReportPerDay * D;
+  if (D >= 4 && seen - background >= 3) {
+    const base = { ...input, reports: [], initialPrevalence: prior };
+    const expect = (lam) => { // expected first reports by `end` from the forward model
+      const m = meanFieldRisk(base, { ...params, prior, lambdaScale: lam });
+      let x = background, prev = prior * N;
+      for (let n = 0; n < m.everByStep.length; n++) {
+        const tEnd = input.startMs + (n + 1) * m.dtMs;
+        if (tEnd > end) break;
+        x += P.reportRate * (m.everByStep[n] - prev) * F((end - (tEnd - m.dtMs / 2)) / DAYMS);
+        prev = m.everByStep[n];
+      }
+      return x + P.reportRate * prior * N * F(D); // the starting cases, infected at t = 0
+    };
+    let lo = Math.log(0.02), hi = Math.log(30);
+    for (let it = 0; it < 10; it++) { const mid = (lo + hi) / 2; if (expect(Math.exp(mid)) < seen) lo = mid; else hi = mid; }
+    lambdaScale = Math.exp((lo + hi) / 2);
+  }
+  // The forward model at the fit: its expected infections per step are the run's total, which the report-driven
+  // model's own total overshoots (pinning a reporter adds their infection without taking it from anyone else).
+  const fwd = meanFieldRisk({ ...input, reports: [], initialPrevalence: prior }, { ...params, prior, lambdaScale });
+  return { prior, lambdaScale, reports: seen, expectedEver: fwd.everByStep, firsts };
+}
+
+// The report-driven model, rescaled so its total matches the calibrated forward model: at each time, everyone who
+// has been reported keeps their P(ever infected); everyone else's is scaled by one factor so the sum equals the
+// forward model's expected infections. The ranking among the unreported is unchanged; only the level moves.
+// input, params as meanFieldRisk; untilMs: use reports up to then (the fit and the model). Returns the model with
+// everAt replaced, plus the fit.
+export function meanFieldCalibrated(input, params = {}, untilMs = Infinity) {
+  const cal = calibrateFromReports(input, params, untilMs);
+  const reports = (input.reports || []).filter((r) => input.startMs + Number(r.t) * input.stepMin * 60000 <= untilMs);
+  const m = meanFieldRisk({ ...input, reports, initialPrevalence: cal.prior }, { ...params, prior: cal.prior, lambdaScale: cal.lambdaScale });
+  const ids = input.agentIds, nS = m.everByStep.length, scale = new Float64Array(nS).fill(1);
+  const firstMs = ids.map((a) => cal.firsts.get(a) ?? Infinity);
+  for (let n = 0; n < nS; n++) {
+    const t = input.startMs + (n + 1) * m.dtMs - 1;
+    let rep = 0, rest = 0;
+    for (let i = 0; i < ids.length; i++) { const p = m.everAt(ids[i], t + 1); if (firstMs[i] <= t) rep += p; else rest += p; }
+    const target = cal.expectedEver[n] - rep;
+    scale[n] = rest > 0 && target > 0 ? Math.min(1 / Math.max(1e-9, rest / ids.length), target / rest) : rest > 0 ? 0 : 1;
+  }
+  const idx = m.index, raw = m.everAt;
+  m.everAt = (id, tMs) => {
+    const i = idx.get(id), n = m.stepOf(tMs), p = raw(id, tMs);
+    if (i === undefined || n < 0 || firstMs[i] <= tMs) return p;
+    return Math.min(1, p * scale[n]);
+  };
+  m.fit = cal;
+  return m;
 }
 
 // input: { contacts, reports, rooms, agentIds, stepMin, startMs, weather?, days?, initialPrevalence? } (as inferRisk;
@@ -237,7 +331,8 @@ export function meanFieldRisk(input, params = {}) {
   const episode = Math.round(P.illnessDays / dtDays);
   const lastPos = new Int32Array(N).fill(-1e9), lastSym = new Int32Array(N).fill(-1e9), lastOther = new Int32Array(N).fill(-1e9);
   const fresh = () => {
-    const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K).fill(P.prior / K), Rr = new Float64Array(N);
+    const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K), Rr = new Float64Array(N);
+    if (P.priorAge === 'new') for (let i = 0; i < N; i++) A[i * K] = P.prior; else A.fill(P.prior / K);
     for (const id of input.seeds || []) { // calibration only: known cases, just infected at the start
       const i = idx.get(id);
       if (i === undefined) continue;
@@ -423,8 +518,11 @@ export function meanFieldRisk(input, params = {}) {
   }
   let ever = 0;
   for (let i = 0; i < N; i++) ever += 1 - st.S[i];
+  const everByStep = new Float64Array(nSteps); // sum over agents of P(ever infected), at the end of each step
+  for (let n = 0; n < nSteps; n++) { let x = 0; for (let i = 0, o = n * N; i < N; i++) x += everNow[o + i]; everByStep[n] = x; }
   return {
     expectedInfections: ever, // sum over agents of P(ever infected) by the end
+    everByStep, dtMs,
     pAt, everAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
     params: { ...R, ...P, method: 'meanfield' },
     // for the heat map's risk field: hazard at 1 m for 1 h per unit shed = q * breathingRate / nearFieldQ

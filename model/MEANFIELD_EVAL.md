@@ -1,0 +1,19 @@
+# Mean-field evaluation log
+
+`node model/meanfield-eval.mjs <run>` scores P(ever infected by the end of day d) against the sim's infections:
+**KL** = KL(y ‖ p) per person in nats, which for a 0/1 label is the log loss, and **AUC**. "Oracle const" is the
+best constant guess (that day's true share infected), which no model can know in advance.
+
+Runs: the twelve 1,000-agent, 14-day runs. The nine training runs (`689ae9f0` = the fixed 1k, `f4bf301c`, `a986df0a`,
+`22a44427`, `9214956b`, `f4573d76`, `2329d271`, `291f8efd`, `14859125`) commit only five files, so they were rerun from
+their own `config.json` params (`sim/simulate.py --config <params.json> --set output.by_agent=false`; `infections.csv`
+byte-identical) to get `reports_tests.csv` and `map/`. Plus `25fe957a`, `183f262b`, `f12e71fa`. 5–79% infected,
+transmission scale 1.2–4.0, 5–50 initial cases. Contacts: `uv run model/tools/contacts_cache.py <run>`.
+
+Means over the 12 runs (per-run numbers in the commit messages):
+
+| Version | mean KL | final-day KL | mean AUC | final AUC | \|expected − actual\| / actual |
+|---|---|---|---|---|---|
+| oracle constant | 0.3426 | | | | |
+| before: prior = seed count / N (from the sim's config), lambdaScale 0.901 | 0.3331 | 0.5014 | 0.670 | 0.751 | 0.46 |
+| 1: self-calibrated online from reports (prior, lambdaScale), mass-rescaled, `priorAge=new` | 0.3243 | 0.4438 | 0.654 | 0.752 | 0.13 |
