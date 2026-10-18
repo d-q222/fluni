@@ -148,6 +148,8 @@ struct TodayView: View {
     private var minutesCard: some View {
         let mins = model.exposure.minutes
         let goal = ExposureTracker.closeContactMinutes
+        // Shown capped at the goal ("15 of 15 min", not "49 of 15"); the real count stays in the model.
+        let shown = Int(min(mins, goal))
         let tint = mins >= goal ? Theme.fireInk : Theme.ink2
         let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
             : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would make this a close contact."
@@ -155,7 +157,7 @@ struct TodayView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text("Close-contact time").font(.fluni(.headline))
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int(min(mins, 99)))").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                Text("\(shown)").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
                 Text("of \(Int(goal)) min").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
             }
             ProgressView(value: min(mins, goal), total: goal).tint(tint).accessibilityHidden(true)
@@ -165,7 +167,7 @@ struct TodayView: View {
         .card()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Close-contact time")
-        .accessibilityValue("\(Int(mins)) of \(Int(goal)) minutes. \(caption)")
+        .accessibilityValue("\(shown) of \(Int(goal)) minutes. \(caption)")
     }
 
     // MARK: Nearby
