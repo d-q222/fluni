@@ -69,8 +69,22 @@ second scanner names that UUID (required in the background; also catches backgro
 is open). When an advert has the fixed UUID but no payload, it connects, reads the 16 bytes, keeps the
 advert's RSSI and disconnects: at most once per 20 s per peripheral and 3 connections at a time.
 Bluetooth state restoration (`fluni.advertiser`, `fluni.scanner`) lets iOS relaunch FlUni in the
-background for a Bluetooth event after the *system* ended it, not after the user swiped it away.
+background for a Bluetooth event after the *system* ended it, not after the user swiped it away
+([TN3115](https://developer.apple.com/documentation/technotes/tn3115-bluetooth-state-restoration-app-relaunch-rules)).
 UWB and the peer link are foreground-only.
+
+**Off screen** (`Core/OffScreenRanging.swift`). In the background iOS coalesces a phone's repeated adverts
+into one discovery, and two locked iPhones rarely discover each other at all. An open GATT connection survives
+the lock, though, and each RSSI read on it wakes FlUni. So the scanner keeps a link open to the 4 nearest FlUni
+phones (opened while either phone is in the foreground, or after a background read; a full table swaps its
+weakest link for a phone 6 dB stronger), reads RSSI every 2 s and re-reads the payload every 30 s (ID rotation,
+status). A dropped link is re-requested for 10 min; iOS completes it when the phone is back in range. Polled
+samples count only when no advert for that ID arrived in 3 s, so foreground ranging is unchanged. A BLE median
+over n < 4 samples gets sigma × sqrt(4/n), so P(≤ 6 ft) stays honest without UWB. The links carry the same 16
+bytes as the advert; FlUni never links a peer's old and new IDs. Log lines: `hold open|poll|lost|reconnected …`.
+After a swipe-away nothing runs until iOS relaunches FlUni for a location event (significant change, visit or
+building geofence, Always permission only); FlUni then restarts Bluetooth detection. A phone that is powered
+off cannot be detected by anything.
 
 Exposure in the background comes from sightings rather than the 1 s timer: each peer remembers when it
 was last credited, and a re-sighting within 5 min credits the whole gap at its latest P(≤ 6 ft); a
