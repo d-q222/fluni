@@ -141,7 +141,7 @@ header.bar { gap: 10px 18px; }
 
 document.head.append(el('style', { textContent: CSS })); // at import, so the loading bar is styled before the run loads
 
-const SHORT = { demo: 'Room-level', public: 'What users see', airborne: 'Air by room', airflow: 'Airflow (exp.)' };
+const SHORT = { demo: 'Expected infected', public: 'What users see', airborne: 'Air by room', airflow: 'Airflow (exp.)' };
 const KEYS = [['Space', 'Play / pause'], ['← →', 'Back / forward 10 min'], ['[  ]', 'Slower / faster'], ['J', 'Jump to…'], ['Esc', 'Close the phone']];
 
 // api: { map, L, t0, t1, numericTime, getNow(), seek(ms), isPlaying(), togglePlay(), select(id), selected(), current(), steps: [{ t, expected }],

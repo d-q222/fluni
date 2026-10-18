@@ -9,10 +9,11 @@ import { mountTissueAlert } from './tissue-alert.js';
 import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
-import { BuildingTotalsLayer } from './buildings.js';
+import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
-import { loadPSick, loadTotals } from './precomputed.js';
+import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
+import { meanFieldRisk } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -57,8 +58,13 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
+// 4 days (DEMO.md is timed on it). "2 weeks" in the header's run picker is influenza_none_n1000_d14_s42_25fe957a: the
+// same scenario and seed, only longer; a big run (BIG_AGENT_DAYS), so it reads the precomputed model/out/ and heatmap/out/ files.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
+// ?model=meanfield: people's P(sick) from Baker et al.'s mean-field (model/meanfield.js) instead of infer.js.
+// No "Why this %?" panel then (meanfield.js has no explain()).
+const MEAN_FIELD = PARAMS.get('model') === 'meanfield';
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
 const EMBED = PARAMS.get('embed') === 'app';
@@ -81,6 +87,24 @@ const runUrls = (run) => [`../sim/runs/${run}/timeline_changes.csv.gz`, `../sim/
 const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
   : PARAMS.get('run') ? runUrls(PARAMS.get('run'))
     : runUrls(DEFAULT_RUN); // no silent fallback to mock or fake data: a failure must be visible
+// Run picker in the header (index.html <select id="run">: "4 days" / "2 weeks"): reloads with ?run=<name>,
+// keeping the other URL options. Usable while a run is still loading. Any other ?run= gets its own entry.
+{
+  const pick = document.getElementById('run');
+  if (pick && !EMBED) {
+    const cur = PARAMS.get('data') ? null : PARAMS.get('run') || DEFAULT_RUN;
+    if (cur && ![...pick.options].some((o) => o.value === cur)) pick.add(new Option(cur, cur));
+    if (!cur) pick.add(new Option('Custom data', ''), 0);
+    pick.value = cur || '';
+    pick.addEventListener('change', () => {
+      if (!pick.value) return;
+      const q = new URLSearchParams(location.search);
+      q.delete('data'); q.delete('at'); q.delete('agent'); // a time or person from the other run means nothing here
+      if (pick.value === DEFAULT_RUN) q.delete('run'); else q.set('run', pick.value);
+      location.assign(location.pathname + (q.size ? `?${q}` : '') + location.hash);
+    });
+  } else if (pick) pick.hidden = true;
+}
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -242,8 +266,12 @@ async function loadModel(dataUrl, agentIds) {
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
-      const risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
+      let risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
+      // ?model=meanfield: Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs
+      const mf = MEAN_FIELD ? await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base)) : null;
+      if (MEAN_FIELD && !mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): using infer.js.`);
+      if (mf) risk = mf;
+      if (risk) return { risk, mf: mf && (() => mf), contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
     const [contacts, reports, rooms] = await Promise.all([
@@ -256,15 +284,39 @@ async function loadModel(dataUrl, agentIds) {
     roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
+    let risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
+    // ?model=meanfield: Baker et al.'s mean-field over the same contacts and reports colours people (and so the
+    // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
+    let mfRisk = null;
+    const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
+      weather: config.params?.weather, days: config.days }));
+    if (MEAN_FIELD) risk = mf();
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
-    return { risk, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
+    return { risk, mf, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
   }
+}
+
+// Footprint area (m²) of each building outline, keyed like people's buildingId ('bld_' + the OSM id's number):
+// shoelace in local metres, holes (courtyards) subtracted, MultiPolygon parts added.
+function footprintAreas(geojson) {
+  const out = new Map();
+  for (const f of geojson?.features || []) {
+    const g = f.geometry, polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+    let area = 0;
+    for (const rings of polys) rings.forEach((ring, k) => {
+      const kx = 111320 * Math.cos((ring[0][1] * Math.PI) / 180);
+      let s = 0;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) s += (ring[j][0] * kx) * (ring[i][1] * 110574) - (ring[i][0] * kx) * (ring[j][1] * 110574);
+      area += (k ? -1 : 1) * Math.abs(s / 2);
+    });
+    if (area > 0) out.set('bld_' + String(f.properties.id).split('/')[1], area);
+  }
+  return out;
 }
 
 // What each person told the app (reports_tests.csv, a few KB): agent id -> events by time.
@@ -314,8 +366,13 @@ async function loadRooms(dataUrl) {
 async function loadBuildings(dataUrl) {
   try {
     const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)),
-      ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt']);
+      ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt', 'floors']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
+    // The sim's floor count per building (OSM building:levels where mapped, else its type's default; sim/campussim/campus.py),
+    // overridden by the researched counts in data/building-floors.json (sources there) for the busiest buildings.
+    const floors = new Map(data.filter((b) => Number(b.floors) > 0).map((b) => [b.location_id, Number(b.floors)]));
+    const researched = await fetch('data/building-floors.json').then((r) => (r.ok ? r.json() : []), () => []);
+    for (const f of researched) if (f.floors > 0) floors.set(f.id, f.floors);
     // No boxes for outdoor spaces; manual boxes on a real building take its outline (footprints.js).
     const features = cleanFootprints(data).map(({ row: b, geometry, box }) => ({
       type: 'Feature',
@@ -326,9 +383,9 @@ async function loadBuildings(dataUrl) {
     // The sim's outdoor places on water (Lake Lagunita): nobody is drawn standing in them (seats.js).
     const water = data.filter((b) => b.source === 'manual' && !/^(true|1)$/i.test(b.indoor) && /lake|lagunita|pond|reservoir/i.test(b.name) && b.footprint_wkt)
       .map((b) => wktGeometry(b.footprint_wkt));
-    return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null, water };
+    return { names, floors, outlines: features.length ? { type: 'FeatureCollection', features } : null, water };
   } catch {
-    return { names: new Map(), outlines: null, water: [] };
+    return { names: new Map(), floors: new Map(), outlines: null, water: [] };
   }
 }
 
@@ -492,6 +549,11 @@ const CanvasLayer = L.Layer.extend({
     const f = this.fade;
     if (!f || f.canvas.style.display === 'none') return;
     L.DomUtil.setTransform(f.canvas, this._map._latLngBoundsToNewLayerBounds(f.view, zoom, center).min, this._map.getZoomScale(zoom, f.zoom));
+  },
+  follow() {
+    const map = this._map;
+    if (map._animatingZoom) return; // a CSS zoom animation: animate() set its end transform
+    this.animate({ zoom: map.getZoom(), center: map.getCenter() });
   },
 });
 
@@ -794,7 +856,6 @@ function formatTime(ms, numeric) {
   return new Date(ms).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
-const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
 // FlUni's RiskEstimate.liveText: the live on-screen number, one decimal below 10% so it visibly moves, whole percent from 10%.
 const liveText = PV.liveText;
@@ -1026,6 +1087,77 @@ async function main() {
     return aero;
   };
 
+  // Building shading (the default presenter view, when the run has outlines): each building's darkness is linear in
+  // the expected number of infected people in it above the baseline, Σ max(0, P - prior) over everyone inside (the
+  // dots' P, model.risk.pAt), divided by its floor space, footprint area x floors: expected infected per 1,000 m² of
+  // floor, so a crowded small building reads darker than the same count spread through a big or tall one, and a
+  // building of healthy people at the baseline stays clear. truth: the number actually infected (sim), per 1,000 m².
+  // People outdoors or walking count nowhere; empty buildings stay plain.
+  // Shaded, hovered and counted per drawn outline (a "shape"), not per sim place: a hand-placed indoor place on a real
+  // building takes that building's outline (footprints.js: Wilbur Dining is drawn as Cedro's, Stern Dining as Lucie
+  // Stern Hall's), and seats.js puts its people's dots inside it. Counting per place drew both features on top of each
+  // other (the later one's colour won) while hover found the first, so Cedro read dark red from Wilbur Dining's crowd
+  // and its card counted only Cedro's residents. Now an outline counts everyone seated in any of its places.
+  // Outlines sharing a polygon are one shape too: OSM maps Potter House as a 4-part multipolygon whose first part is
+  // also an unnamed building of its own, so hover found the unnamed one (empty) on top of Potter's residents.
+  const shading = zoneHeat;
+  const shapes = [], shapeOf = new Map(); // { id (the first place's id), ids: Set, names, parts, feature }; buildingId -> shape
+  {
+    const byPart = new Map(); // a polygon's coordinates (JSON) -> its shape
+    for (const f of outlines ? outlines.features : []) {
+      const id = 'bld_' + String(f.properties.id).split('/')[1];
+      const parts = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+      const keys = parts.map((p) => JSON.stringify(p));
+      const hits = [...new Set(keys.map((k) => byPart.get(k)).filter(Boolean))];
+      let s = hits[0];
+      if (!s) { s = { id, ids: new Set(), names: [], parts: [], keys: new Set(), props: f.properties }; shapes.push(s); }
+      for (const o of hits.slice(1)) { // this outline joins two shapes: fold the second into the first
+        for (const x of o.ids) { s.ids.add(x); shapeOf.set(x, s); }
+        for (const n of o.names) if (!s.names.includes(n)) s.names.push(n);
+        o.parts.forEach((p, k) => { const key = [...o.keys][k]; if (!s.keys.has(key)) { s.keys.add(key); s.parts.push(p); } byPart.set(key, s); });
+        shapes.splice(shapes.indexOf(o), 1);
+      }
+      parts.forEach((p, k) => { if (!s.keys.has(keys[k])) { s.keys.add(keys[k]); s.parts.push(p); } byPart.set(keys[k], s); });
+      s.ids.add(id);
+      if (f.properties.name && !s.names.includes(f.properties.name)) s.names.push(f.properties.name);
+      shapeOf.set(id, s);
+    }
+    for (const s of shapes) s.feature = { type: 'Feature', properties: { ...s.props, name: s.names.join(' · ') },
+      geometry: s.parts.length === 1 ? { type: 'Polygon', coordinates: s.parts[0] } : { type: 'MultiPolygon', coordinates: s.parts } };
+  }
+  const shapeOutlines = outlines && { type: 'FeatureCollection', features: shapes.map((s) => s.feature) }; // each outline once
+  const footprint = footprintAreas(shapeOutlines); // shape id -> footprint m² (the outline: one floor)
+  // A shared outline is the real building's: its floor count is the tallest of its places' (Cedro's 3, not the dining room's 1).
+  const floorsOf = (id) => Math.max(1, ...[...(shapeOf.get(id)?.ids || [id])].map((x) => runBuildings.floors.get(x) || 1));
+  const floorArea = new Map([...footprint].map(([id, a]) => [id, a * floorsOf(id)]));
+  const buildingSums = (states, truth = false) => {
+    const out = new Map();
+    for (const s of states) {
+      const sh = !s.walking && s.buildingId && shapeOf.get(s.buildingId);
+      if (sh) out.set(sh.id, (out.get(sh.id) || 0) + (truth ? Number(Boolean(s.sick)) : Math.max(0, s.p - MODEL.prior)));
+    }
+    return out;
+  };
+  const buildingDensity = (states, truth = false) => {
+    const out = new Map();
+    for (const [id, e] of buildingSums(states, truth)) { const a = floorArea.get(id); if (a) out.set(id, (1000 * e) / a); }
+    return out;
+  };
+  // Fixed scale, the same at every moment: the 95th percentile of the buildings above zero over ~100 moments of the
+  // run (everyone at their latest sample, cheap), so the hottest buildings saturate and the rest spread out.
+  const shadeMax = (() => {
+    if (!shading) return 1;
+    const all = [], N = 100;
+    for (let k = 0; k < N; k++) {
+      const t = t0 + ((t1 - t0) * (k + 0.5)) / N, states = [];
+      for (const track of tracks.values()) { const s = stayNow(track, t); if (s) states.push(s); }
+      for (const e of buildingDensity(states).values()) if (e > 0) all.push(e);
+    }
+    all.sort((a, b) => a - b);
+    const q = all[Math.floor(0.95 * (all.length - 1))] || 1;
+    return q >= 2 ? Math.ceil(q) : Number(q.toPrecision(1)) < q ? Number((q * 1.05).toPrecision(2)) : Number(q.toPrecision(1)); // a round number for the legend
+  })();
+
   // Infectious air by room, straight from the simulator: room_exposure.csv.gz has the sim's own
   // quanta concentration for every occupied room and step (Wells-Riley, with each room's volume and
   // ventilation). Nothing is re-estimated here; each room is filled with its value. Loaded on first use.
@@ -1102,16 +1234,17 @@ async function main() {
     if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
-  // People are sized on the ground: resize them at every zoom step. Set directly, not with setRadius and
-  // setStyle (each reprojects and queues a repaint per dot): the dots' renderer, whose zoomend handler runs
-  // after this one, reprojects and redraws them all once anyway.
-  map.on('zoomend', () => {
+  // People are sized on the ground: resize them at every zoomend (smoothZoom fires one every half level and at the
+  // end). Set directly, not with setRadius and setStyle (each reprojects and
+  // queues a repaint per dot): the dots' renderer reprojects and redraws them all once anyway.
+  const resizeDots = () => {
     const r = personRadius(map.getZoom()), mode = $('dot-mode').value;
     for (const [id, m] of dots) if (m._radius !== r) {
       m.options.radius = m._radius = r;
       m.options.weight = ringWeight(r, mode !== 'truth' && Boolean(current.get(id)?.sick));
     }
-  });
+  };
+  map.on('zoomend', resizeDots);
   // The heat covers only the visible map (plus a margin) at a spread set by the zoom, so a zoom or pan
   // redoes it, but once the gesture settles, not at every wheel step (a 50-100 ms stall each). Meanwhile
   // the heat canvases keep their last heat, scaled with the map and redrawn crisp at each step.
@@ -1150,7 +1283,7 @@ async function main() {
     }
     idle(warmNext);
   };
-  setTimeout(() => { if (!map._loaded) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen
+  setTimeout(() => { if (!map._loaded || shading) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen; shading needs no grids
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
   let fitted = false;
   new ResizeObserver(() => {
@@ -1166,6 +1299,7 @@ async function main() {
   }).observe($('map'));
   const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
+  const shadeLayer = new BuildingShadeLayer(shapeOutlines); // the default view's building shading, one feature per outline
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
@@ -1214,7 +1348,7 @@ async function main() {
       if (!a) return id;
       const where = a.walking ? 'walking' : [a.building, a.room && (roomNames.get(a.room) || `room ${a.room}`)].filter(Boolean).join(', ');
       const truth = a.sick === null ? '' : ` · ${a.sick ? 'infected' : 'healthy'} (sim)`;
-      return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${pct(a.p)}${truth}`;
+      return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${liveText(a.p)}${truth}`;
     });
     m.on('click', () => select(id));
     m.on('mouseover', () => { hoverDot = id; if (m.options.fillOpacity !== 1) m.setStyle({ fillOpacity: 1, opacity: 1 }); });
@@ -1306,11 +1440,12 @@ async function main() {
     }
     return v;
   }
-  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h. Per peer
-  // s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
+  // The on-device estimate (see PHONE_DOSE), as proximity/ computes it. The phone mock no longer shows it (Today and
+  // "How is this calculated?" show the campus model's P, the presenter's number); kept for window.fluni.phoneScore,
+  // the reference proximity/'s cross-check replays. Peers in Bluetooth range over the last 24 h.
+  // Per peer s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
   // getting closer to anyone who may be sick raises it. depth: how many hops of shared scores to follow
   // (peers' own scores use their status only; the loop gain is small).
-  let lastPhoneDose = 0; // the dose behind the last phoneEstimate, for "How is this calculated?"
   function phoneEstimate(id, t, depth = 1) {
     const dose = new Map();
     for (const e of exposureLog.get(id) || []) {
@@ -1326,9 +1461,7 @@ async function main() {
       dose.set(e.other, k);
     }
     let p = MODEL.prior;
-    let total = 0;
-    for (const { s, dose: x } of dose.values()) { p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x)); total += x; }
-    if (depth === 1) lastPhoneDose = total; // the top-level call, not a peer's nested score
+    for (const { s, dose: x } of dose.values()) p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x));
     return p;
   }
 
@@ -1382,7 +1515,7 @@ async function main() {
   };
 
   // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
-  // (views in phone-views.js; same numbers as before: campus model P, this phone's estimate, close-contact minutes)
+  // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
   const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
   const DAYMS = 24 * 3600000;
   // Self-reports (reports_tests.csv): what this person told the app, up to now.
@@ -1401,7 +1534,6 @@ async function main() {
 
   function phoneData(me, st) {
     const sr = selfStatus(me.id);
-    const phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
     const dayNo = sr.startMs == null ? 0 : Math.round((midnight(now) - midnight(sr.startMs)) / DAYMS);
     const stay = sr.startMs == null ? null : {
       day: dayNo, over: dayNo > 5, positive: sr.positive, startMs: sr.startMs, lastMs: midnight(sr.startMs) + 5 * DAYMS + 12 * 3600000,
@@ -1410,7 +1542,7 @@ async function main() {
     return {
       now, statusSetMs: sr.setMs,
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
-      p: phoneP, campusP: me.p, dose: lastPhoneDose, posTest: MODEL.posTest, selfReport: MODEL.selfReport,
+      p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt): the same number the presenter bar and the dot's tooltip show
       status: sr.status, stamp: sr.status === 'possible', stay,
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
         text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
@@ -1588,10 +1720,11 @@ async function main() {
 
   // ---- Room-level demo: hover or click a building for the numbers behind its heat ----
   // Computed on demand (when the pointer enters a building, then twice a second), never every frame.
-  const hitShapes = (outlines ? outlines.features : []).map((f) => {
-    const rings = f.geometry.type === 'Polygon' ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
+  // One per drawn outline (shapes, above): hovering it covers every sim place sharing it, as its shading does.
+  const hitShapes = shapes.map((s) => {
+    const f = s.feature, rings = f.geometry.type === 'Polygon' ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
     const xs = rings.flat().map((c) => c[0]), ys = rings.flat().map((c) => c[1]);
-    return { id: 'bld_' + String(f.properties.id).split('/')[1], name: f.properties.name || '', rings,
+    return { id: s.id, ids: s.ids, names: s.names, name: s.names.join(' · '), rings,
       bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
   });
   const inRing = (x, y, ring) => {
@@ -1614,24 +1747,45 @@ async function main() {
     if (c) return `${Math.max(1, Math.round(c.durationMin))} min near ${c.other}${c.distanceM != null ? ` (${c.distanceM < 10 ? c.distanceM.toFixed(1) : Math.round(c.distanceM)} m${c.indoor === false ? ', outdoors' : ''})` : ''}`;
     return 'at the baseline';
   }
+  // Everyone seated in any of the outline's places, the same people buildingSums() shades it by. People walking
+  // (on a footpath that crosses the outline) are in transit, not in the building: not counted, but listed as such.
   function buildingInfo(h) {
-    const here = [...current.values()].filter((a) => a.buildingId === h.id && !a.walking);
-    const tiers = { low: 0, elevated: 0, high: 0 };
-    let expected = 0, excess = 0;
-    for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
+    const here = [], passing = [];
+    for (const a of current.values()) {
+      if (!a.walking) { if (h.ids.has(a.buildingId)) here.push(a); }
+      else if (a.lon >= h.bb[0] && a.lat >= h.bb[1] && a.lon <= h.bb[2] && a.lat <= h.bb[3] && h.rings.some((r) => inRing(a.lon, a.lat, r))) passing.push(a);
+    }
+    const tiers = { low: 0, elevated: 0, high: 0 }, perPlace = new Map();
+    let expected = 0, excess = 0, sick = 0;
+    for (const a of here) {
+      tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); sick += a.sick ? 1 : 0;
+      perPlace.set(a.buildingId, (perPlace.get(a.buildingId) || 0) + 1);
+    }
     here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
     const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here };
+    const area = floorArea.get(h.id), floors = floorsOf(h.id), truth = truthMode();
+    const places = h.ids.size > 1 ? [...h.ids].map((id) => ({ name: runBuildings.names.get(id) || id, n: perPlace.get(id) || 0 })) : [];
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, sick, truth, tiers, top, here, passing, places, area, floors,
+      density: area ? (1000 * (truth ? sick : excess)) / area : null }; // exactly what the shading shows (buildingDensity)
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
+  // A count that can be a small fraction of a person: never "0" for something above zero (14 people at 2% is 0.28).
+  const fmtExp = (x) => (!(x > 0) ? '0' : x >= 9.95 ? String(Math.round(x)) : x >= 0.995 ? x.toFixed(1) : x >= 0.01 ? x.toPrecision(2).replace(/0+$/, '') : '<0.01');
+  const shadeWhat = (i) => (i.truth ? 'actually infected (sim)' : `above the ${Math.round(MODEL.prior * 100)}% baseline`);
   function buildingCard(h, full) {
     const i = buildingInfo(h);
-    if (!full) return `<b>${esc(i.name)}</b><br>${i.n} ${i.n === 1 ? 'person' : 'people'} · ≈${fmtSick(i.expected)} expected sick`;
+    const people = `${i.n} ${i.n === 1 ? 'person' : 'people'} inside`;
+    const shadeLine = i.density == null ? '' : `Shade: ${fmtExp(i.density)} ${shadeWhat(i)} per 1,000 m² of floor`;
+    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtExp(i.expected)} expected infected (Σ P) · ${people}${shadeLine ? `<br>${shadeLine}` : ''}`;
     const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
     return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
-      <div class="row"><span>Expected sick (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
-      <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
-      <div class="row"><span>People here now</span><b>${i.n}</b></div>
+      <div class="row"><span>Expected infected (Σ P)</span><b>${fmtExp(i.expected)}</b></div>
+      <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline (Σ max(0, P − ${Math.round(MODEL.prior * 100)}%))</span><b>${fmtExp(i.excess)}</b></div>
+      ${i.truth ? `<div class="row"><span>Actually infected (sim)</span><b>${i.sick}</b></div>` : ''}
+      ${i.density == null ? '' : `<div class="row"><span>Shade: ${shadeWhat(i)} per 1,000 m² of floor (${Math.round(i.area / i.floors).toLocaleString()} m² × ${i.floors} floor${i.floors === 1 ? '' : 's'})</span><b>${fmtExp(i.density)}</b></div>`}
+      <div class="row"><span>People inside now</span><b>${i.n}</b></div>
+      ${i.places.length ? `<p style="margin:4px 0 0;color:var(--ink-3)">One outline, ${i.places.length} places: ${i.places.map((p) => `${esc(p.name)} ${p.n}`).join(' · ')}</p>` : ''}
+      ${i.passing.length ? `<p style="margin:4px 0 0;color:var(--ink-3)">${i.passing.length} walking through, not counted.</p>` : ''}
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
       ${i.top.length ? '' : '<p style="margin:6px 0 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}
       ${i.n ? `<h4>Everyone here${i.top.length ? ' · top drivers first' : ''}</h4><div class="bld-list">${i.here.map((a, k) => personRow(a, k < i.top.length)).join('')}</div>` : ''}</div>`;
@@ -1640,7 +1794,7 @@ async function main() {
   function personRow(a, top) {
     const truth = a.sick == null ? '' : a.sick ? '<span class="truth"><i class="truth-ring"></i>infected</span>' : '<span class="truth">healthy</span>';
     return `<button class="who${top ? ' top' : ''}" data-id="${esc(a.id)}"><span class="line"><i class="chip" style="background:${riskColor(Math.min(1, a.p))}"></i>`
-      + `<span class="id">${esc(a.id)}</span><b>${pct(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
+      + `<span class="id">${esc(a.id)}</span><b>${liveText(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
   }
   let hover = null, hoverAt = 0, openBld = null, openAt = 0, rowDot = null;
   const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 320 });
@@ -1718,7 +1872,7 @@ async function main() {
     const b = map.getBounds();
     let sum = 0;
     for (const a of current.values()) if (b.contains([a.lat, a.lon])) sum += a.p;
-    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected sick`;
+    el.textContent = viewCountText = `≈ ${fmtExp(sum)} expected infected`;
   }
 
   // Playing, a dot glides from its route to its seat (and back) instead of jumping; the heat follows the
@@ -1767,8 +1921,11 @@ async function main() {
     const heatDue = !zooming && (heatDirty || realNow - lastHeat >= heatInterval); // zooming: when it settles
     if (heatDue) {
       const started = performance.now();
-      heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
-      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' ? 'none' : '';
+      const shade = shading && view === 'demo';
+      heatLayer.canvas.style.display = view === 'public' || view === 'airborne' || shade ? 'none' : '';
+      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || shade ? 'none' : '';
+      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingDensity(current.values(), truthMode()), shadeMax); }
+      else if (shadeLayer.map) shadeLayer.remove();
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
         else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
@@ -1783,7 +1940,7 @@ async function main() {
         paint(airflowAt(now, st, truthMode()), heatLayer.grid, aeroMax);
         heatLayer.setGrid();
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
-      } else if (view !== 'public' && view !== 'airborne') {
+      } else if (view !== 'public' && view !== 'airborne' && !shade) { // no outlines: the diffused room-level heat
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
         if (g.zoneOut) heatLayer.setZones(g, Z.zones, demoScale());
         else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
@@ -1886,11 +2043,18 @@ async function main() {
     const num = (x) => (x >= 1 ? x.toFixed(1) : x.toPrecision(2)); // a building's count can be a fraction of a person
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
+    const shade = shading && v === 'demo';
+    if (shade) { // linear: darkness proportional to the building's expected infected above baseline per 1,000 m² of floor
+      $('vmid').textContent = num(shadeMax / 2);
+      $('vmax').textContent = `${num(shadeMax)}+`;
+    }
     if (v === 'airborne') {
       $('vmid').textContent = roomAir ? (roomAir.vmax / 4).toPrecision(2) : '';
       $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
     }
-    document.querySelector('.legend h2').innerHTML = v === 'airborne'
+    document.querySelector('.legend h2').innerHTML = shade
+      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : `expected infected people above the ${Math.round(MODEL.prior * 100)}% baseline (Σ of everyone's P − ${Math.round(MODEL.prior * 100)}%)`} per 1,000 m² of floor space (footprint × floors)</span>`
+      : v === 'airborne'
       ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
       : v === 'airflow'
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
@@ -1953,7 +2117,7 @@ async function main() {
   document.querySelector('.options').append(basePick);
   // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
   const params = new URLSearchParams(location.search);
-  if (params.get('view')) $('view').value = params.get('view');
+  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=catch: the default)
   if (params.get('horizon')) horizon.value = params.get('horizon');
   if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
   const mapNote =
@@ -2012,7 +2176,7 @@ async function main() {
       totals.steps.forEach((st, i) => { for (const [id, b] of st.buildings) { const v = b.excess ?? b.expected; if (b.n >= MIN_PEOPLE && (!best || v > best.v)) best = { v, id, name: b.name, tMs: totals.times[i], expected: b.expected }; } });
       return best;
     },
-    buildingCenter: (id) => { const h = hitShapes.find((x) => x.id === id); return h && [(h.bb[1] + h.bb[3]) / 2, (h.bb[0] + h.bb[2]) / 2]; },
+    buildingCenter: (id) => { const h = hitShapes.find((x) => x.ids.has(id)); return h && [(h.bb[1] + h.bb[3]) / 2, (h.bb[0] + h.bb[2]) / 2]; },
     async firstReport() {
       const base = new URL(dataUrl, location.href);
       const cfg = await fetch(new URL('config.json', base)).then((r) => r.json());
@@ -2025,6 +2189,7 @@ async function main() {
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
     publicLayer, now: () => now, current: () => current, phoneScore: (id, t = now) => (model ? Math.max(phoneEstimate(id, t), statusFloor(id, t)) : null), heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
+    buildingAt: (lat, lon) => { const h = buildingAt({ lat, lng: lon }); return h && { id: h.id, ids: [...h.ids], name: h.name, info: buildingInfo(h), tip: buildingCard(h, false), density: buildingDensity(current.values(), truthMode()).get(h.id) }; }, // for checks
   };
 }
 

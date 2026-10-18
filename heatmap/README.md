@@ -16,15 +16,26 @@ Caching is off, so a reload always runs the latest code:
 cd fluni && git pull && python3 heatmap/tools/serve.py   # port 8000
 ```
 
-Open http://localhost:8000/heatmap/. It loads the sim's real 10-agent, 14-day run from GitHub
-(`sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`). If that isn't reachable it says so on screen; it no
-longer falls back silently to mock or fake data (use `?run=mock_boring10` or `?data=data/fake_agents.csv`
-on purpose). Building outlines come from the run's
+Open http://localhost:8000/heatmap/. It loads the sim's 1,000-agent, 4-day run
+(`sim/runs/influenza_none_n1000_d4_s42_73b8452c/`, the one [DEMO.md](DEMO.md) is timed on). To play
+**2 weeks**, pick "2 weeks" in the **run picker** next to "Fluni" in the header
+(`influenza_none_n1000_d14_s42_25fe957a`: the same scenario and seed, only 14 days; about 5 s and ~1.2 GB of
+JS heap to open), or open `?run=influenza_none_n1000_d14_s42_25fe957a` (`heatmap/tools/demo.sh --run <id>`
+does the same). The picker reloads the page with `?run=`, keeping the other URL options except `?at=` and
+`?agent=`. If the run isn't reachable it says so on
+screen; it never falls back silently to mock or fake data (use `?run=mock_boring10` or
+`?data=data/fake_agents.csv` on purpose). Building outlines come from the run's
 `map/buildings.csv` footprints, which cover places missing from OSM such as Green Library.
+
+The 2-week run is a big run (see "Big runs"), so it has no "Why this %?" panel and no contact-based phone
+alerts. It reads the precomputed `model/out/<run>/p_sick.csv`,
+`model/out/<run>/meanfield.csv` (`?model=meanfield`) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
+After a change to `model/` or the user map's totals, regenerate them (commands under "Big runs").
 
 URL options, which can be combined:
 
-- `?run=<name>`: load `sim/runs/<name>/`, e.g. `?run=mock_boring10`.
+- `?run=<name>`: load `sim/runs/<name>/`, e.g. `?run=influenza_none_n1000_d14_s42_25fe957a` (2 weeks, the same as
+  "2 weeks" in the run picker) or `?run=mock_boring10`. Runs not in the picker get their own entry in it.
 - `?why=1` (with `?agent=`): open the "Why this %?" panel (the same as the button on the presenter
   bar). It shows the model's contact graph, the formula with that person's numbers, and the
   evidence on record (`mathpanel.js`).
@@ -39,8 +50,12 @@ URL options, which can be combined:
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
-- `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
-  instead of the app's estimate. This is the same as choosing "Color: true status (sim)".
+- `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
+  `model/infer.js`, for the dots and so also the building shading. No "Why this %?" panel then. Big runs need
+  `node model/meanfield-cli.mjs sim/runs/<run>` first.
+- `?color=truth`: dots *and* the building shading follow the sim's true status instead of the app's
+  estimate (a building's shade is then the number of people in it actually infected). This is the same as
+  choosing "Color: true status (sim)".
 
 Demo scenes on the sim's mock run:
 
@@ -51,17 +66,20 @@ Demo scenes on the sim's mock run:
 
 ## Demo map vs. user map
 
-- **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **Demo map** (presenter): sees everything, including agent dots, per-building expected infected and true status.
 - **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
   buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
-  app's fonts (`assets/fonts/`, OFL). Campus is the user map. Numbers are unchanged: this phone's estimate (doseModel) is the one number
-  on Today; the campus-model P is shown only in the presenter bar and in the calculation sheet "for comparison". Taps are visual only.
+  app's fonts (`assets/fonts/`, OFL). Campus is the user map. The risk number on Today (and its Low/Elevated/High
+  tier, the advice line, Lisa's mood and "How is this calculated?") is the campus model's P for that person, `model.risk.pAt(id, now)`
+  (infer.js, or the mean-field with `?model=meanfield`): the same number as the dot's tooltip, the building card's list and the presenter
+  bar. The on-device estimate (`phoneEstimate`, doseModel over the last 24 h, mirrored by `proximity/`) is no longer shown; it stays as
+  `window.fluni.phoneScore` for proximity's cross-check. Taps are visual only.
 - **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
   (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
-  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Room-level heat (demo)**:
-  hover a building for people and expected sick, click it for Σ P, above-baseline, Low/Elevated/High counts and the top 3 people
-  driving it (click one to open the phone).
+  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Expected infected per
+  building** (the default view): hover a building for "≈ N expected infected · M people", click it for Σ P, above-baseline,
+  Low/Elevated/High counts and the top 3 people driving it (click one to open the phone).
 - **User map** (the phone, and "What users see" on the main map): built only from totals in
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
@@ -116,8 +134,24 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   same as concentration × average P(sick). The colour scale is fixed across all timestamps, so a
   colour means the same thing at every moment. It is a square-root scale, so the legend's middle
   label is a quarter of its maximum.
-- **Heat → "Room-level (demo)"**: fine detail (σ = 6 m close up), presenter only. How the heat spreads
-  (`diffuse.js`, `masks.js`):
+- **"Expected infected per building"** (the presenter's default view, `BuildingShadeLayer` in `buildings.js`): no
+  heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
+  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
+  with `?model=meanfield`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
+  floor space: footprint area (its outline) × floors. Floors come from `data/building-floors.json` for the 70 busiest
+  buildings (88% of indoor time), researched from Stanford's Campus Access Guide (maps.stanford.edu/ada), the 2018
+  General Use Permit historic-resources appendix, R&DE housing pages and OSM, each with its source, confidence and a
+  note; elsewhere from `floors` in the run's `map/buildings.csv` (OSM building:levels where mapped, else the sim's
+  default for the building type). So it's expected infected above baseline per 1,000 m²
+  of floor: a crowded small building reads darker than the same count spread through a big or tall one, and healthy
+  people at the baseline don't shade anything. Darkness is linear in that density (not √), along
+  the campfire ramp (`HEAT_STOPS`), on a fixed scale for the whole run: the 95th percentile of the buildings'
+  non-zero densities over 100 moments of the run, rounded, is the darkest; the legend reads 0 → that max+. Empty
+  buildings stay plain; people outdoors or walking shade nothing. Hover and the building card show the density and
+  footprint and floors too. With "Color: true status (sim)" a building's shade is the number actually infected (E or I)
+  there per 1,000 m² of floor, on the same scale.
+- **Heat → room-level** (only for a run without building outlines now): fine detail (σ = 6 m close up), presenter
+  only. How the heat spreads (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
     streets. Outdoors, it spreads freely.
   - Heat is the expected number of infected people near each point now: Σ P(sick) of the people
@@ -194,14 +228,22 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 
 ## Big runs (thousands of agents)
 
-From 2,000 agents (`BIG_RUN` in `app.js`) the page reads precomputed files instead of computing in the
+From 2,000 agents (`BIG_RUN` in `app.js`), or 8,000 agent-days (`BIG_AGENT_DAYS`: the 2-week 1,000 agents ×
+14 days), the page reads precomputed files instead of computing in the
 browser. In the page, the model alone downloads tens of millions of contacts: the 7,500-agent run
 took 52 s and a 4 GB JS heap to open.
 
 ```bash
 node --max-old-space-size=12000 heatmap/tools/precompute.mjs sim/runs/<run> --out heatmap/out/<run>
 mkdir -p model/out/<run> && mv heatmap/out/<run>/p_sick.csv model/out/<run>/
+node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # for ?model=meanfield
 ```
+
+`precompute.mjs` reads whole `timeline.csv.gz` and `contacts.csv.gz` files. For a run the sim split into
+`parts/`, rebuild them first (`sim/scripts/run_parts.py join`, or join the parts into a scratch copy of the
+run and point `precompute.mjs` at it; the output depends only on the run's name and data).
+The 2-week run (`influenza_none_n1000_d14_s42_25fe957a`) opens in about 5 s headless (4 days: about 4 s),
+~1.2 GB JS heap; its building-shade scale (100 sampled moments) takes ~35 ms.
 
 - P(sick) comes from `model/out/<run>/p_sick.csv`. There is no "Why this %?" and no
   contact-based phone alerts then.
