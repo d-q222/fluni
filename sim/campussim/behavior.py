@@ -1,7 +1,7 @@
 """Runtime movement: turn intended Plans into actual per-step state (CONTRACT §5).
 
 Per step: desired (room, act, event) = plan, then overrides (isolation > Vaden > leave_location >
-carry-on drops > plan). Room changes inside a building are instant; building changes are trips along
+carry-on drops > worry drops > plan). Room changes inside a building are instant; building changes are trips along
 campus.route in the trip's mode (campus.trip_mode: bike owners ride longer trips, everyone walks short
 ones) at the agent's speed for that mode. Every trip is logged with its polyline (drain_trips ->
 trips.csv.gz) so viewers can move agents along the route between steps. In-room positions follow the room layout and stay fixed during a visit
@@ -73,6 +73,9 @@ class Behavior:
         self._leave = {}       # i -> plan room being left
         self._carry = {}       # i -> intensity
         self._carry_dec = {}   # i -> (block key, keep)
+        self.worry = None      # campussim.worry.Worry when worry.mode is on (set by the engine)
+        self._wd_key = np.full((N, 3), -9, np.int64)   # worry drop: block (act, room, event) decided
+        self._wd_drop = np.zeros(N, bool)               # ... and whether it is dropped
 
         # --- room geometry / layout ---
         cp = campus
@@ -468,6 +471,8 @@ class Behavior:
         ovr = np.zeros(N, bool)
         self.entrance[:] = -1
         self._apply_overrides(t, des, dact, ovr, pr)
+        if self.worry is not None:
+            self._worry_drops(t, des, dact, ovr)
 
         if not self._t0_done:
             self._place_initial(t, des, pe)
@@ -585,6 +590,28 @@ class Behavior:
                         h = self._home_of(i)
                         des[i], dact[i], ovr[i] = h, (self._drop_act if h >= 0 else A_OFF), True
 
+    def _worry_drops(self, t, des, dact, ovr):
+        """Worried agents skip planned optional activities (worry.drop_acts): one draw per planned
+        block (act, room, event) with P = worry.drop_p; a dropped block is spent at home."""
+        w = self.worry
+        idx = np.flatnonzero(~ovr & (w.excess() > w.drop_min))
+        if not len(idx):
+            return
+        key = np.stack([dact[idx].astype(np.int64), des[idx].astype(np.int64),
+                        np.asarray(self.plans.event[idx, t], np.int64)], 1)
+        for k in np.flatnonzero(dact[idx] == A_COMMUTE).tolist():   # commutes belong to the block ahead
+            key[k] = self._eff_block(int(idx[k]), t)
+        m = w.drop_acts[key[:, 0]]
+        idx, key = idx[m], key[m]
+        new = np.flatnonzero((self._wd_key[idx] != key).any(axis=1))
+        if len(new):
+            i_new = idx[new]
+            self._wd_key[i_new] = key[new]
+            self._wd_drop[i_new] = w.rng.random(len(new)) < w.drop_p(i_new)
+        for i in idx[self._wd_drop[idx]].tolist():
+            h = self._home_of(i)
+            des[i], dact[i], ovr[i] = h, (w.drop_to_act if h >= 0 else A_OFF), True
+
     def _finalize(self, t, des, dact, ovr, pa, pe, ps, symptomatic):
         trav = self._trav
         at = self._at
@@ -636,7 +663,10 @@ class Behavior:
         idx = np.flatnonzero(redraw)
         if len(idx):
             ctx_act = act[idx]
-            p = self.pop.mask_propensity[idx] * self._cf[ctx_act]
+            mp = self.pop.mask_propensity[idx]
+            if self.worry is not None:
+                mp = self.worry.mask_propensity(idx, mp)
+            p = mp * self._cf[ctx_act]
             if symptomatic is not None:
                 p = np.where(np.asarray(symptomatic)[idx], p * self.c["mask_symptomatic_boost"], p)
             p = np.clip(p, 0.0, self.c["mask_p_max"])

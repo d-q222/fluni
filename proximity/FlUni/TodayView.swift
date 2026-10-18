@@ -89,6 +89,7 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: Space.l) {
                         header
                         notices
+                        AlwaysLocationCard()  // step two of the location ask (BackgroundLocation.offersAlways); nothing once answered
                         TissueNarrator(mood: mood, stamp: isSick && store.record.positiveKind == nil && !store.record.symptoms.isEmpty)
                         if isSick {
                             StayHomeView(model: model, store: store) { report = $0 }

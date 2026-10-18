@@ -91,9 +91,16 @@ final class ProximityModel: ObservableObject {
     private var lastTick = Date()
     private var lastRotation = Date()
     private var lastSummary = Date.distantPast
+    private var lastRescan: Date?
     private var lastFixSent = Date.distantPast
     private var timer: Timer?
-    private var notifiedLevel = AlertLevel.none
+    /// flu-offdetect: which alert levels get a notification (crossings up, per-level cooldown), the same on a
+    /// background wake-up as in the foreground.
+    private var alertGate = AlertGate()
+    /// Posts alerts; the default keeps FlUni running until iOS has taken the request (UNPoster).
+    var alertPoster: AlertPosting = UNPoster()
+    /// Called with every alert notification the model posts (FlUni's in-app AlertInbox listens).
+    var onAlert: ((NotificationKind) -> Void)?
     /// Per-peer "credited up to" times: exposure accrues from sightings, so it keeps counting while iOS
     /// only wakes FlUni for Bluetooth events, and the timer and those wake-ups never count a second twice.
     private var accrual = SightingAccrual()
@@ -113,12 +120,15 @@ final class ProximityModel: ObservableObject {
         if keepsScreenOn { UIApplication.shared.isIdleTimerDisabled = true }  // harness only
         restoreSavedStatus()
         restorePause()
+        #if DEBUG
+        if acceptsLaunchArguments && LaunchMode.isTestLaunch { DebugFileLog.shared.start { [weak self] in self?.log($0) } }  // flu-offdetect
+        #endif
         applyLaunchArguments()  // first: link settings must be in place before the session exists
         rotateID()
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         ble.onState = { [weak self] in self?.setStatus("BLE", $0) }
-        ble.onSighting = { [weak self] hit, rssi in self?.bleSighting(hit, rssi: rssi) }
+        ble.onSighting = { [weak self] hit, rssi, n in self?.bleSighting(hit, rssi: rssi, samples: n) }
         ble.onLog = { [weak self] in self?.log($0) }
         ble.onRead = { [weak self] in self?.rotateIfDue(Date()) }  // a read may be our only wake-up for a while
         ble.worksInBackground = worksInBackground
@@ -136,6 +146,9 @@ final class ProximityModel: ObservableObject {
 
         gps.onState = { [weak self] in self?.setStatus("GPS", $0) }
         gps.onFix = { [weak self] in self?.ownFix($0) }
+        // flu-offdetect: with Always, coarse background location keeps FlUni running off screen (BackgroundLocation).
+        gps.keepsAppAlive = worksInBackground
+        gps.onMode = { [weak self] in self?.log("location mode \($0)") }
 
         if isPaused {
             markSensorsPaused()  // launched while paused: the radios stay off until resume()
@@ -266,7 +279,7 @@ final class ProximityModel: ObservableObject {
     func resetExposure() {
         setExposure(ExposureTracker())
         accrual.reset()
-        notifiedLevel = .none
+        alertGate = AlertGate()
     }
 
     /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
@@ -324,6 +337,9 @@ final class ProximityModel: ObservableObject {
     private func log(_ s: String) {
         print("[fluni] \(s)")
         fflush(stdout)  // stdout is a pipe under devicectl --console, so it would otherwise buffer
+        #if DEBUG
+        DebugFileLog.shared.append(s)  // flu-offdetect: test launches only (no-op otherwise)
+        #endif
     }
 
     // MARK: Identity and status broadcast
@@ -363,16 +379,19 @@ final class ProximityModel: ObservableObject {
 
     // MARK: Channel inputs
 
-    private func bleSighting(_ hit: BLEBeacon.Hit, rssi: Double) {
+    /// `samples`: RSSI samples behind the median. Few samples (off screen: no adverts, a polled link every 2 s)
+    /// widen the reading's error so pClose stays honest (OffScreenRSSI; flu-offdetect).
+    private func bleSighting(_ hit: BLEBeacon.Hit, rssi: Double, samples: Int) {
         guard !isPaused else { return }  // a callback that was already queued when we paused
         let id = hit.id, risk = hit.risk
-        heard[id] = (hit.score, hit.daysSinceOnset)  // the latest beacon wins; not logged, not published
+        // The latest beacon wins; a held link's poll (no payload) never erases what an advert said. Not logged or published.
+        if hit.score != nil || hit.daysSinceOnset != nil || heard[id] == nil { heard[id] = (hit.score, hit.daysSinceOnset) }
         if let old = byID[id]?.risk, old != risk { log("peer \(id.prefix(6)) risk=\(risk) via=ble") }
         if byID[id] == nil { log("ble seen \(id.prefix(6)) risk=\(risk)") }
         update(id) { p in
             p.risk = risk
             p.rssi = rssi
-            p.ble = p.calibrator.reading(rssi: rssi, at: Date())
+            p.ble = OffScreenRSSI.widened(p.calibrator.reading(rssi: rssi, at: Date()), samples: samples)
         }
         if worksInBackground, UIApplication.shared.applicationState != .active { scheduleBackgroundTick() }
     }
@@ -382,9 +401,12 @@ final class ProximityModel: ObservableObject {
     private func scheduleBackgroundTick() {
         guard !backgroundTickPending else { return }
         backgroundTickPending = true
+        // flu-offdetect: hold the wake-up open until that tick (and any notification it posts) has run.
+        let window = BackgroundWindow.begin("fluni.tick")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             self?.backgroundTickPending = false
             self?.tick()
+            window.end()
         }
     }
 
@@ -572,10 +594,21 @@ final class ProximityModel: ObservableObject {
         setExposure(e)  // unchanged ticks don't republish; any change in p does
         tickOwnScore()
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
-        notifiedLevel = next.notified
-        if let level = next.notify { notify(level) }
+        if let kind = alertGate.step(exposure.level, now: now) {
+            log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")")
+            if UIApplication.shared.applicationState == .active {
+                UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
+            }
+            alertPoster.post(kind)
+            onAlert?(kind)  // FlUni's in-app AlertInbox: one entry per notification posted, so the counts match
+        }
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
+        // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
+        // once per background scan; a restart lets phones that came near be found again).
+        if BackgroundLocation.shouldRescan(gps.mode, last: lastRescan, now: now) {
+            lastRescan = now
+            ble.refreshScan()
+        }
 
         // Ease GPS off while any enabled UWB reading was fresh in the last 15 s (hysteresis vs flapping).
         gps.setRelaxed(enabled.contains(.uwb) && byID.values.contains { $0.uwb.map { now.timeIntervalSince($0.at) < 15 } ?? false })
@@ -659,14 +692,17 @@ final class ProximityModel: ObservableObject {
     }
     #endif
 
-    /// Called with every alert level a notification is posted for (FlUni's in-app AlertInbox listens), so the
-    /// in-app unread alerts and the notifications always match.
-    var onAlert: ((AlertLevel) -> Void)?
+}
 
-    private func notify(_ level: AlertLevel) {
-        onAlert?(level)
-        UINotificationFeedbackGenerator().notificationOccurred(level == .closeContact ? .error : .warning)
-        let c = AppNotifications.content(kind: level == .closeContact ? .closeContact : .nearby)  // category + userInfo + neutral text
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil))
+/// Posts through UNUserNotificationCenter (text from NotificationRoute via AppNotifications, which respects the
+/// lock-screen details setting). A background task keeps FlUni running until iOS has accepted the request, so a
+/// wake-up that crosses a threshold can't be suspended halfway through posting it (flu-offdetect).
+final class UNPoster: AlertPosting {
+    func post(_ kind: NotificationKind) {
+        let window = BackgroundWindow.begin("fluni.alert")
+        let c = AppNotifications.content(kind: kind)  // category + userInfo + neutral text
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil)) { _ in
+            window.end()
+        }
     }
 }

@@ -128,6 +128,8 @@
     .key:first-child { margin-top: 0; }
     .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--hairline); }
     .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
+    .truth-key { display: flex; align-items: center; gap: 7px; margin-top: 8px; }
+    .truth-ring { width: 10px; height: 10px; border-radius: 50%; background: var(--sun, #ebd187); box-shadow: 0 0 0 2px #6d1f16; flex: none; }
     .tiers span { display: flex; flex-direction: column; gap: 1px; padding-top: 6px; color: var(--ink-2);
       border-top: 6px solid var(--c); border-radius: 2px; }
     .tiers small { color: var(--ink-3); font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -191,20 +193,21 @@
        the screen width from the top of the sheet down to the bottom of the tab bar. */
     .phone-frame { position: relative; }
     #ph-tab-today { padding-bottom: 64px; } /* room to scroll the last lines clear of a popped tissue */
-    .tissue-alert { position: absolute; left: 6px; right: 6px; bottom: 6px; aspect-ratio: 650 / 1123; z-index: 5; pointer-events: none; }
+    .tissue-alert { position: absolute; left: 6px; right: 6px; bottom: 6px; aspect-ratio: 650 / 1123; z-index: 7; /* above the tab bar (phone.css gives it 6) */ pointer-events: none; }
     .tissue-alert[hidden] { display: none; }
     .tissue-alert[data-state="open"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 19.2%; top: -40%;
       background: rgba(250, 244, 232, 0.72); }
-    .ta-art { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .tissue-alert[data-state="popped"] .ta-art { transform-origin: 50% 74%; animation: ta-wiggle 1.6s ease-in-out infinite; }
-    @keyframes ta-wiggle { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-1.6deg) translateY(-2px); }
-      84% { transform: rotate(1.4deg) translateY(-3px); } 92% { transform: rotate(-0.6deg); } }
+    .ta-art, .ta-rim { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .tissue-alert:not([data-state="popped"]) .ta-rim { display: none; }
+    .tissue-alert[data-state="popped"] .ta-art { transform-origin: 50% 88%; /* the tissue's base, where it leaves the box */ animation: ta-wiggle 1.6s ease-in-out infinite; }
+    @keyframes ta-wiggle { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-1.8deg); }
+      84% { transform: rotate(1.6deg); } 92% { transform: rotate(-0.7deg); } }
     .ta-pop { all: unset; position: absolute; left: 20%; right: 20%; top: 75%; height: 13%; cursor: pointer; pointer-events: auto; border-radius: 16px; }
     .ta-pop:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     .ta-hint { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-3deg); white-space: nowrap;
       font: 600 13px/1 var(--font-display); color: var(--fire-ink); background: var(--surface); padding: 5px 10px; border-radius: 999px;
       box-shadow: 0 0 0 1.5px var(--fire-ink); }
-    .ta-note { position: absolute; left: 11%; right: 11%; top: 7%; bottom: 26%; display: flex; flex-direction: column; gap: 10px;
+    .ta-note { position: absolute; left: 18%; right: 17%; top: 12%; bottom: 29%; display: flex; flex-direction: column; gap: 10px;
       pointer-events: auto; color: var(--ink); font: 14px/1.4 var(--font); animation: ta-in 220ms ease-out; }
     .ta-note[hidden] { display: none; }
     @keyframes ta-in { from { opacity: 0; transform: translateY(6px); } }
@@ -217,6 +220,55 @@
       background: var(--ink); color: var(--surface); }
     .ta-ok:focus-visible { outline: 2px solid var(--fire-ink); outline-offset: 2px; }
     @media (prefers-reduced-motion: reduce) { .tissue-alert .ta-art, .ta-note { animation: none !important; } }
+
+    /* ---------- Night mode for the phone (design pass, theme.js) ----------
+       Cozy, not inverted: warm cocoa paper, cream ink, Lisa's drawings swapped for their lamp-lit night
+       versions (assets/night/). The campfire swatches stay as they are; text colours are lifted so every
+       pairing still passes WCAG AA (cream ink 12.9:1, ink-2 8.2:1, fire-ink 6.0:1 on the paper). */
+    #phone[data-theme="night"] {
+      --paper: #221a17; --surface: #2c231e; --surface-2: #382c25; --surface-3: #42342c; --paper-box: #2c231e;
+      --ink: #f1e2c6; --ink-2: #d2bc9f; --ink-3: #b8a287; --fire-ink: #f09a7e;
+      --hairline: rgba(241, 226, 198, 0.14); --alert-bg: #3a2620; --alert-ink: #f09a7e;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+      color-scheme: dark; color: var(--ink); /* the sheet and status bar sit outside .screen and inherit from here */
+    }
+    #phone[data-theme="night"] .phone-frame { box-shadow: 0 0 0 6px #17110e, 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 48px -12px rgba(0, 0, 0, 0.5); }
+    #phone[data-theme="night"] .status-bar i { background: #0d0a08; }
+    #phone[data-theme="night"] .tabbar { background-image: url("assets/night/tabbar/bar.png"); }
+    #phone[data-theme="night"] .cleg { border-image-source: url("assets/night/containers/box-paper.png"); }
+    #phone[data-theme="night"] .screen .card { border-image-source: url("assets/night/containers/box-paper.png"); }
+    #phone[data-theme="night"] .screen .card.peach { border-image-source: url("assets/night/containers/box-peach.png"); }
+    #phone[data-theme="night"] .tabbar button img { filter: none; }
+    #phone[data-theme="night"] .tabbar button[aria-selected="true"] img { filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45)) brightness(1.06); }
+    /* tinted boxes: the day washes at night strength, so cream text sits on them */
+    #phone[data-theme="night"] .headsup { background: rgba(235, 209, 135, 0.13); }
+    #phone[data-theme="night"] .walkin, #phone[data-theme="night"] .crow .cc { background: rgba(219, 108, 89, 0.2); }
+    #phone[data-theme="night"] .cc-open { background: linear-gradient(rgba(219, 108, 89, 0.14), rgba(219, 108, 89, 0.14)), var(--surface); }
+    #phone[data-theme="night"] .cc-open hr { background: var(--hairline); }
+    #phone[data-theme="night"] .rail > .rl .ln { background: var(--lc, rgba(210, 188, 159, 0.4)); }
+    #phone[data-theme="night"] .rail > .rl .ln.dash { border-left-color: rgba(210, 188, 159, 0.4); background: none; }
+    #phone[data-theme="night"] .ticks i { box-shadow: inset 0 0 0 1px rgba(210, 188, 159, 0.35); }
+    #phone[data-theme="night"] .ticks i.on { box-shadow: none; }
+    #phone[data-theme="night"] .rk .why, #phone[data-theme="night"] .quiet { text-decoration-color: rgba(210, 188, 159, 0.5); }
+    #phone[data-theme="night"] .choices { box-shadow: inset 0 0 0 1px var(--hairline); }
+    #phone[data-theme="night"] .sticker { box-shadow: inset 0 0 0 1px var(--hairline); }
+    #phone[data-theme="night"] .sticker.on { box-shadow: inset 0 0 0 2.5px var(--ink); }
+    #phone[data-theme="night"] .circ { background: var(--surface-2); box-shadow: 0 0 0 1px var(--hairline); }
+    #phone[data-theme="night"] #ph-sheet { background: rgba(0, 0, 0, 0.45); }
+    #phone[data-theme="night"] .screen .progress { background: var(--hairline); }
+    #phone[data-theme="night"] .cchip { box-shadow: var(--shadow); }
+    /* the campus map at night: restyled in app.js (cream lines on cocoa), heat in its usual colours */
+    #phone[data-theme="night"] #ph-map { background: #2a211c; }
+    #phone[data-theme="night"] #ph-map .lbl-g span { color: #b3c28c; }
+    #phone[data-theme="night"] #ph-map .lbl span { text-shadow: 0 0 3px #221a17, 0 0 3px #221a17; }
+    /* the tissue alert's sheet stays light paper (a lamp-lit note), so its words keep the day ink */
+    #phone[data-theme="night"] .tissue-alert[data-state="open"]::before { background: rgba(23, 17, 14, 0.7); }
+    #phone[data-theme="night"] .ta-note { color: #33241c; }
+    #phone[data-theme="night"] .ta-text { background: rgba(218, 183, 121, 0.94); }
+    #phone[data-theme="night"] .ta-kicker { color: #7a2e1e; }
+    #phone[data-theme="night"] .ta-ok { background: #33241c; color: #faf4e8; }
+    #phone[data-theme="night"] .ta-hint { color: #7a2e1e; background: #f1e2c6; box-shadow: 0 0 0 1.5px #7a2e1e; }
+    .presenter button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
       font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -375,7 +427,7 @@
           <button data-tab="me" aria-selected="false" aria-label="Me"><img src="assets/tabbar/tab-me.png" alt=""></button>
         </nav>
       </div>
-      <div class="presenter"><span>Presenter only: <b id="ph-truth"></b></span><button id="ph-close">Close</button></div>
+      <div class="presenter"><span>Presenter only: <b id="ph-truth"></b></span><button id="ph-night" aria-pressed="false" aria-label="Night mode">☾ Night</button><button id="ph-close">Close</button></div>
     </aside>
   </main>
 

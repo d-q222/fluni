@@ -1,4 +1,6 @@
-"""Config loading. Every configs/<section>.json becomes cfg[<section>]; configs/diseases.json holds presets.
+"""Config loading. Every configs/<section>.json becomes cfg[<section>]; configs/diseases.json holds presets,
+configs/calibration.json the calibration scenario (scripts/calibration_run.py loads it itself),
+configs/published_rates.json the validation targets (scripts/validation_report.py loads it itself).
 
 cfg = load_config(disease="influenza", overrides={"run": {"n_agents": 10}}, set_args=["disease.p_asym=0.4"])
 """
@@ -40,7 +42,7 @@ def apply_set(cfg, assignment):
 def load_config(disease="influenza", overrides=None, set_args=(), config_file=None):
     cfg = {}
     for f in sorted(CONFIG_DIR.glob("*.json")):
-        if f.stem != "diseases":
+        if f.stem not in ("diseases", "calibration", "published_rates"):
             cfg[f.stem] = json.loads(f.read_text())
     presets = json.loads((CONFIG_DIR / "diseases.json").read_text())
     if disease not in presets:

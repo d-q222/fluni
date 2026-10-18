@@ -103,6 +103,9 @@ final class WalkInMonitor: ObservableObject {
     private func post(_ b: BuildingHeat.Building) {
         AlertInboxStore.shared.walkedIn(buildingID: b.id, name: b.name)
         let c = AppNotifications.content(kind: .building, buildingID: b.id, buildingName: b.name)
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "walkin-\(b.id)", content: c, trigger: nil))
+        let window = BackgroundWindow.begin("fluni.walkin.post")  // flu-offdetect: may run on a background region wake
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "walkin-\(b.id)", content: c, trigger: nil)) { _ in
+            window.end()
+        }
     }
 }

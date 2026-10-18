@@ -20,6 +20,7 @@ from .population import build_population
 from .reports import Reports, reports_frame
 from .schedule import build_events, build_sections, events_frame_for_csv, sections_frame_for_csv
 from .summary import compute_summary
+from .worry import is_on as _worry_on
 
 RNG_STREAMS = ["map", "population", "sections", "events", "plans", "behavior", "disease", "reports", "intervention"]
 
@@ -38,7 +39,24 @@ def recorded_config(cfg):
     rec["run"].pop("out_dir", None)
     if rec["run"].get("intervention") != "fluni":  # keeps run ids of non-app runs as before the app policy
         rec.get("interventions", {}).pop("fluni", None)
+    if not _llm_on(rec):  # keeps run ids of runs without Claude-driven agents unchanged
+        rec.pop("llm_agents", None)
+    pc = rec.get("personality", {})
+    if pc.get("mode", "off") == "off" or pc.get("weights_source", "config") != "calibrated":
+        rec.pop("behavior_calibrated", None)  # configs/behavior_calibrated.json only counts when used
+    else:
+        bc = rec.get("behavior_calibrated", {})
+        rec["behavior_calibrated"] = {k: bc.get(k) for k in ("weights", "weights_fitted", "source_runs", "created")}
+    if rec.get("personality", {}).get("mode", "off") == "off":  # keeps run ids of runs without Big Five
+        rec.pop("personality", None)
+    if not _worry_on(rec):  # keeps run ids of runs without worry
+        rec.pop("worry", None)
     return rec
+
+
+def _llm_on(cfg):
+    c = cfg.get("llm_agents", {})
+    return bool(c.get("n_agents") or c.get("agent_ids"))
 
 
 def make_run_id(cfg):
@@ -51,9 +69,11 @@ def _log(msg, t0):
     print(f"[{time.perf_counter() - t0:7.1f}s] {msg}", flush=True)
 
 
-def run(cfg, external_provider=None, quiet=False):
+def run(cfg, external_provider=None, quiet=False, llm_client=None, scenario=None):
     """Run one simulation; returns the run directory. external_provider(t) -> dict is passed to
-    the intervention through ObservableState.external (downstream closed-loop hook)."""
+    the intervention through ObservableState.external (downstream closed-loop hook). llm_client
+    replaces the Anthropic client of Claude-driven agents (tests). scenario.setup(...) -> intervention
+    may seed infections and wrap the intervention before step 0 (scripts/calibration_run.py)."""
     t_start = time.perf_counter()
     log = (lambda m: None) if quiet else (lambda m: _log(m, t_start))
     rc = cfg["run"]
@@ -78,9 +98,22 @@ def run(cfg, external_provider=None, quiet=False):
     if rc.get("initial_seeds", 0):
         dis.seed_initial(rc["initial_seeds"], 0)
     rep = Reports(cfg, campus, pop, rngs["reports"])
+    worry = None
+    if _worry_on(cfg):
+        from .worry import Worry
+        worry = beh.worry = Worry(cfg, pop)
+        fg = np.asarray(pop.friend_group)
+    llm = None
+    if _llm_on(cfg):
+        from .llm_agents import LLMAgents
+        llm = LLMAgents(cfg, campus, pop, plans, sections, events, beh, rep, client=llm_client)
+        log(f"Claude-driven agents: {', '.join(pop.agent_id[i] for i in llm.idx)} ({cfg['llm_agents']['model']})")
+        llm.worry = worry
     intervention = REGISTRY[rc["intervention"]]()
     if hasattr(intervention, "reset"):
         intervention.reset({"cfg": cfg, "campus": campus, "pop": pop, "n_agents": pop.N, "step_min": step_min})
+    if scenario is not None:
+        intervention = scenario.setup(cfg=cfg, pop=pop, dis=dis, llm=llm, intervention=intervention)
     has_app = np.asarray(pop.has_app, dtype=bool)
     comp_scale = getattr(intervention, "compliance_scale", 1.0)
     n_events = 0
@@ -95,6 +128,9 @@ def run(cfg, external_provider=None, quiet=False):
     writer.write_config(recorded_config(cfg), run_id, campus.version, code_version(), fractions)
     campus.write(run_dir / "map")
     writer.write_table("agents_static.csv", pop.to_frame(campus, sections))
+    if pop.big_five is not None:
+        from .personality import frame as personality_frame
+        writer.write_table("personality.csv", personality_frame(pop))
     writer.write_table("schedule/sections.csv", sections_frame_for_csv(sections))
     writer.write_table("schedule/events.csv", events_frame_for_csv(events, pop))
 
@@ -109,20 +145,40 @@ def run(cfg, external_provider=None, quiet=False):
 
     for t in range(T):
         k = t % spd
+        if llm is not None:
+            llm.before_step(t, dis)
+        if worry is not None:
+            worry.step(t)
         beh.step(t, dis.symptomatic)
         contacts = find_contacts(campus, beh.room, beh.x, beh.y, cfg["contacts"], floor=beh.floor)
         dev = dis.step(t, beh, contacts)
         rep.step(t, dis, beh, contacts, dev)
+        if worry is not None:
+            worry.bump(np.asarray(dev.get("onset", []), np.int64), "own_symptoms", t)
+            for e in rep.events[n_events:]:
+                if e["event"] == "test_result" and e["value"] == "positive" and fg[e["agent"]] >= 0:
+                    friends = np.flatnonzero(fg == fg[e["agent"]])
+                    worry.bump(friends[friends != e["agent"]], "friend_positive", t)
 
         external = external_provider(t) if external_provider else {}
         obs = build_observable(t, timestamps[t], beh, rep, dis, intervention, external,
                                contacts=contacts, has_app=has_app, report_events=rep.events[n_events:])
         n_events = len(rep.events)
         actions = intervention.step(obs)
+        comp = None
+        if worry is not None and actions:
+            worry.bump(np.fromiter(actions, np.int64), "app_alert", t)
+            comp = worry.compliance(pop.compliance)
+        llm_notes = {}
+        if llm is not None:
+            actions, llm_notes = llm.after_step(t, dev, actions, contacts=contacts, dis=dis)
         action_col = np.array(apply_actions(actions, beh, pop, rngs["intervention"], t, reports=rep,
                                             cfg_interventions=cfg["interventions"],
-                                            compliance_scale=comp_scale), dtype=object) \
+                                            compliance_scale=comp_scale, compliance=comp), dtype=object) \
             if actions else no_action
+        for i, note in llm_notes.items():
+            action_col = action_col.copy() if action_col is no_action else action_col
+            action_col[i] = note
         action_col = np.where(action_col == "", None, action_col)
 
         for name, val in (("room", beh.room), ("b", beh.b), ("x", beh.x), ("y", beh.y),
@@ -159,6 +215,13 @@ def run(cfg, external_provider=None, quiet=False):
     inf_df = pd.DataFrame(dis.infections, columns=["t", "infectee", "infector", "route", "r", "b", "contribution"])
     writer.write_table("infections.csv", infections_frame(dis, campus, pop))
     writer.write_table("reports_tests.csv", reports_frame(rep.events, pop))
+    if llm is not None:
+        (run_dir / "llm_agents.jsonl").write_text("".join(line + "\n" for line in llm.log_lines()))
+        (run_dir / "llm_conversations.jsonl").write_text("".join(line + "\n" for line in llm.convo_lines()))
+        (run_dir / "llm_messages.jsonl").write_text("".join(line + "\n" for line in llm.message_lines()))
+        (run_dir / "llm_events.csv").write_text(llm.events_csv())
+    if worry is not None:
+        writer.write_table("worry.csv.gz", worry.frame())
     if hasattr(intervention, "log_frame"):
         writer.write_table("app_alerts.csv", intervention.log_frame(pop.agent_id))
     summary = compute_summary(cfg, campus, pop, inf_df, T)

@@ -68,6 +68,188 @@ Every run also writes `timeline_changes.csv.gz`, the compact timeline the heat m
 ([docs/timeline-changes-format.md](../docs/timeline-changes-format.md)): only rows where something
 changes plus the last row of each stay. It's about 5× smaller than `timeline.csv.gz`.
 
+## Big Five personalities
+
+`--set personality.mode=big_five` gives every agent openness, conscientiousness, extraversion,
+agreeableness and neuroticism scores, drawn from a range typical for its archetype
+(`configs/personality.json`). The behavior traits are then computed from those scores instead of
+drawn on their own:
+
+- compliance follows conscientiousness and agreeableness;
+- mask wearing follows conscientiousness and neuroticism;
+- honesty follows agreeableness and conscientiousness;
+- extraverts carry on when sick more often, and go to more parties, events and hangouts (`social_scale`).
+
+Each archetype's averages stay the same as with personality off, so the influenza calibration
+holds. Big Five only changes who varies around the average. Dorms, friend groups, teams and classes
+are identical either way. The run writes `personality.csv` (scores plus `social_scale`), and Claude
+agents' personas describe the personality in words. The weights are placeholders until the
+calibration loop in [docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md) fits them. Off by default,
+so run ids are unchanged. Check it with `scripts/smoke_personality.py`.
+
+## Worry
+
+`--set worry.mode=on` gives every agent a worry level between 0 and 1 (`campussim/worry.py`,
+`configs/worry.json`). Each agent has a resting level: from neuroticism when Big Five is on, else a
+constant per archetype. Worry jumps when the agent gets symptoms, a friend-group member tests
+positive, or the app sends an alert, and Claude agents can report their own. Each jump closes a fixed
+share of the gap to 1. Between jumps worry relaxes back to the resting level with a 3-day half-life.
+
+Worry above the resting level makes an agent follow advice more often, wear a mask more, and skip
+planned parties, hangouts, events, study groups and gym sessions (they stay home instead). Parties
+and events are scheduled before the run starts, so skipping them is the only way worry can reduce
+going out. At the resting level, behavior is the same as with worry off. The run writes
+`worry.csv.gz` (`t, agent_id, worry, cause`): every agent's resting level at t=0, one row per jump or
+reported value, and hourly rows while worry is fading. The jump sizes and weights are placeholders
+until the calibration loop fits them. Off by default, so run ids are unchanged. Check it with
+`scripts/smoke_worry.py`.
+
+## Calibrating rule-based agents
+
+The Big Five weights above are placeholders. `scripts/calibrate_agents.py` replaces them with ones
+fitted to what Claude-driven agents actually do in calibration runs
+([docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md), section 4):
+
+```bash
+.venv/bin/python scripts/calibrate_agents.py runs/<calib_run> [runs/<calib_run2> ...] \
+    --out configs/behavior_calibrated.json            # --min-rows 50, --l2 0.1
+.venv/bin/python simulate.py --agents 7500 --set personality.mode=big_five \
+    --set personality.weights_source=calibrated
+.venv/bin/python scripts/validation_report.py runs/<run> --published configs/published_rates.json
+```
+
+It reads each run's `llm_events.csv` (one row per measured decision) and `calibration_forced.csv`
+(events the calibration scenario forced). It fits:
+
+- sick response: a multinomial over stay home / Vaden / carry on;
+- app compliance: a logit per advice kind, with a forced-alert flag;
+- disclosure: a logit with relationship effects;
+- influence: P(accept) by message kind and relationship;
+- worry: jump size per event and the decay half-life;
+- notice reactions: rate per cue.
+
+The fits use Big Five centered at archetype means, worry and severity as covariates, a small L2
+penalty, and standard errors clustered by agent. A behavior with fewer than `--min-rows` rows keeps
+its placeholder and is marked `"fitted": false`. The JSON holds:
+
+- `weights`, in the same shape as `personality.json`, with `weights_se` and `weights_fitted`;
+- `influence` (`b[kind]`, `w_A`, `w_E`, `w_worry`, `w_rel[relationship]`), `worry` and `notice`;
+- per-archetype checks of fitted rates against the `population.json` targets;
+- row counts, source run ids, model names, and the full coefficient tables.
+
+`personality.weights_source=calibrated` uses the fitted weight for each trait marked fitted, and
+`personality.json` for the rest. Intercepts are still solved so archetype means match today's.
+With the default (`config`), the file is ignored and run ids don't change.
+`validation_report.py` writes `validation.md`, which compares each fitted rate with
+`configs/published_rates.json` and flags gaps outside tolerance. It lists rates with no published
+match as unvalidated. Check all of this with `scripts/smoke_calibrate_agents.py`, which recovers
+known coefficients from synthetic events.
+
+## Claude-driven agents
+
+By default every agent follows the scheduler's plan (`plans.py`) and a scripted sick response.
+`--set llm_agents.n_agents=K` hands K agents (picked from the seed) to Claude, which decides their
+day. The rest of the population is unchanged.
+
+```bash
+.venv/bin/pip install -r requirements-llm.txt        # anthropic SDK; needs ANTHROPIC_API_KEY
+.venv/bin/python simulate.py --agents 100 --days 3 --initial-seeds 5 --set llm_agents.n_agents=10 \
+    --set llm_agents.pick=friend_groups
+```
+
+- **Daily plan.** At `day_start_h` (4 AM) each agent gets its persona (archetype, dorm, team,
+  how often it follows advice, wears masks, is honest, and what it usually does when sick), its diary from
+  earlier days, how it feels (symptoms only when symptomatic, so asymptomatic agents feel fine), test results and app
+  status, its app notifications, the scheduler's default plan, and a menu of places (home, dining,
+  libraries, gyms, outdoor spots, common rooms, friends' dorms, Vaden, today's classes and events).
+  It returns timed blocks (activity + place) and a diary line. The blocks replace that agent's plan
+  for the next 24 h. Transit is inserted as in `plans.py`, so agents still walk or bike the path network.
+- **Re-planning.** Symptom onset, a test result, FlUni app advice, a conversation, a text or an
+  observation re-plans the rest of the day (`replan_on`, at most `max_replans_per_day`).
+- **They talk to each other.** When two Claude agents are within 3 m (no wall between them), or in
+  the same small room such as a dorm room, for 10 minutes, they have a conversation: alternating
+  lines, one call per line, each written from the speaker's own prompt. A speaker knows its own
+  symptoms, test result and app status (and can hide them), sees only what is visible about the
+  other (a mask, coughing), and is told how they know each other (friends, roommate, dormmate,
+  teammate, classmate, stranger). Strangers often just nod. Afterwards each one writes a memory and
+  says whether the talk changes its day. If it does, the agent re-plans with the transcript in its
+  notifications (trigger `conversation`), so a friend can talk it into a party or into getting tested.
+  The memories go into later daily plans. Knobs are under `llm_agents.conversations` (`radius_m`,
+  `small_room_max_capacity`, `min_minutes`, `max_turns`, `cooldown_h`, `max_per_agent_per_day`).
+  Agents picked at random rarely meet, so use `llm_agents.pick=friend_groups`, which hands whole
+  friend groups to Claude. Transcripts are written to `llm_conversations.jsonl`.
+- **They notice others.** A Claude agent next to a visibly sick rule-based agent for 5 minutes, or in
+  a room with 40+ people, gets an observation such as "Riley (A0007), your roommate, has been next to
+  you in Jerry (dorm triple) for 5 minutes: they are coughing and look unwell". It may re-plan (trigger
+  `observation`, at most `max_observations_per_day` = 2). Knobs are under `llm_agents.notice`.
+- **They text their friends.** Plans, re-plans and reflections can return `messages`
+  (`{to, kind: invite | warn | tell_sick, place, time, text}`, `to` a friend's id or `"group"`). A Claude
+  recipient sees the text with an id and answers in its next plan (`accept`, trigger `message`). A
+  rule-based recipient accepts with `sigmoid(b[kind] + w_A·(A−.5) + w_E·(E−.5) + w_worry[kind]·(worry−baseline)
+  + w_rel[relationship])` (Big Five 0.5 when off). An accepted invite is written into the plan with
+  transit; a group invite happens only if `group_min` (2) people say yes, and members are told. An accepted
+  warning raises worry and sends a rule-based agent to Vaden with `p_vaden[kind]`. Knobs are under
+  `llm_agents.messages`. Every text and answer is in `llm_messages.jsonl`.
+- **Worry.** Plans and reflections return `worry` (1–5). With `worry.py` on, it sets the agent's
+  worry level, and the level is shown in the prompt. Hearing a friend say they are sick, a warning text
+  and seeing someone sick also bump worry.
+- **Measured decisions.** `llm_events.csv` has one row per decision: `sick_response` (first plan after
+  symptom onset: stay_home / vaden / carry_on, hours out), `app_compliance` (plan after app advice, per
+  advice kind), `disclosure` (did a speaker with symptoms or a test tell the other), `influence` (every
+  answer to a text, Claude or rule-based), `worry` (each answer and bump) and `notice_reaction`, with the
+  agent's archetype, Big Five, traits, worry before/after, severity and relationship to the other agent.
+- **They decide for themselves.** For these agents the scripted response (isolate / Vaden / carry on)
+  is off, and intervention actions become notifications instead of being applied (timeline `action`
+  = `advised:<kind>`). Going to Vaden in a plan books a test. Self-reports still follow `reports.py`.
+- **Output.** `llm_agents.jsonl`: one row per plan call (`t, agent_id, trigger, applied, prompt, response`).
+  Also `llm_conversations.jsonl`, `llm_messages.jsonl` and `llm_events.csv`.
+- **Reproducible.** Each response is cached under `llm_cache/` by request hash. A rerun with the same
+  seed and config makes no API calls and is byte-identical. Commit `llm_cache/` with a run so others can
+  rebuild it without a key. `llm_agents.offline=true` never calls the API (a cache miss keeps the default plan).
+  Without `llm_agents` the run id and output are exactly as before.
+- **Cost.** One call per agent per day, plus re-plans, plus up to `max_turns` + 2 calls per conversation. Defaults: `claude-opus-5-5`, effort `low`.
+  Change `llm_agents.model` / `llm_agents.effort` to trade cost for quality. Observations and texts cost
+  nothing extra unless they cause a re-plan (all re-plans share `max_replans_per_day`).
+- `scripts/smoke_llm_agents.py` checks the plumbing with a fake client (no key needed);
+  `scripts/smoke_llm_interactions.py` checks noticing, texts, group plans, disclosure and `llm_events.csv`.
+
+## Calibration run
+
+The scenario that measures Claude agents' behavior for fitting (step 6 of
+[docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md)): 300 agents for 7 days, 50 of them Claude-driven
+(whole friend groups, Big Five, worry on, `claude-sonnet-5-5` at effort low). Settings, prices and the
+estimate's assumptions are in `configs/calibration.json`. That file isn't loaded into normal runs, so
+their run ids don't change.
+
+```bash
+.venv/bin/python scripts/calibration_run.py --dry-run          # cost estimate; fake client, no key, ~20 s
+.venv/bin/python scripts/calibration_run.py --budget 20        # real run (ANTHROPIC_API_KEY)
+.venv/bin/python scripts/calibration_run.py --budget 25 --opus-subset 10   # 10 agents on claude-opus-5-5
+```
+
+- **Oversampling.** Each run makes rare events happen and logs every one to `calibration_forced.csv`
+  (`t, agent_id, kind, detail`). `extra_seed` events are extra infections among members of Claude
+  agents' friend groups, spread over days 0–3 and made symptomatic. `alert` events are FlUni app alerts
+  sent to random Claude agents at random times, each with one advice kind (`isolate_until`,
+  `wear_mask`, `leave_location`, `go_to_vaden`). They are added to the intervention's actions, so
+  the agent gets them as notifications and re-plans, the same as with real alerts. `severity` events
+  record peak severities for infections in those friend groups, drawn from `severity_mix` (mild /
+  moderate / severe). All of it comes from its own RNG stream for the seed, so the rest of the sim is
+  unchanged and `--opus-subset` doesn't change the forced events.
+- **Dry run.** Runs the scenario with a fake client. It records each request's size (tokens ≈ chars/4)
+  and gets back minimal responses: plans keep the default plan, and talk turns end after one line.
+  It prints calls by type (plan, talk, reflect), input/output tokens and $. Talk calls are scaled
+  by `estimate.turns_per_conversation`. Output tokens per call are assumptions, so update them from
+  the first real `cost.json`. Today's system prompts (~300 tokens) are under Sonnet 5.5's
+  512-token minimum for prompt caching, so the estimate prices them as uncached input.
+  The default scenario comes to about $14 on Sonnet 5.5, or about $16 with `--opus-subset 10`.
+- **Cost cap.** A real run first prints the dry-run estimate (`--no-estimate` skips it). Then it
+  runs with `campussim/budget.py` `BudgetClient`, which prices each response's `usage`. Once the
+  spend reaches `--budget` it stops calling the API and prints one warning. Agents then keep their
+  default plans and talks end. `cost.json` in the run dir has calls, tokens and $ by model. Calls
+  already in flight still finish, so the spend can pass the cap by up to about `max_workers` calls.
+- `scripts/smoke_calibration.py` checks the dry run, the forced events and the cap with fake clients.
+
 ## Sample run
 
 `runs/influenza_none_n10_d14_s2_bc5cae7a/` is a real 10-agent, 14-day run (one dorm plus one
@@ -171,6 +353,9 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 | `campussim/reports.py` | sick-behavior choice, Vaden tests, honest/dishonest self-reports, report_other |
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
 | `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
+| `campussim/personality.py` | Big Five personalities; derives compliance, masks, honesty, sick response, social_scale |
+| `campussim/worry.py` | worry level per agent: jumps on events, decays to baseline, shifts compliance, masks, optional activities |
+| `campussim/llm_agents.py` | Claude-driven agents: daily plans and re-plans from the Claude API, cached |
 | `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |
 | `campussim/engine.py`, `simulate.py` | main loop and CLI |

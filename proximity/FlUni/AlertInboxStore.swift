@@ -2,7 +2,7 @@ import Foundation
 
 /// Keeps the in-app alerts (Core/AlertInbox.swift) on this phone: a small JSON file in Application Support,
 /// pruned to 24 hours, wiped by "Delete my data". Fed from the same places that post notifications: the model's
-/// alert-level transitions (ProximityModel.onAlert) and the walk-in warning (WalkInMonitor).
+/// alert gate (ProximityModel.onAlert) and the walk-in warning (WalkInMonitor).
 @MainActor
 final class AlertInboxStore: ObservableObject {
     static let shared = AlertInboxStore()
@@ -26,10 +26,9 @@ final class AlertInboxStore: ObservableObject {
         }
     }
 
-    /// A notification for this alert level was just posted.
-    func alerted(_ level: AlertLevel, now: Date = Date()) {
-        guard let k = AlertInbox.kind(for: level) else { return }
-        update { $0.post(k, at: now) }
+    /// A notification of this kind was just posted (ProximityModel.onAlert).
+    func alerted(_ kind: NotificationKind, now: Date = Date()) {
+        update { $0.post(kind, at: now) }
     }
 
     /// A walk-in notification for this building was just posted.

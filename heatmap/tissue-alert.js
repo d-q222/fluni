@@ -11,14 +11,15 @@
 
 const ART = 'assets/tissue-alert/';
 const PULL = [1, 2, 3, 4, 5, 6].map((i) => `${ART}pull-${i}.png`);
-const FRAME_MS = 65;
+const FRAME_MS = 120; // per frame of the pull (Lisa: a little slower)
 
 export function mountTissueAlert(frame) {
   const root = document.createElement('div');
   root.className = 'tissue-alert';
   root.hidden = true;
   root.innerHTML = `
-    <img class="ta-art" alt="" src="${ART}pull-0.png">
+    <img class="ta-rim" alt="" src="${ART}pull-0-rim.png">
+    <img class="ta-art" alt="" src="${ART}pull-0-tissue.png">
     <button type="button" class="ta-pop" aria-label="New alert. Tap the tissue to read it."><span class="ta-hint">Pull me</span></button>
     <div class="ta-note" role="alertdialog" aria-modal="false" hidden><div class="ta-text"></div>
       <button type="button" class="ta-ok">Got it</button></div>`;
@@ -38,7 +39,9 @@ export function mountTissueAlert(frame) {
     root.dataset.state = s;
     pop.hidden = s !== 'popped';
     note.hidden = s !== 'open';
-    if (s === 'popped') art.src = `${ART}pull-0.png`;
+    // Popped: only the tissue wiggles; the box rim it pokes out of is its own still layer (the whole
+    // layer used to rotate, shaking the back of the box).
+    if (s === 'popped') art.src = `${ART}pull-0-tissue.png`;
     if (s === 'open') { art.src = `${ART}sheet.png`; root.querySelector('.ta-ok').focus({ preventScroll: true }); }
   }
 

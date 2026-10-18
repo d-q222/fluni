@@ -1,0 +1,1 @@
+anthropic>=1.15  # only for Claude-driven agents (configs/llm_agents.json)

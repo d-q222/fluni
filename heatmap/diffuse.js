@@ -24,7 +24,10 @@ function boxWidths(sigma, n = 3) {
 const reflect = (i, n) => (i < 0 ? -i - 1 : i >= n ? 2 * n - 1 - i : i);
 const emptyBox = () => ({ x0: Infinity, y0: Infinity, x1: -1, y1: -1 });
 const SPARSE_MAX = 64;
-const MAX_STEPS = 60; // geodesic diffusion steps per zone (σ 15 m on 3 m cells needs 50)
+const CUT = 4; // Gaussian kernels are cut at CUT·σ (exp(-8) ≈ 0.03% of the peak)
+// [dx, dy, cost, cut bit, whose bit: 0 = this cell's, 1 = the neighbour's] (zones.js rasterZone `cut`)
+const STEPS8 = [[1, 0, 1, 1, 0], [-1, 0, 1, 1, 1], [0, 1, 1, 2, 0], [0, -1, 1, 2, 1],
+  [1, 1, Math.SQRT2, 4, 0], [-1, -1, Math.SQRT2, 4, 1], [-1, 1, Math.SQRT2, 8, 0], [1, -1, Math.SQRT2, 8, 1]];
 
 // Index of the own cell nearest (x, y) in a patch, or -1 (a person standing just past their room's raster).
 function nearestOwn(own, w, h, x, y) {
@@ -101,6 +104,8 @@ export class DiffusionField {
     this.maskBlur = null; // blurred mask, cached per sigma
     this.maskSigma = -1;
     this.live = [];
+    this.outPts = []; // outdoor deposits [fx, fy, mass, ...] this frame
+    this.walks = new Map(); // "zone:cell:λ" -> a person's geodesic kernel there { idx, k }
     if (zones) {
       this.zoneRaster = zones;
       this.rasters = new Map(); // zone index -> its patch on this grid
@@ -129,6 +134,7 @@ export class DiffusionField {
     }
     this.cellsOut = []; this.cellsIn = [];
     this.boxOut = emptyBox(); this.boxIn = emptyBox();
+    this.outPts = [];
     if (this.byZ) this.byZ.clear();
   }
 
@@ -160,6 +166,7 @@ export class DiffusionField {
         else if (inside) this.cellsIn = null; else this.cellsOut = null;
       }
       const m = weight * pt.p;
+      if (!inside && m > 0) this.outPts.push(fx, fy, m); // the Gaussian's input (addGaussOutdoor)
       const w00 = (1 - tx) * (1 - ty), w10 = tx * (1 - ty), w01 = (1 - tx) * ty, w11 = tx * ty;
       const i00 = y0 * nx + x0, i10 = y0 * nx + x1, i01 = y1 * nx + x0, i11 = y1 * nx + x1;
       heat[i00] += m * w00; heat[i10] += m * w10; heat[i01] += m * w01; heat[i11] += m * w11;
@@ -277,7 +284,7 @@ export class DiffusionField {
     }
     const outside = this.patches(this.cellsOut, this.boxOut, reach);
     this.live = [...outside]; // where heat can be non-zero (for max())
-    this.addOutdoor(this.depOut, heat, radii, outside);
+    this.addGaussOutdoor(sigmaM, heat);
     if (withPeople) this.addOutdoor(this.depOutP, people, radii, outside);
     if (this.zoneRaster) this.diffuseZones(sigmaM, heat);
     else if (mask) {
@@ -291,43 +298,83 @@ export class DiffusionField {
     return this;
   }
 
-  // Each zone with deposits on its own, by explicit heat-equation steps on its own cells: a cell exchanges
-  // only with its 4 neighbours in the same zone (zero flux through walls and outdoor cells), so heat travels
-  // around a C-shape, never across it. Each step moves D·(difference) both ways, so the mass (expected sick)
-  // is exactly conserved. Variance grows 2·D cells² per step: steps = (σ/cell)² / (2·D), ≤ MAX_STEPS.
+  // Each person adds a Gaussian, w·exp(-d²/2σ²) with σ = the spread, peaking at the person (w = their weight,
+  // P above the baseline) and fading outward; overlapping people add up. Outdoors d is the straight distance;
+  // indoors it is the GEODESIC distance through the person's own building (an 8-neighbour walk over its inside
+  // cells, steps of 1 and √2 cells), so heat never crosses a wall, an outdoor gap between wings, a courtyard
+  // or the space between a C's arms. Cut at CUT·σ (4: a saturated person shows no hard edge). Values are in the person's own units (w at their spot): the
+  // cell-area factor undoes diffuse()'s per-m² scaling.
+  addGaussOutdoor(sigmaM, out) {
+    const { nx, ny } = this, sg = Math.max(0.3, sigmaM / this.cellM), R = Math.ceil(CUT * sg), pts = this.outPts;
+    if (!pts.length) return;
+    const ker = [];
+    for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+      const d = Math.hypot(dx, dy);
+      if (d <= CUT * sg) ker.push(dx, dy, Math.exp(-(d * d) / (2 * sg * sg)));
+    }
+    const box = emptyBox(), area = this.cellM * this.cellM;
+    for (let k = 0; k < pts.length; k += 3) {
+      const cx = Math.round(pts[k]), cy = Math.round(pts[k + 1]), m = pts[k + 2] * area;
+      for (let j = 0; j < ker.length; j += 3) {
+        const x = cx + ker[j], y = cy + ker[j + 1];
+        if (x >= 0 && y >= 0 && x < nx && y < ny) out[y * nx + x] += m * ker[j + 2];
+      }
+      box.x0 = Math.min(box.x0, cx - R); box.y0 = Math.min(box.y0, cy - R); box.x1 = Math.max(box.x1, cx + R); box.y1 = Math.max(box.y1, cy + R);
+    }
+    this.live.push({ x0: Math.max(0, box.x0), y0: Math.max(0, box.y0), x1: Math.min(nx - 1, box.x1), y1: Math.min(ny - 1, box.y1) });
+  }
+
+  // A person's indoor kernel from patch cell `start` of zone z: Dijkstra over the cells of the zone's part they're in
+  // (zones.js rasterZone), out to CUT·σ.
+  walk(z, r, start, sg) {
+    const key = `${z}:${start}:${sg}`;
+    let k = this.walks.get(key);
+    if (k) return k;
+    if (this.walks.size > 50000) this.walks.clear();
+    const { w, h, own, cut } = r, limit = CUT * sg, dist = new Map([[start, 0]]), heap = [[0, start]], idx = [], kv = [];
+    const push = (e) => { heap.push(e); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, rr = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (rr < heap.length && heap[rr][0] < heap[m][0]) m = rr; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+    heap.pop(); push([0, start]);
+    while (heap.length) {
+      const [d, i] = pop();
+      if (d > dist.get(i)) continue;
+      idx.push(i); kv.push(Math.exp(-(d * d) / (2 * sg * sg)));
+      const x = i % w, y = (i - x) / w;
+      for (const [dx, dy, c, bit, theirs] of STEPS8) {
+        const u = x + dx, t = y + dy, nd = d + c;
+        if (u < 0 || t < 0 || u >= w || t >= h || own[t * w + u] !== own[start] || nd > limit) continue; // same part only
+        const j = t * w + u;
+        if (cut && cut[theirs ? j : i] & bit) continue; // a wall runs between the two cells' centres
+        if (nd < (dist.get(j) ?? Infinity)) { dist.set(j, nd); push([nd, j]); }
+      }
+    }
+    k = { idx: Int32Array.from(idx), k: Float32Array.from(kv) };
+    this.walks.set(key, k);
+    return k;
+  }
+
   diffuseZones(sigmaM, out) {
-    const { nx } = this, D = 0.25, steps = Math.min(MAX_STEPS, Math.max(1, Math.round((sigmaM / this.cellM) ** 2 / (2 * D))));
+    const { nx } = this, sg = Math.max(0.3, sigmaM / this.cellM);
     this.zoneOut = [];
     for (const [z, pts] of this.byZ) {
       let r = this.rasters.get(z);
       if (r === undefined) { r = this.zoneRaster(z, this) || null; this.rasters.set(z, r); }
       if (!r) continue;
-      const { x0, y0, w, h, own } = r, n = w * h;
-      let u = new Float32Array(n), v = new Float32Array(n), total = 0;
-      for (let k = 0; k < pts.length; k += 3) { // bilinear splat onto the zone's own cells (else its nearest own cell)
-        const fx = pts[k] - x0, fy = pts[k + 1] - y0, m = pts[k + 2];
-        const cx = Math.floor(fx), cy = Math.floor(fy), tx = fx - cx, ty = fy - cy;
-        const parts = [[cx, cy, (1 - tx) * (1 - ty)], [cx + 1, cy, tx * (1 - ty)], [cx, cy + 1, (1 - tx) * ty], [cx + 1, cy + 1, tx * ty]];
-        for (const [x, y, wt] of parts) {
-          if (!wt) continue;
-          let i = x >= 0 && y >= 0 && x < w && y < h && own[y * w + x] ? y * w + x : -1;
-          if (i < 0) i = nearestOwn(own, w, h, x, y);
-          if (i >= 0) { u[i] += m * wt; total += m * wt; }
-        }
+      const { x0, y0, w, h, own } = r, u = new Float32Array(w * h);
+      let total = 0;
+      for (let k = 0; k < pts.length; k += 3) {
+        const x = Math.round(pts[k]) - x0, y = Math.round(pts[k + 1]) - y0, m = pts[k + 2];
+        let start = x >= 0 && y >= 0 && x < w && y < h && own[y * w + x] ? y * w + x : -1;
+        if (start < 0) start = nearestOwn(own, w, h, x, y);
+        if (start < 0 || !(m > 0)) continue;
+        const kern = this.walk(z, r, start, sg);
+        for (let j = 0; j < kern.idx.length; j++) u[kern.idx[j]] += m * kern.k[j];
+        total += m;
       }
       if (!(total > 0)) continue;
-      for (let s = 0; s < steps; s++) {
-        v.set(u);
-        for (let y = 0; y < h; y++) for (let x = 0, i = y * w; x < w; x++, i++) {
-          if (!own[i]) continue;
-          if (x + 1 < w && own[i + 1]) { const f = D * (u[i + 1] - u[i]); v[i] += f; v[i + 1] -= f; }
-          if (y + 1 < h && own[i + w]) { const f = D * (u[i + w] - u[i]); v[i] += f; v[i + w] -= f; }
-        }
-        [u, v] = [v, u];
-      }
-      const inv = 1 / (this.cellM * this.cellM);
-      for (let y = 0, l = 0; y < h; y++) for (let i = (y0 + y) * nx + x0, end = i + w; i < end; i++, l++) if (u[l]) { u[l] *= inv; out[i] += u[l] / inv; }
-      this.zoneOut.push({ z, x0, y0, w, h, own, u });
+      const area = this.cellM * this.cellM;
+      for (let y = 0, l = 0; y < h; y++) for (let i = (y0 + y) * nx + x0, end = i + w; i < end; i++, l++) if (u[l]) out[i] += u[l] * area;
+      this.zoneOut.push({ z, x0, y0, w, h, own, u, total }); // u: Σ w·Gaussian per cell; total: Σ w of its people
       this.live.push({ x0, y0, x1: x0 + w - 1, y1: y0 + h - 1 });
     }
   }

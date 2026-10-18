@@ -39,10 +39,16 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
         guard status == .authorizedAlways, !isPaused, let heat = BuildingHeatStore.shared.heat else {
             pendingEntries = [:]
             manager.stopMonitoringSignificantLocationChanges()
+            manager.stopMonitoringVisits()  // flu-offdetect
             for r in manager.monitoredRegions { manager.stopMonitoring(for: r) }
             return
         }
         manager.startMonitoringSignificantLocationChanges()
+        // flu-offdetect: visits (arriving at or leaving a place) relaunch FlUni after it was terminated, like
+        // significant changes, and FlUniApp restarts Bluetooth detection on any launch. That is the only way
+        // detection comes back after a swipe-away without the student opening FlUni: iOS does not relaunch a
+        // force-quit app for Bluetooth (TN3115). Visit data is not stored or used; it only wakes the app.
+        manager.startMonitoringVisits()
         if let here = manager.location { pick(heat, near: here) } else { manager.requestLocation() }
     }
 
@@ -93,8 +99,12 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
     private func entered(_ id: String) {
         guard status == .authorizedAlways, !WalkInMonitor.pausedOnDisk else { return }
         pendingEntries[id] = Date()
+        // flu-offdetect: a region event (possibly a relaunch) gives FlUni only seconds; keep it running while the
+        // fix is awaited and the warning is posted.
+        let window = BackgroundWindow.begin("fluni.walkin")
         manager.requestLocation()
         DispatchQueue.main.asyncAfter(deadline: .now() + GeofenceEntry.fixTimeout + 1) { [weak self] in
+            defer { window.end() }
             guard let self else { return }
             self.pendingEntries = GeofenceEntry.pruned(self.pendingEntries, now: Date())
         }

@@ -59,8 +59,8 @@ header.bar { gap: 10px 18px; }
 .options { flex-wrap: nowrap; gap: 8px; }
 .options > * { flex: none; }
 .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 2px; }
-.seg button { font: inherit; font-size: 13px; color: var(--ink-2); border: 0; background: none; border-radius: 999px; padding: 0 13px;
-  height: 26px; cursor: pointer; white-space: nowrap; }
+.seg button { font: inherit; font-size: 13px; color: var(--ink-2); border: 0; background: none; border-radius: 999px; padding: 0 18px;
+  height: 26px; cursor: pointer; white-space: nowrap; flex: 1 1 0; min-width: 128px; } /* two equal halves */
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .seg button:not([aria-pressed="true"]):hover { background: var(--surface-3); }
 .pill { font: inherit; font-size: 13px; color: var(--ink); height: 30px; border: 0; border-radius: 999px; padding: 0 12px;
@@ -116,9 +116,9 @@ header.bar { gap: 10px 18px; }
   box-shadow: 0 10px 28px -8px rgba(51, 36, 28, .4), 0 0 0 1px rgba(51, 36, 28, .08); animation: bannerIn 360ms cubic-bezier(.2, .9, .3, 1.1); cursor: pointer; }
 .ph-banner-icon { flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--sage); padding: 4px; object-fit: contain; }
 .ph-banner-body { min-width: 0; flex: 1; }
-.ph-banner-head { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-3); }
+.ph-banner-head { display: flex; justify-content: space-between; font-size: 16px; color: var(--ink-3); }
 .ph-banner-app { font-weight: 600; color: var(--ink); }
-.ph-banner p { margin: 1px 0 0; font-size: 15px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ph-banner p { margin: 1px 0 0; font-size: 16px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 @keyframes bannerIn { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* the selected person */
