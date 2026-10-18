@@ -106,9 +106,14 @@ twice. Log lines: `bg launch`, `bg restore …`, `bg gatt read …`, `bg gatt se
 Two phones that are both in the background find each other only now and then (iOS mostly matches
 overflow adverts while the scanning phone's screen is on).
 
-**Exposure** (`Exposure.swift`): minutes += dt × P(≤ 6 ft) × weight, where weight is 1 for
+**Exposure** (`Exposure.swift`), one running episode (the campus model's rule): minutes += dt × P(≤ 6 ft) × weight, where weight is 1 for
 contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risky phone is probably
-within 6 ft, and a **close-contact alert with advice at 15 cumulative minutes** (the CDC rule).
+within 6 ft, and a **close-contact alert with advice at 15 weighted minutes**. The minutes keep adding up and
+reset to exactly 0 only after 2 h with no possibly-sick or contagious phone within 6 ft (measured from the end of
+the last weighted moment; shorter gaps are bridged without decay; there is no 24 h window for minutes). Healthy
+phones neither add minutes nor keep the episode alive, and only the strongest peer in range counts at a moment
+(two sick people at once don't double-count). A reset never re-fires an alert read or notified within its cooldown
+(30 min heads-up, 12 h close contact). Rio's dose and the live risk % keep their own 24 h window, unchanged.
 Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds. In Debug builds the speed is saved across launches.
 
 **Risk estimate** (`RiskEstimate.swift`, "This phone's estimate"): Rio's exposure formula (Baker et al. 2021) as
@@ -156,14 +161,15 @@ with the heat map. Debug only: `-demoPeer contagious@0.5` (or `possible@2`) puts
 no radios needed, so the simulator shows p climbing (add `-speed 60` to see it move every second).
 
 **Relaunch** (`Core/RiskState.swift`): the estimate survives iOS ending and relaunching FlUni. The exposure tracker
-(24 h per-minute buckets, per-ID dose with s and stage, minutes, alert level) and the alert gate (when each alert was
+(the running close-contact minutes and the time of the last weighted moment; 24 h per-minute buckets, per-ID dose with s and stage; alert level) and the alert gate (when each alert was
 last notified) are saved to `Application Support/risk-state.json` on the phone only (file protection until first
 unlock, atomic writes): at once on every alert-level change or notification, on resign-active and on going to the
 background (a swipe-away gives no termination callback), and at most every 30 s while the number changes. It is
 restored in `ProximityModel.init`, before the first tick on any launch (background relaunches included), so a cold
 launch next to the same sick person posts nothing new within the 30 min / 12 h cooldowns; an in-app alert already
-read ("Got it") doesn't pop again either. On launch the 24 h window moves on by the real time since the save and nothing is credited for that
-gap; a corrupt or future-dated file (beyond 60 s of clock skew) is dropped and logged, and FlUni starts at the prior.
+read ("Got it") doesn't pop again either. On launch the clock moves on by the real time since the save and nothing is credited for that gap, so minutes reset
+if 2 h or more passed since the last weighted moment and 24 h dose expires; a state saved by the older 24 h-window
+build has no last-contact time and is migrated (the episode ends at its newest minute with contact; none, 0); a corrupt or future-dated file (beyond 60 s of clock skew) is dropped and logged, and FlUni starts at the prior.
 Test launches and the unit-test host never read or write it (Debug: `-keepRiskState YES` opts a test launch in, e.g.
 with `-demoPeer`). Reset exposure and Delete my data remove it.
 

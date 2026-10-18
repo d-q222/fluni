@@ -30,7 +30,7 @@ final class ContactGuardTests: XCTestCase {
     func testFourSpoofedIDsAreCappedAtTwoContactsPerTick() {
         var g = ContactGuard(), t = ExposureTracker()
         run(&g, &t, seconds: 60, speed: 1) { _ in (0..<4).map { peer("spoof\($0)") } }
-        XCTAssertEqual(t.minutes, 2.0, accuracy: 1e-9)  // 2 contacts x 1 sim-minute, not 4
+        XCTAssertEqual(t.minutes, 1.0, accuracy: 1e-9)  // only the strongest peer counts: 1 sim-minute, not 2 or 4
         XCTAssertFalse(g.flagged)
     }
 
@@ -73,11 +73,11 @@ final class ContactGuardTests: XCTestCase {
     func testLingeringBurstNeverCreatesCloseContact() {
         var g = ContactGuard(), t = ExposureTracker()
         let ids: (Int) -> [ContactGuard.Input] = { s in (0..<40).filter { s >= $0 * 3 }.map { self.peer("spoof\($0)", rssi: -45) } }
-        // Before the 5th ID shows up (12 s) the first ones count, as any real phone would: 3 x 1 + 9 x 2 = 21 s.
+        // Before the 5th ID shows up (12 s) the first ones count, as any real phone would: 12 s of the strongest peer.
         run(&g, &t, seconds: 60, speed: 1, peers: ids)
-        XCTAssertEqual(t.minutes, 21.0 / 60, accuracy: 1e-9)
+        XCTAssertEqual(t.minutes, 12.0 / 60, accuracy: 1e-9)
         run(&g, &t, seconds: 40 * 60, speed: 1, start: 60) { ids($0 + 60) }
-        XCTAssertEqual(t.minutes, 21.0 / 60, accuracy: 1e-9, "nothing more once the burst is seen, however long it lingers")
+        XCTAssertEqual(t.minutes, 12.0 / 60, accuracy: 1e-9, "nothing more once the burst is seen, however long it lingers")
         XCTAssertNotEqual(t.level, .closeContact)
     }
 

@@ -41,28 +41,82 @@ final class ExposureTests: XCTestCase {
         XCTAssertEqual(t.level, .nearby)
     }
 
-    func testMinutesExpireAfterRolling24Hours() {
+    // The episode rule: minutes keep adding and reset to exactly 0 only after 2 h with nobody possibly sick in range.
+    func testMinutesAccumulateAcrossAShortGap() {
         var t = ExposureTracker()
-        run(&t, seconds: 15, speed: 60, pClose: 1, risk: .contagious)     // 15 min close contact
-        XCTAssertEqual(t.level, .closeContact)
-        t.advance(simSeconds: 23 * 3600, contacts: [])                      // 23 h later: still counts
+        run(&t, seconds: 10, speed: 60, pClose: 1, risk: .contagious)     // 10 min
+        t.advance(simSeconds: 119 * 60, contacts: [])                       // 1 h 59 min away: bridged
+        XCTAssertEqual(t.minutes, 10, accuracy: 1e-9, "a gap under 2 h neither grows nor decays the total")
+        run(&t, seconds: 5, speed: 60, pClose: 1, risk: .contagious)      // 5 more: same episode
         XCTAssertEqual(t.minutes, 15, accuracy: 1e-9)
         XCTAssertEqual(t.level, .closeContact)
-        t.advance(simSeconds: 3600, contacts: [])                           // past 24 h: gone
+    }
+
+    func testMinutesResetAfterTwoHoursAway() {
+        var t = ExposureTracker()
+        run(&t, seconds: 15, speed: 60, pClose: 1, risk: .contagious)
+        XCTAssertEqual(t.level, .closeContact)
+        t.advance(simSeconds: 3 * 3600, contacts: [])
         XCTAssertEqual(t.minutes, 0)
+        XCTAssertEqual(t.level, .none)
+        run(&t, seconds: 5, speed: 60, pClose: 1, risk: .contagious)      // a fresh episode starts from 0
+        XCTAssertEqual(t.minutes, 5, accuracy: 1e-9)
+    }
+
+    func testResetBoundaryIsExactlyTwoHours() {
+        var t = ExposureTracker()
+        t.advance(simSeconds: 600, contacts: [(1, .contagious)])           // contact ends at clock 600
+        t.advance(simSeconds: 7_199, contacts: [])                          // 1 s short of 2 h
+        XCTAssertEqual(t.minutes, 10, accuracy: 1e-9)
+        t.advance(simSeconds: 1, contacts: [])                              // exactly 2 h since the end
+        XCTAssertEqual(t.minutes, 0)
+        XCTAssertEqual(t.lastContact, nil)
+    }
+
+    func testHealthyPeersDoNotKeepTheEpisodeAlive() {
+        var t = ExposureTracker()
+        t.advance(simSeconds: 600, contacts: [(1, .contagious)])
+        for _ in 0..<130 { t.advance(simSeconds: 60, contacts: [(1, .none)]) }   // 2 h 10 min beside a healthy peer
+        XCTAssertEqual(t.minutes, 0)
+    }
+
+    func testFarAwaySickPeerDoesNotKeepTheEpisodeAlive() {
+        var t = ExposureTracker()
+        t.advance(simSeconds: 600, contacts: [(1, .contagious)])
+        for _ in 0..<130 { t.advance(simSeconds: 60, contacts: [(0.1, .contagious)]) }  // probably beyond 6 ft
+        // Reset at 2 h after the real contact, then only the small p share of the remaining 11 ticks.
+        XCTAssertEqual(t.minutes, 1.1, accuracy: 1e-9)
         XCTAssertEqual(t.level, .none)
     }
 
-    func testOnlyTheOldPartExpires() {
+    func testContactInsideTheGapKeepsTheEpisode() {
         var t = ExposureTracker()
-        run(&t, seconds: 10, speed: 60, pClose: 1, risk: .contagious)     // 10 min at t ≈ 0
-        t.advance(simSeconds: 20 * 3600, contacts: [])
-        run(&t, seconds: 10, speed: 60, pClose: 1, risk: .contagious)     // 10 more at t ≈ 20 h
-        XCTAssertEqual(t.minutes, 20, accuracy: 1e-6)
-        XCTAssertEqual(t.level, .closeContact)
-        t.advance(simSeconds: 4 * 3600 + 120, contacts: [])                 // first 10 fall out of the window
-        XCTAssertEqual(t.minutes, 10, accuracy: 1e-6)
-        XCTAssertEqual(t.level, .none, "below 15 in the last 24 h, so the close-contact alert clears")
+        t.advance(simSeconds: 60, contacts: [(1, .contagious)])
+        for _ in 0..<5 {                                                    // 1 h 50 min away, then 1 min of contact, x5
+            t.advance(simSeconds: 110 * 60, contacts: [])
+            t.advance(simSeconds: 60, contacts: [(1, .contagious)])
+        }
+        XCTAssertEqual(t.minutes, 6, accuracy: 1e-9, "each contact is within 2 h of the last, so one episode")
+    }
+
+    func testOnlyTheStrongestPeerCountsAtOnce() {
+        var t = ExposureTracker()
+        t.advance(simSeconds: 600, contacts: [(1, .contagious), (1, .possible), (1, .contagious)])
+        XCTAssertEqual(t.minutes, 10, accuracy: 1e-9)
+    }
+
+    func testCopiesOfOnePeerStillAdd() {   // AccrualFeed gives a long credit as several copies of one ID
+        var t = ExposureTracker()
+        let d = DosePeer(id: "a", distance: 0.5)
+        t.advance(simSeconds: 60, contacts: [(1, .contagious), (1, .contagious)], doses: [d, d])
+        XCTAssertEqual(t.minutes, 2, accuracy: 1e-9)
+    }
+
+    func testDurationText() {
+        XCTAssertEqual(ExposureTracker.durationText(0), "0 min")
+        XCTAssertEqual(ExposureTracker.durationText(59.9), "59 min")
+        XCTAssertEqual(ExposureTracker.durationText(60), "1 h 0 min")
+        XCTAssertEqual(ExposureTracker.durationText(135), "2 h 15 min")
     }
 
     func testCloseContactPersistsAfterWalkingAway() {

@@ -70,8 +70,8 @@ struct SightingAccrual: Equatable {
     private static func unit(_ x: Double) -> Double { x.isFinite ? min(max(x, 0), 1) : 0 }
 }
 
-/// Turns per-peer credits into one `ExposureTracker.advance` call, so the 15-minute rule, the 24 h
-/// window and the per-ID dose stay exactly the tracker's own.
+/// Turns per-peer credits into one `ExposureTracker.advance` call, so the 15-minute rule, the 2 h
+/// episode clock and the per-ID dose stay exactly the tracker's own.
 ///
 /// `advance(simSeconds: w, …)` moves the tracker's clock by w and credits every contact for w. A gap
 /// credit can be longer than the wall time w since the previous accrual (another peer's sighting ran

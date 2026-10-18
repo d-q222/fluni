@@ -4,14 +4,16 @@ import Foundation
 /// iOS ending FlUni in the background) carries on from the same estimate instead of the 2% prior. On this phone
 /// only: a small JSON file in Application Support, never sent anywhere.
 ///
-/// - `exposure`: the 24 h tracker (per-minute buckets, per-ID dose with s and stage, minutes, alert level).
+/// - `exposure`: the tracker (the running close-contact episode: weighted minutes and the time of its last weighted
+///   moment; the 24 h per-minute buckets and per-ID dose with s and stage; alert level). A state saved before the
+///   episode rule has no last-contact time; `ExposureTracker.migrated()` derives it on decode.
 /// - `gate`: when each alert level was last notified, so a relaunch doesn't notify the same alert again.
 /// The own-score broadcast is max(estimate, status floor); the status is saved elsewhere (UserDefaults), so the
 /// restored estimate is all it needs.
 struct RiskState: Codable, Equatable {
     static let currentVersion = 1
     var version = RiskState.currentVersion
-    /// Wall-clock time of the save; the gap to the next launch moves the 24 h window on.
+    /// Wall-clock time of the save; the gap to the next launch moves the episode's 2 h clock and the 24 h dose window on.
     var savedAt: Date
     var exposure: ExposureTracker
     var gate: AlertGate
@@ -20,10 +22,10 @@ struct RiskState: Codable, Equatable {
     /// file is treated as from the future and dropped.
     static let clockSkewTolerance: TimeInterval = 60
 
-    /// The saved state moved on to `now`: the window's clock advances by the real time since the save, so
-    /// minutes and dose older than 24 h expire, and nothing is credited for that gap (no contacts: the app wasn't
+    /// The saved state moved on to `now`: the tracker's clock advances by the real time since the save, so
+    /// the minutes reset if 2 h or more have passed since the last weighted moment, and dose older than 24 h expires, and nothing is credited for that gap (no contacts: the app wasn't
     /// running). The alert level is re-derived the same way (a heads-up needs someone in range now; a close
-    /// contact stays while its 15 minutes are in the window). nil when `now` is before the save (beyond the skew).
+    /// contact stays while the episode's 15 minutes stand). nil when `now` is before the save (beyond the skew).
     func resumed(at now: Date) -> (exposure: ExposureTracker, gate: AlertGate)? {
         let gap = now.timeIntervalSince(savedAt)
         guard gap.isFinite, gap >= -Self.clockSkewTolerance else { return nil }
@@ -44,9 +46,10 @@ enum RiskStateFile {
     /// nil for anything that isn't a plausible saved state: unreadable JSON, another version, or a tracker
     /// whose numbers `advance` could not have produced.
     static func decode(_ data: Data) -> RiskState? {
-        guard let s = try? JSONDecoder().decode(RiskState.self, from: data),
+        guard var s = try? JSONDecoder().decode(RiskState.self, from: data),
               s.version == RiskState.currentVersion, s.savedAt.timeIntervalSinceReferenceDate.isFinite,
-              s.exposure.isPlausible else { return nil }
+              s.exposure.migrated().isPlausible else { return nil }
+        s.exposure = s.exposure.migrated()
         return s
     }
 }
