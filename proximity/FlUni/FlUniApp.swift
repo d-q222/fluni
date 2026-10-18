@@ -90,7 +90,9 @@ private struct TissueAlertHost: View {
     @ObservedObject var model: ProximityModel
     let onToday: Bool
     var body: some View {
-        TissueAlert(level: model.exposure.level, visible: onToday && model.myRisk == .none)
+        // flu-persist: "already read" lives in the model's saved alert state, so a relaunch doesn't pop it again.
+        TissueAlert(level: model.exposure.level, visible: onToday && model.myRisk == .none,
+                    isRead: { model.isAlertRead($0) }, onRead: { model.markAlertRead($0) })
     }
 }
 
@@ -182,9 +184,9 @@ private struct AppRoot: View {
                 // stack on screen after switching). Its own bar is hidden (here and via UITabBar appearance, which
                 // also takes it out of VoiceOver); Lisa's tissue box is drawn over it.
                 TabView(selection: $router.tab) {
-                    TodayView(model: model, store: reportStore).tag(AppRouter.Tab.today).toolbar(.hidden, for: .tabBar).tissueTabBarInset()
+                    TodayView(model: model, store: reportStore).tag(AppRouter.Tab.today).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
                     BundledMapView().tag(AppRouter.Tab.map).toolbar(.hidden, for: .tabBar).tissueTabBarInset()
-                    MeView(model: model, store: reportStore).tag(AppRouter.Tab.me).toolbar(.hidden, for: .tabBar).tissueTabBarInset()
+                    MeView(model: model, store: reportStore).tag(AppRouter.Tab.me).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
                 }
                 .overlay { TissueTabBar(selection: $router.tab) }
                 // Lisa's tissue alert: pops out of the tab-bar box on Today for a new alert (TissueAlert.swift).

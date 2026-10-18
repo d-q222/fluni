@@ -224,8 +224,10 @@
     /* ---------- Night mode for the phone (design pass, theme.js) ----------
        Cozy, not inverted: warm cocoa paper, cream ink, Lisa's drawings swapped for their lamp-lit night
        versions (assets/night/). The campfire swatches stay as they are; text colours are lifted so every
-       pairing still passes WCAG AA (cream ink 12.9:1, ink-2 8.2:1, fire-ink 6.0:1 on the paper). */
-    #phone[data-theme="night"] {
+       pairing still passes WCAG AA (cream ink 12.9:1, ink-2 8.2:1, fire-ink 6.0:1 on the paper).
+       The tokens are set on the frame, not #phone: the "Presenter only" bar under it is not part of the app
+       and stays on its day peach box, so it keeps the day ink (cream ink there was 1.5:1). */
+    #phone[data-theme="night"] .phone-frame {
       --paper: #221a17; --surface: #2c231e; --surface-2: #382c25; --surface-3: #42342c; --paper-box: #2c231e;
       --ink: #f1e2c6; --ink-2: #d2bc9f; --ink-3: #b8a287; --fire-ink: #f09a7e;
       --hairline: rgba(241, 226, 198, 0.14); --alert-bg: #3a2620; --alert-ink: #f09a7e;
@@ -255,6 +257,8 @@
     #phone[data-theme="night"] .sticker.on { box-shadow: inset 0 0 0 2.5px var(--ink); }
     #phone[data-theme="night"] .circ { background: var(--surface-2); box-shadow: 0 0 0 1px var(--hairline); }
     #phone[data-theme="night"] #ph-sheet { background: rgba(0, 0, 0, 0.45); }
+    /* FlUni's notification banner (presenter-ui.js): the dark material, so its cream words read (was 1.2:1) */
+    #phone[data-theme="night"] .ph-banner { background: rgba(56, 44, 37, 0.88); box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--hairline); }
     #phone[data-theme="night"] .screen .progress { background: var(--hairline); }
     #phone[data-theme="night"] .cchip { box-shadow: var(--shadow); }
     /* the campus map at night: restyled in app.js (cream lines on cocoa), heat in its usual colours */
@@ -327,8 +331,20 @@
     .bld-pop h4 { margin: 8px 0 2px; font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
     .bld-pop button.who { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; color: var(--ink); background: none;
       border: 0; border-top: 1px solid var(--hairline); padding: 5px 0; cursor: pointer; }
-    .bld-pop button.who:hover { background: var(--surface-2); }
-    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; }
+    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; padding-left: 14px; }
+    .bld-pop .bld-list { max-height: min(240px, 35vh); overflow-y: auto; overscroll-behavior: contain; margin-right: -6px; padding-right: 6px; }
+    .bld-pop .who .line { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+    .bld-pop .who .chip { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+    .bld-pop .who .id { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bld-pop .who .line b { font-weight: 500; }
+    .bld-pop .who .truth { display: inline-flex; align-items: center; gap: 4px; width: 64px; justify-content: flex-end; color: var(--ink-3); font-size: 11px; }
+    .bld-pop .who .truth .truth-ring { display: inline-block; width: 7px; height: 7px; }
+    .bld-pop .who .truth:has(.truth-ring) { color: var(--ink); font-weight: 600; }
+    .bld-pop .bld-list button.who { padding: 5px 4px; }
+    .bld-pop button.who.top { background: var(--surface-2); }
+    .bld-pop button.who:hover { background: var(--surface-3); }
+    .bld-pop button.who.top .id, .bld-pop button.who.top .line b { font-weight: 700; }
+    .bld-pop button.who.top + button.who:not(.top) { border-top: 1px solid var(--ink-3); }
     .bld-pop .tiers3 { display: flex; gap: 6px; margin-top: 2px; }
     .bld-pop .tiers3 span { flex: 1; border-top: 4px solid var(--c); padding-top: 3px; font-size: 11px; color: var(--ink-2); }
     /* Headings in Fredoka (design pass). */

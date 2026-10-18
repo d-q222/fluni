@@ -155,6 +155,18 @@ number is an extra line under it, never in its place. `percentText` (whole perce
 with the heat map. Debug only: `-demoPeer contagious@0.5` (or `possible@2`) puts a pretend peer that far away,
 no radios needed, so the simulator shows p climbing (add `-speed 60` to see it move every second).
 
+**Relaunch** (`Core/RiskState.swift`): the estimate survives iOS ending and relaunching FlUni. The exposure tracker
+(24 h per-minute buckets, per-ID dose with s and stage, minutes, alert level) and the alert gate (when each alert was
+last notified) are saved to `Application Support/risk-state.json` on the phone only (file protection until first
+unlock, atomic writes): at once on every alert-level change or notification, on resign-active and on going to the
+background (a swipe-away gives no termination callback), and at most every 30 s while the number changes. It is
+restored in `ProximityModel.init`, before the first tick on any launch (background relaunches included), so a cold
+launch next to the same sick person posts nothing new within the 30 min / 12 h cooldowns; an in-app alert already
+read ("Got it") doesn't pop again either. On launch the 24 h window moves on by the real time since the save and nothing is credited for that
+gap; a corrupt or future-dated file (beyond 60 s of clock skew) is dropped and logged, and FlUni starts at the prior.
+Test launches and the unit-test host never read or write it (Debug: `-keepRiskState YES` opts a test launch in, e.g.
+with `-demoPeer`). Reset exposure and Delete my data remove it.
+
 **Clock.** Students see live time only: the device's local weekday and time of day mapped onto the run
 (`Core/LiveClock.swift`, rule in `docs/building-heat-format.md`), recomputed every 15 s and on any system clock,
 time zone or date change. The Map tab says "Now · updated 4:30 PM". In Debug builds, Me > Developer tools > Demo
