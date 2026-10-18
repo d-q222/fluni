@@ -1701,6 +1701,8 @@ async function main() {
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false, invisible: true }).addTo(m);
     phoneMap = m;
     fitPhoneMap();
+    // built before the main map had its view (?tab=map): take it as soon as the main map settles
+    if (!phoneViewSet) map.once('moveend', () => { if (!phoneViewSet) fitPhoneMap(); });
     return m;
   }
   const phoneZoomBusy = () => Boolean(phoneMap?._animatingZoom);
