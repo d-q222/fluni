@@ -3,7 +3,7 @@ import SwiftUI
 /// Lisa's tissue alert (design pass; frames in heatmap/assets/tissue-alert/, same as the web phone mock).
 ///
 /// Normally the tissue box in the tab bar is empty. When the phone raises an alert (someone within 6 ft
-/// may be sick, or a close contact), a tissue pops out of the box on the Today tab and wiggles. Dragging it
+/// may be sick, or a close contact), a tissue pops out of the box on the Today tab and sways gently. Dragging it
 /// up pulls it out: her pull frames follow the finger (hard cuts, like hand animation), and letting go past
 /// halfway finishes the pull until the tissue becomes a sheet of paper with the alert on it; before that it
 /// slips back. VoiceOver gets the same as a button action. "Got it" puts it away until a different alert; after an all-clear, the next
@@ -21,41 +21,64 @@ struct TissueAlert: View {
     private enum Phase { case hidden, popped, pulling(Int), open }
     @State private var phase: Phase = .hidden
     @State private var readLevel: AlertLevel? = nil
-    @State private var wiggle = false
     /// Pull frame (1...6) while a finger drags the tissue up; nil when not dragging.
     @State private var dragFrame: Int?
     @AccessibilityFocusState private var sheetFocused: Bool
 
     private static let aspect: CGFloat = 650.0 / 1123.0
     private static let frameMs = 120 // Lisa: a little slower
+    /// Where the tissue meets the slot in the tab bar's box, as a fraction of the layer's height (row 976 of 1123);
+    /// the wiggle turns about it.
+    private static let slotLine: CGFloat = 976.0 / 1123.0
+    /// The front edge of that slot (row 988). Nothing in these layers is drawn below it: the box's own front
+    /// (in `TissueTabBar`) is the only one, so no copy of the box from these frames can sit on top of it.
+    private static let trimLine: CGFloat = 988.0 / 1123.0
+    /// The popped tissue's wiggle: a gentle sway either side of upright, about its base in the slot.
+    private static let wiggleDegrees = 0.4
+    private static let wiggleSwing = 1.3 // seconds from one side to the other
 
     var body: some View {
         let w = TissueTabBar.width, h = w / Self.aspect
         ZStack(alignment: .topLeading) {
-            if case .open = phase {
-                // Dim the screen above the tab bar while the sheet is out.
-                Theme.paper.opacity(0.72)
-                    .frame(width: w, height: UIScreen.main.bounds.height - TissueTabBar.height)
-                    .offset(y: h - UIScreen.main.bounds.height)
-                    .onTapGesture {}   // swallow taps behind the sheet
+            // The paper moves as one piece: the art, the "Pull up" handle and the alert written on the sheet share
+            // one frame and one rotation, so nothing on it stands still while it sways.
+            ZStack(alignment: .topLeading) {
+                Image(art).resizable().frame(width: w, height: h)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                if isPopped { pullHandle(w, h) }
+                if case .open = phase { note(w, h) }
             }
-            // Popped: only the tissue wiggles, about its base; the box rim it pokes out of is a separate, still layer
-            // (rotating one layer that held both shook the back of the box).
-            Image(art).resizable().frame(width: w, height: h)
-                .rotationEffect(.degrees(isPopped && dragFrame == nil && wiggle && !reduceMotion ? 1.0 : 0),
-                                anchor: UnitPoint(x: 0.5, y: 0.92))
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
-            // The rim goes ON TOP of the tissue, so the tissue's base tucks behind it and no gap opens at a bottom
-            // corner while it wiggles.
+            .frame(width: w, height: h, alignment: .topLeading)
+            .phaseAnimator([-1.0, 1.0]) { paper, side in
+                paper.rotationEffect(.degrees(wiggling ? side * Self.wiggleDegrees : 0),
+                                     anchor: UnitPoint(x: 0.5, y: Self.slotLine))
+            } animation: { _ in .easeInOut(duration: Self.wiggleSwing) }
+            // Trim after the rotation, so a swaying corner can't dip below the slot either.
+            .mask(alignment: .top) { Rectangle().frame(width: w, height: h * Self.trimLine) }
+            // The rim goes ON TOP of the tissue, so the tissue's base tucks behind it while it wiggles.
             if isPopped && dragFrame == nil {
                 Image("TissueAlertPull0Rim").resizable().frame(width: w, height: h)
                     .allowsHitTesting(false).accessibilityHidden(true)
             }
-            if isPopped { pullHandle(w, h) }
-            if case .open = phase { note(w, h) }
         }
         .frame(width: w, height: h)
+        // Dim the screen around the box while the sheet is out: everything but the box drawing itself, so no
+        // undimmed strip is left between a straight dim edge and the box's sloping top. A background, so it
+        // can't change the layer's size: as a child of the ZStack it made the stack taller than the frame,
+        // which centred everything and lifted the sheet's copy of the box top about 20 pt above the real box.
+        .background(alignment: .bottom) {
+            if case .open = phase {
+                Theme.paper.opacity(0.72)
+                    .overlay(alignment: .bottom) {
+                        Image("TabBarBox").resizable().frame(width: w, height: TissueTabBar.height).blendMode(.destinationOut)
+                    }
+                    .compositingGroup()
+                    .frame(width: w, height: UIScreen.main.bounds.height)
+                    .contentShape(Rectangle())
+                    .onTapGesture {}   // swallow taps behind the sheet
+            }
+        }
         .frame(maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: .bottom)
         .opacity(isShown ? 1 : 0)
@@ -65,6 +88,7 @@ struct TissueAlert: View {
         .onChange(of: visible) { _, _ in sync() }
     }
 
+    private var wiggling: Bool { isPopped && dragFrame == nil && !reduceMotion }
     private var isShown: Bool { if case .hidden = phase { return false }; return true }
     private var isPopped: Bool { if case .popped = phase { return true }; return false }
     private var art: String {
@@ -84,9 +108,6 @@ struct TissueAlert: View {
         default:
             let want = visible && level != .none && level != readLevel
             phase = want ? .popped : .hidden
-            if want && !reduceMotion {
-                withAnimation(.easeInOut(duration: 0.18).repeatForever(autoreverses: true).delay(0.6)) { wiggle = true }
-            }
         }
     }
 
@@ -144,27 +165,20 @@ struct TissueAlert: View {
         .accessibilityIdentifier("tissueAlert.pop")
     }
 
-    /// The alert written on the sheet (its paper spans about 4...98% across, 1...81% down).
+    /// The alert written on the sheet (its paper spans about 4...98% across, 1...81% down). It never scrolls: when
+    /// the whole advice doesn't fit (long close-contact advice, large text), the sheet keeps the title and as many
+    /// lines as fit, and says the rest is on Today, one tap ("Got it") away. VoiceOver always hears all of it.
     private func note(_ w: CGFloat, _ h: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(level == .closeContact ? "CLOSE CONTACT" : "HEADS-UP")
-                        .font(.fluni(.caption, weight: .bold)).tracking(0.8).foregroundStyle(Theme.fireInk)
-                    Text(Advice.title(level)).font(.fluni(.title2, weight: .semibold)).foregroundStyle(Theme.ink)
-                        .accessibilityAddTraits(.isHeader)
-                    ForEach(Advice.body(level), id: \.self) { line in
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("•").accessibilityHidden(true)
-                            Text(line)
-                        }
-                        .font(.fluni(.subheadline)).foregroundStyle(Theme.ink)
-                    }
+        let lines = Advice.body(level)
+        return VStack(alignment: .leading, spacing: 10) {
+            ViewThatFits(in: .vertical) {
+                ForEach(Array(stride(from: lines.count, through: 0, by: -1)), id: \.self) { n in
+                    noteText(Array(lines.prefix(n)), more: n < lines.count)
                 }
-                .padding(8)
-                // The sheet's colour, so her fold lines don't run through the words.
-                .background(Color(hex: 0xf8e3aa).opacity(0.94), in: RoundedRectangle(cornerRadius: 10))
             }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(([level == .closeContact ? "Close contact" : "Heads-up", Advice.title(level)] + lines).joined(separator: ". "))
             .accessibilityFocused($sheetFocused)
             Button("Got it") { readLevel = level; withAnimation(.easeOut(duration: 0.15)) { phase = .hidden } }
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
@@ -175,5 +189,27 @@ struct TissueAlert: View {
         .transition(.opacity)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
+    }
+
+    private func noteText(_ lines: [String], more: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(level == .closeContact ? "CLOSE CONTACT" : "HEADS-UP")
+                .font(.fluni(.caption, weight: .bold)).tracking(0.8).foregroundStyle(Theme.fireInk)
+            Text(Advice.title(level)).font(.fluni(.title2, weight: .semibold)).foregroundStyle(Theme.ink)
+                .minimumScaleFactor(lines.isEmpty ? 0.5 : 1)
+            ForEach(lines, id: \.self) { line in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("•")
+                    Text(line)
+                }
+                .font(.fluni(.subheadline)).foregroundStyle(Theme.ink)
+            }
+            if more {
+                Text("More advice on Today.").font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2)
+            }
+        }
+        .padding(8)
+        // The sheet's colour, so her fold lines don't run through the words.
+        .background(Color(hex: 0xf8e3aa).opacity(0.94), in: RoundedRectangle(cornerRadius: 10))
     }
 }
