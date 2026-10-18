@@ -788,7 +788,9 @@ async function main() {
     const live = model ? exposureMinutes(me.id, now, EXPOSURE_WINDOW_MS, false) : 0;
     const later = model ? exposureMinutes(me.id, now, NOTICE_WINDOW_MS, true) : 0;
     const near = (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) || someoneNear(me, NEARBY_M, (a) => a.p >= RISKY);
-    const level = live >= CLOSE_CONTACT_MIN || later >= CLOSE_CONTACT_MIN ? 'close' : near ? 'nearby' : 'none';
+    // As FlUni: "Close contact" means 15 weighted minutes in the last 24 h. People who were near someone
+    // who reported sick later show up under Recent contacts and in the campus-model risk, not here.
+    const level = live >= CLOSE_CONTACT_MIN ? 'close' : near ? 'nearby' : 'none';
     let walkIn = null;
     const b = !me.walking && me.buildingId && totalsAt(totals, now).buildings.get(me.buildingId);
     if (b && b.n >= MIN_PEOPLE && Math.sqrt(Math.min(1, b.expected / vmax.public)) >= 0.5) walkIn = b.name || me.building || 'This building';
@@ -843,10 +845,8 @@ async function main() {
     if (st.level === 'nearby') {
       out.push(card('peach', '', `<div class="row">${ico('walk')}<div class="grow"><p class="t-sub semi">${ADVICE.nearby.title}</p><p class="t-foot">${esc(ADVICE.nearby.body.join(' '))}</p></div></div>`));
     }
-    const [title, sub] = st.level === 'later' ? STATUS.close : STATUS[st.level];
+    const [title, subtitle] = STATUS[st.level];
     const lines = st.level === 'none' ? [] : ADVICE[st.level].body;
-    const subtitle = st.level === 'close' && st.live < CLOSE_CONTACT_MIN
-      ? `In the last 3 days you spent about ${Math.round(st.later)} minutes near someone who has since reported being sick.` : sub;
     out.push(card(st.level === 'none' ? '' : 'peach', st.level === 'none' ? 'rgba(172,188,139,.45)' : '', `
       <div class="vstack" style="gap:10px"><div class="row"><div class="grow vstack" style="gap:5px"><p class="t-title2">${title}</p><p class="t-sub">${subtitle}</p></div>
         ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
