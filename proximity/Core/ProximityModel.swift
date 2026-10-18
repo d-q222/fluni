@@ -91,6 +91,7 @@ final class ProximityModel: ObservableObject {
     private var lastTick = Date()
     private var lastRotation = Date()
     private var lastSummary = Date.distantPast
+    private var lastRescan: Date?
     private var lastFixSent = Date.distantPast
     private var timer: Timer?
     /// flu-offdetect: which alert levels get a notification (crossings up, per-level cooldown), the same on a
@@ -143,6 +144,9 @@ final class ProximityModel: ObservableObject {
 
         gps.onState = { [weak self] in self?.setStatus("GPS", $0) }
         gps.onFix = { [weak self] in self?.ownFix($0) }
+        // flu-offdetect: with Always, coarse background location keeps FlUni running off screen (BackgroundLocation).
+        gps.keepsAppAlive = worksInBackground
+        gps.onMode = { [weak self] in self?.log("location mode \($0)") }
 
         if isPaused {
             markSensorsPaused()  // launched while paused: the radios stay off until resume()
@@ -596,6 +600,12 @@ final class ProximityModel: ObservableObject {
             alertPoster.post(kind)
         }
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
+        // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
+        // once per background scan; a restart lets phones that came near be found again).
+        if BackgroundLocation.shouldRescan(gps.mode, last: lastRescan, now: now) {
+            lastRescan = now
+            ble.refreshScan()
+        }
 
         // Ease GPS off while any enabled UWB reading was fresh in the last 15 s (hysteresis vs flapping).
         gps.setRelaxed(enabled.contains(.uwb) && byID.values.contains { $0.uwb.map { now.timeIntervalSince($0.at) < 15 } ?? false })

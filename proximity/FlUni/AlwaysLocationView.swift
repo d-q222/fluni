@@ -9,9 +9,12 @@ enum AlwaysLocationCopy {
 struct AlwaysLocationCard: View {
     @ObservedObject private var watcher = BuildingWatcher.shared
     @AppStorage("alwaysAskDismissed") private var dismissed = false
+    @AppStorage("hasOnboarded") private var onboarded = false
 
     var body: some View {
-        if watcher.status == .authorizedWhenInUse && !dismissed {
+        // Core/BackgroundLocation.swift: When In Use granted, onboarding done, not dismissed. Always now also keeps
+        // detection and alerts running while the phone is locked (blue location indicator).
+        if BackgroundLocation.offersAlways(auth: .init(watcher.status), onboarded: onboarded, dismissed: dismissed) {
             VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Get warned even when FlUni is closed", systemImage: "bell.badge").font(.fluni(.subheadline, weight: .semibold))
