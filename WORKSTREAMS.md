@@ -87,6 +87,23 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → synthetic data (@aidenyj), 2026-10-17: hand-placed boxes in `map/buildings.csv`.** The
+  11 `source = manual` places have rectangular `footprint_wkt` boxes that look odd on the map.
+  - The product owner noticed people "standing in Lake Lagunita". It is the 45,000 m² box of the
+    outdoor venue `bld_m_lake_lagunita`.
+  - Seven are outdoor spaces with boxes: Lake Lagunita, Main Quad Courtyard, White Plaza, Meyer Green,
+    The Oval, Engineering Quad and Frost Amphitheater.
+  - Two indoor boxes sit on top of real OSM buildings: Stern Dining on Lucie Stern Hall, and Florence
+    Moore Dining on Florence Moore Hall.
+  - Two have no building under them: Green Library and Wilbur Dining.
+  - The heat map now skips outdoor boxes and draws manual boxes with the outline of the OSM building
+    under them (`heatmap/footprints.js`).
+  - **Could the sim:**
+    1. leave outdoor venues without a footprint, or give them their real OSM area polygons;
+    2. map the dining halls to their OSM buildings;
+    3. use the OSM footprints for Green Library (way 30754881 "Cecil H. Green Library") and Wilbur
+       Hall?
+
 - **probability model → exposure calculator (@rioschillmoeller), 2026-10-17: review of `exposure/`.**
   The product owner asked for an independent check before the heat map builds on it.
   - **Verdict:** correct for a single meeting. The single-contact update matches Baker et al.

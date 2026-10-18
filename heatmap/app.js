@@ -9,6 +9,7 @@ import { Router, buildTracks, buildTrips, attachTrips, stateAt } from './motion.
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
+import { wktGeometry, cleanFootprints } from './footprints.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
@@ -226,13 +227,15 @@ async function loadRooms(dataUrl) {
 // including places missing from OSM like bld_m_green_library); otherwise null.
 async function loadBuildings(dataUrl) {
   try {
-    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)), ['location_id', 'name', 'type', 'footprint_wkt']);
+    const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)),
+      ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
-    const features = data.filter((b) => b.location_id && b.footprint_wkt).map((b) => ({
+    // No boxes for outdoor spaces; manual boxes on a real building take its outline (footprints.js).
+    const features = cleanFootprints(data).map(({ row: b, geometry }) => ({
       type: 'Feature',
       // buildings.js / masks.js key features by 'bld_' + the part after the slash.
       properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name, type: b.type },
-      geometry: wktGeometry(b.footprint_wkt),
+      geometry,
     }));
     return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null };
   } catch {
@@ -240,13 +243,6 @@ async function loadBuildings(dataUrl) {
   }
 }
 
-// WKT POLYGON / MULTIPOLYGON (lon lat) → GeoJSON geometry.
-function wktGeometry(wkt) {
-  const body = String(wkt).replace(/^[A-Z ]+/i, '').trim().replace(/^\(+|\)+$/g, '');
-  const polys = body.split(/\)\s*\)\s*,\s*\(\s*\(/).map((poly) => poly.split(/\)\s*,\s*\(/)
-    .map((ring) => ring.split(',').map((pt) => pt.trim().split(/\s+/).map(Number))));
-  return polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys };
-}
 
 // ---------- Leaflet glue ----------
 
