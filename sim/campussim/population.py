@@ -174,10 +174,20 @@ def _beta(rng, ab, n):
     return rng.beta(a, b, size=n)
 
 
-def _assign_dorms(campus, resident_idx, rng, home_b, home_room, bed_slot):
+def _assign_dorms(campus, resident_idx, rng, home_b, home_room, bed_slot, mode="fill"):
+    """mode "fill": fill dorms one after another in a random order (a small run lands in 1-3 dorms).
+    mode "spread": fill whole bedrooms drawn at random from all dorms (spread ~ dorm capacity)."""
     dorms = np.asarray(campus.buildings_of_type("dorm"), dtype=int)
     bedtypes = set(codes.BEDROOM_TYPES)
     rtype = campus.rooms["room_type"].to_numpy()
+    if mode == "spread":
+        rooms = [(int(b), int(r)) for b in dorms for r in campus.rooms_of(int(b)) if rtype[r] in bedtypes]
+        rooms = [rooms[j] for j in rng.permutation(len(rooms))]
+        beds = [(b, r, s) for b, r in rooms for s in range(int(campus.room_cap[r]))]
+        _fill_beds(beds, resident_idx, home_b, home_room, bed_slot)
+        return
+    if mode != "fill":
+        raise ValueError(f"population.housing.assignment must be 'fill' or 'spread', not {mode!r}")
     order = dorms[rng.permutation(len(dorms))] if len(dorms) else dorms
     beds_by_dorm = []
     for b in order:
@@ -195,7 +205,13 @@ def _assign_dorms(campus, resident_idx, rng, home_b, home_room, bed_slot):
     big = [i for i, c in enumerate(caps) if c >= n_res]
     if big and big[0] != 0:
         beds_by_dorm.insert(0, beds_by_dorm.pop(big[0]))
-    beds = [x for d in beds_by_dorm for x in d]
+    _fill_beds([x for d in beds_by_dorm for x in d], resident_idx, home_b, home_room, bed_slot)
+
+
+def _fill_beds(beds, resident_idx, home_b, home_room, bed_slot):
+    n_res = len(resident_idx)
+    if n_res and not beds:
+        raise ValueError("campus has no dorm bedrooms")
     if n_res > len(beds):
         warnings.warn(f"population: {n_res} residents but only {len(beds)} dorm beds; overfilling cyclically")
     occ = {}
@@ -335,7 +351,8 @@ def build_population(cfg, campus, rng) -> Population:
     home_b = np.full(N, -1, dtype=np.int32)
     home_room = np.full(N, -1, dtype=np.int32)
     bed_slot = np.zeros(N, dtype=np.int8)
-    _assign_dorms(campus, np.flatnonzero(~commuter), rng, home_b, home_room, bed_slot)
+    mode = pcfg.get("housing", {}).get("assignment", "fill")   # not in population.json: keeps run ids
+    _assign_dorms(campus, np.flatnonzero(~commuter), rng, home_b, home_room, bed_slot, mode)
     n_entry = len(campus.entry_points)
     entry_e = np.full(N, -1, dtype=np.int32)
     if commuter.any():

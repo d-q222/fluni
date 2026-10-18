@@ -50,14 +50,18 @@ Demo scenes on the sim's mock run:
 ## Demo map vs. user map
 
 - **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
+  (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
+  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Room-level heat (demo)**:
+  hover a building for people and expected sick, click it for Σ P, above-baseline, Low/Elevated/High counts and the top 3 people
+  driving it (click one to open the phone).
 - **User map** (the phone, and "What users see" on the main map): built only from totals in
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
-  - Runs are scaled to a ~7,000-person campus. Under 500 agents (like the 10-agent mock) each agent
-    stands for 50 people. Up to 5,000 agents each stands for round(7000 / agents), e.g. ×7 at 1,000
-    and ×14 at 500. Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*`,
-    `CAMPUS_PEOPLE` and `FULL_RUN_AGENTS` in `app.js` (same rule in `tools/precompute.mjs`).
+  - Under 500 agents (like the 10-agent mock) each agent stands for 50 people; from 500 agents on the
+    counts are the sim's own (no scaling). The rule is `userScale` in `userscale.js`, shared by
+    `app.js`, `tools/precompute.mjs` and the app bundle.
   - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
     (`MIN_PEOPLE`). The rule applies to the scaled count, so in ×50 small runs it never hides
     anything.

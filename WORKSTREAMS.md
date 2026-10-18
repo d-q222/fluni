@@ -7,7 +7,7 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets); look of `sim/campussim/viewer_template.html` | @lisaazheng (+ Claude agent) | **In progress**: campfire palette, hand-drawn people, shared risk tiers done; hand-drawn map, loading screen and phone illustrations next | Hand-drawn visual style. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, heat maths, or the CSV contract. Palette lives in `heatmap/index.html` `:root`; see `heatmap/README.md` → `assets/`. |
-| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents). Done: study-room capacity check, `report_other` rate fix, influenza calibrated to campus R ≈ 1.6 (`transmission_scale` 1.2; rerun `sim/scripts/calibrate.py` after contact changes). Also: real class schedules from ExploreCourses (Winter 2025-26 sections, times, sizes, rooms mapped to buildings; class-year/major-aware course picks). Also: humidity (outdoor RH/temperature → indoor RH → flu aerosol decay, same formula as `model/` and `exposure/`) | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. Full-size 7,000-agent, 2-day run: `sim/runs/influenza_none_n7000_d2_s42_5423d1a4/` (big files in parts; `scripts/run_parts.py join` rebuilds them). See `sim/README.md`. |
+| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents). Done: study-room capacity check, `report_other` rate fix, influenza calibrated to campus R ≈ 1.6 (`transmission_scale` 1.2; rerun `sim/scripts/calibrate.py` after contact changes). Also: real class schedules from ExploreCourses (Winter 2025-26 sections, times, sizes, rooms mapped to buildings; class-year/major-aware course picks). Also: humidity (outdoor RH/temperature → indoor RH → flu aerosol decay, same formula as `model/` and `exposure/`) | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. The old 7,000-agent, 2-day run (`5423d1a4`, made before the `report_other` fix) is archived at git tag `archive/sim-n7000-5423d1a4`; 1,000-agent, 14-day run: `sim/runs/influenza_none_n1000_d14_s42_f12e71fa/` (big files in parts; `scripts/run_parts.py join` rebuilds them). See `sim/README.md`. |
 | Intervention comparison | `sim/` (`campussim/app_policy.py`, `campussim/psick.py`, `configs/scenarios.json`, `scripts/compare.py`) | @aidenyj (Claude agent) | **In progress**: step 1, FlUni app policy inside the sim | Runs the sim under different app settings and actions and compares outcomes. The `fluni` intervention reproduces the app in the loop: who has the app, close-contact alerts (6 ft, 15 weighted min / 24 h), a streaming Python port of `model/infer.js` P(sick), and configurable advice (isolate / mask / leave / Vaden) followed w.p. compliance. Next: reporting knobs, named scenario presets, `--summary-only` output, a 7,000-agent × 14-day × 3–5-seed comparison report (infections, app performance, who's affected). Reads `model/` but doesn't edit it. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones. One project, two apps: **FlUni** (student app) + **FluniProx** (test harness), sharing `Core/`; building out FlUni | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
@@ -98,6 +98,26 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → synthetic data (@aidenyj), 2026-10-17: 1,000-agent runs put 77% of agents in one dorm.**
+  - **Done, with Aiden's OK (2026-10-17):** opt-in `--set population.housing.assignment=spread`
+    (40d482d) puts residents in whole bedrooms across all dorms. Default runs are unchanged: same run
+    id, byte-identical outputs. Spread runs on main: `influenza_none_n1000_d4_s42_73b8452c` (the
+    demo default) and `influenza_none_n1000_d14_s42_25fe957a`, with homes in 53 dorms and at most
+    9.7% in one.
+  - In `influenza_none_n1000_d14_s42_f12e71fa`, `agents_static.csv` `home_dorm` is: Florence Moore
+    Hall 774, Junipero 119, off campus 100, Trancos 7. Dorms seem to fill in order instead of
+    being sampled across campus.
+  - At night that puts 774 agents in FloMo. The user map scales mid-size runs to a ~7,000-person
+    campus (×7), so it shows 5,418 people and ~1,370 expected sick in FloMo, against ~450 real
+    residents.
+  - The whole outbreak also lives in one building, which makes the demo map lopsided.
+  - **Ask:** when n is below the full campus, sample homes across all dorms in proportion to their
+    real capacity, so 1,000 agents spread over ~40 dorms. Then regenerate the boosted 1,000-agent
+    runs.
+  - Shorter runs would also help the live demo. At 1,000 agents × 14 days (11 M contacts) the
+    page needs precomputed files (4.6 s load, but no "Why this %?"). Four days loads live in 6 s
+    with every feature.
+
 - **heat map → synthetic data (@aidenyj), 2026-10-17: false reports in the 7,000-agent run.**
   - **What we see:** `influenza_none_n7000_d2_s42_5423d1a4` has 6 infections (all off-campus imports)
     but 308 reports, 307 of them false: 303 false `report_other`s (294 different targets) and 4 false
@@ -109,6 +129,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
     run's report behaviour, or some transmission so the reports have something to find?
   - **Not a blocker for you:** I reproduced this run locally byte-for-byte (seed 42; `contacts` and
     `timeline` sha256 match your manifest), so the parts can follow at your pace.
+  - **Answer (@aidenyj, 2026-10-18):** not intended; fixed in 3a758ad (false reports are a per-reporter
+    daily rate, no longer scaled by crowd size). The run predates the fix, so it's removed from
+    `sim/runs/` and archived with all its parts at git tag `archive/sim-n7000-5423d1a4`. Its derived
+    outputs `heatmap/out/influenza_none_n7000_d2_s42_5423d1a4/` and
+    `model/out/influenza_none_n7000_d2_s42_5423d1a4/` are yours to drop or keep.
 
 - **heat map + FlUni → synthetic data (@aidenyj), 2026-10-17: a busier default run for the demo.**
   - **Why:** the live map looks sparse. On `..._bc5cae7a` (10 agents, 3 infections), the live moment

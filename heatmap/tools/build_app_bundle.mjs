@@ -3,7 +3,7 @@
 //   node heatmap/tools/build_app_bundle.mjs <run_dir> --out <dir>
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,17 +24,30 @@ rmSync(out, { recursive: true, force: true });
 const put = (rel, from) => { mkdirSync(dirname(join(out, rel)), { recursive: true }); cpSync(from, join(out, rel), { recursive: true }); };
 
 put('index.html', join(hm, 'usermap.html'));
-for (const f of ['usermap.js', 'heat.js']) put(f, join(hm, f)); // heat.js: the colour stops, no imports
+for (const f of ['usermap.js', 'heat.js', 'userstyle.js']) put(f, join(hm, f)); // heat.js: the colour stops; userstyle.js: how a building is coloured (shared with the presenter)
 put('vendor/leaflet', join(hm, 'vendor/leaflet'));
 // (the illustrated assets/trace/campus_trace.webp is no longer bundled: the vector layers read better and save 0.37 MB)
 put('assets/trace/campus_trace_bounds.json', join(hm, 'assets/trace/campus_trace_bounds.json'));
 put('assets/containers/box-paper.png', join(hm, 'assets/containers/box-paper.png'));
 put('data/context.geojson', join(hm, 'data/context.geojson'));
-put('data/totals.json.gz', join(tmp, 'totals.json.gz'));
+// The app shows "now" and "in 1 hour", so 15-minute steps are enough (as building_heat.csv): a
+// 14-day run at 5-minute steps was 6.1 MB of JSON. The presenter keeps the full-resolution file.
+const totals = JSON.parse(gunzipSync(readFileSync(join(tmp, 'totals.json.gz'))));
+const thin = Math.max(1, Math.round((15 * 60000) / totals.stepMs));
+if (thin > 1) {
+  totals.steps = totals.steps.filter((_, i) => i % thin === 0);
+  if (totals.forecast) totals.forecast.at = totals.forecast.at.filter((a) => Math.round((a.tMs - totals.startMs) / totals.stepMs) % thin === 0);
+  totals.stepMs *= thin;
+  totals.nSteps = totals.steps.length;
+}
+// Two decimals is plenty for "about 3.4 sick" and the colours (6 were stored).
+const r2 = (x) => (typeof x === 'number' ? Math.round(x * 100) / 100 : x);
+totals.steps = totals.steps.map((s) => s.map((r) => r.map((v, k) => (k >= 2 ? r2(v) : v))));
+for (const a of totals.forecast?.at || []) for (const h in a.byHorizon) a.byHorizon[h] = a.byHorizon[h].map((r) => r.map(r2));
+const totalsJson = JSON.stringify(totals);
+writeFileSync(join(out, 'data/totals.json.gz'), gzipSync(totalsJson));
 // Plain copy as a fallback for webviews without DecompressionStream (usermap.js tries the .gz first).
-const totalsJson = gunzipSync(readFileSync(join(tmp, 'totals.json.gz')));
 writeFileSync(join(out, 'data/totals.json'), totalsJson);
-const totals = JSON.parse(totalsJson);
 
 // building outlines, only for buildings that appear in the totals
 function parseCsv(text) {

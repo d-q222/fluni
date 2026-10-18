@@ -6,10 +6,12 @@
   <title>Fluni Heat Map</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- Non-blocking: on flaky wifi a hung font request must not hold up the map (system-ui stands in). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+  <link rel="icon" href="data:,">
+  <!-- Leaflet 1.9.4 from vendor/ (same copy as the app bundle), so the page works with no internet. -->
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <script src="vendor/leaflet/leaflet.js"></script>
   <style>
     :root {
       /* Palette: @lisaazheng's hand-picked "campfire" colours (sampled from her Procreate swatch).
@@ -193,6 +195,44 @@
       .options > * { flex: none; }
       .legend { left: 12px; right: 12px; width: auto; bottom: 24px; }
     }
+
+    /* ---------- "What users see": the app's map look (usermap.html), plus count badges and names ---------- */
+    .lbl { pointer-events: none; }
+    .lbl span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 500 10px/1 var(--font);
+      color: var(--ink-3); text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 5px var(--paper); }
+    .lbl.ub-badge span { font-weight: 700; font-size: 11px; color: #fff; background: var(--fire-ink); border-radius: 999px;
+      padding: 2px 6px; text-shadow: none; box-shadow: 0 0 0 1.5px rgba(255, 250, 241, 0.9); transform: translate(-50%, -135%); }
+    .lbl.ub-name span { transform: translate(-50%, 70%); }
+    .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 1px 2px rgba(51,36,28,.07), 0 8px 24px -6px rgba(51,36,28,.2);
+      background: var(--surface); color: var(--ink); }
+    .leaflet-popup-content { margin: 9px 12px; font: 13px/1.4 var(--font); }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-container.muted-base .leaflet-tile-pane, .leaflet-container.muted-base .leaflet-simPane-pane { opacity: .5; }
+    #ulegend { position: absolute; z-index: 500; left: 16px; bottom: 28px; width: 330px; padding: 3px 8px 0 6px; font-size: 12px;
+      border-style: solid; border-width: 9px 8px 21px 17px;
+      border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch;
+      filter: drop-shadow(0 6px 10px rgba(51, 36, 28, 0.10)); }
+    #ulegend[hidden] { display: none; }
+    #ulegend .strip { display: flex; align-items: center; gap: 8px; color: var(--ink-2); white-space: nowrap; }
+    #ulegend .ramp { flex: 1; min-width: 40px; height: 10px; border-radius: 5px; }
+    #ulegend .info { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ink-3); background: none;
+      color: var(--ink-2); font: italic 600 13px/1 Georgia, serif; padding: 0; cursor: pointer; }
+    #ulegend .more { margin-top: 6px; }
+    #ulegend .more[hidden] { display: none; }
+    #ulegend .scale { display: flex; justify-content: space-between; color: var(--ink-3); margin-top: 4px; font-variant-numeric: tabular-nums; }
+    #ulegend .fine { margin: 8px 0 0; color: var(--ink-3); line-height: 1.4; font-size: 11px; }
+    #view-count { font-weight: 600 !important; color: var(--ink) !important; }
+    .bld-pop { min-width: 220px; }
+    .bld-pop h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+    .bld-pop .row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    .bld-pop .row b { color: var(--ink); font-weight: 600; }
+    .bld-pop h4 { margin: 8px 0 2px; font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+    .bld-pop button.who { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; color: var(--ink); background: none;
+      border: 0; border-top: 1px solid var(--hairline); padding: 5px 0; cursor: pointer; }
+    .bld-pop button.who:hover { background: var(--surface-2); }
+    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; }
+    .bld-pop .tiers3 { display: flex; gap: 6px; margin-top: 2px; }
+    .bld-pop .tiers3 span { flex: 1; border-top: 4px solid var(--c); padding-top: 3px; font-size: 11px; color: var(--ink-2); }
     /* ---------- hand-drawn containers (Lisa's Procreate box, assets/containers/) ----------
        9-slice border image: corners and the hatched left/bottom edges keep their shape, the middle
        stretches. Used on the presenter panels and the phone's cards.
@@ -275,19 +315,19 @@
             <div class="stack" id="ph-today"></div>
           </div>
           <div class="tab stack" id="ph-tab-map" hidden>
-            <h1 class="nav-title">Map</h1>
+            <h1 class="nav-title">Campus</h1>
             <div class="ph-section"><b>Now</b></div>
             <div id="ph-map"></div>
             <p class="fine"></p>
           </div>
           <div class="tab" id="ph-tab-me" hidden>
-            <h1 class="nav-title">Me</h1>
+            <h1 class="nav-title">You</h1>
           </div>
         </div>
         <nav class="tabbar" aria-label="FlUni tabs">
           <button data-tab="today" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Today</button>
-          <button data-tab="map" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14"/></svg>Map</button>
-          <button data-tab="me" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="10" r="3"/><path d="M5.8 18.5c1.5-3 4-4 6.2-4s4.700 1 6.200 4"/></svg>Me</button>
+          <button data-tab="map" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14"/></svg>Campus</button>
+          <button data-tab="me" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="10" r="3"/><path d="M5.8 18.5c1.5-3 4-4 6.2-4s4.700 1 6.200 4"/></svg>You</button>
         </nav>
       </div>
       <div class="presenter"><span>Presenter only: <b id="ph-truth"></b></span><button id="ph-close">Close</button></div>

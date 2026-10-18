@@ -5,12 +5,11 @@
 //   ?clock=live (default)   map the device's local weekday + time of day onto the run (docs/building-heat-format.md)
 //   ?at=<minutes>           show that many minutes after the run's start instead (for screenshots)
 //   ?horizon=60             start on the "In 1 hour" forecast
-import { HEAT_STOPS } from './heat.js';
+import { INK, heatColor, buildingStyle, colourMax, haloRadius, GLOW, HALO_BLUR, fmt, rampCss } from './userstyle.js';
 
 const P = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const DAY = 86400000;
-const INK = '#33241c';
 
 async function fetchTotals() {
   if (typeof DecompressionStream === 'function') {
@@ -39,25 +38,15 @@ function makeClock(totals) {
     if (P.get('at') !== null && Number.isFinite(at)) return clamp(startMs + at * 60000);
     let k = -1;
     for (let i = 0; i < runDays; i++) if (runDay(i).getDay() === d.getDay()) { k = i; break; }
-    if (k < 0) k = ((d.getDay() + 6) % 7) % runDays; // daysSinceMonday mod runDays
+    if (k < 0) k = runDays - 1; // no such weekday in the run: its last day, the most developed outbreak
     const base = runDay(k);
     return clamp(new Date(base.getFullYear(), base.getMonth(), base.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()).getTime());
   };
 }
 
-// ---------- colour (same scale as the presenter page's "What users see") ----------
+// ---------- colour: userstyle.js, shared with the presenter's "What users see" ----------
 
-const darker = (rgb) => rgb.replace(/\d+/g, (v) => Math.round(v * 0.72));
-function heatColor(t) {
-  let j = 1;
-  while (j < HEAT_STOPS.length - 1 && HEAT_STOPS[j][0] < t) j++;
-  const [t0, c0] = HEAT_STOPS[j - 1], [t1, c1] = HEAT_STOPS[j];
-  const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
-  const c = c0.map((v, i) => v + f * (c1[i] - v));
-  return { color: `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`, alpha: c[3] / 255 };
-}
 const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x * 10) / 10));
 const clock12 = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`);
 
 async function main() {
@@ -73,13 +62,14 @@ async function main() {
   const ids = new Map(totals.buildings.map((b, i) => [b.id, i]));
   const runTime = makeClock(totals);
 
-  // colour max: 90th percentile of each step's busiest building
-  const peaks = totals.steps.map((s) => s.reduce((m, r) => Math.max(m, r[2]), 0)).sort((a, b) => a - b);
-  const vmax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+  // Colour is expected sick above the model's baseline (r[3]; older totals lack it: r[2]), so a crowd at
+  // the baseline isn't drawn as risk. Colour max: 90th percentile of each step's busiest building, or
+  // the busiest step when most are blank.
+  const hot = (r) => r[3] ?? r[2];
+  const vmax = colourMax(totals.steps.map((s) => s.reduce((m, r) => Math.max(m, hot(r)), 0)));
 
   // ---- legend ----
-  $('ramp').style.background = `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map((q) => {
-    const m = heatColor(0.18 + 0.82 * q).color.match(/\d+/g); return `rgb(${m[0]},${m[1]},${m[2]})`; }).join(', ')})`;
+  $('ramp').style.background = rampCss();
   $('vmid').textContent = (vmax / 4).toFixed(1);
   $('vmax').textContent = `${vmax.toFixed(1)}+`;
   $('fine').textContent = `Buildings with fewer than ${minPeople} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`;
@@ -97,8 +87,8 @@ async function main() {
     preferCanvas: true, worldCopyJump: false, inertia: true });
   const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
   const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440), PHALO = pane('halo', 425);
-  map.getPane('halo').style.filter = 'blur(2.5px)';
-  map.getPane('heat').style.filter = 'drop-shadow(0 0 4px rgba(233,149,105,.85))'; // hot buildings glow so they read zoomed out
+  map.getPane('halo').style.filter = HALO_BLUR;
+  map.getPane('heat').style.filter = GLOW; // hot buildings glow so they read zoomed out
   const lblPane = map.createPane('labels'); lblPane.style.zIndex = 450; lblPane.style.pointerEvents = 'none';
   const NEUTRAL = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
   const CTX = {
@@ -208,19 +198,12 @@ async function main() {
     const at = totals.forecast.at;
     let lo = 0, hi = at.length - 1, r = 0;
     while (lo <= hi) { const m = (lo + hi) >> 1; if (at[m].tMs <= t) { r = m; lo = m + 1; } else hi = m - 1; }
-    return new Map((at[r].byHorizon['60'] || []).map((x) => [x[0], x[1]]));
+    return new Map((at[r].byHorizon['60'] || []).map((x) => [x[0], [x[1], x[4] ?? x[1]]])); // [expected, colour]
   }
 
-  function styleFor(n, sick, forecast) {
-    if (n < minPeople) return { stroke: false, fill: false };
-    // saturated sun -> fire fill (never pale: even the lowest shown building reads), stroke in its own darker hue
-    const t = 0.18 + 0.82 * Math.sqrt(Math.min(1, sick / vmax));
-    const { color } = heatColor(t);
-    return { stroke: true, weight: 1, color: darker(color), opacity: forecast ? 0.6 : 0.9, dashArray: forecast ? '4 3' : null,
-      fill: true, fillColor: color, fillOpacity: forecast ? 0.45 : 0.82 };
-  }
+  const styleFor = (n, hotSick, forecast) => buildingStyle(n, hotSick, vmax, { minPeople, forecast });
 
-  const haloR = () => Math.max(0, Math.min(9, (17.5 - map.getZoom()) * 4)); // px; gone by street zoom
+  const haloR = () => haloRadius(map.getZoom()); // px; gone by street zoom
   map.on('zoomend', () => { const r = haloR(); for (const it of items) if (it.halo) it.halo.setRadius(r); });
   function render(force) {
     const { s, t } = snapshot();
@@ -231,7 +214,7 @@ async function main() {
     shown = new Map();
     for (const it of items) {
       const r = now.get(it.idx);
-      const style = r ? styleFor(r[1], fc ? fc.get(it.idx) || 0 : r[2], !!fc) : styleFor(0, 0, false);
+      const style = r ? styleFor(r[1], fc ? fc.get(it.idx)?.[1] || 0 : hot(r), !!fc) : styleFor(0, 0, false);
       const key = JSON.stringify(style);
       if (key !== it.key) {
         it.layer.setStyle(style); it.key = key;
@@ -241,7 +224,7 @@ async function main() {
           it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
         } else if (it.halo) { it.halo.remove(); it.halo = null; }
       }
-      if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx) || 0 : r[2] });
+      if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx)?.[0] || 0 : r[2] });
     }
     // "Now · updated 4:30 pm": the snapshot's time of day, today
     const d = new Date(), snap = new Date(startMs + s * stepMs);
