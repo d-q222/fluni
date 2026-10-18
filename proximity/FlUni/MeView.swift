@@ -67,7 +67,7 @@ struct MeView: View {
             }
             .background(Theme.paper)
             .navigationTitle("Me")
-            .sheet(isPresented: $showDeveloper) { DeveloperView(model: model) }
+            .sheet(isPresented: $showDeveloper) { DeveloperView(model: model, demoOverride: AnyView(DemoOverrideLink())) }
             .sheet(item: $sheet) { ReportSheet(kind: $0, model: model, store: store) }
             .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
                 Button("OK", role: .cancel) {}

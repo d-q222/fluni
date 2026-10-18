@@ -14,6 +14,7 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    DemoTimeBadge()
                     PausedBanner(model: model)
                     WalkInBanner(model: model)
                     if level == .nearby { NearbyBanner().transition(.opacity) }
@@ -174,7 +175,6 @@ struct CalculationSheet: View {
     let dose: Double
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var store = PSickStore.shared
-    @State private var showDemo = false
 
     var body: some View {
         let p = RiskEstimate.probability(dose: dose)
@@ -200,9 +200,6 @@ struct CalculationSheet: View {
                           store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                    Button("Demo settings\u{2026}") { showDemo = true }
-                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
-                        .accessibilityHint("Developer option for demos")
                 }
                 .padding(20)
             }
@@ -210,7 +207,6 @@ struct CalculationSheet: View {
             .navigationTitle("How is this calculated?")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .sheet(isPresented: $showDemo) { PSickDemoSheet() }
         }
     }
 

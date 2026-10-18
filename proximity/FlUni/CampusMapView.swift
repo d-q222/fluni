@@ -47,7 +47,7 @@ struct CampusMapView: View {
                     selected = Self.hit(heat, snap, c)
                 }
             }
-            .overlay(alignment: .top) { chip(snap != nil).padding(8) }
+            .overlay(alignment: .top) { chip(snap).padding(8) }
             .safeAreaInset(edge: .bottom) {
                 let stack = VStack(spacing: 8) {
                     AlwaysLocationCard()
@@ -95,32 +95,21 @@ struct CampusMapView: View {
 
     // MARK: Pieces
 
-    private func chip(_ hasData: Bool) -> some View {
-        let sub = hasData ? (store.source == .live ? "Live from laptop" : "Built-in data") : "No data at this time"
-        let button = Button { clock.follow.toggle() } label: {
-            Image(systemName: clock.follow ? "pause.fill" : "play.fill").frame(width: 44, height: 44)
-        }
-        .accessibilityLabel(clock.follow ? "Pause time" : "Play time")
-        .accessibilityHint(clock.follow ? "Stops the map moving through time" : "Moves the map forward through time")
-        let times = VStack(alignment: .leading, spacing: 0) {
-            Text(PSickFeed.clockText(clock.simTime)).font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
+    /// The only time on the map: "Now \u{00B7} updated 4:30 PM", the local time of the snapshot being shown.
+    private func chip(_ snap: BuildingHeat.Snapshot?) -> some View {
+        let text = snap.map { "Now \u{00B7} updated \(LiveClock.timeText($0.t))" } ?? "Now \u{00B7} no data yet"
+        return VStack(alignment: .leading, spacing: 4) {
+            Text(text).font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
                 .contentTransition(.identity)
-            Text(sub).font(.fluni(.caption)).foregroundStyle(Theme.ink2)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Map time")
-        .accessibilityValue("\(PSickFeed.clockText(clock.simTime)). \(sub)")
-        return VStack(alignment: .leading, spacing: 2) {
-            // Side by side normally; stacked when large text would squeeze the time.
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { button; times; Spacer(minLength: 0) }
-                VStack(alignment: .leading, spacing: 4) { button; times }
-            }
-            if !store.status.isEmpty {
+                .accessibilityIdentifier("map.updated")
+            DemoTimeBadge()
+            // Laptop problems are a presenter's concern, not a student's.
+            if SimClock.demoAvailable, !store.status.isEmpty {
                 Text(store.status).font(.fluni(.caption)).foregroundStyle(Theme.ink2)
-                    .padding(.horizontal, 10).padding(.bottom, 6)
             }
         }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(Theme.ink)
         .background(Theme.surface.opacity(0.95), in: RoundedRectangle(cornerRadius: Theme.radius))
         .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.hairline))

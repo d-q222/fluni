@@ -4,6 +4,8 @@ struct DeveloperView: View {
     @ObservedObject var model: ProximityModel
     /// False when this is the harness's main screen rather than a sheet in FlUni.
     var showsDone = true
+    /// FlUni's Demo override entry (it needs FlUni's clock, so the harness leaves it out).
+    var demoOverride: AnyView?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -98,6 +100,7 @@ struct DeveloperView: View {
     private var demoSection: some View {
         Section {
             DisclosureGroup("Demo controls") {
+                if let demoOverride { demoOverride }
                 Picker("Time speed", selection: $model.speed) {
                     Text("Real time").tag(1.0)
                     Text("10×").tag(10.0)
