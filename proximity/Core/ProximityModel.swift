@@ -757,9 +757,11 @@ final class ProximityModel: ObservableObject {
         guard counting else { return }
         if let last = lastCoverageTick {
             var e = 0, c = 0
+            let linked = Set(linkIDs.values)  // a Bluetooth-only device or a stale rotated ID has no UWB link
             for p in byID.values {
                 let k = UWBCoverage.classify(bleAge: p.ble.map { now.timeIntervalSince($0.at) },
-                                             uwbAge: p.uwb.map { now.timeIntervalSince($0.at) }, capable: uwbCapable[p.id])
+                                             uwbAge: p.uwb.map { now.timeIntervalSince($0.at) },
+                                             capable: linked.contains(p.id) ? uwbCapable[p.id] : false)  // only link peers can range
                 if k.eligible { e += 1 }
                 if k.covered { c += 1 }
             }
