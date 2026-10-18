@@ -127,11 +127,9 @@ and `WORKSTREAMS.md`.
 
 ## Known issues to fix later
 
-- **Phone mock, tissue notification (product owner, 2026-10-17):** when Lisa's tissue alert is showing
-  in the phone's user view, hovering over it makes the whole back of the tissue box shake. Likely a
-  hover or transform loop between the alert sheet and the tab-bar art: phone.css gives the bar
-  z-index 6, and the alert is drawn above it (19ad4cf). This is Lisa's component (PRs #13 and #15), so
-  coordinate with her before changing it.
+- ~~**Phone mock, tissue notification:** the back of the tissue box shook while the alert was showing.~~
+  Fixed (Lisa's design pass): the popped layer held the box rim too, and the wiggle rotated all of it.
+  Now `pull-0-tissue.png` wiggles about its base and `pull-0-rim.png` stays still.
 - **Presenter "What users see":** places sharing one outline (a dining hall inside its dorm) aren't
   merged into one tap target there, as they are in usermap.js (f1d0e73). It never goes silent, but it
   can show the dining hall's numbers alone.

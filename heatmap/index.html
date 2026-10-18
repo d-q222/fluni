@@ -195,10 +195,11 @@
     .tissue-alert[hidden] { display: none; }
     .tissue-alert[data-state="open"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 19.2%; top: -40%;
       background: rgba(250, 244, 232, 0.72); }
-    .ta-art { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .tissue-alert[data-state="popped"] .ta-art { transform-origin: 50% 74%; animation: ta-wiggle 1.6s ease-in-out infinite; }
-    @keyframes ta-wiggle { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-1.6deg) translateY(-2px); }
-      84% { transform: rotate(1.4deg) translateY(-3px); } 92% { transform: rotate(-0.6deg); } }
+    .ta-art, .ta-rim { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .tissue-alert:not([data-state="popped"]) .ta-rim { display: none; }
+    .tissue-alert[data-state="popped"] .ta-art { transform-origin: 50% 88%; /* the tissue's base, where it leaves the box */ animation: ta-wiggle 1.6s ease-in-out infinite; }
+    @keyframes ta-wiggle { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-1.8deg); }
+      84% { transform: rotate(1.6deg); } 92% { transform: rotate(-0.7deg); } }
     .ta-pop { all: unset; position: absolute; left: 20%; right: 20%; top: 75%; height: 13%; cursor: pointer; pointer-events: auto; border-radius: 16px; }
     .ta-pop:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     .ta-hint { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-3deg); white-space: nowrap;
