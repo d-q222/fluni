@@ -10,7 +10,7 @@ that compete on it:
 | `mlp_full` | MLP + ReLU on 224 hand-built per-agent features (activity, minutes with seeds per day, 2- and 3-hop exposure in time order) | `fluniml/mlp.py`, `fluniml/features.py` |
 | `mlp_seed`, `mlp_activity` | Same MLP with fewer feature groups (ablations) | same |
 | `oracle_true_states` | **Reference, not a competitor.** Uses everyone's true infection times, so it shows how much is predictable at all | `fluniml/meanfield.py` (`oracle=True`) |
-| GNN + attention | Not built yet. Write `out/preds/<name>.parquet` (see `fluniml/preds.py`) and `compare.py` scores it alongside | — |
+| `gat_daily` | Simple time-ordered GAT: GATv2-style sigmoid-gated edge attention + MLPs, unrolled one step per day (each day reads the previous day's states), survival loss on the infection day. Only tried within one 7k run so far (`train_gat_agent_split.py`, 90/10 agent split); after 8 steps it was no better than "no information" | `fluniml/gat_daily.py`, `scripts/train_gat_agent_split.py` |
 
 ## The task
 
