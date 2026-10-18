@@ -179,44 +179,30 @@ struct TissueHeader: View {
     }
 }
 
-/// A rounded speech bubble with a tail pointing right, at the tissue.
+/// Lisa's hand-drawn speech bubble (bubble.png, 1987 x 434). The left cap and the right end with its tail keep their
+/// shape; only the plain middle stretches with the text. The art is 34 pt tall, so 1 pt = 434/34 px.
 struct SpeechBubble: View {
     let text: String
+    @Environment(\.colorScheme) private var scheme
+
+    private static let px: CGFloat = 434 / 34
+    private static let left: CGFloat = 22, right: CGFloat = 80   // the caps, in points (280 and 1012 px of the art)
+
+    private var art: Image {
+        let traits = UITraitCollection(userInterfaceStyle: scheme == .dark ? .dark : .light)
+        guard let ui = UIImage(named: "SpeechBubble", in: nil, compatibleWith: traits), let cg = ui.cgImage else { return Image("SpeechBubble") }
+        return Image(uiImage: UIImage(cgImage: cg, scale: Self.px, orientation: .up))
+    }
 
     var body: some View {
         Text(text)
             .font(.nunito(14, relativeTo: .subheadline, weight: .semibold))
             .foregroundStyle(Theme.ink)
             .lineLimit(1)
-            .padding(.horizontal, 10).padding(.vertical, 5)
-            .padding(.trailing, BubbleShape.tail)
-            .background(BubbleShape().fill(Theme.surface))
-            .overlay(BubbleShape().stroke(Theme.ink, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)))
-    }
-}
-
-/// One outline: a rounded rectangle with a small tail on its right edge, pointing right.
-struct BubbleShape: Shape {
-    static let tail: CGFloat = 6
-    func path(in rect: CGRect) -> Path {
-        let r: CGFloat = 13, t = Self.tail, half: CGFloat = 5
-        let x1 = rect.maxX - t, y0 = rect.minY, y1 = rect.maxY, mid = rect.midY
-        let rr = min(r, rect.height / 2)
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX + rr, y: y0))
-        p.addLine(to: CGPoint(x: x1 - rr, y: y0))
-        p.addArc(center: CGPoint(x: x1 - rr, y: y0 + rr), radius: rr, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
-        p.addLine(to: CGPoint(x: x1, y: mid - half))
-        p.addLine(to: CGPoint(x: rect.maxX, y: mid))
-        p.addLine(to: CGPoint(x: x1, y: mid + half))
-        p.addLine(to: CGPoint(x: x1, y: y1 - rr))
-        p.addArc(center: CGPoint(x: x1 - rr, y: y1 - rr), radius: rr, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
-        p.addLine(to: CGPoint(x: rect.minX + rr, y: y1))
-        p.addArc(center: CGPoint(x: rect.minX + rr, y: y1 - rr), radius: rr, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
-        p.addLine(to: CGPoint(x: rect.minX, y: y0 + rr))
-        p.addArc(center: CGPoint(x: rect.minX + rr, y: y0 + rr), radius: rr, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
-        p.closeSubpath()
-        return p
+            .padding(.leading, Self.left + 7).padding(.trailing, Self.right)
+            .padding(.top, 7).padding(.bottom, 10)
+            .frame(minHeight: 34)
+            .background(art.resizable(capInsets: EdgeInsets(top: 0, leading: 280 / Self.px, bottom: 0, trailing: 1012 / Self.px)))
     }
 }
 
@@ -312,7 +298,7 @@ struct AlertStrip: View {
         // Advice.body(.closeContact) starts with the "about 15 minutes" sentence; its first step is the next line.
         let step = close ? Advice.body(level).dropFirst().first : Advice.body(level).first
         HStack(alignment: .top, spacing: 10) {
-            AlertIcon(size: 20, fill: Theme.surface, stroke: Theme.ink).padding(.top, 2)
+            Image("AlertBang").resizable().scaledToFit().frame(width: 26, height: 26).padding(.top, -1).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(Advice.title(level)).font(.fredoka(16, relativeTo: .headline))
                 if let step { Text(step).font(.nunito(14, relativeTo: .subheadline)) }
