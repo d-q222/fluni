@@ -7,6 +7,8 @@ the agent timeline CSV. Owner: @d-q222 (see [WORKSTREAMS.md](../WORKSTREAMS.md))
 
 ## Run it
 
+Live demo: `heatmap/tools/demo.sh` starts the server and opens the page; the run-of-show is [DEMO.md](DEMO.md).
+
 Serve the **repo root** (not `heatmap/`), so the page can reach the sim's output in `../sim`.
 Caching is off, so a reload always runs the latest code:
 
