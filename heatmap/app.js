@@ -834,9 +834,11 @@ async function main() {
     return f.diffuse(sigmaM, { people: false });
   };
   // People outdoors (only when indoor heat is kept to outlines): a plain grid of their own, drawn unclipped.
+  // Half the indoor cell: the outdoor spread is half the indoor one, and at ~1 cell per σ the box blurs
+  // give each person a 3×3 square, so overlapping people show blocky seams instead of smooth blobs.
   const outFields = new Map();
   const outdoorAt = (t, nowStates = null, truth = false, area = null) => {
-    const cell = fieldFor(sigmaM).cellM;
+    const cell = fieldFor(sigmaM).cellM / 2;
     if (!outFields.has(cell)) outFields.set(cell, new DiffusionField(bounds, cell));
     const f = outFields.get(cell);
     f.clear();
@@ -1596,7 +1598,7 @@ async function main() {
         if (outdoorLayer) {
           const o = outdoorAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null);
           outdoorLayer.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
-          paint(o, outdoorLayer.grid, demoScale() * outdoorPeak(o));
+          paint(o, outdoorLayer.grid, demoScale() * outdoorPeak(o), { soft: true });
           outdoorLayer.setGrid();
         }
       }

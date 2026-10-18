@@ -33,6 +33,14 @@ const STRONG_FROM = 0.1, STRONG_ALPHA = 215;
 const LUT32_STRONG = LUT32.map((px, i) => (i >= Math.round(Math.sqrt(STRONG_FROM) * 255) && px >>> 24 < STRONG_ALPHA
   ? ((px & 0x00ffffff) | (STRONG_ALPHA << 24)) >>> 0 : px));
 
+// The same ramp with its faint end eased in (smoothstep up to SOFT_TO of the ramp) instead of starting at a
+// visible alpha: tight, overlapping blobs then have no rim, so two people's edges don't cross like ripples.
+const SOFT_FROM = 0.02, SOFT_TO = 0.4;
+const LUT32_SOFT = LUT32.map((px, i) => {
+  const u = Math.min(1, Math.max(0, (i / 255 - SOFT_FROM) / (SOFT_TO - SOFT_FROM))), k = u * u * (3 - 2 * u);
+  return ((px & 0x00ffffff) | (Math.round((px >>> 24) * k) << 24)) >>> 0;
+});
+
 // Draw the grid onto a canvas (one pixel per cell). vmax is fixed across frames, so a colour means
 // the same thing at every moment. Colour follows √(value / vmax) so a lone sick person still shows;
 // the legend's midpoint is therefore vmax / 4. minPeople hides cells with fewer than that many
@@ -46,7 +54,7 @@ export function heatPixel(value, vmax, strong = false) {
   return t < 0.02 ? 0 : (strong ? LUT32_STRONG : LUT32)[Math.round(t * 255)];
 }
 
-export function paint(grid, canvas, vmax, { minPeople = 0, strong = false } = {}) {
+export function paint(grid, canvas, vmax, { minPeople = 0, strong = false, soft = false } = {}) {
   if (canvas.width !== grid.nx) canvas.width = grid.nx;
   if (canvas.height !== grid.ny) canvas.height = grid.ny;
   const ctx = canvas.getContext('2d');
@@ -54,7 +62,7 @@ export function paint(grid, canvas, vmax, { minPeople = 0, strong = false } = {}
     canvas.img = ctx.createImageData(grid.nx, grid.ny);
     canvas.px = new Uint32Array(canvas.img.data.buffer);
   }
-  const px = canvas.px, { heat, people } = grid, lut = strong ? LUT32_STRONG : LUT32;
+  const px = canvas.px, { heat, people } = grid, lut = strong ? LUT32_STRONG : soft ? LUT32_SOFT : LUT32;
   px.fill(0);
   const peopleScale = 2 * Math.PI * grid.sigmaM * grid.sigmaM;
   for (let i = 0; i < heat.length; i++) {
