@@ -283,6 +283,24 @@ async function loadModel(dataUrl, agentIds) {
   }
 }
 
+// Footprint area (m²) of each building outline, keyed like people's buildingId ('bld_' + the OSM id's number):
+// shoelace in local metres, holes (courtyards) subtracted, MultiPolygon parts added.
+function footprintAreas(geojson) {
+  const out = new Map();
+  for (const f of geojson?.features || []) {
+    const g = f.geometry, polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+    let area = 0;
+    for (const rings of polys) rings.forEach((ring, k) => {
+      const kx = 111320 * Math.cos((ring[0][1] * Math.PI) / 180);
+      let s = 0;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) s += (ring[j][0] * kx) * (ring[i][1] * 110574) - (ring[i][0] * kx) * (ring[j][1] * 110574);
+      area += (k ? -1 : 1) * Math.abs(s / 2);
+    });
+    if (area > 0) out.set('bld_' + String(f.properties.id).split('/')[1], area);
+  }
+  return out;
+}
+
 // What each person told the app (reports_tests.csv, a few KB): agent id -> events by time.
 async function loadReportEvents(dataUrl) {
   const by = new Map();
@@ -965,12 +983,20 @@ async function main() {
   };
 
   // Building shading (the default presenter view, when the run has outlines): each building's darkness is linear in
-  // the expected number of infected people in it now, Σ P(infected) over everyone inside (the dots' P, model.risk.pAt).
-  // truth: the number actually infected (sim). People outdoors or walking count nowhere; empty buildings stay plain.
+  // the expected number of infected people in it now, Σ P(infected) over everyone inside (the dots' P, model.risk.pAt),
+  // divided by the building's footprint area: expected infected per 1,000 m², so a crowded small building reads darker
+  // than the same count spread through a big one. truth: the number actually infected (sim), per 1,000 m².
+  // People outdoors or walking count nowhere; empty buildings stay plain.
   const shading = zoneHeat;
+  const areaM2 = footprintAreas(outlines); // buildingId -> footprint m² (one floor's outline; floors aren't known)
   const buildingSums = (states, truth = false) => {
     const out = new Map();
     for (const s of states) if (s.buildingId && !s.walking) out.set(s.buildingId, (out.get(s.buildingId) || 0) + (truth ? Number(Boolean(s.sick)) : s.p));
+    return out;
+  };
+  const buildingDensity = (states, truth = false) => {
+    const out = new Map();
+    for (const [id, e] of buildingSums(states, truth)) { const a = areaM2.get(id); if (a) out.set(id, (1000 * e) / a); }
     return out;
   };
   // Fixed scale, the same at every moment: the 95th percentile of every occupied building's sum over ~100 moments
@@ -981,11 +1007,11 @@ async function main() {
     for (let k = 0; k < N; k++) {
       const t = t0 + ((t1 - t0) * (k + 0.5)) / N, states = [];
       for (const track of tracks.values()) { const s = stayNow(track, t); if (s) states.push(s); }
-      for (const e of buildingSums(states).values()) all.push(e);
+      for (const e of buildingDensity(states).values()) all.push(e);
     }
     all.sort((a, b) => a - b);
     const q = all[Math.floor(0.95 * (all.length - 1))] || 1;
-    return q >= 2 ? Math.ceil(q) : Math.ceil(q * 10) / 10; // a round number for the legend
+    return q >= 2 ? Math.ceil(q) : Number(q.toPrecision(1)) < q ? Number((q * 1.05).toPrecision(2)) : Number(q.toPrecision(1)); // a round number for the legend
   })();
 
   // Infectious air by room, straight from the simulator: room_exposure.csv.gz has the sim's own
@@ -1630,15 +1656,18 @@ async function main() {
     for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
     here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
     const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here };
+    const area = areaM2.get(h.id);
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here, area, density: area ? (1000 * expected) / area : null };
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
   function buildingCard(h, full) {
     const i = buildingInfo(h);
-    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtSick(i.expected)} expected infected · ${i.n} ${i.n === 1 ? 'person' : 'people'}`;
+    const per = i.density == null ? '' : ` · ${i.density.toPrecision(2)} per 1,000 m²`;
+    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtSick(i.expected)} expected infected${per} · ${i.n} ${i.n === 1 ? 'person' : 'people'}`;
     const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
     return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
       <div class="row"><span>Expected infected (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
+      ${i.density == null ? '' : `<div class="row"><span>Per 1,000 m² (footprint ${Math.round(i.area).toLocaleString()} m²)</span><b>${i.density.toPrecision(2)}</b></div>`}
       <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
       <div class="row"><span>People here now</span><b>${i.n}</b></div>
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
@@ -1779,7 +1808,7 @@ async function main() {
       const shade = shading && view === 'demo';
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' || shade ? 'none' : '';
       if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || shade ? 'none' : '';
-      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingSums(current.values(), truthMode()), shadeMax); }
+      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingDensity(current.values(), truthMode()), shadeMax); }
       else if (shadeLayer.map) shadeLayer.remove();
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
@@ -1898,7 +1927,7 @@ async function main() {
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
     const shade = shading && v === 'demo';
-    if (shade) { // linear: darkness proportional to the building's expected infected
+    if (shade) { // linear: darkness proportional to the building's expected infected per 1,000 m²
       $('vmid').textContent = num(shadeMax / 2);
       $('vmax').textContent = `${num(shadeMax)}+`;
     }
@@ -1907,7 +1936,7 @@ async function main() {
       $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
     }
     document.querySelector('.legend h2').innerHTML = shade
-      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : 'expected infected people'} in the building${truthMode() ? '' : ', Σ P(infected) of everyone inside'}</span>`
+      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : 'expected infected people (Σ P of everyone inside)'} per 1,000 m² of the building's footprint</span>`
       : v === 'airborne'
       ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
       : v === 'airflow'

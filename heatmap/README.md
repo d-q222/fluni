@@ -123,11 +123,14 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
 - **"Expected infected per building"** (the presenter's default view, `BuildingShadeLayer` in `buildings.js`): no
   heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
   everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
-  with `?model=meanfield`). Plain Σ P, baseline included, as asked. Darkness is linear in that sum (not √), along the
-  campfire ramp (`HEAT_STOPS`), on a fixed scale for the whole run: the 95th percentile of every occupied building's
-  sum over 100 moments of the run, rounded up, is the darkest; the legend reads 0 → that max+. Empty buildings stay
-  plain; people outdoors or walking shade nothing. With "Color: true status (sim)" a building's shade is the number
-  actually infected (E or I) there, on the same scale.
+  with `?model=meanfield`), divided by the building's footprint area: expected infected per 1,000 m², so a crowded
+  small building reads darker than the same count spread through a big one. The area is the outline's (one floor;
+  the number of floors isn't known). Plain Σ P, baseline included. Darkness is linear in that density (not √), along
+  the campfire ramp (`HEAT_STOPS`), on a fixed scale for the whole run: the 95th percentile of every occupied
+  building's density over 100 moments of the run, rounded, is the darkest; the legend reads 0 → that max+. Empty
+  buildings stay plain; people outdoors or walking shade nothing. Hover and the building card show the density and
+  footprint too. With "Color: true status (sim)" a building's shade is the number actually infected (E or I) there
+  per 1,000 m², on the same scale.
 - **Heat → room-level** (only for a run without building outlines now): fine detail (σ = 6 m close up), presenter
   only. How the heat spreads (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
