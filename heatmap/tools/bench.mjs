@@ -103,9 +103,10 @@ async function launch() {
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((ok, fail) => { ws.onopen = ok; ws.onerror = fail; });
   let id = 0;
-  const pending = new Map(), errors = [];
+  const pending = new Map(), errors = [], state = { crashed: false };
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
+    if (m.method === 'Inspector.targetCrashed') { state.crashed = true; errors.push('renderer crashed (out of memory?)'); }
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
     if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') errors.push(m.params.args.map((a) => a.value ?? a.description).join(' '));
     if (m.id && pending.has(m.id)) {
@@ -124,7 +125,7 @@ async function launch() {
     return r.result.value;
   };
   const close = () => { ws.close(); proc.kill(); setTimeout(() => rmSync(dir, { recursive: true, force: true }), 500); };
-  return { send, evaluate, close, errors };
+  return { send, evaluate, close, errors, state };
 }
 
 // ---------- stats ----------
@@ -189,10 +190,13 @@ async function benchIn(cdp, name) {
   await cdp.send('Profiler.start');
   await cdp.send('Page.navigate', { url });
   let load = 0;
-  for (let i = 0; i < 6000 && !load; i++) {
+  await cdp.send('Inspector.enable');
+  const crashed = () => cdp.state.crashed;
+  for (let i = 0; i < 6000 && !load && !crashed(); i++) {
     await sleep(50);
     load = await cdp.evaluate('window.fluni ? performance.now() : 0').catch(() => 0);
   }
+  if (crashed()) throw new Error(`${name}: renderer crashed while loading (${url})`);
   const loadProfile = (await cdp.send('Profiler.stop')).profile;
   if (!load) throw new Error(`${name}: page never became ready (${url})\n${cdp.errors.join('\n')}`);
   const loadTop = [...breakdown(loadProfile).incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, ms }));
@@ -200,6 +204,7 @@ async function benchIn(cdp, name) {
   const heapMB = (await cdp.send('Runtime.getHeapUsage')).usedSize / 1e6;
   await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
   const agents = await cdp.evaluate('new Set(fluni.data.samples.map((a) => a.id)).size');
+  const grid = await cdp.evaluate('(() => { const f = fluni.heatField?.(); return f && f.nx ? `${f.nx}×${f.ny} cells of ${f.cellM} m, σ ${f.sigmaM} m` : ""; })()');
   await sleep(500); // let the first paint settle
   if (args.shot) {
     mkdirSync(args.shot, { recursive: true });
@@ -256,17 +261,19 @@ async function benchIn(cdp, name) {
     }
   }
   const top = [...incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, msPerFrame: ms / frameCount }));
-  return { name, load, heapMB, loadTop, agents, rows, busyPerFrame: busy / frameCount, top, gapAt, lag, errors: [...new Set(cdp.errors)] };
+  return { name, load, heapMB, loadTop, agents, grid, rows, busyPerFrame: busy / frameCount, top, gapAt, lag, errors: [...new Set(cdp.errors)] };
 }
 
 // ---------- main ----------
 
 const results = [];
 for (const v of VIEWS) {
+  let r;
+  try { r = await benchView(v); } catch (err) { console.log(`\n${v}: FAILED: ${err.message.split('\n').slice(0, 6).join('\n  ')}`); results.push({ name: v, error: err.message }); continue; }
   {
-    const r = await benchView(v);
     results.push(r);
     console.log(`\n${v}: ready in ${f1(r.load)} ms, JS heap ${f1(r.heapMB)} MB, ${r.agents} agents, JS ${f1(r.busyPerFrame)} ms/frame`);
+    if (r.grid) console.log(`  heat grid at load: ${r.grid}`);
     if (args.load) for (const t of r.loadTop) console.log(`    load ${String(Math.round(t.ms)).padStart(6)} ms  ${t.fn}`);
     console.log('  speed  frames  frame p50  p95   work p50  p95   max');
     for (const x of r.rows) {

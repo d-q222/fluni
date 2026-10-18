@@ -1,9 +1,10 @@
 // Precompute for large sim runs (~7,000 agents x 14 days x 5 min = 28 M rows, too big for the browser).
-// One streaming pass over timeline.csv.gz writes two small files that the map reads instead:
+// One streaming pass over timeline.csv.gz writes small files that the map reads instead:
 //   timeline_changes.csv.gz  the timeline with repeated rows dropped: per agent, a row is kept when
 //                            something tracked changed, plus the row just before each change (motion.js
 //                            stateAt needs it: that is when the stay ended and the walk starts), plus
 //                            each agent's first and last rows. Same header and columns as the input.
+//   p_sick.csv               the probability model's P(sick) change points (docs/p-sick-format.md)
 //   totals.json.gz           everything the user-facing map shows, no agent data: per step and
 //                            building the people and expected sick, an hourly forecast at +1/+2/+3 h
 //                            and its backtest hit rate.
@@ -174,6 +175,17 @@ if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   const rooms = existsSync(roomsFile) ? new Map(parseCsv(readFileSync(roomsFile, 'utf8')).map((r) => [r.room_id, r])) : null;
   risk = inferRisk({ contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start) });
   console.log(`model: ${contacts.length} contacts, ${reports.length} reports (${lap()} ms)`);
+  // The model's change points as p_sick.csv (docs/p-sick-format.md; same as model/cli.mjs, which can't
+  // read a full run's contacts: 1.8 GB unzipped is past V8's string limit). The map reads it from
+  // model/out/<run>/ on big runs instead of running the model in the browser.
+  const pad = (x) => String(x).padStart(2, '0');
+  const iso = (ms) => {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  const lines = ['agent_id,t_iso,p_sick'];
+  for (const [id, cs] of risk.changes) for (const c of cs) lines.push(`${id},${iso(c.tMs)},${c.p.toFixed(4)}`);
+  writeFileSync(join(outDir, 'p_sick.csv'), lines.join('\n') + '\n');
 } else {
   console.warn(`Missing ${modelFiles.filter((f) => !existsSync(join(runDir, f))).join(', ')}: using the appBelief fallback for P(sick).`);
 }
