@@ -38,9 +38,17 @@ function grab(D, d) {
   const got = {};
   const probe = (ph, D_, d_, s) => {
     if (D_ !== D || d_ !== d) return;
-    got[ph] = { S: Float64Array.from(s.S), R: Float64Array.from(s.R), I: Float64Array.from(s.I), pend: Float64Array.from(s.pend), G: s.G };
+    got[ph] = { S: Float64Array.from(s.S), R: Float64Array.from(s.R), I: Float64Array.from(s.I), pend: Float64Array.from(s.pend),
+      G: s.G, inf: Float64Array.from(s.inf), T: s.T, base: s.base };
   };
-  return { got, probe, Ij: (ph, j) => Array.from(got[ph].I.subarray(j * got[ph].G, (j + 1) * got[ph].G)) };
+  const Ij = (ph, j) => Array.from(got[ph].I.subarray(j * got[ph].G, (j + 1) * got[ph].G));
+  const infj = (ph, j) => Array.from(got[ph].inf.subarray(j * got[ph].T, (j + 1) * got[ph].T));
+  // A_ji for a dose D on day d: paper = sum_g I_j[g](1 - e^-stage(g) D); pair mode (first contact of the
+  // pair in the window) = sum_tau inf_j[tau](1 - e^-stage(d - tau) D)
+  const A = (pair, j, D) => pair
+    ? infj('start', j).reduce((s, x, k) => s - x * Math.expm1(-stage(d - got.start.base - k) * D), 0)
+    : lam(Ij('start', j), D);
+  return { got, probe, Ij, infj, A };
 }
 
 test('1 no contacts, no reports: P_I stays at the prior for 14 days (community calibration)', () => {
@@ -51,29 +59,33 @@ test('1 no contacts, no reports: P_I stays at the prior for 14 days (community c
   console.log(`     community=${out.params.community.toFixed(6)}/day  day-13 mean P_I=${(last.sumI / 5).toFixed(5)}  R=${(last.sumR / 5).toFixed(4)}`);
 });
 
-test('2 SI eq. 1: one pair, one day, dose D: S_i(end) = S0 (1 - sum_g I_j[g](1 - e^-stage(g) D)); P_I monotone', () => {
-  const D = 1.5, k = grab(3, 2);
-  // j (0) positive on day 1 (known before day 2); i (1) meets j in 6 rows on day 2 summing to D
-  const rows = [8, 9, 10, 14, 15, 20].map((h) => [step(2, h), h % 2 ? 0 : 1, h % 2 ? 1 : 0, D / 6]);
-  const out = smfRisk(input(2, 4, rows, [pos(0, 1, 9)]), { probe: k.probe, minDelta: 0 });
-  const S0 = k.got.start.S[1], A = lam(k.Ij('start', 0), D);
-  near(k.got.end.S[1], S0 * (1 - A), 1e-12, 'S_i at day end');
-  // monotone within day 2, from the run whose output is day 2
-  let prev = -1;
-  for (let m = 0; m < 1440; m += 5) {
-    const p = out.pAt('A1', START + 2 * DAY + m * MIN);
-    assert.ok(p >= prev - 1e-15, `P_I fell at minute ${m}: ${prev} -> ${p}`); prev = p;
-  }
-  console.log(`     S0=${S0.toFixed(6)}  A=${A.toFixed(6)}  S_end=${k.got.end.S[1].toFixed(6)}`);
-});
+// 2 and 3 run both modes: the paper's eq. 1 over I_j[g] (pairMode false) and the pair-mode source term
+// over inf_j[tau]; on the pair's first contact day the two differ only in the source mass they use.
+for (const pair of [false, true]) {
+  test(`2 SI eq. 1 (pairMode ${pair}): one pair, one day, dose D: S_i(end) = S0 (1 - A_ji(D)); P_I monotone`, () => {
+    const D = 1.5, k = grab(3, 2);
+    // j (0) positive on day 1 (known before day 2); i (1) meets j in 6 rows on day 2 summing to D
+    const rows = [8, 9, 10, 14, 15, 20].map((h) => [step(2, h), h % 2 ? 0 : 1, h % 2 ? 1 : 0, D / 6]);
+    const out = smfRisk(input(2, 4, rows, [pos(0, 1, 9)]), { probe: k.probe, minDelta: 0, pairMode: pair });
+    const S0 = k.got.start.S[1], A = k.A(pair, 0, D);
+    near(k.got.end.S[1], S0 * (1 - A), 1e-12, 'S_i at day end');
+    // monotone within day 2, from the run whose output is day 2
+    let prev = -1;
+    for (let m = 0; m < 1440; m += 5) {
+      const p = out.pAt('A1', START + 2 * DAY + m * MIN);
+      assert.ok(p >= prev - 1e-15, `P_I fell at minute ${m}: ${prev} -> ${p}`); prev = p;
+    }
+    console.log(`     S0=${S0.toFixed(6)}  A=${A.toFixed(6)}  S_end=${k.got.end.S[1].toFixed(6)}`);
+  });
 
-test('3 mean-field product: two independent sources give S0 (1 - A1)(1 - A2)', () => {
-  const k = grab(3, 2), D1 = 0.8, D2 = 2.2;
-  const rows = [[step(2, 9), 0, 2, D1], [step(2, 11), 2, 1, D2 / 2], [step(2, 13), 1, 2, D2 / 2]];
-  smfRisk(input(3, 4, rows, [pos(0, 1, 9), pos(1, 0, 15)]), { probe: k.probe });
-  const want = k.got.start.S[2] * (1 - lam(k.Ij('start', 0), D1)) * (1 - lam(k.Ij('start', 1), D2));
-  near(k.got.end.S[2], want, 1e-12, 'S_i at day end');
-});
+  test(`3 mean-field product (pairMode ${pair}): two independent sources give S0 (1 - A1)(1 - A2)`, () => {
+    const k = grab(3, 2), D1 = 0.8, D2 = 2.2;
+    const rows = [[step(2, 9), 0, 2, D1], [step(2, 11), 2, 1, D2 / 2], [step(2, 13), 1, 2, D2 / 2]];
+    smfRisk(input(3, 4, rows, [pos(0, 1, 9), pos(1, 0, 15)]), { probe: k.probe, pairMode: pair });
+    const want = k.got.start.S[2] * (1 - k.A(pair, 0, D1)) * (1 - k.A(pair, 1, D2));
+    near(k.got.end.S[2], want, 1e-12, 'S_i at day end');
+  });
+}
 
 test('4 immunity: after a "recovered" report, contacts with an infected person do not raise P_I', () => {
   const rows = [];
@@ -114,8 +126,9 @@ test('7 stage: the same dose from a source at infection age 2 transmits more tha
   const lamAt = (day) => {
     const k = grab(day + 1, day);
     smfRisk(input(2, day + 2, [[step(day, 12), 0, 1, 1.0]], [pos(0, 4, 9)]), { ...p, probe: k.probe });
-    const Pj = k.Ij('start', 0).reduce((a, b) => a + b, 0);
-    return (1 - k.got.end.S[1] / k.got.start.S[1]) / Pj; // lambda per unit of j's P_I
+    // per unit of j's source mass: P(j ever infected) in pair mode (no Erlang on the source term)
+    const Pj = k.infj('start', 0).reduce((a, b) => a + b, 0);
+    return (1 - k.got.end.S[1] / k.got.start.S[1]) / Pj;
   };
   const l2 = lamAt(4), l6 = lamAt(8);
   near(l2, -Math.expm1(-stage(2)), 1e-9, 'lambda at age 2');
@@ -169,6 +182,25 @@ test('10 performance: 1,000 agents, 4 days, 1.5 M rows in < 10 s', () => {
   for (const c of out.changes.values()) pts += c.length;
   console.log(`     ${ms} ms; ${pts} change points; day-3 mean P_I=${(out.daily[3].sumI / n).toFixed(4)}`);
   assert.ok(ms < 10000, `${ms} ms`);
+});
+
+test('11 roommates 16 h/day for 10 days: i never exceeds P(j ever infected); the per-day product does', () => {
+  // j (0) says "might be sick" on day 2 (P_I 0.6 from day 0); prior 0, so P(ever infected) = 1 - S exactly.
+  // Per-day product: each day with j is a fresh chance, so i compounds past j. Pair mode: one chance per
+  // infection of j. (Both still let i infect j's own remaining S (echo), so P_ever(j) ends above 0.6.)
+  const rows = [];
+  for (let d = 0; d < 10; d++) for (let s = step(d, 6); s < step(d, 22); s++) rows.push([s, 0, 1, 2 / 192]); // dose 2/day
+  const worst = (pair) => {
+    let gap = -Infinity, everJ = 0;
+    const probe = (ph, D, d, s) => { if (ph === 'end' && D === d) { gap = Math.max(gap, s.S[0] - s.S[1]); everJ = 1 - s.S[0]; } };
+    smfRisk(input(2, 10, rows, [{ day: 2, h: 8, agent: 0, event: 'self_report', value: 'might_be_sick' }]), { prior: 0, pairMode: pair, probe });
+    return { gap, everJ };
+  };
+  const p = worst(true), q = worst(false);
+  console.log(`     max over output days of P_ever(i) - P_ever(j): pair ${p.gap.toFixed(4)}, per-day ${q.gap.toFixed(4)}; ` +
+    `P_ever(j) on day 9: pair ${p.everJ.toFixed(3)}, per-day ${q.everJ.toFixed(3)}`);
+  assert.ok(p.gap <= 1e-9, `pair mode: i above j by ${p.gap}`);
+  assert.ok(q.gap > 0.05, `per-day product should overshoot, gap ${q.gap}`);
 });
 
 console.log(`\n${passed} passed, ${failures.length} failed`);

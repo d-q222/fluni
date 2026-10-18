@@ -11,6 +11,15 @@
 // paper, every output day D is a fresh run over the window [D - tMF, D] from the i.i.d. prior, using only
 // evidence known by then, so a report reaches back to the reporter's earlier contacts at the next midnight
 // (retroactive tracing) and the output never uses evidence before it was known.
+//
+// Pair mode (default; our change to the paper): the daily product treats every day with the same person
+// as an independent chance, so roommates (16 h/day, every day) compound past P(j was ever infected) and
+// the campus total explodes. Instead each source j keeps inf_j[tau] = P(j's infection reached age 0 on
+// day tau), and each pair keeps its window-long exposure E_tau = sum over contact rows on day d of
+// stage(d - tau) * dose. Then P(j infected i over the window) = A_ji = sum_tau inf_j[tau](1 - exp(-E_tau)),
+// one chance per infection of j, and S_i = S_i(0) * prod_j (1 - A_ji) keeps the paper's product across
+// different sources. j's infectiousness is stage(age) only; Erlang survival only splits P_I from P_R.
+// pairMode: false is the pure per-day SMF above, for comparison.
 
 import { DEFAULTS, stageFactor } from './infer.js';
 
@@ -31,7 +40,8 @@ export const SMF_DEFAULTS = {
   tauDays: 2,                   // infection -> report/test (flu incubation ~2 d): how far a report reaches back
   windowDays: 10,               // tMF: each day's run starts this many days back, from the prior
   minDelta: 0.005,              // change points are written when P_I moved at least this much
-  probe: null,                  // tests only: probe(phase 'start'|'end', D, d, {S, R, I, pend, G})
+  pairMode: true,               // one chance per infection of the source per pair (see above); false = paper
+  probe: null,                  // tests only: probe(phase 'start'|'end', D, d, {S, R, I, pend, G, inf, T, base})
 };
 
 const MIN = 60000, DAY = 86400000;
@@ -103,15 +113,17 @@ export function smfRisk(input, params = {}) {
     ev.push({ i, raises, negs, recs });
   }
 
-  // ---- rows: day ranges and a per-day slot for each unordered pair (cumulative dose lives there) ----
+  // ---- rows: day ranges, and a slot for each unordered pair: per day (paper) or per run (pair mode) ----
   const { t: rt, a: ra, b: rb, dose } = rows;
+  const pair = P.pairMode;
   const nRows = rt.length, stepsPerDay = 1440 / stepMin;
   const dayR0 = new Int32Array(nDays + 1), slot = new Int32Array(nRows), daySlots = new Int32Array(nDays);
   {
     let r = 0;
+    const m = new Map();
     for (let d = 0; d < nDays; d++) {
       dayR0[d] = r;
-      const m = new Map();
+      if (!pair) m.clear();
       for (; r < nRows && Math.floor(rt[r] / stepsPerDay) <= d; r++) {
         const a = ra[r], b = rb[r], key = a < b ? a * n + b : b * n + a;
         let s = m.get(key);
@@ -124,17 +136,27 @@ export function smfRisk(input, params = {}) {
   }
   let maxSlots = 0;
   for (let d = 0; d < nDays; d++) maxSlots = Math.max(maxSlots, daySlots[d]);
-  const sD = new Float64Array(maxSlots), sAlo = new Float64Array(maxSlots), sAhi = new Float64Array(maxSlots);
+  const sD = new Float64Array(pair ? 0 : maxSlots), sAlo = new Float64Array(maxSlots), sAhi = new Float64Array(maxSlots);
+  // pair mode: infection days tau = base .. base + T - 1 with base = w - (G - 1) (the prior's oldest age)
+  const T = pair ? P.windowDays + G + 1 : 0;
+  const pE = new Float64Array(maxSlots * T), pQ = new Float64Array(maxSlots * T); // E_tau, 1 - exp(-E_tau)
+  const pRun = new Int32Array(maxSlots).fill(-1);  // run that last zeroed the slot (lazy reset)
 
   // ---- state ----
   const I = new Float64Array(n * G), I0 = new Float64Array(n * G);
   const S = new Float64Array(n), R = new Float64Array(n), pend = new Float64Array(n);
+  const inf = new Float64Array(n * T), inf0 = new Float64Array(n * T); // pair mode: inf_j[tau], snapshot
+  let base = 0, dCur = 0;
   const pI = (i) => { let s = pend[i]; for (let g = 0, o = i * G; g < G; g++) s += I[o + g]; return s; };
   const wI = surv.slice(0, G).map((s) => (P.prior * s) / sumSurv);
   function reset() {
+    inf.fill(0);
     for (let i = 0; i < n; i++) {
       S[i] = priorS; R[i] = P.priorR; pend[i] = 0;
-      for (let g = 0; g < G; g++) I[i * G + g] = wI[g];
+      for (let g = 0; g < G; g++) {
+        I[i * G + g] = wI[g];
+        if (pair) inf[i * T + G - 1 - g] = wI[g]; // prior mass at age g on day w: tau = w - g
+      }
     }
   }
   // clamps (SI eqs. 4-6)
@@ -142,13 +164,18 @@ export function smfRisk(input, params = {}) {
     const p = pI(i), avail = S[i] + R[i];
     if (p >= L || avail <= 0) return;
     const take = Math.min(L - p, avail), f = 1 - take / avail;
+    // only the part taken from S is a new infection; mass back from R is already in inf (or was immune)
+    if (pair) inf[i * T + dCur - g0 - base] += take * (S[i] / avail);
     S[i] *= f; R[i] *= f; I[i * G + g0] += take;
   }
   function cap(i, L) { // P_I <= L, the removed mass becomes S (tested negative => susceptible)
     const p = pI(i);
     if (p <= L) return;
     const f = L / p;
-    for (let g = 0, o = i * G; g < G; g++) I[o + g] *= f;
+    for (let g = 0, o = i * G; g < G; g++) {
+      if (pair) inf[i * T + dCur - g - base] -= I[o + g] * (1 - f); // removed from current infections only
+      I[o + g] *= f;
+    }
     pend[i] *= f; S[i] += p - L;
   }
   function recover(i) { // certainly R from here on
@@ -205,17 +232,20 @@ export function smfRisk(input, params = {}) {
     for (const l of dayAct) l.sort((x, y) => (x.k === y.k ? x.t - y.t : x.k === REC ? -1 : y.k === REC ? 1 : x.k - y.k));
     for (const l of timed) l.sort((x, y) => x.t - y.t);
 
+    base = w - (G - 1);
     reset();
     for (let d = w; d <= D; d++) {
       const out = d === D, dMs = startMs + d * DAY;
+      dCur = d;
       for (const x of dayAct[d - w]) act(x);
       if (out) for (let i = 0; i < n; i++) {
         if (D === 0) { lastW[i] = pI(i); ch[i].push({ tMs: startMs, p: lastW[i] }); } else note(i, dMs);
       }
-      I0.set(I); // sources use the day-start state: today's infections transmit from tomorrow
-      if (P.probe) P.probe('start', D, d, { S, R, I, pend, G });
-      const acts = timed[d - w], r0 = dayR0[d], r1 = dayR0[d + 1];
-      sD.fill(0, 0, daySlots[d]); sAlo.fill(0, 0, daySlots[d]); sAhi.fill(0, 0, daySlots[d]);
+      // sources use the day-start state: today's infections transmit from tomorrow
+      if (pair) inf0.set(inf); else I0.set(I);
+      if (P.probe) P.probe('start', D, d, { S, R, I, pend, G, inf, T, base });
+      const acts = timed[d - w], r0 = dayR0[d], r1 = dayR0[d + 1], dk = d - base;
+      if (!pair) { sD.fill(0, 0, daySlots[d]); sAlo.fill(0, 0, daySlots[d]); sAhi.fill(0, 0, daySlots[d]); }
       let ai = 0, nextAct = acts.length ? acts[0].t : Infinity;
       for (let r = r0; r < r1; r++) {
         const rowMs = startMs + rt[r] * stepMs;
@@ -225,23 +255,41 @@ export function smfRisk(input, params = {}) {
         }
         const a = ra[r], b = rb[r];
         if (a === b) continue;
-        const lo = a < b ? a : b, hi = a < b ? b : a, s = slot[r], Dn = sD[s] + dose[r];
-        sD[s] = Dn;
-        // lo -> hi: S_hi *= (1 - A_new) / (1 - A_old); what leaves S is today's infection (pend)
-        let An = lambdaSum(lo * G, Dn), Ao = sAlo[s];
-        sAlo[s] = An;
-        if (Ao < 1) { const s1 = (S[hi] * (1 - An)) / (1 - Ao); pend[hi] += S[hi] - s1; S[hi] = s1; }
-        An = lambdaSum(hi * G, Dn); Ao = sAhi[s];
-        sAhi[s] = An;
-        if (Ao < 1) { const s1 = (S[lo] * (1 - An)) / (1 - Ao); pend[lo] += S[lo] - s1; S[lo] = s1; }
+        const lo = a < b ? a : b, hi = a < b ? b : a, s = slot[r];
+        let Alo, Ahi;
+        if (pair) {
+          // window-long exposure per infection day tau; only ages with stage > 0 grow
+          const o = s * T, x = dose[r];
+          if (pRun[s] !== D) { pRun[s] = D; pE.fill(0, o, o + T); pQ.fill(0, o, o + T); sAlo[s] = sAhi[s] = 0; }
+          for (let g = 0; g < GS && g <= dk; g++) {
+            const k = o + dk - g, e = pE[k] + st[g] * x;
+            pE[k] = e; pQ[k] = -Math.expm1(-e);
+          }
+          Alo = 0; Ahi = 0;
+          for (let k = 0, ol = lo * T, oh = hi * T; k <= dk; k++) {
+            const q = pQ[o + k];
+            if (q > 0) { Alo += inf0[ol + k] * q; Ahi += inf0[oh + k] * q; }
+          }
+        } else {
+          const Dn = sD[s] + dose[r];
+          sD[s] = Dn; Alo = lambdaSum(lo * G, Dn); Ahi = lambdaSum(hi * G, Dn);
+        }
+        // lo -> hi: S_hi *= (1 - A_new) / (1 - A_old); what leaves S is today's infection (pend).
+        // A only counts up (a cap on the source later in the window does not hand S back).
+        let Ao = sAlo[s];
+        if (Alo > Ao && Ao < 1) { const s1 = (S[hi] * (1 - Alo)) / (1 - Ao); pend[hi] += S[hi] - s1; S[hi] = s1; sAlo[s] = Alo; }
+        Ao = sAhi[s];
+        if (Ahi > Ao && Ao < 1) { const s1 = (S[lo] * (1 - Ahi)) / (1 - Ao); pend[lo] += S[lo] - s1; S[lo] = s1; sAhi[s] = Ahi; }
         if (out) { note(lo, rowMs); note(hi, rowMs); }
       }
       for (; ai < acts.length; ai++) { act(acts[ai]); if (out) note(acts[ai].i, acts[ai].t); }
-      if (P.probe) P.probe('end', D, d, { S, R, I, pend, G });
+      if (P.probe) P.probe('end', D, d, { S, R, I, pend, G, inf, T, base });
       // day end: community infections, then age everyone by a day (SI eq. 2 with mu = h[g])
       for (let i = 0; i < n; i++) {
         const lost = S[i] * comm, o = i * G;
         S[i] -= lost; pend[i] += lost;
+        if (pair) inf[i * T + dk + 1] += pend[i]; // infected today: age 0 tomorrow
+
         for (let g = G - 1; g >= 0; g--) {
           R[i] += I[o + g] * h[g];
           if (g + 1 < G) I[o + g + 1] = I[o + g] * (1 - h[g]);
