@@ -973,11 +973,11 @@ async function main() {
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
   addLandmarks(map); // Lisa's drawings under the heat (assets/landmarks/)
-  const sigmaForZoom = () => {
-    const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
+  const sigmaForZoom = (z = map.getZoom()) => {
+    const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** z;
     // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
     // Close up a softer glow: 8 m at zoom 18 up to 10 m at 20 (building heat only; whole metres, few scales).
-    if (zoneHeat && map.getZoom() >= FINE_ZOOM) return Math.min(10, 8 + Math.round(map.getZoom() - FINE_ZOOM));
+    if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
@@ -993,6 +993,27 @@ async function main() {
     renderLegend();
     render(performance.now());
   });
+  // Smooth zooming: the first zoom to a new spread or grid built that grid and its kernels on the spot
+  // (a visible stall at zoom 16 and 18). Build every zoom level's once, in idle time after the page loads.
+  const warmLevels = [];
+  const planWarm = () => { // once the map has a view (sigmaForZoom reads its centre)
+    for (let z = 13; z <= 20; z += 0.5) {
+      const lv = { sigma: sigmaForZoom(z), fine: zoneHeat && z >= FINE_ZOOM };
+      if (!warmLevels.some((w) => w.sigma === lv.sigma && w.fine === lv.fine)) warmLevels.push(lv);
+    }
+  };
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
+  const warmNext = () => {
+    const lv = warmLevels.shift();
+    if (!lv) return;
+    if (lv.sigma !== sigmaM || lv.fine !== fine) {
+      const keep = [sigmaM, fine, lastField];
+      [sigmaM, fine] = [lv.sigma, lv.fine];
+      try { heatAt(now, current.values()); } finally { [sigmaM, fine, lastField] = keep; }
+    }
+    idle(warmNext);
+  };
+  setTimeout(() => { if (!map._loaded) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
   let fitted = false;
   new ResizeObserver(() => {
