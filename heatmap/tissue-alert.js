@@ -22,7 +22,8 @@ export function mountTissueAlert(frame) {
     <img class="ta-art" alt="" src="${ART}pull-0-tissue.png">
     <button type="button" class="ta-pop" aria-label="New alert. Tap the tissue to read it."><span class="ta-hint">Pull me</span></button>
     <div class="ta-note" role="alertdialog" aria-modal="false" hidden><div class="ta-text"></div>
-      <button type="button" class="ta-ok">Got it</button></div>`;
+      <button type="button" class="ta-ok">Got it</button></div>
+    <button type="button" class="ta-x" aria-label="Close alert" hidden><img src="assets/icons/close.png" alt=""></button>`;
   frame.appendChild(root);
   // Preload so the pull never stutters on first tap.
   for (const src of [...PULL, `${ART}sheet.png`]) { const i = new Image(); i.src = src; }
@@ -39,6 +40,7 @@ export function mountTissueAlert(frame) {
     root.dataset.state = s;
     pop.hidden = s !== 'popped';
     note.hidden = s !== 'open';
+    root.querySelector('.ta-x').hidden = s !== 'open'; // Lisa's hand-drawn X, the same as Got it
     // Popped: only the tissue wiggles; the box rim it pokes out of is its own still layer (the whole
     // layer used to rotate, shaking the back of the box).
     if (s === 'popped') art.src = `${ART}pull-0-tissue.png`;
@@ -61,7 +63,9 @@ export function mountTissueAlert(frame) {
     };
     step();
   });
-  root.querySelector('.ta-ok').addEventListener('click', () => { readLevel = level; clearTimeout(timer); show('idle'); });
+  const putAway = () => { readLevel = level; clearTimeout(timer); show('idle'); };
+  root.querySelector('.ta-ok').addEventListener('click', putAway);
+  root.querySelector('.ta-x').addEventListener('click', putAway);
 
   return {
     /** level: 'none' | 'nearby' | 'close'; visible: the Today tab is showing; msg: { kicker, title, lines } (escaped HTML). */
