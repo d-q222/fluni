@@ -218,6 +218,8 @@ def run(cfg, external_provider=None, quiet=False, llm_client=None, scenario=None
     if llm is not None:
         (run_dir / "llm_agents.jsonl").write_text("".join(line + "\n" for line in llm.log_lines()))
         (run_dir / "llm_conversations.jsonl").write_text("".join(line + "\n" for line in llm.convo_lines()))
+        (run_dir / "llm_messages.jsonl").write_text("".join(line + "\n" for line in llm.message_lines()))
+        (run_dir / "llm_events.csv").write_text(llm.events_csv())
     if worry is not None:
         writer.write_table("worry.csv.gz", worry.frame())
     if hasattr(intervention, "log_frame"):
