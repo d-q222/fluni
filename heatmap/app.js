@@ -1460,7 +1460,8 @@ async function main() {
     try { updateViewCount(performance.now(), true); } catch { /* the legend is drawn before the map exists */ }
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
-    $('horizon').hidden = !isPublic;    // forecasts are a user-map feature
+    // Forecasts are a user-map feature. Hidden but keeping its slot, so the header doesn't shift between views.
+    $('horizon').style.visibility = isPublic ? '' : 'hidden';
     if (!EMBED) document.querySelector('.legend .fine').textContent = isPublic
       ? 'Totals only: no people. May be incomplete because not everyone shares their status.'
       : 'May be incomplete: not everyone shares their status. Click a person to see their app.';
