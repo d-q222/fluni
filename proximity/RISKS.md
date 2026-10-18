@@ -14,8 +14,10 @@ mention it in the presentation. Last updated 2026-10-17.
      values, would reduce the leak.
 2. **Infected people's floors are visible the same way.** A self-reported positive broadcasts at least 97% and
    symptoms at least 60%, which is the same information the 3-level status already exposed, now as a number.
-3. **More inputs on the air.** Broadcasting the other inputs the formula needs, such as days since symptom onset,
-   reveals more health detail per person.
+3. **Days since symptom onset are on the air.** Since the FLU2 beacon (2026-10-17) a phone whose user reported
+   symptoms or a positive test also broadcasts the whole days since onset (or the positive test), 0-14, so other
+   phones can weight the dose by illness stage. That is more health detail per person than the 3-level status; like
+   the score, FlUni never shows it, but any BLE scanner can read it. Symptoms, dates and test kinds stay on the phone.
 4. **MPC peer name.** If a crash fix makes the MultipeerConnectivity name stable for a whole app session (rather than
    rotating every 15 min with the BLE ID), an observer could link a person's rotating IDs within that session.
 5. **On-phone logs.** The 24 h place log (building visits) and exposure history stay on the phone and are covered by
@@ -37,9 +39,13 @@ mention it in the presentation. Last updated 2026-10-17.
 
 ## Accuracy limits (what the phone cannot know)
 
-- **Room size and ventilation:** a default room is assumed unless building data is available on the phone.
-- **Indoors vs outdoors and walls:** from place data only.
-- **Days since the source's symptoms began:** the 0.352 average stage applies unless the peer broadcasts it.
+- **Room size and ventilation:** the building comes from the phone's own GPS fix; the room inside it can't be known,
+  so each building stands for its median-volume room in the sim run's rooms.csv (`building_rooms.csv`). Without a
+  good fix, the default room.
+- **Indoors vs outdoors and walls:** outdoors only at a known outdoor place or with the fix clearly away from every
+  building; walls (whether the peer is in the same room) can't be known.
+- **Days since the source's symptoms began:** broadcast by FLU2 peers; old FLU1 builds and healthy peers use the
+  0.352 average stage.
 - **Second-hand risk and look-back after a report:** need everyone's contacts.
 - **Window:** 24 h on the phone vs 7-day evidence in the campus model.
 - **Bluetooth-only distance:** about ±(70% + 0.3 m), or ±(40% + 0.3 m) once calibrated against UWB. UWB (best,
