@@ -87,8 +87,8 @@ day. The rest of the population is unchanged.
   libraries, gyms, outdoor spots, common rooms, friends' dorms, Vaden, today's classes and events).
   It returns timed blocks (activity + place) and a diary line. The blocks replace that agent's plan
   for the next 24 h. Transit is inserted as in `plans.py`, so agents still walk or bike the path network.
-- **Re-planning.** Symptom onset, a test result or FlUni app advice re-plans the rest of the day
-  (`replan_on`, at most `max_replans_per_day`).
+- **Re-planning.** Symptom onset, a test result, FlUni app advice, a conversation, a text or an
+  observation re-plans the rest of the day (`replan_on`, at most `max_replans_per_day`).
 - **They talk to each other.** When two Claude agents are within 3 m (no wall between them), or in
   the same small room such as a dorm room, for 10 minutes, they have a conversation: alternating
   lines, one call per line, each written from the speaker's own prompt. A speaker knows its own
@@ -101,17 +101,40 @@ day. The rest of the population is unchanged.
   `small_room_max_capacity`, `min_minutes`, `max_turns`, `cooldown_h`, `max_per_agent_per_day`).
   Agents picked at random rarely meet, so use `llm_agents.pick=friend_groups`, which hands whole
   friend groups to Claude. Transcripts are written to `llm_conversations.jsonl`.
+- **They notice others.** A Claude agent next to a visibly sick rule-based agent for 5 minutes, or in
+  a room with 40+ people, gets an observation such as "Riley (A0007), your roommate, has been next to
+  you in Jerry (dorm triple) for 5 minutes: they are coughing and look unwell". It may re-plan (trigger
+  `observation`, at most `max_observations_per_day` = 2). Knobs are under `llm_agents.notice`.
+- **They text their friends.** Plans, re-plans and reflections can return `messages`
+  (`{to, kind: invite | warn | tell_sick, place, time, text}`, `to` a friend's id or `"group"`). A Claude
+  recipient sees the text with an id and answers in its next plan (`accept`, trigger `message`). A
+  rule-based recipient accepts with `sigmoid(b[kind] + w_A·(A−.5) + w_E·(E−.5) + w_worry[kind]·(worry−baseline)
+  + w_rel[relationship])` (Big Five 0.5 when off). An accepted invite is written into the plan with
+  transit; a group invite happens only if `group_min` (2) people say yes, and members are told. An accepted
+  warning raises worry and sends a rule-based agent to Vaden with `p_vaden[kind]`. Knobs are under
+  `llm_agents.messages`. Every text and answer is in `llm_messages.jsonl`.
+- **Worry.** Plans and reflections return `worry` (1–5). With `worry.py` on, it sets the agent's
+  worry level, and the level is shown in the prompt. Hearing a friend say they are sick, a warning text
+  and seeing someone sick also bump worry.
+- **Measured decisions.** `llm_events.csv` has one row per decision: `sick_response` (first plan after
+  symptom onset: stay_home / vaden / carry_on, hours out), `app_compliance` (plan after app advice, per
+  advice kind), `disclosure` (did a speaker with symptoms or a test tell the other), `influence` (every
+  answer to a text, Claude or rule-based), `worry` (each answer and bump) and `notice_reaction`, with the
+  agent's archetype, Big Five, traits, worry before/after, severity and relationship to the other agent.
 - **They decide for themselves.** For these agents the scripted response (isolate / Vaden / carry on)
   is off, and intervention actions become notifications instead of being applied (timeline `action`
   = `advised:<kind>`). Going to Vaden in a plan books a test. Self-reports still follow `reports.py`.
-- **Output.** `llm_agents.jsonl`: one row per call (`t, agent_id, trigger, applied, prompt, response`).
+- **Output.** `llm_agents.jsonl`: one row per plan call (`t, agent_id, trigger, applied, prompt, response`).
+  Also `llm_conversations.jsonl`, `llm_messages.jsonl` and `llm_events.csv`.
 - **Reproducible.** Each response is cached under `llm_cache/` by request hash. A rerun with the same
   seed and config makes no API calls and is byte-identical. Commit `llm_cache/` with a run so others can
   rebuild it without a key. `llm_agents.offline=true` never calls the API (a cache miss keeps the default plan).
   Without `llm_agents` the run id and output are exactly as before.
 - **Cost.** One call per agent per day, plus re-plans, plus up to `max_turns` + 2 calls per conversation. Defaults: `claude-opus-5-5`, effort `low`.
-  Change `llm_agents.model` / `llm_agents.effort` to trade cost for quality.
-- `scripts/smoke_llm_agents.py` checks the plumbing with a fake client (no key needed).
+  Change `llm_agents.model` / `llm_agents.effort` to trade cost for quality. Observations and texts cost
+  nothing extra unless they cause a re-plan (all re-plans share `max_replans_per_day`).
+- `scripts/smoke_llm_agents.py` checks the plumbing with a fake client (no key needed);
+  `scripts/smoke_llm_interactions.py` checks noticing, texts, group plans, disclosure and `llm_events.csv`.
 
 ## Sample run
 
