@@ -12,8 +12,11 @@ struct FlUniApp: App {
     @StateObject private var router = AppRouter.shared
     @StateObject private var reportStore = SelfReportStore()
     @Environment(\.scenePhase) private var phase
-    /// Lisa's opening animation; off for UI tests and unit-test hosts so they never wait on it.
-    @State private var showIntro = true
+    /// Lisa's opening animation, played each time the student opens FlUni (Core/IntroGate.swift); off for UI
+    /// tests and unit-test hosts so they never wait on it.
+    @State private var showIntro = false
+    @State private var introGate = IntroGate()
+    private let introAllowed: Bool
 
     init() {
         #if DEBUG
@@ -38,9 +41,17 @@ struct FlUniApp: App {
                 }
             }
         }
-        _showIntro = State(initialValue: !skipRadios && !LaunchMode.isUnitTestHost)
+        introAllowed = !skipRadios && !LaunchMode.isUnitTestHost
     }
     private let skipRadios: Bool  // test-only: UI tests never broadcast
+    @State private var introRun = 0
+
+    private func introPhase(_ p: ScenePhase) {
+        let phase: IntroGate.Phase = p == .active ? .active : p == .background ? .background : .inactive
+        guard introGate.phase(phase), introAllowed else { return }
+        introRun += 1
+        showIntro = true
+    }
 
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
 
@@ -84,13 +95,18 @@ struct FlUniApp: App {
                 }
             }
             // Lisa's opening animation over whatever the first screen is (design pass).
-            .overlay { if showIntro { LaunchIntro { showIntro = false } } }
+            // A new id each time restarts it from the poster, however quickly the app came up.
+            .overlay { if showIntro { LaunchIntro { showIntro = false }.id(introRun) } }
+            .onAppear { introPhase(phase) }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
             .tint(Theme.ink)
             // The app may be killed in the background: save an exposure that is still going on, so a relaunch continues it.
-            .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.saveOngoing() } }
+            .onChange(of: phase) { _, p in
+                if p == .background { model.exposureHistory.saveOngoing() }
+                introPhase(p)
+            }
             // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
             .onChange(of: model.speed) { _, s in
                 #if DEBUG
