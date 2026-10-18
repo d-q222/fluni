@@ -1,6 +1,8 @@
 // Run the mean-field model (meanfield.js, Baker et al. PNAS 2021) on a sim run folder, score it against
 // the sim's truth, and write what the heat map reads for big runs.
-// Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate] [--set key=value ...]
+// Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate [--holdout ids.json]] [--set key=value ...]
+//   --holdout: a JSON list of agent ids (or {val_ids: [...]}) kept out of --calibrate's target, so a model fitted
+//   here can be scored on them: the target is the other non-seed agents' infections, scaled to the whole run.
 //   --set overrides an MF_DEFAULTS / infer.js DEFAULTS parameter (numbers, true/false, strings), e.g. --set roomVolume=map
 //   writes model/out/<run>/meanfield.csv: agent_id,t_iso,p_sick,shed change points (P as in
 //   docs/p-sick-format.md, plus shed = expected infectiousness, sum over ages of P(age) * stage(age)).
@@ -11,7 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { meanFieldRisk, MF_DEFAULTS } from './meanfield.js';
+import { meanFieldRisk, MF_DEFAULTS, initialPrevalence } from './meanfield.js';
 
 const args = process.argv.slice(2), dir = args.find((a) => !a.startsWith('--') && !/^\d/.test(a) && !a.includes('='));
 if (!dir) { console.error('usage: node model/meanfield-cli.mjs <run_dir> [--scale x] [--calibrate]'); process.exit(1); }
@@ -49,18 +51,30 @@ let rooms = null;
 try { rooms = new Map(parseCsv(read('map/rooms.csv').toString()).map((r) => [r.room_id, r])); } catch { /* default room */ }
 const infections = existsSync(join(dir, 'infections.csv')) ? parseCsv(read('infections.csv').toString()) : [];
 const startMs = Date.parse(config.start), stepMs = config.step_min * 60000, DAY = 86400000;
-const input = { contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs, weather: config.params?.weather, days: config.days };
-console.log(`${run}: ${agentIds.length} agents, ${contacts.length.toLocaleString()} contact rows, ${reports.length} reports`);
+const input = { contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs, weather: config.params?.weather, days: config.days,
+  initialPrevalence: initialPrevalence(config) }; // the run's seed share replaces the 2% prior
+console.log(`${run}: ${agentIds.length} agents, ${contacts.length.toLocaleString()} contact rows, ${reports.length} reports, prior ${input.initialPrevalence ?? MF_DEFAULTS.prior}`);
 
 let scale = Number(opt('--scale')) || MF_DEFAULTS.lambdaScale;
 if (args.includes('--calibrate')) {
   const seeds = infections.filter((r) => r.route === 'seed').map((r) => r.infectee_id);
-  const target = infections.filter((r) => r.infector_id !== 'IMPORT').length;
-  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds }, { ...over, lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
+  const onCampus = infections.filter((r) => r.infector_id !== 'IMPORT');
+  let target = onCampus.length;
+  if (opt('--holdout')) {
+    const h = JSON.parse(readFileSync(opt('--holdout'), 'utf8')), held = new Set(Array.isArray(h) ? h : h.val_ids);
+    const nonSeed = agentIds.length - seeds.length, kept = agentIds.filter((id) => !held.has(id) && !seeds.includes(id)).length;
+    target = (onCampus.filter((r) => !held.has(r.infectee_id)).length * nonSeed) / kept;
+    console.log(`--holdout: ${held.size} agents kept out of the target; ${kept} of ${nonSeed} non-seed agents count`);
+  }
+  const prep = {}; // the contact preprocessing is the same for every lambdaScale: done once
+  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds, prep }, { ...over, lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
+  // From the true seeds alone the model can need lambdaScale > 1 (the 7,500-agent runs: 1.13 and 1.40), so grow the
+  // top of the bracket until it overshoots the target before bisecting.
   let lo = 0.005, hi = 1;
+  for (let k = 0; k < 8 && total(hi) < target; k++) { lo = hi; hi *= 3; }
   for (let it = 0; it < 14; it++) { const mid = Math.sqrt(lo * hi); if (total(mid) < target) lo = mid; else hi = mid; }
   scale = Math.sqrt(lo * hi);
-  console.log(`from ${seeds.length} true seeds, the model matches the sim's ${target} on-campus infections at lambdaScale = ${scale.toFixed(4)}`);
+  console.log(`from ${seeds.length} true seeds, the model matches the sim's ${Math.round(target)} on-campus infections at lambdaScale = ${scale.toFixed(4)}`);
 }
 
 const t0 = Date.now();

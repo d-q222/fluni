@@ -13,7 +13,7 @@ import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
-import { meanFieldRisk } from '../model/meanfield.js';
+import { meanFieldRisk, initialPrevalence } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -122,6 +122,8 @@ PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // you zoom in, like the buildings (2 px at campus zoom, 3 px at 17, 13 px at 19).
 const PERSON_M = 3, M_PER_PX_Z0 = 156543.03 * Math.cos((37.43 * Math.PI) / 180);
 const SEE_THROUGH = 0.45, SEE_THROUGH_ZOOM = 18; // people markers close up in the room-level view
+// Fades in over zoom 17–18.5 in steps of 0.05, not a switch at 18 (all the dots popped in one frame).
+const seeThroughAt = (z) => Math.round((1 - (1 - SEE_THROUGH) * Math.min(1, Math.max(0, (z - SEE_THROUGH_ZOOM + 1) / 1.5))) * 20) / 20;
 let hoverDot = null; // the person under the pointer: drawn solid
 const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
 const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
@@ -289,7 +291,7 @@ async function loadModel(dataUrl, agentIds) {
     // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
     let mfRisk = null;
     const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
-      weather: config.params?.weather, days: config.days }));
+      weather: config.params?.weather, days: config.days, initialPrevalence: initialPrevalence(config) }));
     if (MEAN_FIELD) risk = mf();
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
@@ -1514,9 +1516,41 @@ async function main() {
     return `${when} · about ${Math.max(1, Math.round(ep.min))} min near ${ep.contagious ? 'someone who tested positive' : 'someone with symptoms'}${ep.weighted >= CLOSE_CONTACT_MIN ? ' · close contact' : ''}`;
   };
 
+  // "Your day so far": today's stays from this person's track (consecutive samples in one place), newest first, with the
+  // phones heard nearby during each stay (exposure log, Bluetooth range) and how many of them were sick (risky or worse).
+  const stayCache = { key: '', list: [] };
+  function todayStays(id) {
+    const key = `${id}@${Math.floor(now / (5 * 60000))}`;
+    if (stayCache.key === key) return stayCache.list;
+    const day0 = midnight(now), out = [];
+    for (const s of tracks.get(id) || []) {
+      if (s.t > now) break;
+      if (s.moving) { out.length && (out[out.length - 1].open = false); continue; }
+      const name = s.building || 'Outside', last = out[out.length - 1];
+      if (last && last.open && last.name === name && last.bid === s.buildingId) continue;
+      if (last) last.open = false;
+      out.push({ name, bid: s.buildingId, startMs: s.t, endMs: now, open: true });
+    }
+    for (let i = 0; i < out.length; i++) { // a stay ends where the next one starts (or at a walk, or now)
+      if (i + 1 < out.length) out[i].endMs = out[i + 1].startMs;
+    }
+    const log = model ? exposureLog.get(id) || [] : [];
+    const list = out.filter((st) => st.endMs > day0).map((st, i, a) => {
+      const others = new Set(), sickOnes = new Set();
+      for (const e of log) {
+        if (e.tMs < st.startMs || e.tMs >= st.endMs) continue;
+        others.add(e.other);
+        if (model.risk.pAt(e.other, e.tMs) >= RISKY) sickOnes.add(e.other);
+      }
+      return { name: st.name, startMs: Math.max(st.startMs, day0), endMs: st.endMs, now: i === a.length - 1, peers: others.size, sick: sickOnes.size };
+    }).reverse();
+    stayCache.key = key;
+    return (stayCache.list = list);
+  }
+
   // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
   // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
-  const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
+  const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, feel: null, stamped: false, html: { today: '', you: '', sheet: '' } };
   const DAYMS = 24 * 3600000;
   // Self-reports (reports_tests.csv): what this person told the app, up to now.
   function selfStatus(id) {
@@ -1544,6 +1578,9 @@ async function main() {
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
       p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt): the same number the presenter bar and the dot's tooltip show
       status: sr.status, stamp: sr.status === 'possible', stay,
+      stays: todayStays(me.id), dayLabel: data.numericTime ? '' : new Date(now).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+      fmt: (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : PV.clock(ms)),
+      episodes: recentEpisodes(me.id).filter((e) => e.start >= midnight(now)).map((e) => ({ startMs: e.start, endMs: e.start + e.min * 60000, contagious: e.contagious, close: e.weighted >= CLOSE_CONTACT_MIN })),
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
         text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
     };
@@ -1566,6 +1603,7 @@ async function main() {
     else if (act === 'sheet-close') ph.sheet = null;
     else if (act === 'sticker') { ph.picked.has(b.dataset.k) ? ph.picked.delete(b.dataset.k) : ph.picked.add(b.dataset.k); }
     else if (act === 'when') ph.when = Number(b.dataset.i);
+    else if (act === 'feel') ph.feel = ph.feel === b.dataset.k ? null : b.dataset.k; // Lisa's check-in faces: one at a time
     else if (act === 'report-send') { ph.stamped = true; renderPhone(); setTimeout(() => { ph.sheet = null; ph.stamped = false; renderPhone(); }, 1500); return; }
     renderPhone();
   });
@@ -1699,7 +1737,7 @@ async function main() {
     tissueAlert.update({ level: taLevel, visible: phoneTab === 'today', msg: taAdvice && {
       kicker: taLevel === 'close' ? 'Close contact' : 'Heads-up',
       title: PV.esc(taAdvice.title), lines: taAdvice.body.map(PV.esc) } });
-    if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml(d));
+    if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml({ ...d, feel: ph.feel }));
     else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.meHtml(d));
     renderSheet(d);
     const where = me.walking ? 'walking' : me.building;
@@ -1964,7 +2002,8 @@ async function main() {
     const look = view === 'airborne' ? '0.2' : '';
     if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
-    const seeThrough = view === 'demo' && map.getZoom() >= SEE_THROUGH_ZOOM;
+    const fade = view === 'demo' ? seeThroughAt(map.getZoom()) : 1;
+    let refaded = false;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
     if (showDots) {
       for (const a of current.values()) {
@@ -1976,12 +2015,14 @@ async function main() {
         if (m.options.fillColor !== fill) m.setStyle({ fillColor: fill });
         const infected = mode !== 'truth' && Boolean(a.sick), ring = infected ? TRUTH_RING : COLORS.ring, w = ringWeight(m.getRadius(), infected);
         if (m.options.color !== ring || m.options.weight !== w) m.setStyle({ color: ring, weight: w });
-        // Close up in the room-level view, see-through so the room's colour shows (not the selected or hovered person).
-        const look = seeThrough && a.id !== selected && a.id !== hoverDot ? SEE_THROUGH : 1;
-        if (m.options.fillOpacity !== look) m.setStyle({ fillOpacity: look, opacity: look === 1 ? 1 : 0.6 });
+        // Close up in the room-level view, see-through so the heat shows (not the selected or hovered person). Set
+        // directly and redrawn once below: a setStyle per dot repaints each one.
+        const look = a.id === selected || a.id === hoverDot ? 1 : fade;
+        if (m.options.fillOpacity !== look) { m.options.fillOpacity = look; m.options.opacity = 1 - ((1 - look) * 0.4) / (1 - SEE_THROUGH); refaded = true; }
         if (!dotLayer.hasLayer(m)) dotLayer.addLayer(m);
       }
     }
+    if (refaded && dotRenderer._map) { dotRenderer._redrawBounds = null; dotRenderer._redraw(); } // no bounds: the whole canvas
     renderPhone(heatDue);
     refreshBuilding(realNow);
     updateViewCount(realNow);

@@ -230,11 +230,27 @@ infectiousness `shed = Σ_a P(a) · stage(a)`, which the heat map's "Chance of c
 
 ```
 node model/meanfield-test.mjs                          # each λ input moves the risk the right way
-node model/meanfield-cli.mjs sim/runs/<run> [--calibrate]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
+node model/meanfield-cli.mjs sim/runs/<run> [--calibrate [--holdout ids.json]]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
 ```
 
+**Starting prevalence.** `prior` (2%) is only a fallback now: `input.initialPrevalence` replaces it, and the CLI and
+the heat map's `?model=meanfield` pass `initialPrevalence(config)` = `params.run.initial_seeds / n_agents` (a count,
+not who). On the 7,500-agent runs (5 seeds, 0.07%) the 2% prior started ~150 phantom cases; with R ~ 1.5-2 they
+put mean P(ever infected) at ~0.40 on runs with 4-10% infected, per-agent KL 0.56 vs 0.18-0.34 for a constant guess.
+`--holdout` keeps a list of agents out of `--calibrate`'s target, so the fitted model can be scored on them.
+`input.prep` (an empty object, passed to every call) reuses the contact preprocessing across calls that change only
+`lambdaScale`, `prior` or `importPerDay`; `--calibrate` uses it, so each bisection pass on a 7,500-agent run takes
+~1 min instead of ~3. The result also has `sFinal`, each agent's P(never infected) at the end (1 − it = P(ever infected)).
+
 `lambdaScale` (0.901) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
-sim's true seeds, the model's expected on-campus infections match the sim's 167. On that run the top 50
+sim's true seeds, the model's expected on-campus infections match the sim's 167. Refit it per run. On the two
+7,500-agent runs (5 seeds, `--holdout` = 10% validation agents) it is **1.128** (fixed, sim transmission scale 1.2)
+and **1.401** (frankenstein, 1.446): their ratio 1.24 tracks the sim's 1.21. With the 2% prior, 0.901 looked too high
+(mean P 0.40) only because the prior's ~150 phantom cases did the spreading; from the true 0.07% it is too low.
+But `--calibrate` fits without reports, and run with reports those values over-predict ~4–5× (a report pins P = 1
+and reaches back, on top of the spread the seeds already explain). Fitted on the model as used, reports included,
+so mean P over train agents = their attack rate (`ml/scripts/kl_mf_fit.mjs`): **0.569** (fixed) and **0.760**
+(frankenstein). On frankenstein that beats the ML models on held-out agents; see [`ml/KL_RESULTS.md`](../ml/KL_RESULTS.md). On that run the top 50
 by P hold 35–43 truly infected people from day 7 on (random 50: 6–8), AUC 0.62–0.73, ~20 s in Node.
 `--set key=value` overrides any parameter (`--set legacyDose=true --scale 0.135` is the dose before the audit below).
 
@@ -301,7 +317,7 @@ What the dose got wrong, measured on run 25fe957a (5.35 M contact rows, 167 on-c
 - **Activity.** Dorm rooms used quiet quanta 0.15× everywhere; now f per room type from the sim's activity tables
   ([EPA EFH ch. 6](https://www.epa.gov/expobox/exposure-factors-handbook-chapter-6) breathing,
   [Buonanno et al. 2020](https://doi.org/10.1016/j.envint.2020.105794) emission), dorm 0.7.
-- Not fixed: the 2% prior < the runs' 5% seeding (Σ P lags truth on days 1–5); the mean field's echo (calibrated
+- Fixed since: the 2% prior vs the runs' seeding (now `initialPrevalence`, see above). Not fixed: the mean field's echo (calibrated
   on 14 days it under-predicts the first generation, over-predicts by day 14: Σ P 175 vs 136); `stageProfile` runs to
   day 7 after onset where the sim's viral load is ~0 after day 4; masks (unknown to a phone); `illnessDays` 10 vs the
   sim's ~7.5-day illness.

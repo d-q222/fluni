@@ -12,6 +12,9 @@ that compete on it:
 | `oracle_true_states` | **Reference, not a competitor.** Uses everyone's true infection times, so it shows how much is predictable at all | `fluniml/meanfield.py` (`oracle=True`) |
 | `gat_daily` | Simple time-ordered GAT: GATv2-style sigmoid-gated edge attention + MLPs, unrolled one step per day (each day reads the previous day's states), survival loss on the infection day. Only tried within one 7k run so far (`train_gat_agent_split.py`, 90/10 agent split); after 8 steps it was no better than "no information" | `fluniml/gat_daily.py`, `scripts/train_gat_agent_split.py` |
 
+**Within-run KL comparison (7,500-agent runs):** MLP, simple GAT and `model/meanfield.js` scored by KL divergence on
+a held-out 10% of agents, with baselines: [`KL_RESULTS.md`](KL_RESULTS.md).
+
 ## The task
 
 - **Input**: `contacts.parquet` aggregated to (hour, agent a, agent b) with minutes in 9 channels

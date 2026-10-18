@@ -1,0 +1,106 @@
+{
+ "run": "influenza_none_n7500_d14_s42_17ed9cd6",
+ "n_val": 750,
+ "n_val_pos": 80,
+ "val_attack_rate": 0.10666666666666667,
+ "train_attack_rate": 0.10214973986148834,
+ "n_train": 6745,
+ "n_stop": 674,
+ "split": "within_run.py logic: default_rng(0) permutation of non-seeds; val = first 10%, stop = next 10% of rest",
+ "models": {
+  "mlp_full": {
+   "per_agent_kl": 0.30888112809187585,
+   "aggregate_kl": 4.251512394465437e-05,
+   "calib_kl": 0.006844552935758701,
+   "auc": 0.6761567164179105,
+   "ap": 0.3545035746801082,
+   "mean_p": 0.10384250147933335,
+   "notes": "MLP+ReLU (fluniml.mlp, 'full' features, 3-seed ensemble), trained on fit agents, early-stopped on stop set"
+  },
+  "gat_daily": {
+   "per_agent_kl": 0.34240911161959015,
+   "aggregate_kl": 4.0671364655395226e-05,
+   "calib_kl": 0.01304689019271725,
+   "auc": 0.5415111940298507,
+   "ap": 0.12678266319083395,
+   "mean_p": 0.10947205238133334,
+   "notes": "GATDaily (train_gat_agent_split.py logic, defaults except epochs capped at 12 with cosine schedule over 12, patience 12, for time); loss on fit agents, model selection by stop-set AP (original selects on val AP)"
+  },
+  "meanfield_js": {
+   "per_agent_kl": 0.5597569968196867,
+   "aggregate_kl": 0.21647563858713156,
+   "calib_kl": 0.24843162324137052,
+   "auc": 0.6758022388059701,
+   "ap": 0.34728751326489743,
+   "mean_p": 0.4015427605409497,
+   "notes": "model/meanfield.js defaults via ml/scripts/kl_frankenstein.mjs; p = 1 - S at final step (P ever infected, incl. 2% prior mass)"
+  },
+  "meanfield_js_calibrated": {
+   "per_agent_kl": 0.5450306850917255,
+   "aggregate_kl": 0.20097323596823302,
+   "calib_kl": 0.23872963890777693,
+   "auc": 0.6804104477611941,
+   "ap": 0.34204040732235874,
+   "mean_p": 0.3886984862062056,
+   "notes": "model/meanfield.js with prior = n_seeds/N = 5/7500 and lambdaScale refit (meanfield-cli --calibrate procedure: true seeds, no reports, prior 0, no imports, geometric bisection, bracket grown from [0.01,1] until it holds the target) to a train-agents-only target; reports included in scored run; p = 1 - S final"
+  },
+  "meanfield_js_fit_reports": {
+   "per_agent_kl": 0.3032996009588324,
+   "aggregate_kl": 9.52232522805109e-05,
+   "calib_kl": 0.01599909091898014,
+   "auc": 0.6894216417910447,
+   "ap": 0.3629010123638982,
+   "mean_p": 0.10245667816474426,
+   "notes": "model/meanfield.js with prior = 5/7500 and lambdaScale fitted on the full scored model (reports included) so mean P(ever infected) over train agents = their attack rate (ml/scripts/kl_mf_fit.mjs, Illinois method; see mf_fit_frankenstein.log); p = 1 - S final"
+  },
+  "meanfield_js_raw+isotonic": {
+   "per_agent_kl": 0.30094830450845295,
+   "aggregate_kl": 6.436138004274877e-05,
+   "calib_kl": 0.004844919135275512,
+   "auc": 0.6837126865671641,
+   "ap": 0.3219067778441816,
+   "mean_p": 0.10319818701294416,
+   "notes": "reference: isotonic regression of raw meanfield_js p_ever fitted on train (fit+stop) agents, applied to val"
+  },
+  "const_train_rate": {
+   "per_agent_kl": 0.33959874946279606,
+   "aggregate_kl": 0.00010980702826435783,
+   "calib_kl": 0.00010980702826435783,
+   "auc": 0.5,
+   "ap": 0.10666666666666667,
+   "mean_p": 0.10214973986148834,
+   "notes": "constant p = train (fit+stop) attack rate 0.1021",
+   "baseline": true
+  },
+  "const_val_rate": {
+   "per_agent_kl": 0.33948894243453165,
+   "aggregate_kl": 0.0,
+   "calib_kl": 0.0,
+   "auc": 0.5,
+   "ap": 0.10666666666666667,
+   "mean_p": 0.10666666666666667,
+   "notes": "constant p = val attack rate: cheats on prevalence (per-agent KL = H(ybar), aggregate KL = 0)",
+   "baseline": true
+  },
+  "uniform_0.5": {
+   "per_agent_kl": 0.6931471805599454,
+   "aggregate_kl": 0.35365823812541364,
+   "calib_kl": 0.35365823812541364,
+   "auc": 0.5,
+   "ap": 0.10666666666666667,
+   "mean_p": 0.5,
+   "notes": "constant p = 0.5 (per-agent KL = ln 2)",
+   "baseline": true
+  },
+  "perfect": {
+   "per_agent_kl": 0.0,
+   "aggregate_kl": 0.0,
+   "calib_kl": 0.0,
+   "auc": 1.0,
+   "ap": 1.0,
+   "mean_p": 0.10666666666666667,
+   "notes": "p = y; the floor (not computed)",
+   "baseline": true
+  }
+ }
+}
