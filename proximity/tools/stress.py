@@ -9,6 +9,10 @@ Launches Fluni Prox on 2-3 connected iPhones (phone A is the sick one), timestam
   tools/stress.py rotate    # IDs rotate every 20 s; checks for double counting and lost exposure
   tools/stress.py background  # listener B goes to the background mid-run, then returns
 
+Link/UWB uptime columns come from the app's "link metric" lines: handshake_med (s per successful MPC
+handshake), link_failed (failed attempts), uwb_resumes (UWB came back after a gap > 1 s or a link drop),
+uwb_gap_max (longest UWB outage, s) and uwb_after_drop_max (link drop -> next UWB distance, s).
+
 --config takes app launch arguments as k=v pairs: encryption (required|optional|none), inviteTimeout, rotate.
 Phones: PHONES="udidA udidB [udidC]" or every paired, connected iPhone. Install the app first
 (tools/pair_test.sh does). Raw logs go to --out.
@@ -111,6 +115,16 @@ def analyse(lines, events, n_phones, scenario):
                 first(lines, lab, r"^link connected", after=events["fg"]))
             r["uwb_after_fg"] = (lambda t: None if t is None else t - events["fg"])(
                 first(lines, lab, r"^uwb ranging", after=events["fg"]))
+        mine = [s for l, _, s in lines if l == lab]
+        hs = [float(m.group(1)) for s in mine for m in [re.match(r"link metric handshake=([\d.]+)", s)] if m]
+        res = [m for s in mine for m in [re.match(r"link metric uwb_resume gap=([\d.]+|-) after_drop=([\d.]+|-)", s)] if m]
+        gaps = [float(m.group(1)) for m in res if m.group(1) != "-"]
+        drops = [float(m.group(2)) for m in res if m.group(2) != "-"]
+        r["handshake_med"] = statistics.median(hs) if hs else None
+        r["link_failed"] = sum(1 for s in mine if s.startswith("link attempt failed"))
+        r["uwb_resumes"] = len(res)
+        r["uwb_gap_max"] = max(gaps) if gaps else None
+        r["uwb_after_drop_max"] = max(drops) if drops else None
         last = [s for l, _, s in lines if l == lab and s.startswith("tick")]
         m = re.search(r"minutes=([\d.]+)", last[-1]) if last else None
         r["final_minutes"] = float(m.group(1)) if m else None

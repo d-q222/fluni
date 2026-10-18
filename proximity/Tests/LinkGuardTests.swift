@@ -200,3 +200,26 @@ final class LinkGuardTests: XCTestCase {
 
     func testPeerCapIs8() { XCTAssertEqual(LinkGuard.maxPeers, 8) }
 }
+
+final class PeerLinkBackoffTests: XCTestCase {
+    // Spec: 0.5, 1, 2, 4, 4 ... s plus 0-0.5 s jitter; never negative, never above 4.5 s.
+    func testBackoffSchedule() {
+        for (failures, base) in [(0, 0.5), (1, 0.5), (2, 1.0), (3, 2.0), (4, 4.0), (5, 4.0), (50, 4.0), (Int.max, 4.0)] {
+            for _ in 0..<50 {
+                let b = PeerLink.backoff(failures)
+                XCTAssertGreaterThanOrEqual(b, base, "failures \(failures)")
+                XCTAssertLessThanOrEqual(b, base + 0.5, "failures \(failures)")
+            }
+        }
+        XCTAssertGreaterThanOrEqual(PeerLink.backoff(-3), 0.5)
+    }
+
+    // A handshake that works takes 2.4-4.5 s in the field; the timeout must leave room for it.
+    func testHandshakeTimeoutCoversFieldHandshakes() {
+        let link = PeerLink()
+        XCTAssertGreaterThanOrEqual(link.inviteTimeout, 5)
+        XCTAssertLessThanOrEqual(link.inviteTimeout + PeerLink.watchdogSlack, 8, "a hung handshake blocks the phone; keep it short")
+        XCTAssertGreaterThanOrEqual(PeerLink.minRestartGap, 5)
+        XCTAssertGreaterThan(PeerLink.restartDelay, 0, "stop and start must not share a run-loop turn")
+    }
+}
