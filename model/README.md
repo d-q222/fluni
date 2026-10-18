@@ -186,6 +186,42 @@ look-back recomputes the dose from the row. Pair doses live in two Maps of expos
 - Second-hand sources use the illness-average stage, not the time since they were exposed.
 - The prior is one global value, held constant (Rio's script lets it decay).
 
+## Mean-field model (`meanfield.js`): Baker et al. PNAS 2021
+
+A second estimate from the same inputs, by the method of Baker et al.,
+["Epidemic mitigation by statistical inference from contact tracing data"](https://www.pnas.org/doi/full/10.1073/pnas.2106548118)
+(PNAS 118, 2021): the paper's mean-field update `P_S^i(t+1) = P_S^i(t) · Π_j (1 − λ_{j→i}(t) · P_I^j(t))`,
+hour by hour, with every agent carrying a distribution over infection age. It is a port of
+`exposure/network/mean_field.py` (Rio's), and has feedback: everyone's P feeds everyone else's, not only evidence.
+λ_{j→i} depends on:
+
+| Input | How it enters |
+|---|---|
+| P(j has flu) | transmission = Σ over j's infection ages a of P_j(a) · (1 − exp(−q · stage(a) · D)) |
+| P(i has flu) | only i's healthy mass P_S^i can be infected |
+| Duration, distance | `doseModel` (above): dose adds up over the meeting's 5-min rows; plume 1/(Q·d²) |
+| Room size, ventilation | Wells–Riley room term 1/(V · (ACH + deposition + virus decay)), from `map/rooms.csv` |
+| Indoors / outdoors | outdoors: no room term, plume diluted 5×; through a wall: no shared air |
+| Stage of flu | `stageProfile` around symptom onset, 2.5 days after infection |
+| Time since the meeting | infections age one bin per hour: latent → infectious → over (R) after 10 days |
+| Outdoor humidity | that day's weather in `config.json` → indoor RH → virus decay (Noti et al. 2013) |
+
+Reports constrain the marginals as in the paper (a positive test sets P = 1 from 3 days before it,
+symptom reports by likelihood ratio, negative tests by the false-negative rate) and reach back in time,
+so the model reruns from the earliest hour a report touches. It also returns each agent's expected
+infectiousness `shed = Σ_a P(a) · stage(a)`, which the heat map's "Chance of catching flu here" view draws.
+
+```
+node model/meanfield-test.mjs                          # each λ input moves the risk the right way
+node model/meanfield-cli.mjs sim/runs/<run> [--calibrate]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
+```
+
+`lambdaScale` (0.135) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
+sim's true seeds, the model's expected on-campus infections match the sim's 167. On that run the top 50
+by P hold 35–43 truly infected people from day 6 on (random 50: 6–8), AUC 0.6–0.67, 15 s in Node.
+The heat map runs it in the page for small runs and reads `meanfield.csv` for big ones. `?model=meanfield`
+colours people by it; otherwise `infer.js` stays the app's estimate. No `explain()` yet.
+
 ## Use in the heat map
 
 `heatmap/app.js` calls `inferRisk` in the browser (contacts, reports and `map/rooms.csv` of the run)

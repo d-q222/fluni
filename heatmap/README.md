@@ -39,6 +39,15 @@ URL options, which can be combined:
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
+- `?view=catch`: "Chance of catching flu here (1 h)". Darkness at a spot is proportional to the
+  chance you'd catch flu standing there for an hour (full at 1%). Each person leaves an exponentially
+  fading circle of hazard (`riskfield.js`): its peak is λ's near-field dose at 1 m for 1 h, times the
+  person's expected infectiousness from the mean-field model (`model/meanfield.js`: P(flu) at each
+  infection age × that stage's shedding), diluted 5× outdoors. Circles add up as hazards,
+  P = 1 − exp(−Σ). `&fade=5` sets the fade length in metres (default 5). Big runs need
+  `node model/meanfield-cli.mjs sim/runs/<run>` first. With `?color=truth` it uses who is actually infectious.
+- `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
+  `model/infer.js`. No "Why this %?" panel then.
 - `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
   instead of the app's estimate. This is the same as choosing "Color: true status (sim)".
 

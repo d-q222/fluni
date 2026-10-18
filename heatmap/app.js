@@ -12,7 +12,9 @@ import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
-import { loadPSick, loadTotals } from './precomputed.js';
+import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
+import { meanFieldRisk, MF_DEFAULTS } from '../model/meanfield.js';
+import { RiskField } from './riskfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
@@ -60,6 +62,9 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // local placeholder.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
+// ?model=meanfield: people's P(sick) from Baker et al.'s mean-field (model/meanfield.js) instead of infer.js.
+// No "Why this %?" panel then (meanfield.js has no explain()).
+const MEAN_FIELD = PARAMS.get('model') === 'meanfield';
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
 const EMBED = PARAMS.get('embed') === 'app';
@@ -243,8 +248,12 @@ async function loadModel(dataUrl, agentIds) {
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
-      const risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
+      let risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
+      // Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs: the risk field's input
+      const mf = await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base));
+      if (!mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): no risk field.`);
+      if (mf && MEAN_FIELD) risk = mf;
+      if (risk) return { risk, mf: mf && (() => mf), contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
     const [contacts, reports, rooms] = await Promise.all([
@@ -257,11 +266,18 @@ async function loadModel(dataUrl, agentIds) {
     roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
+    let risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
+    // Baker et al.'s mean-field over the same contacts and reports: every agent's P(flu) and how infectious
+    // they are, which the risk field ("Chance of catching flu here") draws. ?model=meanfield also colours people by it.
+    // Computed on first use (~3 s for 1,000 agents over 4 days), so only that view or ?model=meanfield pays for it.
+    let mfRisk = null;
+    const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
+      weather: config.params?.weather, days: config.days }));
+    if (MEAN_FIELD) risk = mf();
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
-    return { risk, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
+    return { risk, mf, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
@@ -938,6 +954,23 @@ async function main() {
     }
     aeroMax = Math.max(aeroMax, aero.max()); // relative scale: the strongest seen so far
     return aero;
+  };
+
+  // Chance of catching flu here (riskfield.js): P(infected if you stood at a spot for 1 h). Each person leaves an
+  // exponentially fading circle of hazard, peak = lambda's 1 m, 1 h near-field dose times their expected
+  // infectiousness from the mean-field model (P(flu) at each infection age x that stage's shedding); circles add up.
+  // ?fade=<m> sets how fast a circle fades (default 5 m). Darkness is proportional to P, full at RISK.vmax.
+  const RISK = { vmax: 0.01, fadeM: Number(PARAMS.get('fade')) || 5 };
+  const riskQ = MODEL.quantaPeak * MF_DEFAULTS.lambdaScale * MODEL.breathingRate / MODEL.nearFieldQ; // hazard at 1 m, 1 h, per unit shed
+  let riskField = null;
+  const riskAt = (t, states, truth) => {
+    riskField ||= new RiskField(bounds, DEMO.cellM);
+    const src = [];
+    for (const st of states) {
+      const shed = truth ? Number(st.infectious) || 0 : model.mf().shedAt(st.id, t);
+      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, h0: (riskQ * shed) / (st.buildingId ? 1 : MODEL.outdoorNearDilution) });
+    }
+    return riskField.compute(src, RISK.fadeM, RISK.vmax);
   };
 
   // Infectious air by room, straight from the simulator: room_exposure.csv.gz has the sim's own
@@ -1726,7 +1759,7 @@ async function main() {
     if (heatDue) {
       const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
-      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' ? 'none' : '';
+      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || view === 'catch' ? 'none' : '';
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
         else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
@@ -1735,7 +1768,11 @@ async function main() {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
       }
-      if (view === 'airflow') {
+      if (view === 'catch') {
+        heatLayer.setBounds(gridBounds(riskAt(now, current.values(), truthMode())));
+        paint(riskField, heatLayer.grid, RISK.vmax);
+        heatLayer.setGrid();
+      } else if (view === 'airflow') {
         const st = [...current.values()];
         heatLayer.setBounds([sw, ne]);
         paint(airflowAt(now, st, truthMode()), heatLayer.grid, aeroMax);
@@ -1843,11 +1880,17 @@ async function main() {
     const num = (x) => (x >= 1 ? x.toFixed(1) : x.toPrecision(2)); // a building's count can be a fraction of a person
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
+    if (v === 'catch') { // linear: darkness proportional to P
+      $('vmid').textContent = `${(RISK.vmax * 50).toFixed(1)}%`;
+      $('vmax').textContent = `${RISK.vmax * 100}%+`;
+    }
     if (v === 'airborne') {
       $('vmid').textContent = roomAir ? (roomAir.vmax / 4).toPrecision(2) : '';
       $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
     }
-    document.querySelector('.legend h2').innerHTML = v === 'airborne'
+    document.querySelector('.legend h2').innerHTML = v === 'catch'
+      ? `Chance of catching flu here <span>if you stood on this spot for 1 hour${truthMode() ? ' (sim truth: who is actually infectious)' : ''}. Each person adds a circle that fades over ${RISK.fadeM} m, bigger the likelier they have flu and the more infectious their stage (Baker et al. mean-field)</span>`
+      : v === 'airborne'
       ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
       : v === 'airflow'
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
@@ -1896,6 +1939,8 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
+  // Chance of catching flu here (riskfield.js, from the mean-field model); added here so the page markup stays the design pass's.
+  if (model?.mf) $('view').append(new Option('Chance of catching flu here (1 h)', 'catch'));
   // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
