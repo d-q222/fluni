@@ -84,6 +84,8 @@ final class FlUniUITests: FlUniUITestCase {
         cough.tap()
         submit.tap()
 
+        // The sheet shows Lisa's "Self-reported" stamp for a moment before it closes.
+        XCTAssertTrue(submit.waitForNonExistence(timeout: 5), "sheet closes after the stamp")
         XCTAssertTrue(app.navigationBars["Me"].waitForExistence(timeout: 5))
         XCTAssertTrue(el("report.symptoms").isSelected, "status reads possibly sick")
         XCTAssertFalse(el("report.fine").isSelected)
