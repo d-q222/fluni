@@ -122,6 +122,8 @@ PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // you zoom in, like the buildings (2 px at campus zoom, 3 px at 17, 13 px at 19).
 const PERSON_M = 3, M_PER_PX_Z0 = 156543.03 * Math.cos((37.43 * Math.PI) / 180);
 const SEE_THROUGH = 0.45, SEE_THROUGH_ZOOM = 18; // people markers close up in the room-level view
+// Fades in over zoom 17–18.5 in steps of 0.05, not a switch at 18 (all the dots popped in one frame).
+const seeThroughAt = (z) => Math.round((1 - (1 - SEE_THROUGH) * Math.min(1, Math.max(0, (z - SEE_THROUGH_ZOOM + 1) / 1.5))) * 20) / 20;
 let hoverDot = null; // the person under the pointer: drawn solid
 const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
 const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
@@ -1964,7 +1966,8 @@ async function main() {
     const look = view === 'airborne' ? '0.2' : '';
     if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
-    const seeThrough = view === 'demo' && map.getZoom() >= SEE_THROUGH_ZOOM;
+    const fade = view === 'demo' ? seeThroughAt(map.getZoom()) : 1;
+    let refaded = false;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
     if (showDots) {
       for (const a of current.values()) {
@@ -1976,12 +1979,14 @@ async function main() {
         if (m.options.fillColor !== fill) m.setStyle({ fillColor: fill });
         const infected = mode !== 'truth' && Boolean(a.sick), ring = infected ? TRUTH_RING : COLORS.ring, w = ringWeight(m.getRadius(), infected);
         if (m.options.color !== ring || m.options.weight !== w) m.setStyle({ color: ring, weight: w });
-        // Close up in the room-level view, see-through so the room's colour shows (not the selected or hovered person).
-        const look = seeThrough && a.id !== selected && a.id !== hoverDot ? SEE_THROUGH : 1;
-        if (m.options.fillOpacity !== look) m.setStyle({ fillOpacity: look, opacity: look === 1 ? 1 : 0.6 });
+        // Close up in the room-level view, see-through so the heat shows (not the selected or hovered person). Set
+        // directly and redrawn once below: a setStyle per dot repaints each one.
+        const look = a.id === selected || a.id === hoverDot ? 1 : fade;
+        if (m.options.fillOpacity !== look) { m.options.fillOpacity = look; m.options.opacity = 1 - ((1 - look) * 0.4) / (1 - SEE_THROUGH); refaded = true; }
         if (!dotLayer.hasLayer(m)) dotLayer.addLayer(m);
       }
     }
+    if (refaded && dotRenderer._map) { dotRenderer._redrawBounds = null; dotRenderer._redraw(); } // no bounds: the whole canvas
     renderPhone(heatDue);
     refreshBuilding(realNow);
     updateViewCount(realNow);

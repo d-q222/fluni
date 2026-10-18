@@ -40,14 +40,21 @@ extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo ru
   - **What users see:** the user map, the same as FlUni's bundle: building totals, soft shading, tap for
     stats, a minimum of 4 people (privacy), and no ×7 scaling.
   - "Air by room" was removed. The experimental airflow view is still reachable with `?view=airflow`.
-- **Phone mock:** mirrors FlUni.
-  - It shows the "your day" timeline, Lisa's tissue alert and her tab bar (Today / Map / Me), the
-    stay-home card, and night mode.
-  - "This phone's estimate" follows the product owner's risk-sharing rule:
+- **Phone mock:** mirrors FlUni's current app (3e6f2d4).
+  - FlUni's cards in Nunito and Fredoka, Lisa's tissue alert and her tab bar (Today / Map / Me), the
+    stay-home card with no risk % for sick users, and night mode.
+  - The Map tab is the presenter's map without people: same base, landmarks, building heat and moment.
+  - "This phone's estimate" (`phoneEstimate`) follows the product owner's risk-sharing rule:
     - each phone broadcasts its own score, max(estimate, status floor), with floors of 0.97 for a
       positive test and 0.6 for symptoms;
     - other phones use it but never show it;
     - per peer, s = max(status, score − prior).
+  - **Pending, not in main:** the product owner asked another session (SMF model) for two changes.
+    That work is on hold because the team will likely take Rio's version (PR #22), so ask the product
+    owner before building either:
+    - the phone shows the campus model's P;
+    - close-contact time resets after 2 h away from possibly-sick people instead of using a 24-h
+      window. FlUni is adopting this reset on branch `flu-clock`.
 - **User map bundle** (`tools/build_app_bundle.mjs` → `out/app-bundle/`, which FlUni ships):
   - totals are thinned to 15-minute steps;
   - outlines shared by two places (a dining hall inside its dorm) are one tap target;
@@ -84,20 +91,25 @@ extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo ru
 
 ## Open items (product owner's priorities first)
 
-1. **In flight:** the views agent is updating the phone mock to the actual app look.
-   - Fonts: Nunito and Fredoka.
-   - References: FlUni's fresh screenshots in `/Users/dqi26/fluni-screens/phoneref2/`.
-   - The phone's Map tab = the presenter map without dots.
-   - Delivery: one local commit for review, then push.
-2. **Remaining zoom pop:** from zoom 18, dots switch to see-through in one frame at settle.
-3. **Keyboard zoom:** keyboard +/− still uses Leaflet's discrete zoom.
-4. **Presenter "What users see":** shared outlines (a dining hall in its dorm) aren't merged into one
-   tap target as they are in usermap.js. Not silent, but it can show the dining hall alone.
-5. **Phone mock and sick users:** FlUni now shows sick users the stay-home card with no risk %
-   (9d1b919). Check that the mock matches; the views agent's task covers it.
-6. **Pitch page contrast:** `demo/` has contrast failures, posted for Aiden in WORKSTREAMS Requests.
+1. **Phone mock's Today tab:** FlUni is rebuilding Today as a risk-first home (owner-approved mock:
+   `/Users/dqi26/fluni-screens/home-v2/mock4-sheet.png`). When it lands on main, fluni-11 sends fresh
+   reference shots; redo the mock's Today tab to match.
+2. **Rio's PR #22:** Rio is still working on it. Don't touch the branch (product owner). The team will
+   likely take Rio's edits and solutions over other sessions' versions.
+   - It would make building shading (expected infected per 1,000 m² of floor) the default view instead
+     of the Gaussian heat.
+   - Its `model/meanfield.js` is a Baker et al. mean-field model. The SMF session's separate
+     `model/smf*.js` stays uncommitted and isn't to be merged.
+3. **Pitch page contrast:** `demo/` has contrast failures, posted for Aiden in WORKSTREAMS Requests.
    The heat map itself passes in light and dark (audit scripts `audit.mjs` and `inpage.js` in the
    scratchpad).
+
+Closed by the product owner on 2026-10-18:
+- Keyboard +/− zoom staying stepwise is fine.
+- The presenter's "What users see" doesn't need shared outlines merged.
+
+Fixed:
+- The see-through dot pop at zoom 18 (dots now fade over zoom 17–18.5).
 
 ## How to work in this repo (product owner's rules)
 
