@@ -49,7 +49,7 @@ struct TodayView: View {
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .onAppear(perform: checkBackground)
             .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
-            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
+            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose, p: model.exposure.probability) }
             .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
         }
     }
@@ -114,7 +114,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(dose: model.exposure.dose) { showCalc = true }
+        RiskCardView(p: model.exposure.probability) { showCalc = true }
     }
 
     // MARK: Minutes
@@ -197,31 +197,31 @@ struct HowItWorksSheet: View {
 struct CalculationSheet: View {
     let minutes: Double
     let dose: Double
+    let p: Double
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var store = PSickStore.shared
 
     var body: some View {
-        let p = RiskEstimate.probability(dose: dose)
-        let x = RiskEstimate.contactTerm(dose: dose)
         let m = String(format: "%.1f", minutes)
-        let d = String(format: "%.1f", dose)
+        let d = String(format: "%.3f", dose)
+        let pos = Int((RiskEstimate.posTest * 100).rounded()), sym = Int((RiskEstimate.selfReport * 100).rounded())
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     block("Close contact",
                           "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, FlUni tells you it's a close contact.",
                           "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
-                    block("Closeness-weighted time",
-                          "The same minutes, but closer counts more: under 1 m ×1, 1–2 m ×0.6, 2–5 m ×0.1, farther in the room ×0.02.",
-                          "You: \(d) weighted minutes")
+                    block("What adds to your risk",
+                          "Time near each person, how close you were (closer counts much more), the room air you shared, and whether they reported symptoms or a positive test. Together these make your exposure dose. Phones up to about 10 m away (Bluetooth range) count.",
+                          "Your exposure dose: \(d)")
                     block("The estimate",
-                          "The contact part is x = 1 \u{2212} e^(\u{2212}\(RiskEstimate.beta) × dose), at most \(Int(RiskEstimate.xMax * 100))%. Then P = 1 \u{2212} \(1 - RiskEstimate.prior) × (1 \u{2212} x), where \(Int(RiskEstimate.prior * 100))% is the everyday baseline. Same model as the campus map.",
-                          "x = \(RiskEstimate.percentText(x)), so P = \(RiskEstimate.percentText(p))")
+                          "Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at \(pos)%, someone with symptoms at \(sym)%. Those chances are added on top of a \(Int((RiskEstimate.prior * 100).rounded()))% everyday baseline. It's the same exposure formula as the campus model.",
+                          "This phone's estimate: \(RiskEstimate.percentText(p))")
                     block("What counts",
-                          "Only the last 24 hours. GPS alone doesn't count indoors, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
+                          "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model vs this phone",
-                          "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick). This phone's estimate uses only what this phone detected in the last 24 hours, in a simplified form of the same formula, so the two can differ.",
-                          store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
+                          "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick) and the actual rooms. This phone's estimate uses only what this phone detected in the last 24 hours, assumes a standard classroom-sized room and an average day of illness, so the two can differ.",
+                          store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone's estimate: \(RiskEstimate.percentText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
                 }

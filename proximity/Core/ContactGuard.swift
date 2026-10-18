@@ -18,6 +18,10 @@ import Foundation
 ///    `flipWindow` (15 min) -> ID ignored. A real phone changes risk only when its user reports, and reports
 ///    escalate (healthy -> possibly sick -> tested positive) far more than they bounce; a one-way climb is fine.
 /// 5. `corroborated` = a fresh UWB reading exists for the ID. Reported only; no rule requires it.
+/// A contact's `distance` (for the risk dose) is dropped (nil) whenever its pClose is zeroed by a rule, so
+/// the same rules limit the dose. Rule 1 also lets a risky contact with a distance but pClose 0 (beyond
+/// 6 ft, precisely ranged) fill a free top-2 slot for the dose; it ranks below every pClose > 0 contact,
+/// so it never displaces one.
 struct ContactGuard {
     static let topContacts = 2
     static let window: TimeInterval = 300
@@ -31,7 +35,8 @@ struct ContactGuard {
         var id: String
         var risk: Risk
         var pClose: Double
-        var tier: Double
+        /// Fused distance in metres for the risk dose; nil without an estimate or with coarse GPS only.
+        var distance: Double?
         var rssi: Double? = nil
         var sources: [Source] = [.ble]
         var uwbAt: Date? = nil
@@ -41,7 +46,7 @@ struct ContactGuard {
         var id: String
         var risk: Risk
         var pClose: Double
-        var tier: Double
+        var distance: Double?
         var corroborated: Bool
     }
 
@@ -89,7 +94,7 @@ struct ContactGuard {
             let uwbFresh = p.uwbAt.map { now.timeIntervalSince($0) < Source.uwb.maxAge && $0 <= now.addingTimeInterval(1) } ?? false
             let bleOnly = !uwbFresh && Set(p.sources) == [.ble]
             var pClose = p.pClose.isFinite ? min(max(p.pClose, 0), 1) : 0
-            var tier = p.tier.isFinite ? min(max(p.tier, 0), 1) : 0
+            var distance = p.distance.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
             var bad = ignored.contains(p.id) || (flagged && bleOnly)
             if let r = p.rssi, r.isFinite {
                 if bleOnly {
@@ -99,15 +104,15 @@ struct ContactGuard {
                 }
                 lastRSSI[p.id] = (r, now)
             }
-            if bad { pClose = 0; tier = 0 }
-            out.append(Output(id: p.id, risk: p.risk, pClose: pClose, tier: tier, corroborated: uwbFresh))
+            if bad { pClose = 0; distance = nil }
+            out.append(Output(id: p.id, risk: p.risk, pClose: pClose, distance: distance, corroborated: uwbFresh))
         }
-        let keep = Set(out.indices.filter { out[$0].risk != .none && out[$0].pClose > 0 }
+        let keep = Set(out.indices.filter { out[$0].risk != .none && (out[$0].pClose > 0 || out[$0].distance != nil) }
             .sorted {
                 let a = out[$0].pClose * out[$0].risk.weight, b = out[$1].pClose * out[$1].risk.weight
                 return a != b ? a > b : out[$0].id < out[$1].id
             }.prefix(Self.topContacts))
-        for i in out.indices where out[i].risk != .none && !keep.contains(i) { out[i].pClose = 0; out[i].tier = 0 }
+        for i in out.indices where out[i].risk != .none && !keep.contains(i) { out[i].pClose = 0; out[i].distance = nil }
         return out
     }
 

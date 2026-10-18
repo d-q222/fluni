@@ -493,7 +493,7 @@ final class ProximityModel: ObservableObject {
         if accrues {
             var credits: [AccrualCredit] = []
             for g in guarded where fresh.contains(g.id) {
-                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, tier: g.tier) else { continue }
+                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, distance: g.distance) else { continue }
                 credits.append(c)
                 if c.risk != .none, c.pClose > 0,
                    c.seconds >= 5 || UIApplication.shared.applicationState != .active {
@@ -502,7 +502,7 @@ final class ProximityModel: ObservableObject {
             }
             accrual.prune(now: now)
             let feed = AccrualFeed.contacts(credits, wallSeconds: dt)
-            e.advance(simSeconds: dt * speed, contacts: feed.contacts, tiers: feed.tiers)
+            e.advance(simSeconds: dt * speed, contacts: feed.contacts, doses: feed.doses)
             exposureHistory.record(simSeconds: dt * speed, contacts: feed.contacts, at: now)
         }
         // The heads-up level from everyone in range now (adds nothing: zero seconds).
