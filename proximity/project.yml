@@ -74,9 +74,10 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      # xcheck is read from the source tree (CrossCheckTests); bundling it collides with building_heat.csv below.
+      # xcheck/building_heat.csv would land beside the shipped building_heat.csv in the bundle ("Multiple
+      # commands produce"); CrossCheckTests reads xcheck/ from the source tree, so keep it out of the bundle.
       - path: Tests
-        excludes: ["Fixtures/xcheck/**"]
+        excludes: ["Fixtures/xcheck/building_heat.csv"]
       # Fixtures as bundle resources so the data tests also run on a phone (see Tests/Fixture.swift).
       - path: FlUni/Resources/building_heat.csv
         buildPhase: resources

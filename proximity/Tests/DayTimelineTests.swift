@@ -68,10 +68,10 @@ final class DayTimelineTests: XCTestCase {
     }
 
     func testRiskChangeLineSaysTheBaselineAndTheBand() {
-        XCTAssertEqual(RiskEstimate.changeLine(to: 0.08), "Your risk estimate went from 2% to 8%. That is still low.")
-        XCTAssertEqual(RiskEstimate.changeLine(to: RiskEstimate.prior), "Your risk estimate is 2%, the everyday baseline. That is still low.")
+        XCTAssertEqual(RiskEstimate.changeLine(to: 0.08), "Your risk estimate went from 2.0% to 8.0%. That is still low.")
+        XCTAssertEqual(RiskEstimate.changeLine(to: RiskEstimate.prior), "Your risk estimate is 2.0%, the everyday baseline. That is still low.")
         XCTAssertTrue(RiskEstimate.changeLine(to: 0.2).hasSuffix("That is elevated, so wear a mask in crowded rooms and watch for symptoms."))
-        XCTAssertTrue(RiskEstimate.changeLine(to: 0.5).contains("from 2% to 50%. That is high."))
+        XCTAssertTrue(RiskEstimate.changeLine(to: 0.5).contains("from 2.0% to 50%. That is high."))
     }
 }
 

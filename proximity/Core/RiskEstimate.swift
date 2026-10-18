@@ -142,6 +142,15 @@ enum RiskEstimate {
         return pct < 1 ? "<1%" : "\(Int(min(pct, 100)))%"
     }
 
+    /// The live on-screen number: one decimal below 10%, so a 1 s tick near someone sick visibly moves it
+    /// (2.0% → 2.1% → …); whole percent from 10% (as `percentText`). `percentText` stays the whole-percent
+    /// text shared with the heat map (heatmap/app.js `percentText`).
+    static func liveText(_ p: Double) -> String {
+        if !(p > 0) { return "0%" }
+        let tenths = (p * 1000).rounded() / 10
+        return tenths < 10 ? String(format: "%.1f%%", tenths) : "\(Int(min((p * 100).rounded(), 100)))%"
+    }
+
     static func summary(_ p: Double) -> String {
         switch band(p) {
         // Same words as the map's advice (heatmap/app.js `advice`).

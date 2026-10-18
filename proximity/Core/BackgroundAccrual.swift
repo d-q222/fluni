@@ -92,3 +92,35 @@ enum AccrualFeed {
         return (contacts, doses)
     }
 }
+
+/// The exposure step of `ProximityModel.tick`, without radios or UIKit, so tests drive the same code the
+/// phone runs every second: credit each guarded peer that has a fresh estimate for [lastCreditedAt, now],
+/// advance the tracker by the wall time × demo speed (minutes, per-ID dose and so p move on every tick, not
+/// per minute), then set the heads-up level from everyone in range now.
+enum ExposureTick {
+    /// `wall`: seconds since the last accrual, already clamped by the caller. `accrues`: false for a
+    /// back-to-back tick (under `SightingAccrual.minStep`), which only refreshes the heads-up level.
+    /// `onCredit` sees each credit (the model logs background ones). Returns the contacts fed to the
+    /// tracker when it accrued (for the exposure history), else nil.
+    @discardableResult
+    static func run(guarded: [ContactGuard.Output], fresh: Set<String>, now: Date, wall: Double, speed: Double,
+                    accrues: Bool, accrual: inout SightingAccrual, exposure e: inout ExposureTracker,
+                    onCredit: (AccrualCredit) -> Void = { _ in }) -> [(pClose: Double, risk: Risk)]? {
+        var fed: [(pClose: Double, risk: Risk)]?
+        if accrues {
+            var credits: [AccrualCredit] = []
+            for g in guarded where fresh.contains(g.id) {
+                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, distance: g.distance) else { continue }
+                credits.append(c)
+                onCredit(c)
+            }
+            accrual.prune(now: now)
+            let feed = AccrualFeed.contacts(credits, wallSeconds: wall)
+            e.advance(simSeconds: wall * speed, contacts: feed.contacts, doses: feed.doses)
+            fed = feed.contacts
+        }
+        // The heads-up level from everyone in range now (adds nothing: zero seconds).
+        e.advance(simSeconds: 0, contacts: guarded.map { ($0.pClose, $0.risk) })
+        return fed
+    }
+}

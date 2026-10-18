@@ -9,8 +9,14 @@ extension ProximityModel {
         #endif
         return exposure
     }
-    /// The live risk estimate. Every risk number on screen reads this; never a cached or campus value.
-    var shownRisk: Double { shownExposure.probability }
+    /// The live risk estimate (ProximityModel.liveRisk, recomputed every tick). Every risk number on screen
+    /// reads this, through RiskEstimate.liveText; never a cached or campus value.
+    var shownRisk: Double {
+        #if DEBUG
+        if let e = PreviewHook.exposure { return e.probability }
+        #endif
+        return liveRisk
+    }
     var shownPeerCount: Int {
         #if DEBUG
         if let n = PreviewHook.peerCount { return n }
@@ -357,6 +363,7 @@ private struct MetricsStrip: View {
     let risk: Double
     let onRisk: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -408,8 +415,9 @@ private struct MetricsStrip: View {
         return Button(action: onRisk) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(RiskEstimate.percentText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
-                        .contentTransition(.numericText(value: risk))
+                    Text(RiskEstimate.liveText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
+                        .contentTransition(reduceMotion ? .identity : .numericText(value: risk))
+                        .animation(reduceMotion ? nil : .smooth, value: risk)
                     Text(word).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.ink)
                 }
                 Text("risk estimate,\nlast 24 h").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
@@ -422,7 +430,7 @@ private struct MetricsStrip: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Your risk estimate, \(RiskEstimate.percentText(risk)), \(word)")
+        .accessibilityLabel("Your risk estimate, \(RiskEstimate.liveText(risk)), \(word)")
         .accessibilityHint("Opens how this estimate is worked out")
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("risk.card")
@@ -649,7 +657,7 @@ struct CalculationSheet: View {
                           "Your exposure dose: \(d)")
                     block("The estimate",
                           "Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at \(pos)%, someone with symptoms at \(sym)%. Those chances are added on top of a \(Int((RiskEstimate.prior * 100).rounded()))% everyday baseline. It's the same exposure formula as the campus model.",
-                          "This phone's estimate: \(RiskEstimate.percentText(p))")
+                          "This phone's estimate: \(RiskEstimate.liveText(p))")
                     block("What counts",
                           "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model and this phone",

@@ -89,9 +89,9 @@ enum DayTimeline {
 
 extension RiskEstimate {
     /// The close-contact moment's line about risk, in context: from the everyday baseline to the live estimate,
-    /// then what that band means. "Your risk estimate went from 2% to 8%. That is still low."
+    /// then what that band means. "Your risk estimate went from 2.0% to 8.0%. That is still low." Same live text as the headline number.
     static func changeLine(to p: Double) -> String {
-        let from = percentText(prior), to = percentText(p)
+        let from = liveText(prior), to = liveText(p)
         let start = from == to ? "Your risk estimate is \(to), the everyday baseline." : "Your risk estimate went from \(from) to \(to)."
         switch band(p) {
         case .low: return start + " That is still low."
