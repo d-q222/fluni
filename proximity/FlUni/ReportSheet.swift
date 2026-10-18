@@ -222,7 +222,7 @@ private struct SymptomsStep: View {
             }
             .padding(.horizontal, Space.m).padding(.bottom, Space.l)
         }
-        .safeAreaInset(edge: .bottom) {
+        .footer {
             VStack(alignment: .leading, spacing: Space.s) {
                 PrivacyNote(text: "Nearby phones will only see \"possibly sick\". Never which stickers you picked.")
                 Button("Report and start staying home") { submit() }
@@ -344,7 +344,7 @@ private struct TestStep: View {
             }
             .padding(.horizontal, Space.m).padding(.bottom, Space.l)
         }
-        .safeAreaInset(edge: .bottom) {
+        .footer {
             VStack(alignment: .leading, spacing: Space.s) {
                 PrivacyNote(text: positive
                     ? "Nearby phones will see \"contagious\" and may warn their owners. The test and its date stay on this phone."
@@ -389,6 +389,19 @@ private struct TestStep: View {
 }
 
 // MARK: Shared pieces
+
+/// The step's privacy note and action, pinned above the home indicator. Its text stops growing at AX1: at AX5
+/// the pinned bar would otherwise cover most of the screen and leave the stickers no room to scroll.
+private struct Footer<F: View>: ViewModifier {
+    let footer: F
+    func body(content: Content) -> some View {
+        content.safeAreaInset(edge: .bottom) { footer.dynamicTypeSize(...DynamicTypeSize.accessibility1) }
+    }
+}
+
+private extension View {
+    func footer<F: View>(@ViewBuilder _ f: () -> F) -> some View { modifier(Footer(footer: f())) }
+}
 
 /// "Step 1 of 2" in sentence case, then the question in the serif.
 private struct StepHeader: View {

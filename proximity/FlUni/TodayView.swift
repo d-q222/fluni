@@ -147,6 +147,7 @@ struct TodayView: View {
             Spacer(minLength: Space.s)
             Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                 .font(.fluni(.note)).foregroundStyle(Theme.ink2)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
         .padding(.top, Space.xs)
     }
@@ -178,7 +179,7 @@ struct TodayView: View {
         let current = places.log.current
         let entries = DayTimeline.entries(visits: places.log.visits, current: current, moments: moments, now: Date())
         let ccOpen = level == .closeContact && moments.contains { $0.kind == .closeContact && (openMoment == $0.id || autoOpen($0)) }
-        let nowTone: DayTimeline.Tone = level == .closeContact ? .closeContact : level == .nearby ? .headsUp
+        let nowTone: DayTimeline.Tone = feed.isPaused ? .quiet : level == .closeContact ? .closeContact : level == .nearby ? .headsUp
             : current.map { DayTimeline.tone($0, moments: moments) } ?? (feed.peerCount > 0 ? .phones : .quiet)
         return VStack(alignment: .leading, spacing: 0) {
             RailRow(label: "Now", time: TimelineFormat.time(Date()), node: .now,
@@ -573,10 +574,7 @@ private struct CloseContactMoment: View {
                 }
             }
             LiveRiskLine(model: model)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: Space.s) { got; feel }
-                VStack(spacing: Space.s) { got; feel }
-            }
+            VStack(spacing: Space.s) { got; feel }
             Button("How we worked this out", action: how).buttonStyle(QuietLinkStyle())
         }
         .padding(Space.m)

@@ -41,6 +41,8 @@ struct TissueNarrator: View {
                 .frame(width: stacked ? 96 : 118, height: stacked ? 84 : 112)
                 .accessibilityHidden(true)
             SpeechBubble(text: mood.line, tail: stacked ? .top : .leading)
+                // The tissue's aside stops growing at AX1, so at the largest sizes it doesn't push the day off screen.
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 .accessibilityIdentifier("tissue.says")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
