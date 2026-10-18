@@ -73,9 +73,12 @@ async function main() {
   const ids = new Map(totals.buildings.map((b, i) => [b.id, i]));
   const runTime = makeClock(totals);
 
-  // colour max: 90th percentile of each step's busiest building
-  const peaks = totals.steps.map((s) => s.reduce((m, r) => Math.max(m, r[2]), 0)).sort((a, b) => a - b);
-  const vmax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+  // Colour is expected sick above the model's baseline (r[3]; older totals lack it: r[2]), so a crowd at
+  // the baseline isn't drawn as risk. Colour max: 90th percentile of each step's busiest building, or
+  // the busiest step when most are blank.
+  const hot = (r) => r[3] ?? r[2];
+  const peaks = totals.steps.map((s) => s.reduce((m, r) => Math.max(m, hot(r)), 0)).sort((a, b) => a - b);
+  const vmax = peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
 
   // ---- legend ----
   $('ramp').style.background = `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map((q) => {
@@ -208,11 +211,14 @@ async function main() {
     const at = totals.forecast.at;
     let lo = 0, hi = at.length - 1, r = 0;
     while (lo <= hi) { const m = (lo + hi) >> 1; if (at[m].tMs <= t) { r = m; lo = m + 1; } else hi = m - 1; }
-    return new Map((at[r].byHorizon['60'] || []).map((x) => [x[0], x[1]]));
+    return new Map((at[r].byHorizon['60'] || []).map((x) => [x[0], [x[1], x[4] ?? x[1]]])); // [expected, colour]
   }
 
   function styleFor(n, sick, forecast) {
     if (n < minPeople) return { stroke: false, fill: false };
+    // (next to) nothing above the baseline: no fill. √ under 0.1 is where the shared palette is still
+    // fading in from transparent (heat.js stops), i.e. under 1% of the colour max.
+    if (!(sick / vmax >= 0.01)) return { stroke: false, fill: false };
     // saturated sun -> fire fill (never pale: even the lowest shown building reads), stroke in its own darker hue
     const t = 0.18 + 0.82 * Math.sqrt(Math.min(1, sick / vmax));
     const { color } = heatColor(t);
@@ -231,7 +237,7 @@ async function main() {
     shown = new Map();
     for (const it of items) {
       const r = now.get(it.idx);
-      const style = r ? styleFor(r[1], fc ? fc.get(it.idx) || 0 : r[2], !!fc) : styleFor(0, 0, false);
+      const style = r ? styleFor(r[1], fc ? fc.get(it.idx)?.[1] || 0 : hot(r), !!fc) : styleFor(0, 0, false);
       const key = JSON.stringify(style);
       if (key !== it.key) {
         it.layer.setStyle(style); it.key = key;
@@ -241,7 +247,7 @@ async function main() {
           it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
         } else if (it.halo) { it.halo.remove(); it.halo = null; }
       }
-      if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx) || 0 : r[2] });
+      if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx)?.[0] || 0 : r[2] });
     }
     // "Now · updated 4:30 pm": the snapshot's time of day, today
     const d = new Date(), snap = new Date(startMs + s * stepMs);

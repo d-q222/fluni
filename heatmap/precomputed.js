@@ -53,8 +53,9 @@ export async function loadTotals(url) {
   }
   const b = j.buildings;
   const times = Array.from({ length: j.nSteps }, (_, k) => j.startMs + k * j.stepMs);
+  // r[3] / forecast x[4]: expected sick above the prior (the colour); older files lack it.
   const steps = j.steps.map((rows) => ({
-    buildings: new Map(rows.map(([i, n, expected]) => [b[i].id, { name: b[i].name, n, expected }])),
+    buildings: new Map(rows.map(([i, n, expected, excess = expected]) => [b[i].id, { name: b[i].name, n, expected, excess }])),
     rooms: new Map(),
   }));
   // Forecasts are hourly: use the latest one made at or before t.
@@ -67,7 +68,7 @@ export async function loadTotals(url) {
       if (at[mid].tMs <= tMs) lo = mid; else hi = mid - 1;
     }
     const rows = at[lo].byHorizon[h] || [];
-    return new Map(rows.map(([i, expected, lo80, hi80]) => [b[i].id, { name: b[i].name, expected, lo: lo80, hi: hi80 }]));
+    return new Map(rows.map(([i, expected, lo80, hi80, excess = expected]) => [b[i].id, { name: b[i].name, expected, excess, lo: lo80, hi: hi80 }]));
   };
   const backtest = (h) => ({ rate: j.backtest[h] ?? NaN });
   return { totals: { times, steps, scale: j.scale }, forecaster: { forecast, backtest } };

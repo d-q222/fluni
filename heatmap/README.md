@@ -54,8 +54,10 @@ Demo scenes on the sim's mock run:
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
-  - In small runs (under 500 agents, like the 10-agent mock), each agent stands for 50 people.
-    Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*` in `app.js`.
+  - Runs are scaled to a ~7,000-person campus. Under 500 agents (like the 10-agent mock) each agent
+    stands for 50 people. Up to 5,000 agents each stands for round(7000 / agents), e.g. ×7 at 1,000
+    and ×14 at 500. Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*`,
+    `CAMPUS_PEOPLE` and `FULL_RUN_AGENTS` in `app.js` (same rule in `tools/precompute.mjs`).
   - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
     (`MIN_PEOPLE`). The rule applies to the scaled count, so in ×50 small runs it never hides
     anything.
@@ -122,6 +124,11 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   - People are first binned into the grid, then the grid is smoothed with three box blurs (≈ a
     Gaussian). The cost depends on grid size, not on the number of agents, which is what the
     7,000-agent run needs.
+- **Heat is risk above the baseline.** A person counts as max(0, P(sick) − prior), with the model's
+  prior (`DEFAULTS.prior`, 2%). With few reports nearly everyone sits at the prior, and Σ P alone
+  drew a map of crowds. This applies to the room-level heat, the airflow sources, and the user
+  map's building colours (`excess` in the totals; the counts shown stay Σ P). The truth views still
+  use the sim's infectiousness.
 - **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
   people shown.
 - **People (demo only)**: one per agent, drawn as Lisa's hand-drawn tissue on a round badge.

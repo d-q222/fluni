@@ -22,6 +22,10 @@ const DEMO = { cellM: 3, sigmaM: 18 };
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
 const SMALL_RUN_AGENTS = 500;
+// Mid-size runs are scaled up to a ~7,000-person campus (x7 at 1,000 agents), so buildings still clear
+// MIN_PEOPLE; from FULL_RUN_AGENTS on, agents count as themselves. Same rule as tools/precompute.mjs.
+const FULL_RUN_AGENTS = 5000;
+const CAMPUS_PEOPLE = 7000;
 // From this many agents, read the precomputed P(sick) and user-map totals when the run has them
 // (precomputed.js): the model in the page and per-step totals take minutes and gigabytes there.
 const BIG_RUN = 2000;
@@ -445,14 +449,16 @@ function scaleMax(heatAt, times) {
   const peaks = [];
   for (let i = 0; i < times.length; i += step) peaks.push(heatAt(times[i]).max());
   peaks.sort((a, b) => a - b);
-  return peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+  // Above the baseline most moments can be blank: then the busiest sampled moment sets the scale.
+  return peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
 }
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
+// The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
 function* asPoints(states, truth) {
   for (const s of states) {
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : s.p, indoor: Boolean(s.buildingId) };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
   }
 }
 
@@ -624,9 +630,9 @@ async function main() {
     return f.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
-  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
-  const totals = pre ? pre.totals : buildTotals(frames, times, { scale });
-  const forecaster = pre ? pre.forecaster : buildForecaster(frames, times, { scale });
+  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : tracks.size < FULL_RUN_AGENTS ? Math.round(CAMPUS_PEOPLE / tracks.size) : 1;
+  const totals = pre ? pre.totals : buildTotals(frames, times, { scale, prior: MODEL.prior });
+  const forecaster = pre ? pre.forecaster : buildForecaster(frames, times, { scale, prior: MODEL.prior });
   const backtestRate = forecaster.backtest(60).rate;
   // Airflow (experimental): infectious air that builds up in rooms, leaks through doors and is
   // ventilated away (aerosol.js). Stateful, so it steps forward with the clock; a backward scrub or a
@@ -635,7 +641,7 @@ async function main() {
   let aero = null, aeroT = null, aeroMax = 1e-9;
   const airSources = function* (states, truth) {
     for (const st of states) {
-      const rate = truth ? Number(Boolean(st.infectious)) : st.p;
+      const rate = truth ? Number(Boolean(st.infectious)) : Math.max(0, st.p - MODEL.prior); // above the baseline
       if (rate > 0) yield { lat: st.lat, lon: st.lon, rate, room: st.walking ? undefined : rooms.index.get(st.room) };
     }
   };
@@ -1125,7 +1131,7 @@ async function main() {
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
+      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : `Expected infected above the ${Math.round(MODEL.prior * 100)}% baseline <span>per 1,000 m²</span>`;
     const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
