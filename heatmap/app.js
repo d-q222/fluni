@@ -597,13 +597,24 @@ function scaleMax(heatAt, times) {
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
 // The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
-// indoorOnly: heat lives inside building outlines only (people outdoors show by their dot's colour).
-function* asPoints(states, truth, indoorOnly = false) {
+// only: 'indoor' or 'outdoor' keeps just those people (outdoor heat is drawn on its own layer).
+function* asPoints(states, truth, only = null) {
   for (const s of states) {
-    if (indoorOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), zone: s.zone };
+    const indoor = Boolean(s.buildingId);
+    if ((only === 'indoor' && !indoor) || (only === 'outdoor' && indoor)) continue;
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor, zone: s.zone };
   }
 }
+
+// Outdoors there is no shared room air, only the near-field plume, which wind dilutes and which falls off
+// as 1/d² (model/infer.js doseModel: at 6 ft outdoors gets 16% of the indoor dose, at 6 m 5%). So outdoor
+// heat is tighter (half the indoor spread) and lighter: weighted so its peak is that 6 ft ratio of the
+// peak the same person would make indoors at the full spread. No time decay: the heat is a snapshot.
+const OUTDOOR_SIGMA = 0.5;
+const OUTDOOR_WEIGHT = (() => {
+  const dose = doseModel(), c = { distance_m: ADJACENT_M, duration_s: 3600 };
+  return (dose({ ...c, indoor: false }) / dose({ ...c, indoor: true })) * OUTDOOR_SIGMA ** 2;
+})();
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
 // One set of risk tiers for everything the presenter and user see: the phone's advice, the risk card's
@@ -796,8 +807,19 @@ async function main() {
     const f = (lastField = fieldFor(sigmaM));
     f.clear();
     const states = nowStates || statesAt(t);
-    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, Boolean(outlines)), 1);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, outlines ? 'indoor' : null), 1);
     return f.diffuse(sigmaM, { people: false });
+  };
+  // People outdoors (only when indoor heat is kept to outlines): a plain grid of their own, drawn unclipped.
+  const outFields = new Map();
+  const outdoorAt = (t, nowStates = null, truth = false, area = null) => {
+    const cell = fieldFor(sigmaM).cellM;
+    if (!outFields.has(cell)) outFields.set(cell, new DiffusionField(bounds, cell));
+    const f = outFields.get(cell);
+    f.clear();
+    const states = nowStates || statesAt(t);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, 'outdoor'), OUTDOOR_WEIGHT);
+    return f.diffuse(sigmaM * OUTDOOR_SIGMA, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
   const scale = userScale(tracks.size);
@@ -925,6 +947,7 @@ async function main() {
     const me = selected && current.get(selected);
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
+  const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
@@ -1489,6 +1512,7 @@ async function main() {
     if (heatDue) {
       const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
+      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' ? 'none' : '';
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
         else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
@@ -1507,6 +1531,12 @@ async function main() {
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
         if (g.zoneOut) heatLayer.setZones(g, Z.zones, demoScale());
         else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
+        if (outdoorLayer) {
+          const o = outdoorAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null);
+          outdoorLayer.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
+          paint(o, outdoorLayer.grid, demoScale());
+          outdoorLayer.setGrid();
+        }
       }
       lastHeat = realNow;
       heatDirty = false;
