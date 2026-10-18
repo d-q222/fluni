@@ -113,6 +113,14 @@ final class ContactGuardTests: XCTestCase {
         XCTAssertEqual(g.apply(now: t0.addingTimeInterval(1000), [peer("flip", risk: .contagious)], log: log)[0].pClose, 1)
     }
 
+    func testEscalatingReportsAreTrusted() {
+        // A real student: "I have symptoms", then "I tested positive" a few seconds later. One-way climb, not flapping.
+        var g = ContactGuard()
+        _ = g.apply(now: t0, [peer("s", risk: .none)])
+        XCTAssertEqual(g.apply(now: t0.addingTimeInterval(5), [peer("s", risk: .possible)])[0].pClose, 1)
+        XCTAssertEqual(g.apply(now: t0.addingTimeInterval(10), [peer("s", risk: .contagious)])[0].pClose, 1)
+    }
+
     func testSingleRiskChangeIsTrusted() {
         var g = ContactGuard()
         _ = g.apply(now: t0, [peer("a", risk: .none)])

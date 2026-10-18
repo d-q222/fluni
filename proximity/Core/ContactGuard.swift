@@ -14,8 +14,9 @@ import Foundation
 /// 3. Implausible signal (Bluetooth-only): RSSI above `maxRSSI` (-30 dBm) or a jump over `maxJump` (20 dB)
 ///    within `jumpWithin` (2 s) counts as not close for that tick. Field data: 0.3-0.8 m reads -60..-50 dBm,
 ///    the strongest at ~0.2 m was -42, so -30 leaves 12 dB margin; BLE noise is a few dB, so 20 dB is not noise.
-/// 4. Risk flip: more than 1 risk change for one ID within `flipWindow` (15 min) -> ID ignored. A real phone
-///    changes risk only when its user reports.
+/// 4. Risk flapping: a risk that reverses direction (up then down, or down then up) for one ID within
+///    `flipWindow` (15 min) -> ID ignored. A real phone changes risk only when its user reports, and reports
+///    escalate (healthy -> possibly sick -> tested positive) far more than they bounce; a one-way climb is fine.
 /// 5. `corroborated` = a fresh UWB reading exists for the ID. Reported only; no rule requires it.
 struct ContactGuard {
     static let topContacts = 2
@@ -51,6 +52,7 @@ struct ContactGuard {
     private var firstRisky: [String: Date] = [:]
     private var lastRSSI: [String: (rssi: Double, at: Date)] = [:]
     private var lastRisk: [String: Risk] = [:]
+    private var lastRiskRose: [String: Bool] = [:]  // direction of each ID's last risk change
     private var flips: [String: [Date]] = [:]
     private var flipLogged: Set<String> = []
 
@@ -61,10 +63,14 @@ struct ContactGuard {
         // Rule 4 and 2 bookkeeping.
         var ignored: Set<String> = []
         for p in peers {
-            if let old = lastRisk[p.id], old != p.risk { flips[p.id, default: []].append(now) }
+            if let old = lastRisk[p.id], old != p.risk {
+                let rose = p.risk.rawValue > old.rawValue
+                if let prev = lastRiskRose[p.id], prev != rose { flips[p.id, default: []].append(now) }  // a reversal
+                lastRiskRose[p.id] = rose
+            }
             lastRisk[p.id] = p.risk
             flips[p.id] = flips[p.id]?.filter { now.timeIntervalSince($0) < Self.flipWindow }
-            if (flips[p.id]?.count ?? 0) > 1 {
+            if !(flips[p.id]?.isEmpty ?? true) {
                 ignored.insert(p.id)
                 if flipLogged.insert(p.id).inserted { log("guard risk flip id=\(p.id.prefix(6)) ignored") }
             } else {
