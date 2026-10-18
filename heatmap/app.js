@@ -1305,7 +1305,7 @@ async function main() {
   const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const shadeLayer = new BuildingShadeLayer(shapeOutlines); // the default view's building shading, one feature per outline
-  const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
+  const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // the user map, shown only in ?embed=app
 
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
@@ -1612,12 +1612,13 @@ async function main() {
   });
 
   // The user-facing map's input: totals now, or a forecast. Never agent data.
+  const forecastH = () => Number($('horizon')?.value) || 0; // the forecast picker exists only in ?embed=app
   function userTotals() {
-    const h = Number($('horizon').value);
+    const h = forecastH();
     return h ? forecaster.forecast(now, h) : totalsAt(totals, now).buildings;
   }
   const updateUserLayer = (layer) =>
-    layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: Number($('horizon').value) > 0 });
+    layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: forecastH() > 0 });
 
   // "Why this %?": the model's explanation for the selected person, beside the phone (presenter only).
   const mathBox = Object.assign(document.createElement('aside'), { id: 'math', hidden: true });
@@ -1679,10 +1680,10 @@ async function main() {
     noticeTimer = setTimeout(() => b.remove(), 7000);
   }
 
-  // The phone's Map tab: the main map, mirrored. The same base map and Lisa's landmarks, the same building shading (the
-  // values and fixed scale the main map's "Expected infected" view uses, at the same moment) and the main map's own
-  // people dots (position, colour, ring, see-through), copied each frame and sized for the phone's zoom. It keeps its own
-  // pan and zoom. Tapping a building still opens the user map's popup.
+  // The phone's Map tab: the main map, mirrored, without the people. The same base map and Lisa's landmarks and the same
+  // building shading (the values and fixed scale the main map's "Expected infected" view uses, at the same moment); no
+  // people dots (the main map keeps its own). It keeps its own pan and zoom. Tapping a building still opens the user
+  // map's popup.
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
   // Opened at the main map's centre and zoom (the same scale), or the campus before the main map has a view.
   let phoneViewSet = false; // false until it has taken the main map's view (the main map may get its view later)
@@ -1691,22 +1692,17 @@ async function main() {
     if (phoneViewSet) phoneMap.setView(map.getCenter(), map.getZoom(), { animate: false });
     else phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false });
   }
-  let phoneShade = null, phoneDotLayer = null, phoneDotRenderer = null, phoneDirty = true, lastShadeSums = null;
-  const phoneDots = new Map(); // agent id -> the phone map's copy of their main-map dot
+  let phoneShade = null, phoneDirty = true, lastShadeSums = null;
   function buildPhoneMap() {
     const m = baseMap('ph-map', { zoomControl: false, attributionControl: false, maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
     addLandmarks(m);
     phoneShade = shading ? new BuildingShadeLayer(shapeOutlines).addTo(m) : null;
-    phoneDotRenderer = L.canvas({ padding: 0.5 });
-    phoneDotLayer = L.layerGroup().addTo(m);
     // taps: the user map's building popup, drawn invisibly over the shading
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false, invisible: true }).addTo(m);
-    m.on('zoomend', () => { // dots are sized on the ground: redraw, after this event (it can fire inside render())
-      phoneDirty = true;
-      if (!playing) setTimeout(() => render(performance.now()), 0);
-    });
     phoneMap = m;
     fitPhoneMap();
+    // built before the main map had its view (?tab=map): take it as soon as the main map settles
+    if (!phoneViewSet) map.once('moveend', () => { if (!phoneViewSet) fitPhoneMap(); });
     return m;
   }
   const phoneZoomBusy = () => Boolean(phoneMap?._animatingZoom);
@@ -1716,30 +1712,6 @@ async function main() {
     if (!phoneMap?._loaded || !phoneShade) return;
     phoneShade.update(lastShadeSums || buildingDensity(current.values(), truthMode()), shadeMax);
     phoneDirty = false;
-  }
-  // The main map's people, copied: every dot it shows, with its colour, ring and see-through, at the phone's size.
-  function syncPhoneDots() {
-    if (!phoneMap?._loaded || phoneZoomBusy()) return;
-    const r = personRadius(phoneMap.getZoom()), seen = new Set();
-    for (const [id, m] of dots) {
-      if (!dotLayer.hasLayer(m)) continue;
-      seen.add(id);
-      let pm = phoneDots.get(id);
-      const o = m.options, ll = m.getLatLng(), w = Math.max(0.5, (o.weight * r) / Math.max(1, m.getRadius()));
-      if (!pm) {
-        pm = new PersonMarker(ll, { renderer: phoneDotRenderer, interactive: false, radius: r, weight: w, color: o.color, fillColor: o.fillColor, fillOpacity: o.fillOpacity, opacity: o.opacity });
-        phoneDots.set(id, pm);
-      } else {
-        const p = pm.getLatLng();
-        if (p.lat !== ll.lat || p.lng !== ll.lng) pm.setLatLng(ll);
-        if (pm.getRadius() !== r) pm.setRadius(r);
-        const po = pm.options;
-        if (po.fillColor !== o.fillColor || po.color !== o.color || po.weight !== w || po.fillOpacity !== o.fillOpacity || po.opacity !== o.opacity)
-          pm.setStyle({ fillColor: o.fillColor, color: o.color, weight: w, fillOpacity: o.fillOpacity, opacity: o.opacity });
-      }
-      if (!phoneDotLayer.hasLayer(pm)) phoneDotLayer.addLayer(pm);
-    }
-    for (const [id, pm] of phoneDots) if (!seen.has(id) && phoneDotLayer.hasLayer(pm)) phoneDotLayer.removeLayer(pm);
   }
 
   function renderPhone(withHeat) {
@@ -1772,7 +1744,6 @@ async function main() {
       withHeat = true;
     }
     if (phoneMap && withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
-    const h = Number($('horizon').value);
     if (phoneMap) {
       const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`));
       $('ph-ctime').innerHTML = `<b>Now</b> · updated ${clock(now)}`;
@@ -2049,7 +2020,6 @@ async function main() {
     }
     if (refaded && dotRenderer._map) { dotRenderer._redrawBounds = null; dotRenderer._redraw(); } // no bounds: the whole canvas
     if (phoneMapShown() && !phoneViewSet && map._loaded && map.getSize().x > 0) setTimeout(() => { if (!phoneViewSet) fitPhoneMap(); }, 0);
-    if (phoneMapShown()) syncPhoneDots();
     renderPhone(heatDue);
     refreshBuilding(realNow);
     updateViewCount(realNow);
@@ -2082,7 +2052,7 @@ async function main() {
     setPhoneTab(phoneTab);
   }
 
-  // The app's slim legend for "What users see": a gradient strip, with the counting rules behind (i).
+  // The user map's slim legend (?embed=app): a gradient strip, with the counting rules behind (i).
   function userLegend() {
     let el = $('ulegend');
     if (el) return el;
@@ -2148,11 +2118,7 @@ async function main() {
     try { updateViewCount(performance.now(), true); } catch { /* the legend is drawn before the map exists */ }
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
-    // Forecasts are a user-map feature. Hidden but keeping its slot, so the header doesn't shift between views.
-    $('horizon').style.visibility = isPublic ? '' : 'hidden';
-    if (!EMBED) document.querySelector('.legend .fine').textContent = isPublic
-      ? 'Totals only: no people. May be incomplete because not everyone shares their status.'
-      : 'May be incomplete: not everyone shares their status. Click a person to see their app.';
+    if (!EMBED) document.querySelector('.legend .fine').textContent = 'May be incomplete: not everyone shares their status. Click a person to see their app.';
   }
 
   function setPlaying(on) {
@@ -2174,27 +2140,25 @@ async function main() {
   // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
-  // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
-  const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
-  horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
-  document.querySelector('.options').append(horizon);
   const basePick = Object.assign(document.createElement('select'), { id: 'basemap', ariaLabel: 'Map style' });
   basePick.append(new Option('Sim map', 'sim'), new Option('Street map', 'streets'), new Option('Illustrated campus', 'drawn'));
   basePick.value = baseStyle;
   basePick.addEventListener('change', () => setBaseStyle(basePick.value).then(() => { basePick.value = baseStyle; }));
   document.querySelector('.options').append(basePick);
-  // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
   const params = new URLSearchParams(location.search);
-  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=catch: the default)
-  if (params.get('horizon')) horizon.value = params.get('horizon');
+  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=public or ?view=catch: the default)
   if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
   const mapNote =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
   if (EMBED) {
-    // User map only, slowest speed, playing; the time and forecast picker float over the map.
+    // User map only, slowest speed, playing; the time and forecast picker (?horizon=60) float over the map.
+    $('view').append(new Option('User map', 'public')); // the presenter has no such view; only the embed shows it
     $('view').value = 'public';
     $('speed').value = '0';
+    const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
+    horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
+    if (params.get('horizon')) horizon.value = params.get('horizon');
     const chip = Object.assign(document.createElement('div'), { className: 'embed-chip' });
     chip.append($('time'), horizon);
     document.querySelector('main').append(chip);
@@ -2203,7 +2167,7 @@ async function main() {
   }
 
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
-    $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
+    $(id)?.addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
   }
   if (model?.risk.explain) {
     const why = Object.assign(document.createElement('button'), { textContent: 'Why this %?' });
