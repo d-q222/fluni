@@ -135,10 +135,12 @@ final class BuildingHeatTests: XCTestCase {
 
     // MARK: The bundled file
 
+    /// Hand-checked values against a FROZEN copy of the bc5cae7a file as first shipped (Fixtures/…_v1.csv),
+    /// so refreshing the app's data never means editing these expectations.
     func testBundledFile() throws {
-        let url = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("FlUni/Resources/building_heat.csv")
-        let b = try BuildingHeat.parse(try Data(contentsOf: url))
+        let url = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/building_heat_bc5cae7a_v1.csv")
+        let b = try BuildingHeat.parse(try Fixture.data("building_heat_bc5cae7a_v1.csv", sourcePath: url))
         XCTAssertEqual(b.rejected, 0)
         XCTAssertEqual(b.rowCount, 4507)
         XCTAssertEqual(b.snapshots.count, 1344)
@@ -159,5 +161,28 @@ final class BuildingHeatTests: XCTestCase {
         XCTAssertEqual(b.reading("bld_1169967277", at: t("2026-01-19T08:00:00"))?.heat, 0.404)
         // Jerry is at the spot itself.
         XCTAssertEqual(b.inside(lat: 37.4210814, lon: -122.1736733)?.id, "bld_232805707")
+    }
+
+    /// Whatever building_heat.csv the app currently ships must satisfy the contract (docs/building-heat-format.md):
+    /// parses cleanly, heat in [0, 1], high == (heat >= 0.5) (one rounding exception allowed at exactly 0.500),
+    /// and every mappable building has a centre.
+    func testShippedFileIsValid() throws {
+        let url = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("FlUni/Resources/building_heat.csv")
+        let data = try Fixture.data("building_heat.csv", sourcePath: url)
+        let b = try BuildingHeat.parse(data)
+        XCTAssertEqual(b.rejected, 0)
+        XCTAssertGreaterThan(b.rowCount, 0)
+        XCTAssertGreaterThan(b.mappable.count, 0)
+        let lines = String(decoding: data, as: UTF8.self).split(whereSeparator: \.isNewline).dropFirst()
+        var mismatches = 0
+        for line in lines {
+            let f = line.split(separator: ",", omittingEmptySubsequences: false)
+            guard f.count >= 9, let heat = Double(f[f.count - (f.count >= 10 ? 3 : 2)]) else { continue }
+            let high = f[f.count - (f.count >= 10 ? 2 : 1)] == "1"
+            XCTAssertTrue((0...1).contains(heat), "heat out of range: \(line)")
+            if high != (heat >= 0.5) && abs(heat - 0.5) > 0.0005 { mismatches += 1 }
+        }
+        XCTAssertEqual(mismatches, 0, "rows whose high flag disagrees with heat >= 0.5")
     }
 }

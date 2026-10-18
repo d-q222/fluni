@@ -11,9 +11,9 @@ final class MutationKillerTests: XCTestCase {
         Fusion.fuse([Reading(source: src, distance: d, sigma: s, at: now.addingTimeInterval(-age))], now: now) != nil
     }
 
-    // Spec: UWB 3 s, BLE 6 s, GPS 20 s. Literals, not `src.maxAge`, so a changed window is caught.
+    // Spec: UWB 6 s (3 s full trust + 3 s grace), BLE 6 s, GPS 20 s. Literals, not `src.maxAge`, so a changed window is caught.
     func testFreshnessWindowsAreTheSpecLiterals() {
-        for (src, limit) in [(Source.uwb, 3.0), (.ble, 6.0), (.gps, 20.0)] {
+        for (src, limit) in [(Source.uwb, 6.0), (.ble, 6.0), (.gps, 20.0)] {
             XCTAssertTrue(fresh(src, age: limit), "\(src) at \(limit) s must be fresh")
             XCTAssertFalse(fresh(src, age: limit + 0.01), "\(src) past \(limit) s must be stale")
             XCTAssertFalse(fresh(src, age: limit + 1), "\(src) 1 s past the window must be stale")

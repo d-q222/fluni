@@ -3,9 +3,12 @@
 // simulator's disease state. One chronological pass over contacts and reports.
 //
 // Evidence about a person j (self-report, report by others, test) gives j a "source risk" s_j.
-// Each contact with j then exposes the other person i with transmission pi = 1 - exp(-beta*w*min),
-// where w falls with distance tier, and i's risk grows as 1 - (1-x_i)(1-s_j*pi). A report also looks
-// back over j's recent contacts, since it makes them informative after the fact.
+// Each contact with j then exposes the other person i with Rio's transmission probability
+// lambda = 1 - exp(-dose) (exposure/flu_risk.py: Baker et al. PNAS 2021 with a Wells-Riley aerosol dose
+// from distance, minutes, the room's volume and ventilation, indoor/outdoor and j's illness stage), and
+// i's risk grows by Rio's update p_new = (1 - x_i) * s_j * lambda. A report also looks back over j's
+// recent contacts, since it makes them informative after the fact. Each exposure's share then fades as
+// the illness runs its course (Rio's still_infected: Erlang, mean 7 days, shape 4).
 //
 // No feedback loop: only evidence creates risk. Second-hand risk (what j caught from a source) is
 // passed on at damped strength alpha, read from j's state just before the contact, and never passed
@@ -20,17 +23,27 @@ export const DEFAULTS = {
   negTest: 0.05,          // a negative caps risk (false negatives happen); also lifts no one else
   evidenceDays: 7,        // a flu episode lasts about a week; older evidence says nothing about now
   negTestDays: 3,         // a negative test only vouches for a few days
-  beta: 0.015,            // per weighted minute: 15 min under 1 m gives 20%, 15 min at 1-2 m gives 13%
-  tierWeight: [1, 0.6, 0.1, 0.02], // <1 m, 1-2 m, 2-5 m, same room >=5 m (droplets fall off fast)
+  // Rio's exposure model (exposure/flu_risk.py; keep these in step with it)
+  quantaPeak: 10,         // infectious quanta/h a flu case emits at peak (talking-level)
+  quietQuanta: 1.5,       // our change, not Rio's: in a dorm room (sleeping, resting, studying) a case
+                          //   barely talks. 10 q/h there gave a roommate 87-98% over one illness; quiet at
+                          //   night only still ~60%; quiet in the dorm room all day gives ~20% (household
+                          //   flu attack rates are 10-20%)
+  breathingRate: 0.5,     // m^3/h inhaled
+  nearFieldQ: 30,         // m^3/h dilution of the exhaled plume at 1 m (scales with distance^2)
+  outdoorNearDilution: 5, // wind dilutes the plume 5x more outdoors
+  deposition: 0.3,        // 1/h particle settling
+  defaultRoomM2: 50, ceilingM: 2.7, defaultAch: 2.0, // room when the contact has no known room
+  wallFactor: 0,          // our addition: an indoor pair with an empty room_id is < 5 m apart across a
+                          //   wall (docs/sim-output-format.md) and shares no air; dose x this
+  outdoorRH: 60, outdoorTempC: 10, indoorTempC: 21,  // campus in January: heated indoor air is dry (~30% RH)
+  // relative infectiousness by the source's days since symptom onset, -2..7 (0 outside)
+  stageProfile: [0.05, 0.3, 1.0, 0.9, 0.6, 0.35, 0.18, 0.08, 0.04, 0.02],
+  illnessMeanDays: 7, illnessShape: 4, // still_infected(): Erlang illness length
   lookbackDays: 3,        // a report makes contacts up to this long before it informative
-  contagiousBeforeH: 24,  // sick people spread ~1 day before symptoms; contacts earlier than this
-  earlyWeight: 0.15,       //   count at this fraction of the source risk
   alpha: 0.25,            // damping of second-hand risk
   alphaCap: 0.4,          // second-hand source risk never reads more than alpha * this
-  xMax: 0.3,              // household flu attack rates are 10-40%: contact alone never exceeds this
-  xiMax: 0.08,           // second-hand risk ceiling
-  decayAfterDays: 2,      // exposure risk holds through the incubation window ...
-  halfLifeDays: 3,        // ... then halves every 3 days with no new evidence
+  xiMax: 0.08,            // second-hand risk ceiling
   fillHours: 6,           // decay/expiry change points are written at most this often
   minDelta: 0.01,         // changes smaller than this are not written (keeps change lists compact)
   mergeGapMin: 30,        // contacts with one person this close in time form one explain() entry
@@ -43,7 +56,70 @@ export const DEFAULTS = {
 };
 
 const MIN = 60000, HOUR = 3600000, DAY = 86400000;
-const LN2 = Math.LN2;
+const TIER_M = [0.5, 1.5, 3.5, 6]; // distance for a contact row that has only its tier
+
+// ---------- Rio's dose model (exposure/flu_risk.py) ----------
+
+// Heated outdoor air keeps its water, so indoor RH is lower than outdoor in cold weather (Magnus).
+export function indoorRH(outdoorRH, outdoorTempC, indoorTempC = 21) {
+  if (outdoorTempC == null || outdoorTempC >= indoorTempC) return outdoorRH;
+  const sat = (t) => 6.112 * Math.exp((17.62 * t) / (243.12 + t));
+  return Math.min(100, (outdoorRH * sat(outdoorTempC)) / sat(indoorTempC));
+}
+// 1/h airborne inactivation of influenza vs relative humidity (Noti et al. 2013).
+export function virusDecay(rh) {
+  const low = Math.log(1 / 0.75), high = Math.log(1 / 0.2);
+  if (rh <= 25) return low;
+  if (rh >= 45) return high;
+  return low + ((high - low) * (rh - 25)) / 20;
+}
+// stage_factor(): relative infectiousness `day` days after the source's symptom onset.
+export const stageFactor = (day, profile = DEFAULTS.stageProfile) => (day < -2 || day > 7 ? 0 : profile[day + 2]);
+
+// unitDose(contact) = Rio's dose for a source at stage factor 1, so lambda = 1 - exp(-stage * unitDose).
+// rooms: Map room_id -> { volume_m3, ventilation_ach, room_type } (map/rooms.csv); unknown rooms get
+// Rio's default. After each call, unitDose.info holds the inputs it used (for explain()).
+export function doseModel(params = {}, rooms = null) {
+  const P = { ...DEFAULTS, ...params };
+  const rh = indoorRH(P.outdoorRH, P.outdoorTempC, P.indoorTempC), decay = virusDecay(rh);
+  const mkRoom = (volume, ach, dorm = false) => {
+    const loss = ach + P.deposition + decay;
+    return { volume, ach, loss, far: 1 / (volume * loss), dorm };
+  };
+  const defRoom = mkRoom(P.defaultRoomM2 * P.ceilingM, P.defaultAch);
+  const cache = new Map();
+  const roomOf = (id) => {
+    if (!id || !rooms) return defRoom;
+    let r = cache.get(id);
+    if (!r) {
+      const s = rooms.get(id), v = Number(s?.volume_m3), a = Number(s?.ventilation_ach);
+      r = s ? mkRoom(v > 0 ? v : defRoom.volume, a > 0 ? a : P.defaultAch, String(s.room_type || '').startsWith('dorm')) : defRoom;
+      cache.set(id, r);
+    }
+    return r;
+  };
+  const info = { distanceM: 0, indoor: true, room: defRoom, durS: 0, tier: 4, quanta: P.quantaPeak };
+  function unitDose(c) {
+    const tier = Math.min(4, Math.max(1, Number(c.distance_tier) || 4));
+    const dm = c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
+    const dist = Number.isFinite(dm) ? dm : TIER_M[tier - 1];
+    const iv = c.indoor; // missing -> indoors (most contacts are in rooms)
+    const indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1';
+    const room = indoor ? roomOf(c.room_id) : null;
+    const durS = Math.round(Number(c.duration_s)) || 0;
+    const wall = indoor && c.room_id === ''; // undefined room_id (column not loaded) = unknown room instead
+    const d = Math.max(dist, 0.3);
+    const qNear = P.nearFieldQ * d * d * (indoor ? 1 : P.outdoorNearDilution);
+    const quanta = room && room.dorm ? P.quietQuanta : P.quantaPeak;
+    info.distanceM = dist; info.indoor = indoor; info.room = room; info.durS = durS; info.tier = tier;
+    info.quanta = quanta; info.wall = wall;
+    return (wall ? P.wallFactor : 1) * quanta * P.breathingRate * (durS / 3600) * (1 / qNear + (indoor ? room.far : 0));
+  }
+  unitDose.info = info;
+  unitDose.indoorRH = rh;
+  unitDose.virusDecay = decay;
+  return unitDose;
+}
 
 export function inferRisk(input, params = {}) {
   const P = { ...DEFAULTS, ...params };
@@ -52,17 +128,45 @@ export function inferRisk(input, params = {}) {
   const n = agentIds.length;
   const idx = new Map(agentIds.map((id, i) => [id, i]));
   const evMs = P.evidenceDays * DAY, negMs = P.negTestDays * DAY, fillMs = P.fillHours * HOUR;
-  const halfMs = P.halfLifeDays * DAY, decayAfter = P.decayAfterDays * DAY;
   const L = Math.round((P.lookbackDays * DAY) / stepMs);        // lookback, in steps
   const unsupSteps = Math.round((P.unsupportedHours * HOUR) / stepMs);
   const keep = Math.max(L, unsupSteps);                          // contact history kept per agent
-  const earlySteps = Math.round((P.contagiousBeforeH * HOUR) / stepMs);
   const mergeMs = P.mergeGapMin * MIN;
+  const unitDose = doseModel(P, input.rooms || null), cInfo = unitDose.info;
+  // Stage of a source without dated evidence (second-hand risk): the mean of the profile over -2..7.
+  const stageMean = P.stageProfile.reduce((a, b) => a + b, 0) / P.stageProfile.length;
+  const stageAt = (onMs, cMs) => stageFactor(Math.floor((cMs - onMs) / DAY), P.stageProfile);
 
-  // exposure risk: xd from sources with evidence, xi second-hand; both decay with the same clock
-  const xd = new Float64Array(n), xi = new Float64Array(n);
-  const xT = new Float64Array(n).fill(startMs);       // time the stored x values are valid for
-  const dF = new Float64Array(n).fill(-Infinity);     // decay starts here (last new exposure + 2 d)
+  let contacts = input.contacts, reports = input.reports || [];
+
+  // Exposure risk lives in Erlang compartments (K per person), so each exposure's share follows Rio's
+  // still_infected(days since that exposure) exactly: new risk enters stage 0, and stage k moves on
+  // at rate K/mean. Yd holds risk from sources with evidence, Yi second-hand risk; both valid at xT.
+  const K = P.illnessShape, rate = K / (P.illnessMeanDays * DAY);
+  const Yd = new Float64Array(n * K), Yi = new Float64Array(n * K);
+  const co = new Float64Array(K); // co[k] = e^-a a^k / k!, a = rate * dt
+  const coef = (dt) => { const a = rate * dt; let v = Math.exp(-a); for (let k = 0; k < K; k++) { co[k] = v; v *= a / (k + 1); } };
+  const sum = (Y, i) => { let s = 0; for (let k = i * K; k < i * K + K; k++) s += Y[k]; return s; };
+  const xT = new Float64Array(n).fill(startMs);
+  function totAt(Y, i, t) { // risk still infectious at t
+    const s0 = sum(Y, i), dt = t - xT[i];
+    if (s0 === 0 || dt <= 0) return s0;
+    coef(dt);
+    let s = 0, cum = 0;
+    for (let m = K - 1; m >= 0; m--) { cum += co[K - 1 - m]; s += Y[i * K + m] * cum; }
+    return s;
+  }
+  function advance(Y, i) { // in place by the co[] of the last coef()
+    const o = i * K;
+    for (let k = K - 1; k >= 0; k--) { let v = 0; for (let m = 0; m <= k; m++) v += Y[o + m] * co[k - m]; Y[o + k] = v; }
+  }
+  function addRisk(Y, i, dx, age) { // dx caught `age` ms ago: only the part not yet recovered remains
+    if (!(dx > 0)) return;
+    if (age <= 0) { Y[i * K] += dx; return; }
+    coef(age);
+    for (let k = 0; k < K; k++) Y[i * K + k] += dx * co[k];
+  }
+
   const stepT = new Float64Array(n).fill(-1);         // snapshot so same-step contacts read "before"
   const xdPrev = new Float64Array(n);
   const lastT = new Float64Array(n).fill(startMs), lastP = new Float64Array(n).fill(P.prior);
@@ -73,9 +177,10 @@ export function inferRisk(input, params = {}) {
   const contribs = new Array(n).fill(null), open = new Array(n).fill(null);
   const flags = [];
 
-  // recent contacts per agent: Int32 triples [step, other, durS*8 + tier], oldest first
+  // recent contacts per agent: Int32 triples [step, other, contact index], oldest first. The index
+  // gives the contact's row, from which look-back recomputes Rio's dose per unit stage (unitDose).
   const cb = new Array(n).fill(null), ch = new Int32Array(n), cn = new Int32Array(n);
-  function pushContact(i, t, o, pk) {
+  function pushContact(i, t, o, ci) {
     let b = cb[i], h = ch[i], m = cn[i];
     if (!b) b = cb[i] = new Int32Array(48);
     while (h < m && b[h] < t - keep) h += 3;
@@ -85,31 +190,32 @@ export function inferRisk(input, params = {}) {
       else { const nb = new Int32Array(b.length * 2); nb.set(b.subarray(h, m)); b = cb[i] = nb; }
       m = live; h = 0;
     }
-    b[m] = t; b[m + 1] = o; b[m + 2] = pk;
+    b[m] = t; b[m + 1] = o; b[m + 2] = ci;
     ch[i] = h; cn[i] = m + 3;
   }
-  const lamOf = (pk) => P.beta * P.tierWeight[pk & 7] * (pk >> 3) / 60; // beta * w * minutes
 
   // ---------- evidence ----------
 
   const newEv = () => ({
     selfT: -Infinity, selfL: 0, posT: -Infinity, negT: -Infinity,
-    rep: new Map(), log: [], lvl: 0, cap: 1, own: false, pos: false,
+    rep: new Map(), log: [], lvl: 0, cap: 1, own: false, pos: false, on: Infinity,
     recT: -Infinity, recEff: Infinity, // a recovery claim at recT takes effect from recEff
   });
   const getEv = (i) => ev[i] || (ev[i] = newEv());
 
-  // Evidence level at time t: sets e.lvl (lifted risk), e.cap (ceiling) and e.own (self-evidence).
+  // Evidence level at time t: sets e.lvl (lifted risk), e.cap (ceiling), e.own (self-evidence) and
+  // e.on, the estimated symptom onset: the earliest evidence that still counts.
   function evEval(e, t) {
     const negOn = t - e.negT < negMs;
     const rc = t >= e.recEff ? e.recT : -Infinity; // evidence at or before an accepted recovery is void
+    const counts = (T) => t - T < evMs && T > rc && (T > e.negT || !negOn); // newer than a negative test
     e.pos = t - e.posT < evMs && e.posT >= e.negT && e.posT > rc;
     e.own = e.pos;
+    let q = 1, on = e.pos ? e.posT : Infinity;
+    if (counts(e.selfT)) { q *= 1 - e.selfL; e.own = true; if (e.selfT < on) on = e.selfT; }
+    for (const r of e.rep.values()) if (counts(r.t)) { q *= 1 - r.l; if (r.t < on) on = r.t; }
+    e.on = on;
     if (e.pos) { e.cap = 1; return (e.lvl = P.posTest); }
-    const counts = (T) => t - T < evMs && T > rc && (T > e.negT || !negOn); // newer than a negative test
-    let q = 1;
-    if (counts(e.selfT)) { q *= 1 - e.selfL; e.own = true; }
-    for (const r of e.rep.values()) if (counts(r.t)) q *= 1 - r.l;
     e.lvl = 1 - q;
     e.cap = negOn && e.lvl === 0 ? P.negTest : 1;
     return e.lvl;
@@ -117,14 +223,9 @@ export function inferRisk(input, params = {}) {
 
   // ---------- risk state ----------
 
-  const fac = (i, t) => {
-    const dt = t - Math.max(xT[i], dF[i]);
-    return dt > 0 ? Math.exp((-LN2 * dt) / halfMs) : 1;
-  };
   let lastOwn = false;
   function pOf(i, t) {
-    const f = fac(i, t);
-    const xt = 1 - (1 - xd[i] * f) * (1 - xi[i] * f);
+    const xt = 1 - (1 - totAt(Yd, i, t)) * (1 - totAt(Yi, i, t));
     let p = 1 - (1 - P.prior) * (1 - xt);
     const e = ev[i];
     lastOwn = false;
@@ -157,9 +258,9 @@ export function inferRisk(input, params = {}) {
     } else { hiSince[i] = -1; hiFlagged[i] = 0; }
   }
 
-  const active = (i, t) => (xd[i] + xi[i]) * fac(i, t) > 1e-4 || (ev[i] !== null && t - lastEvT[i] < evMs + DAY);
+  const active = (i, t) => totAt(Yd, i, t) + totAt(Yi, i, t) > 1e-4 || (ev[i] !== null && t - lastEvT[i] < evMs + DAY);
 
-  // Write decay / expiry change points for the quiet stretch (lastT, t).
+  // Write recovery / expiry change points for the quiet stretch (lastT, t).
   function fill(i, t) {
     let u = lastT[i] + fillMs;
     while (u < t && active(i, u)) {
@@ -177,54 +278,86 @@ export function inferRisk(input, params = {}) {
     pushChange(i, t, p, force);
   }
 
-  // Move stored x to time t (apply decay) and take the before-this-step snapshot of xd.
+  // Move the compartments to time t (recovery) and take the before-this-step snapshot of x_d.
   function touch(i, t) {
-    fill(i, t); // write decay points for the past first: state is about to change
-    const f = fac(i, t);
-    if (f < 1) { xd[i] *= f; xi[i] *= f; }
-    xT[i] = t;
-    if (stepT[i] !== t) { stepT[i] = t; xdPrev[i] = xd[i]; }
+    fill(i, t); // write recovery points for the past first: state is about to change
+    if (t > xT[i]) {
+      if (sum(Yd, i) + sum(Yi, i) > 0) { coef(t - xT[i]); advance(Yd, i); advance(Yi, i); }
+      xT[i] = t;
+    }
+    if (stepT[i] !== t) { stepT[i] = t; xdPrev[i] = sum(Yd, i); }
   }
 
-  // Source risk of j at time t: s1 from its own evidence, else s2 = damped second-hand risk.
-  let s1 = 0, s2 = 0;
+  // Source risk of j at time t: s1 and its stage from j's own evidence, else s2 = damped second-hand risk.
+  let s1 = 0, s2 = 0, st1 = 0;
   function source(j, t) {
-    s1 = 0; s2 = 0;
+    s1 = 0; s2 = 0; st1 = 0;
     const e = ev[j];
     if (e) { s1 = evEval(e, t); if (e.cap < 1) return; }
-    if (s1 > 0) return;
-    const x = stepT[j] === t ? xdPrev[j] : xd[j] * fac(j, t);
+    if (s1 > 0) { st1 = stageAt(e.on, t); return; }
+    const x = stepT[j] === t ? xdPrev[j] : totAt(Yd, j, t);
     if (x > 0.005) s2 = P.alpha * Math.min(x, P.alphaCap);
   }
 
-  // Expose i to j: nowMs = when i learns it, cMs = when the contact happened, sOld = already applied.
-  function expose(i, j, nowMs, cMs, lam, tier, durMin, a1, a2, sOld) {
+  // Doses add up per pair, not per 5-minute row: a pair (i, j) has one transmission probability
+  // lambda = 1 - exp(-(pre + live)) over all its contacts, and j's source risk s is applied to it once:
+  // the pair's share of x_i is A = s * lambda, so contact alone never lifts i above s. As the dose
+  // grows, the previous share is swapped for the new one: x <- 1 - (1 - x)(1 - A')/(1 - A).
+  // live = dose from contacts while j had evidence (or x_j, for second-hand); pre = dose from j's
+  // contacts before its evidence, recomputed by look-back. accD: evidence sources, accI: second-hand.
+  const accD = new Map(), accI = new Map();
+  const pair = (acc, i, j) => {
+    const k = i * n + j;
+    let e = acc.get(k);
+    if (!e) acc.set(k, (e = { pre: 0, live: 0, A: 0 }));
+    return e;
+  };
+
+  // Expose i to j: nowMs = when i learns it, cMs = when the contact happened, ci = contact row,
+  // dose = its dose (stage * unit dose), pairDose = the pair's dose up to and including it,
+  // s = j's source risk. Rio's update: x <- x + (1 - x) * s * lambda, lambda from the pair's dose.
+  function expose(i, j, nowMs, cMs, ci, dose, stage, s, pr, pairDose, second) {
     touch(i, nowMs);
-    const before = 1 - (1 - xd[i]) * (1 - xi[i]);
-    const pi = 1 - Math.exp(-lam);
-    if (a1 > 0) xd[i] = Math.min(P.xMax, 1 - (1 - xd[i]) * (1 - pi * a1) / (1 - pi * sOld));
-    if (a2 > 0) xi[i] = Math.min(P.xiMax, 1 - (1 - xi[i]) * (1 - pi * a2));
-    dF[i] = Math.max(dF[i], nowMs + decayAfter);
-    const delta = 1 - (1 - xd[i]) * (1 - xi[i]) - before;
-    if (delta >= P.contribMin) addContrib(i, j, cMs, nowMs, tier, durMin, pi, Math.max(a1, a2), delta, nowMs !== cMs);
+    const xd0 = sum(Yd, i), xi0 = sum(Yi, i);
+    const A = Math.max(pr.A, s * (1 - Math.exp(-pairDose)));
+    if (A > pr.A) {
+      const grow = (x0) => 1 - ((1 - x0) * (1 - A)) / (1 - pr.A);
+      if (second) addRisk(Yi, i, Math.min(P.xiMax, grow(xi0)) - xi0, nowMs - cMs);
+      else addRisk(Yd, i, grow(xd0) - xd0, nowMs - cMs);
+      pr.A = A;
+    }
+    const delta = (1 - xd0) * (1 - xi0) - (1 - sum(Yd, i)) * (1 - sum(Yi, i));
+    if (delta > 0) addContrib(i, j, cMs, nowMs, stage, dose, s, delta, nowMs !== cMs, pairDose);
   }
 
   // learnedMs = when the app knew about this contribution (later than the contact for retro ones), so
   // explain() never shows risk that wasn't known yet. Only entries learned together are merged.
-  function addContrib(i, j, cMs, learnedMs, tier, durMin, pi, risk, delta, retro) {
+  // Each entry carries the inputs of Rio's lambda; a merged entry keeps those of its biggest piece and
+  // sums minutes and dose (so transmission = 1 - exp(-dose) still holds).
+  // cInfo must describe this contact (unitDose was just called on it). Small pieces are kept so that
+  // 5-minute rows add up; explain() drops entries below contribMin.
+  function addContrib(i, j, cMs, learnedMs, stage, dose, risk, delta, retro, pairDose) {
+    const lam = 1 - Math.exp(-dose);
+    const durMin = cInfo.durS / 60, room = cInfo.room;
     const m = open[i] || (open[i] = new Map()), list = contribs[i] || (contribs[i] = []);
     let c = m.get(j);
     const sameBatch = c && c.retro === retro && (retro ? c.learnedMs === learnedMs : true);
     if (sameBatch && cMs - c.tMs <= mergeMs && cMs >= c.tMs) {
       if (!retro) c.learnedMs = learnedMs;
-      c.tMs = cMs; c.durationMin += durMin; c.delta += delta;
-      c.transmission = 1 - (1 - c.transmission) * (1 - pi);
-      if (tier < c.distanceTier) c.distanceTier = tier;
+      c.tMs = cMs; c.durationMin += durMin; c.delta += delta; c.dose += dose; c.pieces++; c.pairDose = pairDose;
+      c.transmission = 1 - (1 - c.transmission) * (1 - lam);
+      if (cInfo.tier < c.distanceTier) c.distanceTier = cInfo.tier;
       if (risk > c.otherRisk) c.otherRisk = risk;
+      if (dose > c.topDose) {
+        c.topDose = dose; c.wall = cInfo.wall; c.distanceM = cInfo.distanceM; c.indoor = cInfo.indoor; c.stage = stage; c.quanta = cInfo.quanta;
+        c.roomVolume = room ? room.volume : null; c.roomAch = room ? room.ach : null; c.roomLoss = room ? room.loss : null;
+      }
       return;
     }
-    c = { tMs: cMs, learnedMs, other: agentIds[j], distanceTier: tier, durationMin: durMin, transmission: pi,
-      otherRisk: risk, delta, retro };
+    c = { tMs: cMs, learnedMs, other: agentIds[j], distanceTier: cInfo.tier, durationMin: durMin,
+      distanceM: cInfo.distanceM, indoor: cInfo.indoor, roomVolume: room ? room.volume : null,
+      roomAch: room ? room.ach : null, roomLoss: room ? room.loss : null, quanta: cInfo.quanta, stage, dose,
+      transmission: lam, pairDose, wall: cInfo.wall, otherRisk: risk, delta, retro, pieces: 1, topDose: dose };
     m.set(j, c); list.push(c);
     if (list.length > 128) { // keep the 64 most influential
       list.sort((a, b) => b.delta - a.delta);
@@ -234,24 +367,39 @@ export function inferRisk(input, params = {}) {
 
   // ---------- reports ----------
 
-  // Evidence about j just rose from eOld to eNew: re-examine j's recent contacts.
-  const mark = new Int32Array(n);
+  // Evidence about j just rose from eOld to eNew: re-examine j's recent contacts, each at j's stage
+  // then (days from the estimated onset: 0.3 the day before a report, 0.05 two days before).
+  // Contacts after the onset estimate were already counted live (pair.live); earlier ones form the
+  // pair's `pre` dose, recomputed here from scratch. The window is replayed in time order with a running
+  // dose, so explain() credits each contact with the risk it added.
+  const mark = new Int32Array(n), pre = new Float64Array(n), run = new Float64Array(n), lastC = new Int32Array(n);
   let markId = 0;
-  function lookBack(j, step, nowMs, eNew, eOld) {
+  function lookBack(j, step, nowMs, eNew) {
     const b = cb[j];
     if (!b) return;
+    const on = ev[j].on;
     const touched = [];
     markId++;
     for (let k = ch[j]; k < cn[j]; k += 3) {
       const t = b[k];
       if (t >= step) break;
       if (t < step - L) continue;
-      const w = t >= step - earlySteps ? 1 : P.earlyWeight;
-      const i = b[k + 1], pk = b[k + 2], tier = (pk & 7) + 1;
-      expose(i, j, nowMs, startMs + t * stepMs, lamOf(pk), tier, (pk >> 3) / 60, eNew * w, 0, eOld * w);
-      if (mark[i] !== markId) { mark[i] = markId; touched.push(i); }
+      const cMs = startMs + t * stepMs, stage = stageAt(on, cMs);
+      if (stage === 0) continue;
+      const i = b[k + 1], ci = b[k + 2];
+      if (mark[i] !== markId) { mark[i] = markId; touched.push(i); pre[i] = 0; run[i] = 0; }
+      const dose = stage * unitDose(contacts[ci]);
+      if (cMs < on) pre[i] += dose;
+      run[i] += dose; lastC[i] = k;
+      expose(i, j, nowMs, cMs, ci, dose, stage, eNew, pair(accD, i, j), run[i], false);
     }
-    for (const i of touched) settle(i, nowMs, false);
+    for (const i of touched) { // live contacts older than the window, if any: credited to the last one
+      const pr = pair(accD, i, j), k = lastC[i];
+      if (pre[i] > pr.pre) pr.pre = pre[i];
+      unitDose(contacts[b[k + 2]]);
+      expose(i, j, nowMs, startMs + b[k] * stepMs, b[k + 2], 0, 0, eNew, pr, pr.pre + pr.live, false);
+      settle(i, nowMs, false);
+    }
   }
 
   function hadContact(a, b, fromStep, toStep) {
@@ -305,7 +453,7 @@ export function inferRisk(input, params = {}) {
             detail: `claimed recovered ${((tMs - sick) / HOUR).toFixed(0)} h after reporting sick; not believed until ${P.recoverDays} d` });
         } else { // believed: clear everything
           e.selfT = e.posT = e.negT = -Infinity; e.rep.clear();
-          touch(subject, tMs); xd[subject] = 0; xi[subject] = 0;
+          touch(subject, tMs); Yd.fill(0, subject * K, subject * K + K); Yi.fill(0, subject * K, subject * K + K);
         }
       }
     } else if (r.value === 'positive') { e.posT = tMs; level = P.posTest; }
@@ -313,31 +461,34 @@ export function inferRisk(input, params = {}) {
     e.log.push({ tMs, kind, value: r.value, by, level });
     lastEvT[subject] = tMs;
     const eNew = evEval(e, tMs);
-    if (eNew > eOld + 1e-9) lookBack(subject, r.t, tMs, eNew, eOld);
+    if (eNew > eOld + 1e-9) lookBack(subject, r.t, tMs, eNew);
     settle(subject, tMs, true);
   }
 
   // ---------- contacts ----------
 
-  function onContact(c) {
+  function onContact(c, ci) {
     const a = idx.get(c.agent_a), b = idx.get(c.agent_b);
     if (a === undefined || b === undefined || a === b) return;
-    const tier = Math.min(4, Math.max(1, Number(c.distance_tier) || 4));
-    const dur = Math.round(Number(c.duration_s)) || 0;
     const t = c.t, tMs = startMs + t * stepMs;
-    const pk = dur * 8 + (tier - 1);
-    pushContact(a, t, b, pk); pushContact(b, t, a, pk);
-    source(b, tMs); const b1 = s1, b2 = s2;
-    source(a, tMs); const a1 = s1, a2 = s2;
+    pushContact(a, t, b, ci); pushContact(b, t, a, ci);
+    source(b, tMs); const b1 = s1, b2 = s2, bSt = st1;
+    source(a, tMs); const a1 = s1, a2 = s2, aSt = st1;
     if (b1 + b2 + a1 + a2 === 0) return;
-    const lam = lamOf(pk), mins = dur / 60;
-    if (b1 + b2 > 0) { expose(a, b, tMs, tMs, lam, tier, mins, b1, b2, 0); settle(a, tMs, false); }
-    if (a1 + a2 > 0) { expose(b, a, tMs, tMs, lam, tier, mins, a1, a2, 0); settle(b, tMs, false); }
+    const D = unitDose(c);
+    const meet = (i, j, s1, st, s2) => {
+      const second = !(s1 > 0), stage = second ? stageMean : st, dose = stage * D;
+      const pr = pair(second ? accI : accD, i, j);
+      pr.live += dose;
+      expose(i, j, tMs, tMs, ci, dose, stage, second ? s2 : s1, pr, pr.pre + pr.live, second);
+      settle(i, tMs, false);
+    };
+    if (b1 + b2 > 0) meet(a, b, b1, bSt, b2);
+    if (a1 + a2 > 0) meet(b, a, a1, aSt, a2);
   }
 
   // ---------- run ----------
 
-  let contacts = input.contacts, reports = input.reports || [];
   // CSV rows carry t as a string: compared as strings, "1060" < "941" and reports ran out of order.
   // (Plain arrays only: precompute.mjs passes a numeric, build-on-demand array-like.)
   if (Array.isArray(contacts)) for (const r of contacts) r.t = Number(r.t);
@@ -351,11 +502,11 @@ export function inferRisk(input, params = {}) {
   while (ci < nc || ri < nr) {
     // evidence goes first within a step, so same-step contacts already see it
     if (ri < nr && (ci >= nc || reports[ri].t <= contacts[ci].t)) onReport(reports[ri++]);
-    else onContact(contacts[ci++]);
+    else { onContact(contacts[ci], ci); ci++; }
   }
   if (nc) endT = Math.max(endT, startMs + contacts[nc - 1].t * stepMs);
   if (nr) endT = Math.max(endT, startMs + reports[nr - 1].t * stepMs);
-  for (let i = 0; i < n; i++) if (chT[i] && active(i, endT)) settle(i, endT, false); // finish decays
+  for (let i = 0; i < n; i++) if (chT[i] && active(i, endT)) settle(i, endT, false); // finish recoveries
 
   // ---------- output ----------
 
@@ -385,10 +536,11 @@ export function inferRisk(input, params = {}) {
       ...x, active: tMs - x.tMs < (x.value === 'negative' ? negMs : evMs),
     }));
     const list = (i === undefined ? null : contribs[i]) || [];
-    const contributions = list.filter((c) => c.learnedMs <= tMs).sort((x, y) => y.delta - x.delta).slice(0, k)
-      .map((c) => ({ ...c }));
+    const contributions = list.filter((c) => c.learnedMs <= tMs && c.delta >= P.contribMin).sort((x, y) => y.delta - x.delta).slice(0, k)
+      .map(({ topDose, ...c }) => c);
     return { p: pAt(agentId, tMs), prior: P.prior, evidence, contributions };
   }
 
-  return { pAt, changes, explain, flags, params: P };
+  return { pAt, changes, explain, flags,
+    params: { ...P, indoorRH: unitDose.indoorRH, virusDecay: unitDose.virusDecay, stageMean } };
 }

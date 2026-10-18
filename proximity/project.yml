@@ -70,7 +70,11 @@ targets:
   FluniProxTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [Tests]
+    sources:
+      - Tests
+      # Fixtures as bundle resources so the data tests also run on a phone (see Tests/Fixture.swift).
+      - path: FlUni/Resources/building_heat.csv
+        buildPhase: resources
     dependencies:
       - target: FluniProx
 

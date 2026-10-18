@@ -49,14 +49,15 @@ WORKSTREAMS.md.)
 
 | Channel | What it carries | Distance quality |
 |---|---|---|
-| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±50–70 % |
+| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
 | **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
-| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk), UWB tokens; GPS fixes **only in the harness** | — |
-| **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link | ~10 cm |
+| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk + UWB capability), UWB tokens; GPS fixes **only in the harness**. New random link name on every ID rotation; every message size-capped (4 KB), rate-limited and validated; max 8 peers. The link's risk is never used (Bluetooth's is), and a hello ID counts only if Bluetooth heard it in the last 30 s | — |
+| **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link; keeps ranging through link drops (30 s grace); extended distance when both phones have the U2 chip | ~10 cm |
 | **GPS** | FlUni: your own fix, used **only on your phone** (building warnings); never sent. Harness: also sent to the linked phone for GPS ranging tests | 5–20 m, poor indoors |
 
 **Fusion** (`Fusion.swift`): fresh readings are averaged, each weighted by 1/σ². UWB dominates when
-present; Bluetooth and GPS take over when it drops out. While UWB is live, it **calibrates the
+present; Bluetooth and GPS take over when it drops out. A UWB reading keeps full weight for 3 s, then
+stays usable to 6 s with its σ growing 1 m/s, so one dropped frame doesn't snap the distance to Bluetooth. While UWB is live, it **calibrates the
 Bluetooth model** for that phone pair, so Bluetooth-only ranging improves afterwards. The result is
 P(within 6 ft), not a yes/no.
 
@@ -144,6 +145,11 @@ run `fused` with the phones in different rooms.
 
 Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagious`, `-speed 60`,
 `-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`.
+
+**Link and UWB uptime.** One MPC handshake at a time per phone (field logs: concurrent handshakes
+mostly hung), 6 s invite timeout, discovery restarts only when nothing is connecting. The app logs
+`[fluni] link metric handshake=…` per link and `link metric uwb_resume gap=… after_drop=…` when UWB comes
+back; `tools/stress.py` reports them (`handshake_med`, `link_failed`, `uwb_gap_max`, `uwb_after_drop_max`).
 
 ## Demo
 

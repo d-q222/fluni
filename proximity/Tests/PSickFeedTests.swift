@@ -130,7 +130,7 @@ final class PSickFeedTests: XCTestCase {
         // Our own copy of model/out/influenza_none_n10_d14_s2_f1f772f6/p_sick.csv (that run is being retired).
         let fixtures = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent()
             .appendingPathComponent("Fixtures")
-        let data = try Data(contentsOf: fixtures.appendingPathComponent("p_sick_f1f772f6.csv"))
+        let data = try Fixture.data("p_sick_f1f772f6.csv", sourcePath: fixtures.appendingPathComponent("p_sick_f1f772f6.csv"))
         let f = try PSickFeed.parse(data)
         XCTAssertEqual(f.rejected, 0)
         XCTAssertEqual(f.rowCount, 136)
@@ -141,5 +141,21 @@ final class PSickFeedTests: XCTestCase {
         XCTAssertEqual(f.p(agent: "A0001", at: t("2026-01-08T20:14:59")), 0.02)
         XCTAssertEqual(f.p(agent: "A0001", at: t("2026-01-08T20:15:00")), 0.0327)
         XCTAssertEqual(f.p(agent: "A0009", at: t("2026-02-01T00:00:00")), 0.3689)
+    }
+
+    /// Impossible calendar dates are bad rows, not a silent roll into the next month (mutation review, round 2).
+    func testImpossibleCalendarDatesAreRejected() throws {
+        let bad = ["2026-02-29T10:00:00", "2026-02-31T10:00:00", "2026-04-31T10:00:00", "2026-06-31T10:00:00",
+                   "2026-09-31T10:00:00", "2026-11-31T10:00:00", "2100-02-29T10:00:00"]
+        for t in bad {
+            let f = try PSickFeed.parse(Data("agent_id,t_iso,p_sick\nA1,\(t),0.5\n".utf8))
+            XCTAssertEqual(f.rejected, 1, "\(t) must be rejected")
+        }
+        let good = ["2028-02-29T10:00:00", "2000-02-29T10:00:00", "2026-01-31T10:00:00", "2026-12-31T23:59:59",
+                    "2026-04-30T10:00:00"]
+        for t in good {
+            let f = try PSickFeed.parse(Data("agent_id,t_iso,p_sick\nA1,\(t),0.5\n".utf8))
+            XCTAssertEqual(f.rejected, 0, "\(t) is a real date")
+        }
     }
 }

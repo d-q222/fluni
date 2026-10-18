@@ -7,6 +7,7 @@ import { gunzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cleanFootprints } from '../footprints.js';
 
 const here = dirname(fileURLToPath(import.meta.url)), hm = resolve(here, '..');
 const args = process.argv.slice(2);
@@ -50,16 +51,13 @@ function parseCsv(text) {
   return rows.filter((r) => r.length === head.length).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i]])));
 }
 const r6 = (n) => Math.round(n * 1e6) / 1e6;
-function wktGeometry(wkt) {
-  const body = String(wkt).replace(/^[A-Z ]+/i, '').trim().replace(/^\(+|\)+$/g, '');
-  const polys = body.split(/\)\s*\)\s*,\s*\(\s*\(/).map((poly) => poly.split(/\)\s*,\s*\(/)
-    .map((ring) => ring.split(',').map((pt) => pt.trim().split(/\s+/).map(Number).map(r6))));
-  return polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys };
-}
+const round6 = (c) => (typeof c[0] === 'number' ? c.map(r6) : c.map(round6));
 const wanted = new Set(totals.buildings.map((b) => b.id));
-const features = parseCsv(readFileSync(join(runDir, 'map/buildings.csv'), 'utf8'))
-  .filter((b) => wanted.has(b.location_id) && b.footprint_wkt)
-  .map((b) => ({ type: 'Feature', properties: { id: b.location_id }, geometry: wktGeometry(b.footprint_wkt) }));
+// Same cleanup as the presenter map: no boxes for outdoor spaces, manual boxes take a real outline.
+const features = cleanFootprints(parseCsv(readFileSync(join(runDir, 'map/buildings.csv'), 'utf8')))
+  .filter(({ row }) => wanted.has(row.location_id))
+  .map(({ row, geometry }) => ({ type: 'Feature', properties: { id: row.location_id },
+    geometry: { type: geometry.type, coordinates: round6(geometry.coordinates) } }));
 writeFileSync(join(out, 'data/buildings.geojson'), JSON.stringify({ type: 'FeatureCollection', features }));
 rmSync(tmp, { recursive: true, force: true });
 

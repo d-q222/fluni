@@ -14,7 +14,7 @@ const out = process.argv[3] || join(dirname(fileURLToPath(import.meta.url)), 'ou
 
 // Plain CSV (no quoted commas in these files); numbers stay strings except where converted below.
 function parseCsv(text) {
-  const lines = text.split('\n');
+  const lines = text.split(/\r?\n/); // some runs have CRLF line ends
   const head = lines[0].split(',');
   const rows = [];
   for (let k = 1; k < lines.length; k++) {
@@ -34,12 +34,18 @@ const contacts = parseCsv(gunzipSync(read('contacts.csv.gz')).toString());
 for (const c of contacts) { c.t = +c.t; c.distance_m = +c.distance_m; c.duration_s = +c.duration_s; }
 const reports = parseCsv(read('reports_tests.csv').toString());
 for (const r of reports) { r.t = +r.t; r.target_agent_id = r.target_agent_id || null; }
+// Room volume and ventilation for Rio's dose (map/rooms.csv). Its polygon_wkt column has quoted commas,
+// but room_id ... ventilation_ach come before it, so a plain split reads them correctly.
+let rooms = null;
+try {
+  rooms = new Map(parseCsv(read('map/rooms.csv').toString()).map((r) => [r.room_id, r]));
+} catch { console.warn('no map/rooms.csv: every room gets the default size and ventilation'); }
 
 const startMs = Date.parse(config.start);
 const DAY = 86400000, HOUR = 3600000;
 const t0 = Date.now();
 const risk = inferRisk({
-  contacts, reports, agentIds: agents.map((a) => a.agent_id), stepMin: config.step_min, startMs,
+  contacts, reports, rooms, agentIds: agents.map((a) => a.agent_id), stepMin: config.step_min, startMs,
 });
 console.log(`${contacts.length} contacts, ${reports.length} reports -> inferred in ${Date.now() - t0} ms\n`);
 
@@ -58,14 +64,14 @@ for (const a of agents) {
   console.log([a.agent_id, ...days.map((d) => risk.pAt(a.agent_id, startMs + (d + 1) * DAY - 1).toFixed(3))].join('\t'));
 }
 
-for (const id of ['A0002', 'A0003']) {
+for (const id of ['A0005', 'A0007']) {
   console.log(`\nchange points ${id}`);
   for (const c of risk.changes.get(id) || []) console.log(`  ${clock(c.tMs)}  ${c.p.toFixed(3)}`);
 }
 
-const wed22 = startMs + 2 * DAY + 22 * HOUR;
-console.log(`\nexplain A0002 at ${clock(wed22)}`);
-console.log(JSON.stringify(risk.explain('A0002', wed22), (k, v) => (k === 'tMs' ? clock(v) : typeof v === 'number' ? +v.toFixed(3) : v), 2));
+const sat22 = startMs + 5 * DAY + 22 * HOUR;
+console.log(`\nexplain A0005 at ${clock(sat22)}`);
+console.log(JSON.stringify(risk.explain('A0005', sat22, 3), (k, v) => (k === 'tMs' ? clock(v) : typeof v === 'number' ? +v.toFixed(3) : v), 2));
 
 console.log('\nflags');
 for (const f of risk.flags) console.log(`  ${clock(f.tMs)}  ${f.agentId}  ${f.kind}  ${f.detail}`);
