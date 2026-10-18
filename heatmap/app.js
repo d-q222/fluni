@@ -1133,9 +1133,15 @@ async function main() {
 
   // A lock-screen style banner, with FlUni's own notification text, when this person newly crosses into a
   // heads-up, a close contact, or a busy building (not for the state they were already in when opened).
-  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null;
+  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null, noticeT = -Infinity;
   function phoneNotice(me, st) {
-    if (noticeFor !== me.id) { noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; return; }
+    // A new person, or time went backwards (a scrub back): start over, and drop a banner from the later moment.
+    if (noticeFor !== me.id || now < noticeT) {
+      if (now < noticeT) document.querySelector('#phone .ph-banner')?.remove();
+      noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; noticeT = now;
+      return;
+    }
+    noticeT = now;
     const rank = { none: 0, nearby: 1, close: 2 };
     let text = null;
     if (rank[st.level] > rank[noticeSeen.level]) {
