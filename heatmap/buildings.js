@@ -1,8 +1,8 @@
 // Building-level view for the user-facing map: each campus building filled by how many sick people are
 // expected there, drawn exactly as FlUni's map draws it (userstyle.js is shared with the app bundle):
 // warm sun -> fire fills, a halo with a pixel floor so a small hot building registers zoomed out, tap a
-// building for "about X sick of Y people". The presenter adds a count badge on each hot building and building
-// names. It takes only per-building totals, never agent positions, so nothing finer than a building can be drawn.
+// building for "about X sick of Y people" (no count badges: users see only the shading). The presenter adds
+// building names. It takes only per-building totals, never agent positions, so nothing finer than a building can be drawn.
 import { buildingStyle, HIDDEN, haloRadius, GLOW, HALO_BLUR, fmt } from './userstyle.js';
 import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
@@ -31,7 +31,7 @@ export class BuildingTotalsLayer {
       const id = 'bld_' + String(f.properties.id).split('/')[1];
       const layer = L.geoJSON(f, { ...this.P.fill, style: () => HIDDEN });
       layer.on('click', (e) => { L.DomEvent.stopPropagation(e); this._open(id, e.latlng); });
-      this.items.set(id, { layer, halo: null, name: f.properties.name || '', center: layer.getBounds().getCenter(), shown: false, key: '', badge: '', f });
+      this.items.set(id, { layer, halo: null, name: f.properties.name || '', center: layer.getBounds().getCenter(), shown: false, key: '', badge: false, f });
     }
     this.labels = new LabelLayer(map, { pane: 'ub-label', avoid: this.avoid });
     this._zoom = () => { const r = haloRadius(map.getZoom()); for (const it of this.items.values()) if (it.halo) it.halo.setRadius(r); };
@@ -71,7 +71,7 @@ export class BuildingTotalsLayer {
       if (!d) {
         if (it.shown) { this.group.removeLayer(it.layer); it.shown = false; it.key = ''; }
         if (it.halo) { it.halo.remove(); it.halo = null; }
-        if (it.badge) { it.badge = ''; labelsDirty = true; }
+        if (it.badge) { it.badge = false; labelsDirty = true; }
         continue;
       }
       const style = buildingStyle(d.n, d.excess ?? d.expected, vmax, { minPeople, forecast });
@@ -83,8 +83,8 @@ export class BuildingTotalsLayer {
         if (!it.halo) it.halo = L.circleMarker(it.center, { interactive: false, stroke: false, radius: haloRadius(this.map.getZoom()), ...this.P.halo }).addTo(this.haloGroup);
         it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
       } else if (it.halo) { it.halo.remove(); it.halo = null; }
-      const badge = style.fill ? (d.expected < 0.5 ? '&lt;1' : String(Math.round(d.expected))) : '';
-      if (badge !== it.badge) { it.badge = badge; labelsDirty = true; }
+      const hot = Boolean(style.fill); // hot buildings get their name a zoom level earlier
+      if (hot !== it.badge) { it.badge = hot; labelsDirty = true; }
       it.d = d; it.hot = d.expected;
     }
     if (labelsDirty || !this._labelsBuilt) { this._labelsBuilt = true; this._setLabels(); }
@@ -94,7 +94,6 @@ export class BuildingTotalsLayer {
   _setLabels() {
     const out = [];
     for (const [id, it] of this.items) {
-      if (it.badge) out.push({ key: 'b:' + id, lat: it.center.lat, lon: it.center.lng, html: it.badge, cls: 'ub-badge', p: 0, minZoom: 0 });
       if (it.name) out.push({ key: 'n:' + id, lat: it.center.lat, lon: it.center.lng, html: esc(it.name.slice(0, 28)), cls: 'ub-name',
         p: it.badge ? 1 : 2, minZoom: it.badge ? 16 : 17 });
     }
