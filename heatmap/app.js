@@ -9,12 +9,11 @@ import { mountTissueAlert } from './tissue-alert.js';
 import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
-import { BuildingTotalsLayer } from './buildings.js';
+import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
-import { meanFieldRisk, MF_DEFAULTS } from '../model/meanfield.js';
-import { RiskField } from './riskfield.js';
+import { meanFieldRisk } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
@@ -249,10 +248,10 @@ async function loadModel(dataUrl, agentIds) {
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
       let risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      // Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs: the risk field's input
-      const mf = await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base));
-      if (!mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): no risk field.`);
-      if (mf && MEAN_FIELD) risk = mf;
+      // ?model=meanfield: Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs
+      const mf = MEAN_FIELD ? await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base)) : null;
+      if (MEAN_FIELD && !mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): using infer.js.`);
+      if (mf) risk = mf;
       if (risk) return { risk, mf: mf && (() => mf), contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
@@ -267,9 +266,8 @@ async function loadModel(dataUrl, agentIds) {
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
     let risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
-    // Baker et al.'s mean-field over the same contacts and reports: every agent's P(flu) and how infectious
-    // they are, which the risk field ("Chance of catching flu here") draws. ?model=meanfield also colours people by it.
-    // Computed on first use (~3 s for 1,000 agents over 4 days), so only that view or ?model=meanfield pays for it.
+    // ?model=meanfield: Baker et al.'s mean-field over the same contacts and reports colours people (and so the
+    // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
     let mfRisk = null;
     const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
       weather: config.params?.weather, days: config.days }));
@@ -956,26 +954,29 @@ async function main() {
     return aero;
   };
 
-  // Chance of catching flu here (riskfield.js): P(infected if you stood at a spot for 1 h). Each person leaves an
-  // exponentially fading circle of hazard, peak = lambda's 1 m, 1 h near-field dose times their expected
-  // infectiousness from the mean-field model (P(flu) at each infection age x that stage's shedding); circles add up.
-  // ?fade=<m> sets how fast a circle fades (default 5 m). Darkness is proportional to P, full at RISK.vmax.
-  const RISK = { vmax: 0.01, fadeM: Number(PARAMS.get('fade')) || 5 };
-  const riskQ = MODEL.quantaPeak * MF_DEFAULTS.lambdaScale * MODEL.breathingRate / MODEL.nearFieldQ; // hazard at 1 m, 1 h, per unit shed
-  let riskField = null;
-  const riskAt = (t, states, truth) => {
-    if (!riskField) {
-      riskField = new RiskField(bounds, 2); // 2 m cells: small wings get a smoother edge
-      if (zoneHeat) riskField.setZones(Z.zones, rasterZone); // walls: indoor heat stays in its building, outdoor heat outside
-    }
-    const src = [];
-    for (const st of states) {
-      const shed = truth ? Number(st.infectious) || 0 : model.mf().shedAt(st.id, t);
-      const zone = st.buildingId && !st.walking ? Z.zoneFor(st.buildingId) : -1; // their building, or open air
-      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, zone, h0: (riskQ * shed) / (st.buildingId ? 1 : MODEL.outdoorNearDilution) });
-    }
-    return riskField.compute(src, RISK.fadeM, RISK.vmax);
+  // Building shading (the default presenter view, when the run has outlines): each building's darkness is linear in
+  // the expected number of infected people in it now, Σ P(infected) over everyone inside (the dots' P, model.risk.pAt).
+  // truth: the number actually infected (sim). People outdoors or walking count nowhere; empty buildings stay plain.
+  const shading = zoneHeat;
+  const buildingSums = (states, truth = false) => {
+    const out = new Map();
+    for (const s of states) if (s.buildingId && !s.walking) out.set(s.buildingId, (out.get(s.buildingId) || 0) + (truth ? Number(Boolean(s.sick)) : s.p));
+    return out;
   };
+  // Fixed scale, the same at every moment: the 95th percentile of every occupied building's sum over ~100 moments
+  // of the run (everyone at their latest sample, cheap), so the busiest buildings saturate and the rest spread out.
+  const shadeMax = (() => {
+    if (!shading) return 1;
+    const all = [], N = 100;
+    for (let k = 0; k < N; k++) {
+      const t = t0 + ((t1 - t0) * (k + 0.5)) / N, states = [];
+      for (const track of tracks.values()) { const s = stayNow(track, t); if (s) states.push(s); }
+      for (const e of buildingSums(states).values()) all.push(e);
+    }
+    all.sort((a, b) => a - b);
+    const q = all[Math.floor(0.95 * (all.length - 1))] || 1;
+    return q >= 2 ? Math.ceil(q) : Math.ceil(q * 10) / 10; // a round number for the legend
+  })();
 
   // Infectious air by room, straight from the simulator: room_exposure.csv.gz has the sim's own
   // quanta concentration for every occupied room and step (Wells-Riley, with each room's volume and
@@ -1099,7 +1100,7 @@ async function main() {
     }
     idle(warmNext);
   };
-  setTimeout(() => { if (!map._loaded) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen
+  setTimeout(() => { if (!map._loaded || shading) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen; shading needs no grids
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
   let fitted = false;
   new ResizeObserver(() => {
@@ -1115,6 +1116,7 @@ async function main() {
   }).observe($('map'));
   const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
+  const shadeLayer = new BuildingShadeLayer(outlines); // the default view's building shading
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
@@ -1621,10 +1623,10 @@ async function main() {
   const pct = (p) => `${Math.round(p * 100)}%`;
   function buildingCard(h, full) {
     const i = buildingInfo(h);
-    if (!full) return `<b>${esc(i.name)}</b><br>${i.n} ${i.n === 1 ? 'person' : 'people'} · ≈${fmtSick(i.expected)} expected sick`;
+    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtSick(i.expected)} expected infected · ${i.n} ${i.n === 1 ? 'person' : 'people'}`;
     const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
     return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
-      <div class="row"><span>Expected sick (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
+      <div class="row"><span>Expected infected (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
       <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
       <div class="row"><span>People here now</span><b>${i.n}</b></div>
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
@@ -1713,7 +1715,7 @@ async function main() {
     const b = map.getBounds();
     let sum = 0;
     for (const a of current.values()) if (b.contains([a.lat, a.lon])) sum += a.p;
-    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected sick`;
+    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected infected`;
   }
 
   // Playing, a dot glides from its route to its seat (and back) instead of jumping; the heat follows the
@@ -1762,8 +1764,11 @@ async function main() {
     const heatDue = !zooming && (heatDirty || realNow - lastHeat >= heatInterval); // zooming: when it settles
     if (heatDue) {
       const started = performance.now();
-      heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
-      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || view === 'catch' ? 'none' : '';
+      const shade = shading && view === 'demo';
+      heatLayer.canvas.style.display = view === 'public' || view === 'airborne' || shade ? 'none' : '';
+      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || shade ? 'none' : '';
+      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingSums(current.values(), truthMode()), shadeMax); }
+      else if (shadeLayer.map) shadeLayer.remove();
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
         else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
@@ -1772,17 +1777,13 @@ async function main() {
         if (view === 'public') { if (!publicLayer.added) { publicLayer.addTo(map); publicLayer.added = true; } updateUserLayer(publicLayer); }
         else if (publicLayer.added) { publicLayer.remove(); publicLayer.added = false; }
       }
-      if (view === 'catch') {
-        heatLayer.setBounds(gridBounds(riskAt(now, current.values(), truthMode())));
-        paint(riskField, heatLayer.grid, RISK.vmax);
-        heatLayer.setGrid();
-      } else if (view === 'airflow') {
+      if (view === 'airflow') {
         const st = [...current.values()];
         heatLayer.setBounds([sw, ne]);
         paint(airflowAt(now, st, truthMode()), heatLayer.grid, aeroMax);
         heatLayer.setGrid();
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
-      } else if (view !== 'public' && view !== 'airborne') {
+      } else if (view !== 'public' && view !== 'airborne' && !shade) { // no outlines: the diffused room-level heat
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
         if (g.zoneOut) heatLayer.setZones(g, Z.zones, demoScale());
         else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
@@ -1884,16 +1885,17 @@ async function main() {
     const num = (x) => (x >= 1 ? x.toFixed(1) : x.toPrecision(2)); // a building's count can be a fraction of a person
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
-    if (v === 'catch') { // linear: darkness proportional to P
-      $('vmid').textContent = `${(RISK.vmax * 50).toFixed(1)}%`;
-      $('vmax').textContent = `${RISK.vmax * 100}%+`;
+    const shade = shading && v === 'demo';
+    if (shade) { // linear: darkness proportional to the building's expected infected
+      $('vmid').textContent = num(shadeMax / 2);
+      $('vmax').textContent = `${num(shadeMax)}+`;
     }
     if (v === 'airborne') {
       $('vmid').textContent = roomAir ? (roomAir.vmax / 4).toPrecision(2) : '';
       $('vmax').textContent = roomAir ? `${roomAir.vmax.toPrecision(2)}+` : 'loading…';
     }
-    document.querySelector('.legend h2').innerHTML = v === 'catch'
-      ? `Chance of catching flu here <span>if you stood on this spot for 1 hour${truthMode() ? ' (sim truth: who is actually infectious)' : ''}. Each person adds a circle that fades over ${RISK.fadeM} m, bigger the likelier they have flu and the more infectious their stage (Baker et al. mean-field)</span>`
+    document.querySelector('.legend h2').innerHTML = shade
+      ? `<span id="view-count"></span> people in view <span>Shade: ${truthMode() ? 'people actually infected (simulation truth)' : 'expected infected people'} in the building${truthMode() ? '' : ', Σ P(infected) of everyone inside'}</span>`
       : v === 'airborne'
       ? 'Infectious air by room <span>quanta per m³, from the simulation</span>'
       : v === 'airflow'
@@ -1943,8 +1945,6 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
-  // Chance of catching flu here (riskfield.js, from the mean-field model); added here so the page markup stays the design pass's.
-  if (model?.mf) $('view').append(new Option('Catch risk (1 h)', 'catch'));
   // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
@@ -1959,7 +1959,7 @@ async function main() {
   document.querySelector('.options').append(basePick);
   // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
   const params = new URLSearchParams(location.search);
-  if (params.get('view')) $('view').value = params.get('view');
+  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=catch: the default)
   if (params.get('horizon')) horizon.value = params.get('horizon');
   if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
   const mapNote =

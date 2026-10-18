@@ -39,18 +39,12 @@ URL options, which can be combined:
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
-- `?view=catch`: "Catch risk (1 h)", the chance of catching flu here. Darkness at a spot is proportional to the
-  chance you'd catch flu standing there for an hour (full at 1%). Each person leaves an exponentially
-  fading circle of hazard (`riskfield.js`): its peak is λ's near-field dose at 1 m for 1 h, times the
-  person's expected infectiousness from the mean-field model (`model/meanfield.js`: P(flu) at each
-  infection age × that stage's shedding), diluted 5× outdoors. Walls bound it: the circle of someone in a
-  building lights only that building, and someone outdoors only open air. Circles add up as hazards,
-  P = 1 − exp(−Σ). `&fade=5` sets the fade length in metres (default 5). Big runs need
-  `node model/meanfield-cli.mjs sim/runs/<run>` first. With `?color=truth` it uses who is actually infectious.
 - `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
-  `model/infer.js`. No "Why this %?" panel then.
-- `?color=truth`: dots *and* demo heat follow the sim's true status (who is actually infectious)
-  instead of the app's estimate. This is the same as choosing "Color: true status (sim)".
+  `model/infer.js`, for the dots and so also the building shading. No "Why this %?" panel then. Big runs need
+  `node model/meanfield-cli.mjs sim/runs/<run>` first.
+- `?color=truth`: dots *and* the building shading follow the sim's true status instead of the app's
+  estimate (a building's shade is then the number of people in it actually infected). This is the same as
+  choosing "Color: true status (sim)".
 
 Demo scenes on the sim's mock run:
 
@@ -61,7 +55,7 @@ Demo scenes on the sim's mock run:
 
 ## Demo map vs. user map
 
-- **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **Demo map** (presenter): sees everything, including agent dots, per-building expected infected and true status.
 - **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
   buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
@@ -69,9 +63,9 @@ Demo scenes on the sim's mock run:
   on Today; the campus-model P is shown only in the presenter bar and in the calculation sheet "for comparison". Taps are visual only.
 - **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
   (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
-  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Room-level heat (demo)**:
-  hover a building for people and expected sick, click it for Σ P, above-baseline, Low/Elevated/High counts and the top 3 people
-  driving it (click one to open the phone).
+  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Expected infected per
+  building** (the default view): hover a building for "≈ N expected infected · M people", click it for Σ P, above-baseline,
+  Low/Elevated/High counts and the top 3 people driving it (click one to open the phone).
 - **User map** (the phone, and "What users see" on the main map): built only from totals in
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
@@ -126,8 +120,16 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   same as concentration × average P(sick). The colour scale is fixed across all timestamps, so a
   colour means the same thing at every moment. It is a square-root scale, so the legend's middle
   label is a quarter of its maximum.
-- **Heat → "Room-level (demo)"**: fine detail (σ = 6 m close up), presenter only. How the heat spreads
-  (`diffuse.js`, `masks.js`):
+- **"Expected infected per building"** (the presenter's default view, `BuildingShadeLayer` in `buildings.js`): no
+  heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
+  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
+  with `?model=meanfield`). Plain Σ P, baseline included, as asked. Darkness is linear in that sum (not √), along the
+  campfire ramp (`HEAT_STOPS`), on a fixed scale for the whole run: the 95th percentile of every occupied building's
+  sum over 100 moments of the run, rounded up, is the darkest; the legend reads 0 → that max+. Empty buildings stay
+  plain; people outdoors or walking shade nothing. With "Color: true status (sim)" a building's shade is the number
+  actually infected (E or I) there, on the same scale.
+- **Heat → room-level** (only for a run without building outlines now): fine detail (σ = 6 m close up), presenter
+  only. How the heat spreads (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
     streets. Outdoors, it spreads freely.
   - Heat is the expected number of infected people near each point now: Σ P(sick) of the people
