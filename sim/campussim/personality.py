@@ -13,9 +13,12 @@ fixed quadrature sample, so each archetype's mean trait equals today's (the *_be
 sick_profile_p in population.json): the archetype sets the average, Big Five sets who varies around it.
 
 The weights are reasoned directions (placeholders), to be replaced by fitted ones from the
-calibration loop. Draws use their own RNG stream, so dorms, friend groups, teams and schedules are
-the same as with personality off.
+calibration loop: personality.weights_source = "calibrated" takes them from
+configs/behavior_calibrated.json (scripts/calibrate_agents.py) for every trait it marks fitted. Draws
+use their own RNG stream, so dorms, friend groups, teams and schedules are the same as with
+personality off.
 """
+import json
 import zlib
 
 import numpy as np
@@ -52,6 +55,24 @@ def _lin(w, dz):
     return sum(float(w.get(t, 0.0)) * dz[:, k] for k, t in enumerate(TRAITS))
 
 
+def _weights(cfg):
+    """personality.weights, or (weights_source = "calibrated") the fitted weights of each trait that
+    behavior_calibrated.json marks in weights_fitted, falling back per trait to personality.json."""
+    w = cfg["personality"]["weights"]
+    if cfg["personality"].get("weights_source", "config") != "calibrated":
+        return w
+    cal = cfg.get("behavior_calibrated")
+    if cal is None:
+        from .config import CONFIG_DIR
+        f = CONFIG_DIR / "behavior_calibrated.json"
+        if not f.exists():
+            raise FileNotFoundError(f"personality.weights_source = calibrated but {f} is missing "
+                                    "(run scripts/calibrate_agents.py)")
+        cal = json.loads(f.read_text())
+    ok = cal.get("weights_fitted", {})
+    return {t: dict(cal["weights"][t]) if ok.get(t) and t in cal.get("weights", {}) else v for t, v in w.items()}
+
+
 def _solve_intercept(target, lin):
     """b with mean(sigmoid(b + lin)) == target (bisection; lin is a fixed sample)."""
     lo, hi = -20.0, 20.0
@@ -71,7 +92,7 @@ class Personality:
         self.mu = np.array([[float(self.c["big_five_mean"][a][t]) for t in TRAITS] for a in codes.ARCHETYPES])
         self.kappa = float(self.c["concentration"])
         self.noise = float(self.c["noise_sd"])
-        self.w = self.c["weights"]
+        self.w = _weights(cfg)
         mean = lambda ab: ab[0] / (ab[0] + ab[1])  # noqa: E731
         self.target = {t: np.array([mean(ap[a][f"{t}_beta"]) for a in codes.ARCHETYPES])
                        for t in ("compliance", "mask_propensity", "honesty")}

@@ -40,6 +40,12 @@ def recorded_config(cfg):
         rec.get("interventions", {}).pop("fluni", None)
     if not _llm_on(rec):  # keeps run ids of runs without Claude-driven agents unchanged
         rec.pop("llm_agents", None)
+    pc = rec.get("personality", {})
+    if pc.get("mode", "off") == "off" or pc.get("weights_source", "config") != "calibrated":
+        rec.pop("behavior_calibrated", None)  # configs/behavior_calibrated.json only counts when used
+    else:
+        bc = rec.get("behavior_calibrated", {})
+        rec["behavior_calibrated"] = {k: bc.get(k) for k in ("weights", "weights_fitted", "source_runs", "created")}
     if rec.get("personality", {}).get("mode", "off") == "off":  # keeps run ids of runs without Big Five
         rec.pop("personality", None)
     return rec
