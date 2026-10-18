@@ -32,7 +32,13 @@ final class ProximityModel: ObservableObject {
     @Published var speed = 1.0  // real time; demo/test launches pass -speed
     @Published var enabled: Set<Source> = Set(Source.allCases)
     @Published private(set) var peers: [PeerState] = []
-    @Published private(set) var exposure = ExposureTracker()
+    @Published private(set) var exposure = ExposureTracker() {
+        didSet { if liveRisk != exposure.probability { liveRisk = exposure.probability } }
+    }
+    /// This phone's risk estimate p (RiskEstimate, Rio's formula), recomputed on every 1 s tick while a
+    /// risky peer's dose accrues, on return to the foreground, and when the 24 h window drops old dose.
+    /// Bind the on-screen number to this.
+    @Published private(set) var liveRisk = RiskEstimate.prior
     /// True while ContactGuard sees a burst of new risky IDs (likely spoofing); Bluetooth-only alerts are paused.
     @Published private(set) var unusualSignals = false
     private var contactGuard = ContactGuard()
@@ -118,6 +124,10 @@ final class ProximityModel: ObservableObject {
         let t = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
         t.tolerance = 0.2  // lets iOS coalesce wakeups
         timer = t
+        // Back in the foreground: credit the gap now, so p shows what accrued in the background at once
+        // rather than on the timer's next fire.
+        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
+                                               queue: .main) { [weak self] _ in self?.tick() }
     }
 
     /// @Published fires on every set, even an equal one; skip those.
@@ -455,6 +465,9 @@ final class ProximityModel: ObservableObject {
     // MARK: Fusion + exposure, once a second (and after background sightings)
 
     private func tick() {
+        #if DEBUG
+        if demoTimer != nil { return }  // -demoPeer: the pretend peer is the only exposure source
+        #endif
         let now = Date()
         if let p = pauseState {
             lastTick = now  // so the first tick after resume doesn't count the paused time
@@ -490,24 +503,15 @@ final class ProximityModel: ObservableObject {
         let guarded = contactGuard.apply(now: now, byID.values.map(\.guardInput), log: log)
         if unusualSignals != contactGuard.flagged { unusualSignals = contactGuard.flagged }
         let fresh = Set(byID.values.filter { $0.estimate != nil }.map(\.id))
-        if accrues {
-            var credits: [AccrualCredit] = []
-            for g in guarded where fresh.contains(g.id) {
-                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, distance: g.distance) else { continue }
-                credits.append(c)
-                if c.risk != .none, c.pClose > 0,
-                   c.seconds >= 5 || UIApplication.shared.applicationState != .active {
-                    log("bg credit peer=\(c.id.prefix(6)) secs=\(fmt(c.seconds)) p=\(fmt(c.pClose)) risk=\(c.risk)")
-                }
+        let fed = ExposureTick.run(guarded: guarded, fresh: fresh, now: now, wall: dt, speed: speed, accrues: accrues,
+                                   accrual: &accrual, exposure: &e) { c in
+            if c.risk != .none, c.pClose > 0,
+               c.seconds >= 5 || UIApplication.shared.applicationState != .active {
+                log("bg credit peer=\(c.id.prefix(6)) secs=\(fmt(c.seconds)) p=\(fmt(c.pClose)) risk=\(c.risk)")
             }
-            accrual.prune(now: now)
-            let feed = AccrualFeed.contacts(credits, wallSeconds: dt)
-            e.advance(simSeconds: dt * speed, contacts: feed.contacts, doses: feed.doses)
-            exposureHistory.record(simSeconds: dt * speed, contacts: feed.contacts, at: now)
         }
-        // The heads-up level from everyone in range now (adds nothing: zero seconds).
-        e.advance(simSeconds: 0, contacts: guarded.map { ($0.pClose, $0.risk) })
-        if e != exposure { exposure = e }  // unchanged ticks don't republish
+        if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
+        if e != exposure { exposure = e }  // unchanged ticks don't republish; any change in p does
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
         notifiedLevel = next.notified
@@ -534,6 +538,43 @@ final class ProximityModel: ObservableObject {
     }
 
     private func fmt(_ x: Double) -> String { String(format: "%.2f", x) }
+
+    #if DEBUG
+    private var demoTimer: Timer?
+    private var demoAccrual = SightingAccrual()
+
+    /// Debug only: `-demoPeer contagious@0.5` (or `possible@2`, distance in metres) puts a pretend peer
+    /// beside this phone, credited every second through the same `ExposureTick` as tick() but with no
+    /// radios, so the simulator and UI tests can watch the live estimate climb. Honours `-speed`. While it
+    /// runs, tick() does nothing (one exposure clock). Safe to call more than once.
+    func startDemoPeerFromLaunchArguments() {
+        let d = UserDefaults.standard
+        guard demoTimer == nil, let spec = d.string(forKey: "demoPeer") else { return }
+        let parts = spec.split(separator: "@")
+        guard parts.count == 2, let risk = Risk.allCases.first(where: { "\($0)" == parts[0] }),
+              let metres = Double(parts[1]), metres.isFinite, metres >= 0 else {
+            log("demoPeer ignored: \(spec)")
+            return
+        }
+        if d.double(forKey: "speed") > 0 { speed = d.double(forKey: "speed") }
+        let est = Estimate(distance: metres, sigma: 0.1, sources: [.uwb])
+        let peer = ContactGuard.Output(id: "demo-peer", risk: risk, pClose: Fusion.exposurePClose(est),
+                                       distance: Fusion.doseDistance(est), corroborated: true)
+        log("demoPeer risk=\(risk) distance=\(metres) speed=\(speed)")
+        var last = Date()
+        let t = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self, !self.isPaused else { return }
+            let now = Date()
+            let wall = min(max(now.timeIntervalSince(last), 0), ExposureTracker.window / self.speed)
+            last = now
+            var e = self.exposure
+            ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
+                             accrues: true, accrual: &self.demoAccrual, exposure: &e)
+            if e != self.exposure { self.exposure = e }
+        }
+        demoTimer = t
+    }
+    #endif
 
     private func notify(_ level: AlertLevel) {
         UINotificationFeedbackGenerator().notificationOccurred(level == .closeContact ? .error : .warning)
