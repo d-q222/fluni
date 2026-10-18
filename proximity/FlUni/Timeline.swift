@@ -92,8 +92,32 @@ struct TissueNarrator: View {
     }
 }
 
+/// The tissue in its alert pose, small, for the close-contact moment: tilted, with fire "eyes up" marks.
+/// Hops once when it appears (not with Reduce Motion).
+struct AlertTissue: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hop = false
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Image("Tissue").resizable().scaledToFit()
+                .padding(.top, 14).padding(.leading, 10)
+                .rotationEffect(.degrees(8))
+                .scaleEffect(hop ? 1.1 : 1, anchor: .bottom)
+                .animation(FlMotion.bouncy(reduceMotion), value: hop)
+            AlertMarks().stroke(Theme.fire, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .frame(width: 22, height: 14)
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            hop = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { hop = false }
+        }
+    }
+}
+
 /// Three short "eyes up" strokes above the tissue's head, drawn like D-2.
-private struct AlertMarks: Shape {
+struct AlertMarks: Shape {
     func path(in r: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: r.minX, y: r.minY + r.height * 0.35)); p.addLine(to: CGPoint(x: r.minX + r.width * 0.22, y: r.maxY))

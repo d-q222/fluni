@@ -400,6 +400,7 @@ private struct MetricsStrip: View {
     let model: ProximityModel
     let onRisk: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .body) private var tick: CGFloat = 18
 
     var body: some View {
         Group {
@@ -427,15 +428,16 @@ private struct MetricsStrip: View {
                 Text("\(minutes)").font(.fluni(.figure)).foregroundStyle(reached ? Theme.fireInk : Theme.ink)
                 Text("/ \(goal) min").font(.fluni(.time)).foregroundStyle(Theme.ink2)
             }
-            HStack(spacing: 3) {
+            // One tick per minute, readable at a glance: filled ink (fire-ink at 15), empty ticks outlined in ink-2 (6.6:1).
+            HStack(spacing: 2.5) {
                 ForEach(0..<goal, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(i < filled ? (reached ? Theme.fireInk : Theme.ink2) : Theme.surface2)
-                        .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.ink2.opacity(i < filled ? 0 : 0.35), lineWidth: 1))
-                        .frame(height: 10)
+                    RoundedRectangle(cornerRadius: 2.5)
+                        .fill(i < filled ? (reached ? Theme.fireInk : Theme.ink) : Theme.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 2.5).stroke(i < filled ? Color.clear : Theme.ink2, lineWidth: 1.25))
+                        .frame(height: tick)
                 }
             }
-            .frame(maxWidth: 210)
+            .frame(maxWidth: 220)
             .accessibilityHidden(true)
             Text("close to someone sick").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
         }
@@ -596,6 +598,7 @@ private struct CloseContactMoment: View {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text(Advice.title(.closeContact)).font(.fluni(.lead)).foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.trailing, Space.l)
                     .accessibilityAddTraits(.isHeader)
                 Text(reason).font(.fluni(.reading)).foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
@@ -617,6 +620,10 @@ private struct CloseContactMoment: View {
         .background(Theme.fire.opacity(0.16), in: RoundedRectangle(cornerRadius: 18))
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.fireInk, lineWidth: Theme.stroke))
+        // The narrator reacts at the moment that matters (D-2): Lisa's tissue, alert, perched on the card's corner.
+        .overlay(alignment: .topTrailing) {
+            AlertTissue().frame(width: 64, height: 68).offset(x: 10, y: -40).accessibilityHidden(true)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("today.closeContact")
     }
