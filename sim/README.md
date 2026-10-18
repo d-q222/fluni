@@ -36,6 +36,11 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
   `configs/interventions.json` → `fluni`, adoption is `population.has_app_rate`). A `fluni` run also
   writes `app_alerts.csv` (`t, agent_id, alert, p_sick, weighted_min`; one row per alert, followed or not).
   `scripts/check_psick.py <run>` checks the Python P(sick) against `model/cli.mjs` on a finished run.
+- Housing: by default residents fill dorms one after another, so a run with fewer agents than
+  campus lands in 1–3 dorms (1,000 agents: 77% in Florence Moore Hall).
+  `--set population.housing.assignment=spread` instead fills whole bedrooms drawn at random from
+  every dorm, so residents spread roughly in proportion to dorm capacity (1,000 agents: 53 dorms,
+  at most 11% in one). The key is not in `configs/population.json`, so default run ids are unchanged.
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
