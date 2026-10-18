@@ -24,7 +24,7 @@ struct TissueAlert: View {
     @AccessibilityFocusState private var sheetFocused: Bool
 
     private static let aspect: CGFloat = 650.0 / 1123.0
-    private static let frameMs = 65
+    private static let frameMs = 120 // Lisa: a little slower
 
     var body: some View {
         let w = TissueTabBar.width, h = w / Self.aspect
@@ -137,8 +137,8 @@ struct TissueAlert: View {
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
                 .accessibilityIdentifier("tissueAlert.ok")
         }
-        .frame(width: w * 0.78, height: h * 0.67, alignment: .top)
-        .offset(x: w * 0.11, y: h * 0.07)
+        .frame(width: w * 0.65, height: h * 0.59, alignment: .top)
+        .offset(x: w * 0.18, y: h * 0.12)
         .transition(.opacity)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
