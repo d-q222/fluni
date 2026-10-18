@@ -114,6 +114,14 @@ struct AtHomeCard: View {
                 }
                 .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
+            // Vaden: Mon-Fri 8:15 AM-5 PM, most Saturdays 11-3 in the academic year (vaden.stanford.edu/our-hours-contact-details).
+            Link(destination: URL(string: "tel:6504982336")!) {
+                Label("Vaden Health · (650) 498-2336 · Mon–Fri 8:15–5", systemImage: "phone.fill")
+                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink)
+                    .frame(minHeight: 44, alignment: .leading)
+            }
+            .accessibilityLabel("Call Vaden Health Center, 650 498 2336. Open Monday to Friday 8:15 AM to 5 PM, most Saturdays 11 AM to 3 PM.")
+            .accessibilityIdentifier("athome.vaden")
         }
     }
 
