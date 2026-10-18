@@ -3,8 +3,9 @@
 // not on how many people there are. Indoor people are blurred separately and divided by the blurred
 // building mask (normalized convolution), so their heat fills the building and never leaks outside.
 // Edges reflect, so no mass is lost at the grid border.
-// With labels (one building per cell), each building is diffused on its own: an indoor person's heat stays in
-// their own building (buildings don't share air), however close the next one is. See diffuseBuildings(). The output has the fields paint() in heat.js expects.
+// With zones (rooms clipped to their building, zones.js), each indoor person's heat stays in their own zone and
+// spreads only cell to cell through it (diffuseZones): never across a wall, an outdoor gap, a courtyard or the
+// space between the arms of a C-shaped building. Rooms don't share air (the model's wallFactor 0). The output has the fields paint() in heat.js expects.
 // With few people (the 10-agent demo), only patches around them are blurred: a blur can't move mass
 // further than the sum of its radii, so disjoint patches blurred apart give the same field.
 
@@ -22,7 +23,19 @@ function boxWidths(sigma, n = 3) {
 
 const reflect = (i, n) => (i < 0 ? -i - 1 : i >= n ? 2 * n - 1 - i : i);
 const emptyBox = () => ({ x0: Infinity, y0: Infinity, x1: -1, y1: -1 });
-const SPARSE_MAX = 64; // above this many deposited points, blur the whole grid (patches stop paying)
+const SPARSE_MAX = 64;
+const MAX_STEPS = 60; // geodesic diffusion steps per zone (σ 15 m on 3 m cells needs 50)
+
+// Index of the own cell nearest (x, y) in a patch, or -1 (a person standing just past their room's raster).
+function nearestOwn(own, w, h, x, y) {
+  let best = -1, bd = Infinity;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    if (!own[j * w + i]) continue;
+    const d = (i - x) ** 2 + (j - y) ** 2;
+    if (d < bd) { bd = d; best = j * w + i; }
+  }
+  return best;
+} // above this many deposited points, blur the whole grid (patches stop paying)
 
 // Running-sum box blur of radius r along rows (src -> dst).
 function blurRows(src, dst, nx, ny, r) {
@@ -58,9 +71,9 @@ function blurCols(src, dst, nx, ny, r, acc) {
 
 export class DiffusionField {
   // mask: Uint8Array(nx*ny), 1 = inside a building, or null (everything is outdoors).
-  // labels: { label: Int32Array(nx*ny) building index or -1, labelOf: Map buildingId -> index, count }, or null;
-  // with labels, indoor points need `building` (their building id) and mask is not used.
-  constructor(bounds, cellM, { mask = null, labels = null } = {}) {
+  // zones: (zoneIndex, grid) -> { x0, y0, w, h, own } (zones.js rasterZone), or null; with zones, indoor points
+  // need `zone` (their zone index) and mask is not used.
+  constructor(bounds, cellM, { mask = null, zones = null } = {}) {
     this.bounds = bounds;
     this.cellM = cellM;
     const lat0 = (bounds.south + bounds.north) / 2;
@@ -88,23 +101,11 @@ export class DiffusionField {
     this.maskBlur = null; // blurred mask, cached per sigma
     this.maskSigma = -1;
     this.live = [];
-    if (labels) {
-      this.label = labels.label;
-      this.labelOf = labels.labelOf;
-      // Each building's cell bounding box: x0, y0, x1, y1 (x1 < 0: no cells).
-      const box = new Int32Array(labels.count * 4);
-      for (let b = 0; b < labels.count; b++) box.set([this.nx, this.ny, -1, -1], b * 4);
-      for (let y = 0, i = 0; y < this.ny; y++) for (let x = 0; x < this.nx; x++, i++) {
-        const b = labels.label[i];
-        if (b < 0) continue;
-        const o = b * 4;
-        if (x < box[o]) box[o] = x; if (y < box[o + 1]) box[o + 1] = y;
-        if (x > box[o + 2]) box[o + 2] = x; if (y > box[o + 3]) box[o + 3] = y;
-      }
-      this.bbox = box;
-      this.byB = new Map();   // building index -> [fx, fy, mass, ...] deposited this frame
-      this.maskB = new Map(); // building index -> its blurred own-cells mask over its patch, for this.maskSigma
-      this.patchB = new Float32Array(n);
+    if (zones) {
+      this.zoneRaster = zones;
+      this.rasters = new Map(); // zone index -> its patch on this grid
+      this.byZ = new Map();     // zone index -> [fx, fy, mass, ...] deposited this frame
+      this.zoneOut = [];        // per zone diffused this frame: { z, x0, y0, w, h, own, u (per m²) }
     }
   }
 
@@ -128,7 +129,7 @@ export class DiffusionField {
     }
     this.cellsOut = []; this.cellsIn = [];
     this.boxOut = emptyBox(); this.boxIn = emptyBox();
-    if (this.byB) this.byB.clear();
+    if (this.byZ) this.byZ.clear();
   }
 
   // points: iterable of { lat, lon, p, indoor }. Bilinear splat of weight·p and weight.
@@ -140,11 +141,10 @@ export class DiffusionField {
       const fx = Math.min(nx - 1, Math.max(0, (pt.lon - bounds.west) * kx - 0.5));
       const fy = Math.min(ny - 1, Math.max(0, (bounds.north - pt.lat) * ky - 0.5));
       if (fx !== fx || fy !== fy) continue; // NaN
-      if (this.label && pt.indoor) { // kept to the person's own building (diffuseBuildings)
-        const b = this.labelOf.get(pt.building);
-        if (b === undefined) continue;
-        if (!this.byB.has(b)) this.byB.set(b, []);
-        this.byB.get(b).push(fx, fy, weight * pt.p);
+      if (this.zoneRaster && pt.indoor) { // kept to the person's own zone (diffuseZones)
+        if (!(pt.zone >= 0)) continue;
+        if (!this.byZ.has(pt.zone)) this.byZ.set(pt.zone, []);
+        this.byZ.get(pt.zone).push(fx, fy, weight * pt.p);
         continue;
       }
       const x0 = Math.min(nx - 2 < 0 ? 0 : nx - 2, Math.floor(fx)), y0 = Math.min(ny - 2 < 0 ? 0 : ny - 2, Math.floor(fy));
@@ -279,10 +279,8 @@ export class DiffusionField {
     this.live = [...outside]; // where heat can be non-zero (for max())
     this.addOutdoor(this.depOut, heat, radii, outside);
     if (withPeople) this.addOutdoor(this.depOutP, people, radii, outside);
-    if (this.label) {
-      if (this.maskSigma !== sigmaM) { this.maskB.clear(); this.maskSigma = sigmaM; }
-      this.diffuseBuildings(radii, reach, heat);
-    } else if (mask) {
+    if (this.zoneRaster) this.diffuseZones(sigmaM, heat);
+    else if (mask) {
       const inside = this.patches(this.cellsIn, this.boxIn, reach);
       this.live.push(...inside);
       this.addIndoor(this.depIn, heat, radii, inside);
@@ -293,50 +291,44 @@ export class DiffusionField {
     return this;
   }
 
-  // Each building with deposits on its own: its bounding box plus the blur's reach is the patch; the people
-  // there are splatted into it, blurred, and divided by the blurred mask of that building's own cells
-  // (normalised convolution), kept only on its own cells and rescaled so it holds exactly their mass.
-  // Neighbouring buildings' cells are outside its mask, so nothing crosses a gap between buildings.
-  diffuseBuildings(radii, reach, out) {
-    const { nx, ny, label, bbox, work } = this, dep = this.patchB;
-    for (const [b, pts] of this.byB) {
-      const o = b * 4;
-      if (bbox[o + 2] < 0) continue;
-      const g = { x0: Math.max(0, bbox[o] - reach), y0: Math.max(0, bbox[o + 1] - reach),
-        x1: Math.min(nx - 1, bbox[o + 2] + reach), y1: Math.min(ny - 1, bbox[o + 3] + reach) };
-      const w = g.x1 - g.x0 + 1, h = g.y1 - g.y0 + 1;
-      dep.fill(0, 0, w * h);
-      let total = 0;
-      for (let k = 0; k < pts.length; k += 3) { // bilinear splat into the patch (clamped to it)
-        const fx = Math.min(w - 1, Math.max(0, pts[k] - g.x0)), fy = Math.min(h - 1, Math.max(0, pts[k + 1] - g.y0)), m = pts[k + 2];
-        const x0 = Math.min(Math.max(0, w - 2), Math.floor(fx)), y0 = Math.min(Math.max(0, h - 2), Math.floor(fy));
-        const tx = fx - x0, ty = fy - y0, x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
-        dep[y0 * w + x0] += m * (1 - tx) * (1 - ty); dep[y0 * w + x1] += m * tx * (1 - ty);
-        dep[y1 * w + x0] += m * (1 - tx) * ty; dep[y1 * w + x1] += m * tx * ty;
-        total += m;
-      }
-      if (!(total > 0)) continue;
-      let mb = this.maskB.get(b);
-      if (!mb) { // this building's own cells, blurred over the patch (once per spread)
-        const m = new Float32Array(w * h);
-        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) m[y * w + x] = label[(g.y0 + y) * nx + g.x0 + x] === b ? 1 : 0;
-        mb = new Float32Array(w * h);
-        this.blur(m, mb, radii, w, h);
-        this.maskB.set(b, mb);
-      }
-      this.blur(dep, work, radii, w, h);
-      let got = 0;
-      for (let y = 0, l = 0; y < h; y++) {
-        for (let i = (g.y0 + y) * nx + g.x0, end = i + w; i < end; i++, l++) {
-          if (label[i] !== b || !(mb[l] > 1e-6)) { work[l] = 0; continue; }
-          work[l] /= mb[l];
-          got += work[l];
+  // Each zone with deposits on its own, by explicit heat-equation steps on its own cells: a cell exchanges
+  // only with its 4 neighbours in the same zone (zero flux through walls and outdoor cells), so heat travels
+  // around a C-shape, never across it. Each step moves D·(difference) both ways, so the mass (expected sick)
+  // is exactly conserved. Variance grows 2·D cells² per step: steps = (σ/cell)² / (2·D), ≤ MAX_STEPS.
+  diffuseZones(sigmaM, out) {
+    const { nx } = this, D = 0.25, steps = Math.min(MAX_STEPS, Math.max(1, Math.round((sigmaM / this.cellM) ** 2 / (2 * D))));
+    this.zoneOut = [];
+    for (const [z, pts] of this.byZ) {
+      let r = this.rasters.get(z);
+      if (r === undefined) { r = this.zoneRaster(z, this) || null; this.rasters.set(z, r); }
+      if (!r) continue;
+      const { x0, y0, w, h, own } = r, n = w * h;
+      let u = new Float32Array(n), v = new Float32Array(n), total = 0;
+      for (let k = 0; k < pts.length; k += 3) { // bilinear splat onto the zone's own cells (else its nearest own cell)
+        const fx = pts[k] - x0, fy = pts[k + 1] - y0, m = pts[k + 2];
+        const cx = Math.floor(fx), cy = Math.floor(fy), tx = fx - cx, ty = fy - cy;
+        const parts = [[cx, cy, (1 - tx) * (1 - ty)], [cx + 1, cy, tx * (1 - ty)], [cx, cy + 1, (1 - tx) * ty], [cx + 1, cy + 1, tx * ty]];
+        for (const [x, y, wt] of parts) {
+          if (!wt) continue;
+          let i = x >= 0 && y >= 0 && x < w && y < h && own[y * w + x] ? y * w + x : -1;
+          if (i < 0) i = nearestOwn(own, w, h, x, y);
+          if (i >= 0) { u[i] += m * wt; total += m * wt; }
         }
       }
-      if (!(got > 0)) continue;
-      const k = total / got;
-      for (let y = 0, l = 0; y < h; y++) for (let i = (g.y0 + y) * nx + g.x0, end = i + w; i < end; i++, l++) if (work[l]) out[i] += work[l] * k;
-      this.live.push(g);
+      if (!(total > 0)) continue;
+      for (let s = 0; s < steps; s++) {
+        v.set(u);
+        for (let y = 0; y < h; y++) for (let x = 0, i = y * w; x < w; x++, i++) {
+          if (!own[i]) continue;
+          if (x + 1 < w && own[i + 1]) { const f = D * (u[i + 1] - u[i]); v[i] += f; v[i + 1] -= f; }
+          if (y + 1 < h && own[i + w]) { const f = D * (u[i + w] - u[i]); v[i] += f; v[i + w] -= f; }
+        }
+        [u, v] = [v, u];
+      }
+      const inv = 1 / (this.cellM * this.cellM);
+      for (let y = 0, l = 0; y < h; y++) for (let i = (y0 + y) * nx + x0, end = i + w; i < end; i++, l++) if (u[l]) { u[l] *= inv; out[i] += u[l] / inv; }
+      this.zoneOut.push({ z, x0, y0, w, h, own, u });
+      this.live.push({ x0, y0, x1: x0 + w - 1, y1: y0 + h - 1 });
     }
   }
 

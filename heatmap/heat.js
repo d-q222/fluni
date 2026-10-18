@@ -39,6 +39,13 @@ const LUT32_STRONG = LUT32.map((px, i) => (i >= Math.round(Math.sqrt(STRONG_FROM
 // people within ~1σ.
 // Runs every frame, so the canvas size (setting it clears and reallocates) and the pixel buffer are
 // kept between calls, and pixels are written whole (no per-pixel subarray).
+// One heat value's pixel (RGBA as a little-endian Uint32, as paint() writes), or 0 below the visible floor.
+export function heatPixel(value, vmax, strong = false) {
+  if (!(value > 0)) return 0;
+  const t = Math.sqrt(Math.min(1, value / vmax));
+  return t < 0.02 ? 0 : (strong ? LUT32_STRONG : LUT32)[Math.round(t * 255)];
+}
+
 export function paint(grid, canvas, vmax, { minPeople = 0, strong = false } = {}) {
   if (canvas.width !== grid.nx) canvas.width = grid.nx;
   if (canvas.height !== grid.ny) canvas.height = grid.ny;

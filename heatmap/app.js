@@ -1,4 +1,4 @@
-import { paint, HEAT_STOPS } from './heat.js';
+import { paint, heatPixel, HEAT_STOPS } from './heat.js';
 import { DiffusionField } from './diffuse.js';
 import { rasterizeBuildings } from './masks.js';
 import { AerosolField, buildWalls } from './aerosol.js';
@@ -17,6 +17,7 @@ import { rampCss, fmt as fmtSick } from './userstyle.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import * as PV from './phone-views.js';
 import { makeSeats } from './seats.js';
+import { buildZones, rasterZone } from './zones.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 6 }; // heat spread around each person close up (product owner: tight)
@@ -263,11 +264,11 @@ async function loadTrips(dataUrl) {
 // Room outlines for the airflow mode (map/rooms.csv next to the timeline): ids in order + WKT polygons.
 async function loadRooms(dataUrl) {
   try {
-    const { data } = await loadCsv(new URL('map/rooms.csv', new URL(dataUrl, location.href)), ['room_id', 'polygon_wkt']);
+    const { data } = await loadCsv(new URL('map/rooms.csv', new URL(dataUrl, location.href)), ['room_id', 'location_id', 'floor', 'capacity', 'polygon_wkt']);
     const rows = data.filter((r) => r.room_id && r.polygon_wkt);
-    return { index: new Map(rows.map((r, i) => [r.room_id, i])), wkts: rows.map((r) => r.polygon_wkt) };
+    return { index: new Map(rows.map((r, i) => [r.room_id, i])), wkts: rows.map((r) => r.polygon_wkt), rows };
   } catch {
-    return { index: new Map(), wkts: [] };
+    return { index: new Map(), wkts: [], rows: [] };
   }
 }
 
@@ -298,59 +299,127 @@ async function loadBuildings(dataUrl) {
 
 // ---------- Leaflet glue ----------
 
-// A canvas pinned to geographic bounds, scaled with the map (same approach as L.ImageOverlay).
-// clip: building outlines (GeoJSON) the canvas is clipped to, so the scaled-up heat grid stops exactly at
-// the drawn walls (a CSS clip-path in the canvas's own pixels, rebuilt on zoom; it scales with zoomanim).
+// The heat on screen, on a canvas the size of the map view (plus a margin), redrawn when the view moves.
+// - Room-level heat (setZones): each zone's diffused patch (diffuse.js) is drawn clipped to that zone's own
+//   outline (its room's walls inside the building's footprint), so heat edges are crisp and exactly on the
+//   walls at any zoom and never show through into the next room. Close up (zoom >= WALL_ZOOM) the walls of
+//   the rooms in view are drawn too, thin and faint, so the audience sees what stops the heat.
+// - Airflow (setGrid): a whole grid painted by paint(), scaled onto the view, unclipped.
+const VIEW_PAD = 0.15, WALL_ZOOM = 18;
 const CanvasLayer = L.Layer.extend({
-  initialize(bounds, clip = null) {
+  initialize(bounds) {
     this.bounds = L.latLngBounds(bounds);
-    this.rings = clip ? clip.features.flatMap((f) => {
-      const g = f.geometry;
-      if (!g) return [];
-      // [ring, isHole]: holes are wound the other way below, so courtyards stay clear under nonzero.
-      return (g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []).flatMap((poly) => poly.map((r, k) => [r, k > 0]));
-    }) : null;
+    this.grid = document.createElement('canvas'); // paint() target for the airflow view
+    this.atlas = document.createElement('canvas'); // the zones' patches, packed
     this.canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-animated');
+    this.mode = null;
+    this.paths = new Map(); // zone index -> Path2D in canvas pixels, for this.pathKey
+    this.pathKey = '';
   },
   onAdd(map) {
     map.getPane('overlayPane').appendChild(this.canvas);
     map.on('zoomanim', this.animate, this);
-    map.on('viewreset zoomend', this.reset, this);
-    this.reset();
-  },
-  setBounds(bounds) { // the grid drawn changed its extent (a coarser heat grid)
-    const b = L.latLngBounds(bounds);
-    if (b.equals(this.bounds)) return;
-    this.bounds = b;
-    if (this._map) this.reset();
+    map.on('moveend viewreset resize', this.draw, this);
+    this.draw();
   },
   onRemove(map) {
     this.canvas.remove();
     map.off('zoomanim', this.animate, this);
-    map.off('viewreset zoomend', this.reset, this);
+    map.off('moveend viewreset resize', this.draw, this);
   },
-  reset() {
-    const tl = this._map.latLngToLayerPoint(this.bounds.getNorthWest());
-    const br = this._map.latLngToLayerPoint(this.bounds.getSouthEast());
-    L.DomUtil.setPosition(this.canvas, tl);
-    this.canvas.style.width = `${br.x - tl.x}px`;
-    this.canvas.style.height = `${br.y - tl.y}px`;
-    if (this.rings) {
-      const parts = [];
-      for (const [ring, hole] of this.rings) {
-        const pts = ring.map(([lon, lat]) => this._map.latLngToLayerPoint([lat, lon]));
-        let area = 0;
-        for (let i = 0; i + 1 < pts.length; i++) area += pts[i].x * pts[i + 1].y - pts[i + 1].x * pts[i].y;
-        if ((area > 0) === hole) pts.reverse(); // outer rings clockwise on screen, holes anticlockwise
-        const d = pts.map((q, i) => `${i ? 'L' : 'M'}${(q.x - tl.x).toFixed(1)} ${(q.y - tl.y).toFixed(1)}`).join('');
-        if (d) parts.push(`${d}Z`);
+  setBounds(bounds) { this.bounds = L.latLngBounds(bounds); },
+  setGrid() { this.mode = 'grid'; this.draw(); },
+  // field: the DiffusionField after diffuse() (field.zoneOut); zones: buildZones().zones; vmax: colour max.
+  setZones(field, zones, vmax) {
+    this.mode = 'zones';
+    this.field = field; this.zones = zones;
+    // Pack every patch, padded by a cell, into one image (shelves); each patch's cells beyond its own get
+    // their own neighbours' colour, so the clip, not a fade to transparent, makes the edge at the wall.
+    const list = field.zoneOut, W = 1024;
+    let x = 0, y = 0, rowH = 0;
+    for (const p of list) {
+      const w = p.w + 2, h = p.h + 2;
+      if (x + w > W) { x = 0; y += rowH; rowH = 0; }
+      p.ax = x; p.ay = y; x += w; rowH = Math.max(rowH, h);
+    }
+    const H = Math.max(1, y + rowH), a = this.atlas;
+    if (a.width !== W || a.height < H) { a.width = W; a.height = Math.max(H, a.height); }
+    const ctx = a.getContext('2d');
+    const img = ctx.createImageData(W, H), px = new Uint32Array(img.data.buffer);
+    for (const p of list) {
+      const { w, h, own, u } = p, val = (i, j) => (i >= 0 && j >= 0 && i < w && j < h && own[j * w + i] ? u[j * w + i] : -1);
+      for (let j = -1; j <= h; j++) for (let i = -1; i <= w; i++) {
+        let v = val(i, j);
+        if (v < 0) { // outside the zone's cells: the mean of its own neighbours (for the edge between centre and wall)
+          let s = 0, n = 0;
+          for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) { const q = val(i + di, j + dj); if (q >= 0) { s += q; n++; } }
+          v = n ? s / n : 0;
+        }
+        px[(p.ay + j + 1) * W + p.ax + i + 1] = heatPixel(v, vmax, true);
       }
-      this.canvas.style.clipPath = `path('${parts.join('')}')`; // nonzero: duplicate outlines don't cancel
+    }
+    ctx.putImageData(img, 0, 0);
+    this.draw();
+  },
+  draw() {
+    const map = this._map;
+    if (!map || map._animatingZoom || !map._loaded) return;
+    const size = map.getSize(), min = map.containerPointToLayerPoint(size.multiplyBy(-VIEW_PAD)).round();
+    const w = Math.round(size.x * (1 + 2 * VIEW_PAD)), h = Math.round(size.y * (1 + 2 * VIEW_PAD)), dpr = window.devicePixelRatio || 1;
+    const c = this.canvas;
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+      c.style.width = `${w}px`; c.style.height = `${h}px`;
+    }
+    L.DomUtil.setPosition(c, min);
+    this.zoom = map.getZoom();
+    this.view = L.latLngBounds(map.layerPointToLatLng(min), map.layerPointToLatLng(min.add([w, h])));
+    const ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+    const toPx = (lat, lon) => map.latLngToLayerPoint([lat, lon]).subtract(min);
+    if (this.mode === 'grid' && this.grid.width) {
+      const tl = toPx(this.bounds.getNorth(), this.bounds.getWest()), br = toPx(this.bounds.getSouth(), this.bounds.getEast());
+      ctx.drawImage(this.grid, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      return;
+    }
+    if (this.mode !== 'zones' || !this.field) return;
+    const key = `${this.zoom}:${min.x}:${min.y}`;
+    if (key !== this.pathKey) { this.paths.clear(); this.pathKey = key; }
+    const pathOf = (zi) => {
+      let p = this.paths.get(zi);
+      if (!p) {
+        p = new Path2D();
+        for (const ring of this.zones[zi].ll) ring.forEach(([lon, lat], i) => { const q = toPx(lat, lon); i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y); });
+        this.paths.set(zi, p);
+      }
+      return p;
+    };
+    const f = this.field, b = f.bounds, kx = f.cellM / f.mPerDegLon, ky = f.cellM / 110574;
+    for (const z of f.zoneOut) {
+      // The patch's cell (i, j) covers lon west + i·kx .. , lat north - j·ky ..; plus its one-cell pad.
+      const tl = toPx(b.north - (z.y0 - 1) * ky, b.west + (z.x0 - 1) * kx), br = toPx(b.north - (z.y0 + z.h + 1) * ky, b.west + (z.x0 + z.w + 1) * kx);
+      if (br.x < 0 || br.y < 0 || tl.x > w || tl.y > h) continue;
+      ctx.save();
+      ctx.clip(pathOf(z.z), 'evenodd');
+      ctx.drawImage(this.atlas, z.ax, z.ay, z.w + 2, z.h + 2, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      ctx.restore();
+    }
+    if (this.zoom >= WALL_ZOOM && this.zones) {
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = 'rgba(110, 96, 86, 0.35)';
+      for (let zi = 0; zi < this.zones.length; zi++) {
+        const z = this.zones[zi];
+        if (!z.ground || !this.view.intersects(z.llBox)) continue;
+        ctx.stroke(pathOf(zi));
+      }
     }
   },
   animate(e) {
-    const scale = this._map.getZoomScale(e.zoom);
-    const offset = this._map._latLngBoundsToNewLayerBounds(this.bounds, e.zoom, e.center).min;
+    if (!this.view) return;
+    const scale = this._map.getZoomScale(e.zoom, this.zoom);
+    const offset = this._map._latLngBoundsToNewLayerBounds(this.view, e.zoom, e.center).min;
     L.DomUtil.setTransform(this.canvas, offset, scale);
   },
 });
@@ -532,46 +601,8 @@ function scaleMax(heatAt, times) {
 function* asPoints(states, truth, indoorOnly = false) {
   for (const s of states) {
     if (indoorOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), building: s.buildingId };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), zone: s.zone };
   }
-}
-
-// The heat grid's buildings: each cell labelled with the one building it belongs to (diffuse.js keeps each
-// building's heat in its own cells). Cells whose centre is inside an outline (masks.js), plus the cells an
-// outline's corners fall in (a building smaller than a coarse cell still gets one), grown by one cell so
-// heat reaches every outline's edge and the canvas clip (CanvasLayer) cuts it exactly on the drawn line.
-// A cell next to two buildings isn't grown at all: one building's edge heat would show through the other's
-// outline (a short connector between two halls).
-// Outlines drawn twice (a hand-placed place on a real building, footprints.js) share one label.
-function heatLabels(outlines, grid) {
-  const { building, ids, byFeature } = rasterizeBuildings(outlines, grid), { nx, ny, cellM, bounds } = grid;
-  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM, label = building;
-  const labelOf = new Map(), byGeom = new Map();
-  outlines.features.forEach((f, fi) => { if (byFeature[fi] >= 0) byGeom.set(JSON.stringify(f.geometry.coordinates), byFeature[fi]); });
-  outlines.features.forEach((f, fi) => {
-    if (byFeature[fi] < 0) return;
-    const b = byGeom.get(JSON.stringify(f.geometry.coordinates)); // the copy rasterised last owns the cells
-    labelOf.set(ids[byFeature[fi]], b);
-    const g = f.geometry, polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
-    for (const poly of polys) for (const [lon, lat] of poly[0]) {
-      const x = Math.floor((lon - bounds.west) * kx), y = Math.floor((bounds.north - lat) * ky);
-      if (x >= 0 && y >= 0 && x < nx && y < ny && label[y * nx + x] < 0) label[y * nx + x] = b;
-    }
-  });
-  const grown = Int32Array.from(label);
-  const near = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
-  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
-    if (label[y * nx + x] >= 0) continue;
-    let only = -1;
-    for (const [dx, dy] of near) {
-      const u = x + dx, v = y + dy, l = u >= 0 && v >= 0 && u < nx && v < ny ? label[v * nx + u] : -1;
-      if (l < 0 || l === only) continue;
-      if (only >= 0) { only = -2; break; } // two buildings meet here
-      only = l;
-    }
-    if (only >= 0) grown[y * nx + x] = only;
-  }
-  return { label: grown, labelOf, count: ids.length };
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -679,22 +710,12 @@ async function main() {
   ]);
   progress('Loading risk estimates…', 0.55);
   const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
-  // Seated people are drawn inside their building's footprint, clustered by room (seats.js).
-  const roomAreas = new Map();
-  const roomArea = (id) => {
-    const i = rooms.index.get(id);
-    if (i === undefined) return undefined;
-    if (!roomAreas.has(id)) {
-      const g = wktGeometry(rooms.wkts[i]), ring = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates[0][0];
-      const kx = mPerDegLon(ring[0][1]);
-      let a = 0;
-      for (let k = 0; k + 1 < ring.length; k++) a += (ring[k][0] * ring[k + 1][1] - ring[k + 1][0] * ring[k][1]) * kx * 110574;
-      roomAreas.set(id, Math.abs(a) / 2);
-    }
-    return roomAreas.get(id);
-  };
+  // Heat zones: the sim's rooms clipped to their building's footprint (zones.js). People sit inside theirs
+  // (seats.js) and their heat stays in it (diffuse.js).
+  const Z = buildZones(outlines, rooms.rows);
+  if (Z.fallback) console.info(`${Z.fallback} rooms lie mostly outside their building: they share it by a Voronoi split.`);
   const simPaths = await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null);
-  const seats = makeSeats(outlines, roomArea, simPaths, runBuildings.water);
+  const seats = makeSeats(Z, simPaths, runBuildings.water);
   setSimMap({ buildings: runBuildings.outlines, paths: simPaths });
   const data = toFrames(res.data, res.fields, runBuildings.names);
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
@@ -741,14 +762,15 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const field = new DiffusionField(bounds, DEMO.cellM, { labels: outlines ? heatLabels(outlines, probe) : null });
+  const zoneRaster = Z.zones.length ? (zi, grid) => rasterZone(Z.zones[zi], grid) : null;
+  const field = new DiffusionField(bounds, DEMO.cellM, { zones: zoneRaster });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
   const fields = new Map([[DEMO.cellM, field]]);
   const fieldFor = (sigma) => {
     const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
     if (!fields.has(cell)) {
-      fields.set(cell, new DiffusionField(bounds, cell, { labels: outlines ? heatLabels(outlines, new DiffusionField(bounds, cell)) : null }));
+      fields.set(cell, new DiffusionField(bounds, cell, { zones: zoneRaster }));
     }
     return fields.get(cell);
   };
@@ -903,7 +925,7 @@ async function main() {
     const me = selected && current.get(selected);
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
-  const heatLayer = new CanvasLayer([sw, ne], outlines).addTo(map);
+  const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
@@ -1478,12 +1500,13 @@ async function main() {
       if (view === 'airflow') {
         const st = [...current.values()];
         heatLayer.setBounds([sw, ne]);
-        paint(airflowAt(now, st, truthMode()), heatLayer.canvas, aeroMax);
+        paint(airflowAt(now, st, truthMode()), heatLayer.grid, aeroMax);
+        heatLayer.setGrid();
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
       } else if (view !== 'public' && view !== 'airborne') {
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
-        heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g));
-        paint(g, heatLayer.canvas, demoScale(), { strong: true });
+        if (g.zoneOut) heatLayer.setZones(g, Z.zones, demoScale());
+        else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
       }
       lastHeat = realNow;
       heatDirty = false;
