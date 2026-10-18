@@ -8,7 +8,19 @@ struct TodayView: View {
     @State private var showCalc = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var level: AlertLevel { model.exposure.level }
+    private var level: AlertLevel { exposure.level }
+    private var exposure: ExposureTracker {
+        #if DEBUG
+        if let e = PreviewHook.exposure { return e }
+        #endif
+        return model.exposure
+    }
+    private var peerCount: Int {
+        #if DEBUG
+        if let n = PreviewHook.peerCount { return n }
+        #endif
+        return model.peers.count
+    }
 
     var body: some View {
         NavigationStack {
@@ -38,7 +50,7 @@ struct TodayView: View {
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
-            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
+            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: exposure.minutes, dose: exposure.dose) }
         }
     }
 
@@ -91,13 +103,13 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(dose: model.exposure.dose) { showCalc = true }
+        RiskCardView(dose: exposure.dose) { showCalc = true }
     }
 
     // MARK: Minutes
 
     private var minutesCard: some View {
-        let mins = model.exposure.minutes
+        let mins = exposure.minutes
         let goal = ExposureTracker.closeContactMinutes
         let tint = mins >= goal ? Theme.fireInk : Theme.ink2
         let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
@@ -122,7 +134,7 @@ struct TodayView: View {
     // MARK: Nearby
 
     private var nearbyCard: some View {
-        let n = model.peers.count
+        let n = peerCount
         let text = n == 0 ? "No other FlUni phones nearby" : n == 1 ? "1 other FlUni phone nearby" : "\(n) other FlUni phones nearby"
         return HStack(spacing: 12) {
             Image(systemName: "person.2.wave.2").font(.title3).foregroundStyle(Theme.ink2).accessibilityHidden(true)

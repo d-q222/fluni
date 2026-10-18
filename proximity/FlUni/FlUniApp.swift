@@ -17,7 +17,11 @@ struct FlUniApp: App {
         let env = ProcessInfo.processInfo.environment
         if env["FLUNI_UITEST_RESET"] == "1" { SettingsView.eraseLocalData() }
         RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
-        skipRadios = env["FLUNI_UITEST_NO_RADIOS"] == "1"
+        var noRadios = env["FLUNI_UITEST_NO_RADIOS"] == "1"
+        #if DEBUG
+        if PreviewHook.prepare() { noRadios = true }  // design screenshots: seeded state, radios stay off
+        #endif
+        skipRadios = noRadios
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
     }
@@ -59,6 +63,9 @@ struct FlUniApp: App {
                     }
                 }
             }
+            #if DEBUG
+            .modifier(PreviewHookModifier(model: model, store: reportStore))
+            #endif
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).

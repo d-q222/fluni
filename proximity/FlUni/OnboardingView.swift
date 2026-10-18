@@ -4,7 +4,11 @@ import SwiftUI
 /// then start the radios (which is what triggers the system prompts).
 struct OnboardingView: View {
     let onFinish: () -> Void
+    #if DEBUG
+    @State private var page = PreviewHook.onboardingPage
+    #else
     @State private var page = 0
+    #endif
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
