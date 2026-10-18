@@ -22,7 +22,7 @@ enum Risk: Int, Codable, CaseIterable {
     }
 }
 
-enum AlertLevel: Int, Comparable {
+enum AlertLevel: Int, Comparable, Codable {
     case none = 0, nearby = 1, closeContact = 2
     static func < (a: AlertLevel, b: AlertLevel) -> Bool { a.rawValue < b.rawValue }
 }
@@ -52,7 +52,7 @@ struct DosePeer: Equatable {
 /// does not reset it) over a rolling 24 h — the rule agreed with the heat map (WORKSTREAMS) —
 /// and decides the alert level. Alongside, it keeps Rio's dose per peer ID over the same window for
 /// the risk estimate (RiskEstimate).
-struct ExposureTracker: Equatable {
+struct ExposureTracker: Equatable, Codable {
     static let closeContactMinutes = 15.0
     static let window = 24 * 3600.0  // simulated seconds, so the demo speed-up applies
     private(set) var minutes = 0.0
@@ -68,7 +68,7 @@ struct ExposureTracker: Equatable {
     /// Simulated seconds since start, and per-simulated-minute totals (≤ 1440 buckets).
     private var clock = 0.0
     private var buckets: [Bucket] = []
-    private struct Bucket: Equatable { var minute: Int; var minutes: Double; var sources: [String: RiskEstimate.Source] }
+    private struct Bucket: Equatable, Codable { var minute: Int; var minutes: Double; var sources: [String: RiskEstimate.Source] }
 
     /// `contacts`: (P(within 6 ft), their risk) for each peer seen this tick.
     /// `simSeconds`: elapsed time after the demo speed-up.
@@ -151,6 +151,30 @@ struct ExposureTracker: Equatable {
     }
 
     mutating func reset() { self = ExposureTracker() }
+
+    /// Nothing in the window and no alert: the same as a fresh tracker apart from the clock.
+    var isEmpty: Bool { buckets.isEmpty && level == .none }
+
+    /// A decoded tracker (RiskStateFile) is used only if it could have come from `advance`: finite, non-negative
+    /// numbers, buckets in order inside the window, and totals that match the per-minute buckets and the sources.
+    var isPlausible: Bool {
+        func ok(_ x: Double) -> Bool { x.isFinite && x >= 0 }
+        func okSource(_ s: RiskEstimate.Source) -> Bool { ok(s.dose) && ok(s.weighted) && ok(s.s) && s.s <= 1 }
+        guard ok(clock), ok(dose), minutes.isFinite, minutes >= -1e-9, buckets.count <= 1441,
+              probability.isFinite, probability >= RiskEstimate.prior - 1e-12, probability <= 1,
+              sources.values.allSatisfy(okSource) else { return false }
+        let newest = Int(floor(clock / 60)), oldest = Int(floor((clock - Self.window) / 60))
+        var prev = Int.min
+        for b in buckets {
+            guard b.minute > prev, b.minute > oldest, b.minute <= newest, ok(b.minutes),
+                  b.sources.values.allSatisfy(okSource) else { return false }
+            prev = b.minute
+        }
+        let sum = buckets.reduce(0) { $0 + $1.minutes }
+        return abs(sum - minutes) <= 1e-6 * max(1, sum)
+            && abs(RiskEstimate.probability(sources) - probability) <= 1e-9
+            && abs(sources.values.reduce(0) { $0 + $1.dose } - dose) <= 1e-9 * max(1, dose)
+    }
 
     /// Same on screen: equal in everything a view can read. Unlike `==` it ignores the clock and the minute
     /// buckets, which move on every tick even with nobody around.

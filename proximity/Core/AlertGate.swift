@@ -47,9 +47,9 @@ protocol AlertPosting: AnyObject {
     func post(_ kind: NotificationKind)
 }
 
-/// The per-phone alert state: last level seen and when each level was last notified. In memory, so a relaunch
-/// starts fresh (a relaunched phone may repeat one heads-up; it never misses a close contact).
-struct AlertGate: Equatable {
+/// The per-phone alert state: last level seen and when each level was last notified. Saved with the exposure
+/// (RiskStateStore), so a relaunch doesn't notify the same alert again.
+struct AlertGate: Equatable, Codable {
     private(set) var level = AlertLevel.none
     private(set) var lastNotifiedAt: [AlertLevel: Date] = [:]
 
