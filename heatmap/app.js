@@ -3,7 +3,7 @@ import { DiffusionField } from './diffuse.js';
 import { rasterizeBuildings } from './masks.js';
 import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
-import { inferRisk } from '../model/infer.js';
+import { inferRisk, doseModel, DEFAULTS as MODEL } from '../model/infer.js';
 import { renderMathPanel } from './mathpanel.js';
 import { Router, buildTracks, buildTrips, attachTrips, stateAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
@@ -476,8 +476,12 @@ function formatTime(ms, numeric) {
 const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
-// The phone's own estimate from its weighted close-contact minutes (FlUni RiskEstimate: beta .015, xMax .3, prior .02).
-const phoneEstimate = (dose) => 1 - 0.98 * (1 - Math.min(1 - Math.exp(-0.015 * Math.max(0, dose)), 0.3));
+// The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
+// per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
+// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); the peer's broadcast
+// status sets s (tested positive 0.97, possibly sick 0.6); p += (1 - p) * s * lambda from the prior.
+// No second-hand term, no recovery.
+const PHONE_DOSE = doseModel(), PHONE_STAGE = 0.352, BT_RANGE_M = 10;
 const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 // FlUni's Advice strings (proximity/Core/Exposure.swift).
 const ADVICE = {
@@ -754,15 +758,17 @@ async function main() {
     return false;
   }
 
-  // Contacts within 6 ft per person, as phones would log them: { tMs, other, min }, by time.
+  // Contacts within Bluetooth range per person, as phones would log them: { tMs, other, min, d }, by time.
+  // Close-contact minutes only count those within 6 ft (NEARBY_M).
   const exposureLog = new Map();
   if (model) {
     const log = (id, e) => { if (!exposureLog.has(id)) exposureLog.set(id, []); exposureLog.get(id).push(e); };
     for (const c of model.contacts) {
-      if (Number(c.distance_m) > NEARBY_M) continue;
+      const d = Number(c.distance_m);
+      if (!(d <= BT_RANGE_M)) continue;
       const tMs = model.startMs + Number(c.t) * model.stepMs, min = Number(c.duration_s) / 60;
-      log(c.agent_a, { tMs, other: c.agent_b, min });
-      log(c.agent_b, { tMs, other: c.agent_a, min });
+      log(c.agent_a, { tMs, other: c.agent_b, min, d });
+      log(c.agent_b, { tMs, other: c.agent_a, min, d });
     }
     for (const list of exposureLog.values()) list.sort((a, b) => a.tMs - b.tMs);
   }
@@ -772,12 +778,30 @@ async function main() {
     let total = 0;
     for (const e of exposureLog.get(id) || []) {
       if (e.tMs > t) break;
-      if (e.tMs < t - windowMs) continue;
+      if (e.tMs < t - windowMs || e.d > NEARBY_M) continue;
       const p = model.risk.pAt(e.other, retro ? t : e.tMs);
       const w = p >= CONTAGIOUS ? 1 : p >= RISKY ? 0.5 : 0;
       total += w * Math.min(e.min, (t - e.tMs) / 60000);
     }
     return total;
+  }
+  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h.
+  function phoneEstimate(id, t) {
+    const dose = new Map();
+    for (const e of exposureLog.get(id) || []) {
+      if (e.tMs > t) break;
+      if (e.tMs < t - EXPOSURE_WINDOW_MS) continue;
+      const peer = model.risk.pAt(e.other, e.tMs), s = peer >= CONTAGIOUS ? MODEL.posTest : peer >= RISKY ? MODEL.selfReport : 0;
+      if (!s) continue;
+      const durS = 60 * Math.min(e.min, (t - e.tMs) / 60000);
+      const k = dose.get(e.other) || { s: 0, dose: 0 };
+      k.dose += PHONE_DOSE({ distance_m: e.d, duration_s: durS, indoor: true });
+      k.s = Math.max(k.s, s);
+      dose.set(e.other, k);
+    }
+    let p = MODEL.prior;
+    for (const { s, dose: x } of dose.values()) p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x));
+    return p;
   }
 
   // What the phone tells this person right now, as FlUni's Today computes it. Proximity uses nearby phones
@@ -814,7 +838,7 @@ async function main() {
     const list = [];
     for (const e of model ? exposureLog.get(id) || [] : []) {
       if (e.tMs > now) break;
-      if (e.tMs < now - 14 * 24 * 3600000) continue;
+      if (e.tMs < now - 14 * 24 * 3600000 || e.d > NEARBY_M) continue;
       const p = model.risk.pAt(e.other, e.tMs), w = p >= CONTAGIOUS ? 1 : p >= RISKY ? 0.5 : 0;
       if (!w) continue;
       const last = list[list.length - 1];
@@ -851,7 +875,7 @@ async function main() {
         ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
         ${lines.length ? `<div class="vstack">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`));
 
-    const p = me.p, tier = riskTier(p), phoneP = phoneEstimate(st.live);
+    const p = me.p, tier = riskTier(p), phoneP = model ? phoneEstimate(me.id, now) : MODEL.prior;
     const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[tier];
     const note = tier === 'high' ? 'fireink' : 'ink2';
     out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
