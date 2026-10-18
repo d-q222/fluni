@@ -653,6 +653,11 @@ const riskColor = (p) => {
   return mix(hi, hi, 0);
 };
 
+// Ground truth on top of the app's estimate: the sim's actually infected people (E or I) get a dark red
+// ring, thicker so it shows even on a 2 px dot. Presenter only; in truth colouring the fill says it already.
+const TRUTH_RING = '#6d1f16';
+const ringWeight = (r, infected) => (infected ? Math.max(1.75, personRing(r) + 1) : personRing(r));
+
 function dotColor(a, mode) {
   if (mode === 'truth') return a.sick ? COLORS.infected : COLORS.healthy;
   return riskColor(Math.min(1, a.p));
@@ -983,8 +988,11 @@ async function main() {
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom()), weight = personRing(r);
-    for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
+    const r = personRadius(map.getZoom());
+    for (const [id, m] of dots) if (m.getRadius() !== r) {
+      m.setRadius(r);
+      m.setStyle({ weight: ringWeight(r, $('dot-mode').value !== 'truth' && Boolean(current.get(id)?.sick)) });
+    }
     const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
     if (next === sigmaM && nextFine === fine) return;
     sigmaM = next;
@@ -1683,6 +1691,8 @@ async function main() {
         const ll = m.getLatLng(), fill = dotColor(a, mode);
         if (ll.lat !== a.lat || ll.lng !== a.lon) m.setLatLng([a.lat, a.lon]);
         if (m.options.fillColor !== fill) m.setStyle({ fillColor: fill });
+        const infected = mode !== 'truth' && Boolean(a.sick), ring = infected ? TRUTH_RING : COLORS.ring, w = ringWeight(m.getRadius(), infected);
+        if (m.options.color !== ring || m.options.weight !== w) m.setStyle({ color: ring, weight: w });
         // Close up in the room-level view, see-through so the room's colour shows (not the selected or hovered person).
         const look = seeThrough && a.id !== selected && a.id !== hoverDot ? SEE_THROUGH : 1;
         if (m.options.fillOpacity !== look) m.setStyle({ fillOpacity: look, opacity: look === 1 ? 1 : 0.6 });
@@ -1768,7 +1778,7 @@ async function main() {
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
-      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>`;
+      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>${data.hasTruth ? `<div class="key truth-key"><span class="truth-ring"></span>Dark ring: actually infected (simulation truth)</div>` : ''}`;
     const isPublic = v === 'public';
     const ul = userLegend();
     ul.hidden = !isPublic;
