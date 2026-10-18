@@ -43,9 +43,7 @@ URL options, which can be combined:
   chance you'd catch flu standing there for an hour (full at 1%). Each person leaves an exponentially
   fading circle of hazard (`riskfield.js`): its peak is λ's near-field dose at 1 m for 1 h, times the
   person's expected infectiousness from the mean-field model (`model/meanfield.js`: P(flu) at each
-  infection age × that stage's shedding), diluted 5× outdoors. Walls stop it: the circle fades with the
-  walking distance through the person's own space, so indoor risk stays inside their building (never across a
-  courtyard or a wall notch) and outdoor risk stays out of buildings. Circles add up as hazards,
+  infection age × that stage's shedding), diluted 5× outdoors. Circles add up as hazards,
   P = 1 − exp(−Σ). `&fade=5` sets the fade length in metres (default 5). Big runs need
   `node model/meanfield-cli.mjs sim/runs/<run>` first. With `?color=truth` it uses who is actually infectious.
 - `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
