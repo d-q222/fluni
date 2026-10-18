@@ -415,7 +415,11 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
 
     private func schedulePoll(_ p: CBPeripheral, after s: TimeInterval) {
         guard pollPending.insert(p.identifier).inserted else { return }
+        // Off screen FlUni would be suspended before a 2 s timer fires, ending the chain (seen on a 17 Pro: polls
+        // stopped 3 s after backgrounding). Each answer is a Bluetooth wake-up; hold it open until the next read.
+        let window = inBackground && s > 0 ? BackgroundWindow.begin("fluni.poll") : nil
         scanQueue.asyncAfter(deadline: .now() + max(s, 0)) { [weak self] in
+            defer { window?.end() }
             guard let self else { return }
             self.pollPending.remove(p.identifier)
             self.poll(p)

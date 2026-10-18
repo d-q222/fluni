@@ -15,11 +15,11 @@ final class BackgroundWindow {
     static func begin(_ name: String) -> BackgroundWindow {
         let w = BackgroundWindow()
         #if canImport(UIKit)
-        let start = {
-            w.lock.lock(); defer { w.lock.unlock() }
-            w.id = UIApplication.shared.beginBackgroundTask(withName: name) { w.end() }
-        }
-        if Thread.isMainThread { start() } else { DispatchQueue.main.sync(execute: start) }
+        // beginBackgroundTask is safe from any thread (never main.sync here: the main thread may be waiting on
+        // the caller's queue, e.g. BLEBeacon.stop()).
+        w.lock.lock()
+        w.id = UIApplication.shared.beginBackgroundTask(withName: name) { w.end() }
+        w.lock.unlock()
         #endif
         return w
     }
