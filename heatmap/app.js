@@ -17,7 +17,7 @@ import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import { makeSeats } from './seats.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
-const DEMO = { cellM: 3, sigmaM: 18 };
+const DEMO = { cellM: 3, sigmaM: 6 }; // heat spread around each person close up (product owner: tight)
 // Heat is the expected number of infected people near each point right now: Σ P(sick) of the people
 // there, spread by the diffusion kernel (which integrates to 1, so a cloud holds exactly its people's
 // expected count). No trail of past positions: that counted people who had already left. Infectious
@@ -844,9 +844,8 @@ async function main() {
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
-    // 6 m steps: few cached scales. At most 30 m: with heat kept to the outlines, a wider spread only smears a
-    // building's heat into empty neighbours.
-    return Math.min(30, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6));
+    // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
+    return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
