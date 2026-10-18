@@ -103,11 +103,21 @@ function strip(d) {
     <div><p class="st">${esc(a.title)}</p><p class="sl">${esc(close ? a.body[1] : a.body[0])}</p></div></div>`;
 }
 
+// Lisa's two-frame scenes at the top of the risk card (assets/scenes/<name>-1/-2.png), by state. Hand-drawn
+// animation: the two frames swap like a flipbook. Only states she has drawn get one; Reduce Motion holds frame 1.
+const SCENE = { none: 'fine' };
+const scene = (key) => {
+  const n = SCENE[key];
+  if (!n) return '';
+  const src = (i) => `${ASSET.replace('illustrations/', 'scenes/')}${n}-${i}.png`;
+  return `<div class="scene" aria-hidden="true"><img src="${src(1)}" alt=""><img class="f2" src="${src(2)}" alt=""></div>`;
+};
+
 function heroCard(d) {
   const b = band(d.p), flagged = d.level !== 'none';
   const up = flagged && d.p > PRIOR * 1.05 ? `<small>up from ${esc(liveText(PRIOR))}</small>` : '';
   const steps = flagged && b === 'low' ? `<p class="lowtxt">Low, but follow the ${d.level === 'close' ? 'close-contact' : 'heads-up'} steps</p>` : '';
-  return `${bubble(d.level, false)}${card('hero', '', `${flagged ? strip(d) : ''}
+  return `${bubble(d.level, false)}${card('hero', '', `${flagged ? strip(d) : scene(d.level)}
     <div class="numrow"><span class="big" data-live="risk">${esc(liveText(d.p))}</span><span class="ind"><span class="dot ${b}"></span>${BAND[b]}${up}</span></div>${steps}
     <button class="fbtn" data-act="report">I don't feel well</button>`)}${howLink()}`;
 }
