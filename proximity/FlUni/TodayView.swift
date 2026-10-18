@@ -114,7 +114,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(p: model.liveRisk) { showCalc = true }
+        RiskCardView(p: model.ownScore) { showCalc = true }  // never low for someone who reported being sick
     }
 
     // MARK: Minutes
@@ -168,7 +168,7 @@ struct HowItWorksSheet: View {
                     block("How it works",
                           "Your phone and other phones running FlUni notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
                     block("What your phone shares",
-                          "Only a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
+                          "A 3-level status (healthy, possibly sick or contagious), how many days ago your symptoms or positive test began, this phone's risk estimate and a random ID that changes every 15 minutes. Other FlUni phones use them for their own estimate and never show them, but a Bluetooth scanner can read them. No name, no phone number, no account.")
                     block("What it doesn't share",
                           "Your location is never sent to other people or to a server. Matching happens on your phone, and the map shows building totals, not people.")
                     block("Good to know",

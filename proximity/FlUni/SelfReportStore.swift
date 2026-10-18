@@ -1,8 +1,8 @@
 import Foundation
 
 /// Keeps the user's self-report details on this phone only (a JSON file in Application Support, encrypted while
-/// the phone is locked) and applies the rules in Core/SelfReport.swift. The only thing that leaves the phone is the 3-level status, through
-/// ProximityModel.setMyStatus; symptoms, dates and test kinds are never broadcast.
+/// the phone is locked) and applies the rules in Core/SelfReport.swift. What leaves the phone is the 3-level status and the
+/// whole days since day 0 (onset or positive test), through ProximityModel.setMyStatus; symptoms, dates and test kinds are never broadcast.
 final class SelfReportStore: ObservableObject {
     @Published private(set) var record: SelfReportRecord
     /// A one-line result of the last action ("Cleared", "Stays contagious", ...), shown on the Me tab.
@@ -41,6 +41,7 @@ final class SelfReportStore: ObservableObject {
     func reconcile(with model: ProximityModel) {
         let r = reporter.reconciled(record, risk: model.myRisk, setAt: model.statusSetAt)
         if r != record { set(r) }
+        model.setMyDayZero(r.dayZero)  // a record from before days were broadcast
     }
 
     private func set(_ r: SelfReportRecord) {
@@ -50,7 +51,7 @@ final class SelfReportStore: ObservableObject {
 
     private func commit(_ r: SelfReportRecord, to model: ProximityModel) {
         set(r)
-        if model.myRisk != r.risk { model.setMyStatus(r.risk) }
+        if model.myRisk != r.risk { model.setMyStatus(r.risk, dayZero: r.dayZero) } else { model.setMyDayZero(r.dayZero) }
     }
 
     func feelFine(model: ProximityModel, now: Date = Date()) throws {

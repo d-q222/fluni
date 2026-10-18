@@ -137,6 +137,10 @@ struct FlUniApp: App {
         if saved > 1 { model.speed = saved }
         #endif
         model.worksInBackground = true  // Bluetooth background modes + state restoration (project.yml)
+        // Room-air term from the building this phone is in (its own fix; tools/make_building_rooms.py).
+        if let url = Bundle.main.url(forResource: "building_rooms", withExtension: "csv"), let data = try? Data(contentsOf: url) {
+            model.roomContext = RoomContext.parse(data)
+        }
         model.start()
     }
 }
