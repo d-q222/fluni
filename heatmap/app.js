@@ -59,6 +59,9 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // local placeholder.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
+// ?model=smf: heat from model/out/<run>/p_sick_smf.csv (Baker et al. mean-field, model/smf.js) instead of infer.js.
+const WANT_SMF = PARAMS.get('model') === 'smf';
+let modelLabel = 'Model: infer.js'; // which model drives the heat; set by loadModel
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
 const EMBED = PARAMS.get('embed') === 'app';
@@ -241,8 +244,14 @@ async function loadModel(dataUrl, agentIds) {
     const base = new URL(dataUrl, location.href);
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
+    const smfRisk = WANT_SMF ? await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick_smf.csv`, base)) : null;
+    if (smfRisk) modelLabel = 'Model: Baker SMF (smf.js)';
+    else if (WANT_SMF) {
+      modelLabel = 'Model: infer.js (p_sick_smf.csv missing for this run)';
+      console.warn(`No model/out/${config.run_id}/p_sick_smf.csv: falling back to infer.js.`);
+    }
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
-      const risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
+      const risk = smfRisk || await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
       if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
@@ -256,7 +265,7 @@ async function loadModel(dataUrl, agentIds) {
     roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
+    const risk = smfRisk || inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
@@ -1878,6 +1887,7 @@ async function main() {
 
   function renderLegend() {
     const v = $('view').value;
+    const mn = document.getElementById('model-note'); if (mn) mn.hidden = v === 'public';
     map.getContainer().classList.toggle('muted-base', v === 'public'); // heat is the strongest colour on screen
     $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
     // Colour scale is √, so the midpoint is a quarter of the maximum.
@@ -1978,7 +1988,15 @@ async function main() {
     why.style.whiteSpace = 'nowrap';
     $('ph-close').before(why);
     why.addEventListener('click', () => { mathOpen = !mathOpen; mathKey = ''; renderMath(); });
+  } else if (model && WANT_SMF && modelLabel.includes('SMF')) {
+    const note = Object.assign(document.createElement('span'), { textContent: 'Baker SMF model: no per-contact breakdown' });
+    note.style.cssText = 'color:var(--ink-3);font-size:12px';
+    $('ph-close').before(note);
   }
+  // Which model drives the heat (presenter view only; the user map hides it).
+  const modelNote = Object.assign(document.createElement('p'), { className: 'fine', textContent: modelLabel });
+  modelNote.id = 'model-note';
+  document.querySelector('.legend .fine').after(modelNote);
   // Short windows: the phone scrolls inside its frame instead of running off the bottom.
   // The phone is a fixed 393 x 852 pt screen; only scaled down (never reflowed) to fit short windows.
   function fitPhone() {
