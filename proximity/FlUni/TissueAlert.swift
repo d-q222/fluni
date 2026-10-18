@@ -96,7 +96,8 @@ struct TissueAlert: View {
         dragFrame = nil
         if reduceMotion { phase = .open; sheetFocused = true; return }
         Task { @MainActor in
-            for i in max(1, from + 1)...6 {
+            // A drag can already be at the last frame; `stride` (not a closed range) then plays nothing.
+            for i in stride(from: max(1, from + 1), through: 6, by: 1) {
                 phase = .pulling(i)
                 try? await Task.sleep(for: .milliseconds(Self.frameMs))
             }
@@ -129,7 +130,8 @@ struct TissueAlert: View {
                 .onEnded { v in
                     let up = max(0, -v.translation.height), fling = -v.predictedEndTranslation.height
                     let frame = min(6, Int(up / perFrame))
-                    if frame >= 3 || fling > perFrame * 5 { pull(from: frame) }
+                    // A fling counts only after a real pull (a frame's worth), so a quick nudge snaps back.
+                    if frame >= 3 || (frame >= 1 && fling > perFrame * 5) { pull(from: frame) }
                     else { withAnimation(.easeOut(duration: 0.15)) { dragFrame = nil } }
                 }
         )
