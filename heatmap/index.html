@@ -327,8 +327,20 @@
     .bld-pop h4 { margin: 8px 0 2px; font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
     .bld-pop button.who { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; color: var(--ink); background: none;
       border: 0; border-top: 1px solid var(--hairline); padding: 5px 0; cursor: pointer; }
-    .bld-pop button.who:hover { background: var(--surface-2); }
-    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; }
+    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; padding-left: 14px; }
+    .bld-pop .bld-list { max-height: min(240px, 35vh); overflow-y: auto; overscroll-behavior: contain; margin-right: -6px; padding-right: 6px; }
+    .bld-pop .who .line { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+    .bld-pop .who .chip { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+    .bld-pop .who .id { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bld-pop .who .line b { font-weight: 500; }
+    .bld-pop .who .truth { display: inline-flex; align-items: center; gap: 4px; width: 64px; justify-content: flex-end; color: var(--ink-3); font-size: 11px; }
+    .bld-pop .who .truth .truth-ring { display: inline-block; width: 7px; height: 7px; }
+    .bld-pop .who .truth:has(.truth-ring) { color: var(--ink); font-weight: 600; }
+    .bld-pop .bld-list button.who { padding: 5px 4px; }
+    .bld-pop button.who.top { background: var(--surface-2); }
+    .bld-pop button.who:hover { background: var(--surface-3); }
+    .bld-pop button.who.top .id, .bld-pop button.who.top .line b { font-weight: 700; }
+    .bld-pop button.who.top + button.who:not(.top) { border-top: 1px solid var(--ink-3); }
     .bld-pop .tiers3 { display: flex; gap: 6px; margin-top: 2px; }
     .bld-pop .tiers3 span { flex: 1; border-top: 4px solid var(--c); padding-top: 3px; font-size: 11px; color: var(--ink-2); }
     /* Headings in Fredoka (design pass). */

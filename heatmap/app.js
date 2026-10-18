@@ -1566,8 +1566,9 @@ async function main() {
     const tiers = { low: 0, elevated: 0, high: 0 };
     let expected = 0, excess = 0;
     for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
-    const top = here.filter((a) => a.p > MODEL.prior).sort((a, b) => b.p - a.p).slice(0, 3);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top };
+    here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
+    const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here };
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
   function buildingCard(h, full) {
@@ -1579,15 +1580,39 @@ async function main() {
       <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
       <div class="row"><span>People here now</span><b>${i.n}</b></div>
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
-      ${i.top.length ? `<h4>Driving it</h4>${i.top.map((a) => `<button class="who" data-id="${esc(a.id)}">${esc(a.id)} · P ${pct(a.p)}<small>${esc(whyText(a.id))}</small></button>`).join('')}`
-        : '<h4>Driving it</h4><p style="margin:2px 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}</div>`;
+      ${i.top.length ? '' : '<p style="margin:6px 0 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}
+      ${i.n ? `<h4>Everyone here${i.top.length ? ' · top drivers first' : ''}</h4><div class="bld-list">${i.here.map((a, k) => personRow(a, k < i.top.length)).join('')}</div>` : ''}</div>`;
   }
-  let hover = null, hoverAt = 0, openBld = null;
-  const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 300 });
+  // One row per person: tier chip, id, the app's estimate, the sim's truth (as the dot's dark ring), and why.
+  function personRow(a, top) {
+    const truth = a.sick == null ? '' : a.sick ? '<span class="truth"><i class="truth-ring"></i>infected</span>' : '<span class="truth">healthy</span>';
+    return `<button class="who${top ? ' top' : ''}" data-id="${esc(a.id)}"><span class="line"><i class="chip" style="background:${riskColor(Math.min(1, a.p))}"></i>`
+      + `<span class="id">${esc(a.id)}</span><b>${pct(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
+  }
+  let hover = null, hoverAt = 0, openBld = null, openAt = 0, rowDot = null;
+  const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 320 });
+  // Hovering a row rings that person's dot on the map.
+  const rowRing = L.circleMarker([0, 0], { renderer: L.svg({ pane: 'markerPane' }), interactive: false, radius: 11, weight: 3, fill: false });
+  function ringRow(id) {
+    rowDot = id;
+    const a = id && current.get(id);
+    if (!a) { rowRing.remove(); return; }
+    rowRing.setLatLng([a.lat, a.lon]).setStyle({ color: getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#000' });
+    if (!map.hasLayer(rowRing)) rowRing.addTo(map);
+  }
+  function setBuildingCard(h) { // keeps the list's scroll; skips the DOM when nothing changed (paused)
+    const html = buildingCard(h, true);
+    if (html === demoPop.getContent()) return;
+    const list = demoPop.getElement()?.querySelector('.bld-list'), top = list ? list.scrollTop : 0;
+    demoPop.setContent(html);
+    const next = demoPop.getElement()?.querySelector('.bld-list');
+    if (next) next.scrollTop = top;
+    if (rowDot) ringRow(rowDot);
+  }
   const hoverTip = L.tooltip({ direction: 'top', offset: [0, -6], className: 'bld-tip' });
   function refreshBuilding(realNow) {
     if (hover && realNow - hoverAt > 500) { hoverAt = realNow; hoverTip.setContent(buildingCard(hover, false)); }
-    if (openBld && realNow - hoverAt > 500) demoPop.setContent(buildingCard(openBld, true));
+    if (openBld && realNow - openAt > 1000) { openAt = realNow; setBuildingCard(openBld); }
   }
   let moveQueued = false;
   map.on('mousemove', (e) => {
@@ -1608,10 +1633,17 @@ async function main() {
     if ($('view').value !== 'demo') return;
     const h = buildingAt(e.latlng);
     if (!h) { map.closePopup(demoPop); return; }
-    openBld = h; hoverAt = performance.now();
+    openBld = h; openAt = performance.now();
     demoPop.setLatLng(e.latlng).setContent(buildingCard(h, true)).openOn(map);
   });
-  map.on('popupclose', (e) => { if (e.popup === demoPop) openBld = null; });
+  map.on('popupclose', (e) => { if (e.popup === demoPop) { openBld = null; ringRow(null); } });
+  map.getContainer().addEventListener('mouseover', (e) => {
+    const b = e.target.closest?.('.bld-pop .who');
+    if (b && b.dataset.id !== rowDot) ringRow(b.dataset.id);
+  });
+  map.getContainer().addEventListener('mouseout', (e) => {
+    if (rowDot && !e.relatedTarget?.closest?.('.bld-pop .who')) ringRow(null);
+  });
   map.getContainer().addEventListener('click', (e) => { // a person in the popup opens their phone
     const b = e.target.closest?.('.bld-pop .who');
     if (b) { map.closePopup(demoPop); select(b.dataset.id); }
