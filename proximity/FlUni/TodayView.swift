@@ -5,6 +5,7 @@ import SwiftUI
 /// per-person distances (those live in the Developer screen).
 struct TodayView: View {
     @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
     @State private var showHow = false
     @State private var showCalc = false
     /// One line when iOS settings would stop alerts while FlUni is closed.
@@ -28,12 +29,17 @@ struct TodayView: View {
                     WalkInBanner(model: model)
                     UnusualSignalsBanner(model: model)
                     AlwaysLocationCard()  // step two of the location ask (BackgroundLocation.offersAlways); flu-offdetect
-                    if level == .nearby { NearbyBanner().transition(.opacity) }
-                    statusCard
-                    riskCard
-                    minutesCard
-                    nearbyCard
-                    ExposureHistorySection(store: model.exposureHistory)
+                    if model.selfStatusOverridesRisk {
+                        // Someone who reported being sick never sees "All clear" or a risk percentage.
+                        stayHome
+                    } else {
+                        if level == .nearby { NearbyBanner().transition(.opacity) }
+                        statusCard
+                        riskCard
+                        minutesCard
+                        nearbyCard
+                        ExposureHistorySection(store: model.exposureHistory)
+                    }
                     Button { showHow = true } label: {
                         Label("How FlUni works and what it shares", systemImage: "info.circle")
                             .font(.fluni(.subheadline, weight: .semibold))
@@ -64,6 +70,18 @@ struct TodayView: View {
         } else {
             backgroundHint = nil
         }
+    }
+
+    // MARK: Sick
+
+    private var stayHome: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            AtHomeCard(model: model, store: store)
+            Text(model.myRisk == .contagious ? "Phones near you see: tested positive." : "Phones near you see: possibly sick.")
+                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                .accessibilityIdentifier("today.sharedStatus")
+        }
+        .onAppear { store.reconcile(with: model) }
     }
 
     // MARK: Status

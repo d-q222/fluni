@@ -61,6 +61,33 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(app.navigationBars["How is this calculated?"].exists)
     }
 
+    /// Someone who reported being sick sees the stay-home card on Today: no risk percentage, no "All clear".
+    func testSickUserSeesNoRiskPercentOrAllClearOnToday() {
+        launchPastOnboarding()
+        XCTAssertTrue(app.staticTexts["All clear"].waitForExistence(timeout: 10), "healthy baseline")
+        reportSymptoms()
+        assertTodayIsStayHome()
+        openTab("Me")
+        el("report.positive").tap()
+        XCTAssertTrue(app.navigationBars["I tested positive"].waitForExistence(timeout: 5))
+        app.buttons["report.submit"].tap()
+        let share = dialogButton("Share that I tested positive")
+        XCTAssertTrue(share.waitForExistence(timeout: 5))
+        share.tap()
+        XCTAssertTrue(app.navigationBars["Me"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label CONTAINS '%'")).count, 0, "no percentage on Me")
+        assertTodayIsStayHome()
+    }
+
+    private func assertTodayIsStayHome() {
+        openTab("Today")
+        XCTAssertTrue(el("athome.card").waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["All clear"].exists)
+        XCTAssertFalse(el("risk.card").exists)
+        XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label CONTAINS '%'")).count, 0, "no percentage on Today")
+        XCTAssertTrue(el("today.sharedStatus").exists)
+    }
+
     /// Debug -demoPeer puts a pretend contagious phone 0.5 m away (no radios); at -speed 30 each 1 s tick
     /// credits 30 s, so the headline number must climb on screen within a few seconds, one decimal at a time.
     func testRiskNumberClimbsLiveNearAPretendContagiousPeer() {
