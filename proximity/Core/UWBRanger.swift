@@ -178,6 +178,12 @@ final class UWBRanger: NSObject, NISessionDelegate {
         guard let p = handle(of: s) else { return }
         peers[p]?.session = nil
         if (error as? NIError)?.code == .userDidNotAllow { onState?("not allowed"); stop(for: p); return }  // retrying can't help
+        // NI rejects the peer's token even without extended distance: retrying with the same token can't
+        // help (seen on 2026-10-17 from FlUni running in a simulator, linked over the Mac's network, never
+        // heard on Bluetooth). Stop; a new link to that peer tries again.
+        if (error as? NIError)?.code == .invalidConfiguration, peers[p]?.ranExtended != true {
+            onState?("peer token rejected, stopping"); stop(for: p); return
+        }
         // Invalid configuration, or a second failure in a row with no distance: drop extended for this pair.
         if peers[p]?.ranExtended == true,
            (error as? NIError)?.code == .invalidConfiguration || (peers[p]?.restarts ?? 0) >= 1 {
