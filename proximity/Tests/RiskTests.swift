@@ -58,6 +58,32 @@ final class RiskTests: XCTestCase {
         XCTAssertEqual(RiskEstimate.band(p(dose: 1e9)), .high)
     }
 
+    /// The risk card's line never says "No action needed" while Today shows a heads-up or close contact
+    /// (bug hunt: "Close contact" above "4.9% Low. No action needed.").
+    func testSummaryFollowsTheAlertLevel() {
+        let low = 0.049, elevated = 0.2, high = 0.5
+        let want: [(AlertLevel, Double, String)] = [
+            (.none, low, "Low. No action needed."),
+            (.none, elevated, "Elevated. Wear a mask in crowded rooms and watch for symptoms."),
+            (.none, high, "High. Consider getting tested at Vaden and staying home."),
+            (.nearby, low, "Low, but follow the heads-up steps."),
+            (.nearby, elevated, "Elevated. Wear a mask in crowded rooms and watch for symptoms."),
+            (.nearby, high, "High. Consider getting tested at Vaden and staying home."),
+            (.closeContact, low, "Low, but follow the close-contact steps."),
+            (.closeContact, elevated, "Elevated. Wear a mask in crowded rooms and watch for symptoms."),
+            (.closeContact, high, "High. Consider getting tested at Vaden and staying home."),
+        ]
+        for (alert, p, text) in want {
+            XCTAssertEqual(RiskEstimate.summary(p, alert: alert), text, "\(alert) at \(p)")
+            if alert != .none { XCTAssertFalse(RiskEstimate.summary(p, alert: alert).contains("No action needed")) }
+        }
+        // With no alert it is the map's shared line, word for word.
+        for p in [0.0, 0.0999, 0.10, 0.3999, 0.40, 1.0] { XCTAssertEqual(RiskEstimate.summary(p, alert: .none), RiskEstimate.summary(p)) }
+        // Band edges: the band still decides; only the low line changes.
+        XCTAssertEqual(RiskEstimate.summary(0.0999, alert: .closeContact), "Low, but follow the close-contact steps.")
+        XCTAssertEqual(RiskEstimate.summary(0.10, alert: .closeContact), RiskEstimate.summary(0.10))
+    }
+
     func testDoseDistanceDropsCoarseGPSOnly() {
         func d(_ x: Double, _ s: Double = 0.1, _ src: [Source] = [.uwb]) -> Double? {
             Fusion.doseDistance(Estimate(distance: x, sigma: s, sources: src))

@@ -40,20 +40,27 @@ class FlUniUITestCase: XCTestCase {
         let t = tab(name)
         XCTAssertTrue(t.waitForExistence(timeout: 10), "\(name) tab", file: file, line: line)
         t.tap()
-        // Today has no navigation bar (mockup v4): its header is the tissue's line, id today.home.
-        let landed = name == "Today" ? el("today.home") : app.navigationBars[name]
-        XCTAssertTrue(landed.waitForExistence(timeout: 10), "\(name) title", file: file, line: line)
+        // The Map tab is the bundled web map and Today's header is the tissue's line (id today.home), neither with a
+        // navigation bar; Me has its title.
+        let screen = name == "Map" ? app.webViews.firstMatch : name == "Today" ? el("today.home") : app.navigationBars[name]
+        XCTAssertTrue(screen.waitForExistence(timeout: 10), "\(name) screen", file: file, line: line)
     }
 
     /// Any element type, by accessibility identifier (SwiftUI combined elements vary in type).
     func el(_ id: String) -> XCUIElement { app.descendants(matching: .any)[id].firstMatch }
 
-    /// Swipes up until the element can be tapped.
+    /// Swipes up until the element exists, can be tapped and is clear of Lisa's tab bar (a Form only builds rows
+    /// near the screen, so Settings' Delete row doesn't exist until scrolled to; from flu-design2). XCUITest calls
+    /// a row behind the box "hittable", but a tap there lands on a tissue (Me's Settings row opened Today).
     @discardableResult
     func scrollTo(_ e: XCUIElement, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
-        XCTAssertTrue(e.waitForExistence(timeout: 10), "\(e) should exist", file: file, line: line)
+        let window = app.windows.firstMatch.frame
+        let boxTop = window.maxY - window.width / 3.0233  // TissueTabBar.aspect
+        func ready() -> Bool { e.exists && e.isHittable && e.frame.maxY <= boxTop }
         var n = 0
-        while !e.isHittable && n < 10 { app.swipeUp(); n += 1 }
+        _ = e.waitForExistence(timeout: 3)
+        while !ready() && n < 12 { app.swipeUp(); n += 1 }
+        XCTAssertTrue(e.exists, "\(e) should exist", file: file, line: line)
         return e
     }
 

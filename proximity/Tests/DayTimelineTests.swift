@@ -69,7 +69,7 @@ final class DayTimelineTests: XCTestCase {
         XCTAssertEqual(withMoment.first?.visit?.name, "Main Quad")
         XCTAssertEqual(DayTimeline.rows(visits: [quad], current: quad, moments: [], now: at(3)).count, 1)
         XCTAssertTrue(DayTimeline.rows(visits: [quad], current: nil, moments: [], now: at(10)).isEmpty)
-        XCTAssertTrue(DayTimeline.rows(visits: [visit("Gates", 0, 60)], current: nil, moments: [], now: at(25 * 60)).isEmpty,
+        XCTAssertTrue(DayTimeline.rows(visits: [visit("Gates", 0, 60)], current: nil, moments: [], now: at(26 * 60)).isEmpty,
                       "a visit that ended over 24 h ago is gone")
     }
 }

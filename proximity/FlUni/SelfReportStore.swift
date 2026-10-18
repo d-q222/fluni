@@ -78,8 +78,12 @@ final class SelfReportStore: ObservableObject {
             notice = "Status set back to healthy. A negative test, especially a single rapid one, doesn't rule illness out: if symptoms continue or get worse, test again in 1 to 2 days or visit Vaden."
         case (.possible, _):
             notice = "That test was from before your symptoms started, so your status stays \"possibly sick\"."
+        case (.contagious, .contagious):
+            notice = "Only a PCR test taken on or after your positive test clears it, so you stay marked contagious until your isolation period is over."
+        case (.contagious, .possible):
+            notice = "Your positive test is cleared. You still reported symptoms, so you stay marked possibly sick: stay home until you've had no fever for 24 hours."
         case (.contagious, _):
-            notice = "You tested positive earlier, so you stay marked contagious until your isolation period is over."
+            notice = "Status set back to healthy. Your negative PCR test cleared your positive."
         default:
             notice = "Nothing to change: you're already shown as healthy."
         }

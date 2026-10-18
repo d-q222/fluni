@@ -165,7 +165,7 @@ struct ReportSheet: View {
     private var negativeNote: String {
         switch model.myRisk {
         case .possible: return "This sets you back to healthy. A single rapid negative test isn't conclusive, especially in the first days. If you still feel sick, test again in 1 to 2 days or visit Vaden."
-        case .contagious: return "You tested positive earlier, so a negative test won't clear your status. It changes once your isolation period is over."
+        case .contagious: return "A negative PCR test taken on or after your positive test clears it. A rapid test doesn't, and neither does a test from before the positive. Nothing about the test is shared."
         case .none: return "You're already shown as healthy, so nothing changes. Nothing about the test is shared."
         }
     }

@@ -24,7 +24,7 @@ enum PSickLoader {
     static func load() async throws -> PSickFeed {
         let saved = UserDefaults.standard.string(forKey: "heatmapURL") ?? ""
         guard let url = feedURL(heatmapURL: saved, runID: runID) else {
-            throw Failure(message: "No laptop address yet. Enter the heat map address on the Map tab first.")
+            throw Failure(message: "No laptop address yet. Enter the laptop's address under Map address in Settings first.")
         }
         var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
         req.httpMethod = "GET"

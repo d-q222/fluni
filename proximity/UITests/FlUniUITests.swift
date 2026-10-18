@@ -142,7 +142,9 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(el("report.fine").isSelected)
         XCTAssertTrue(el("athome.card").waitForExistence(timeout: 5), "At home card appears")
         XCTAssertTrue(el("checkin.better").exists, "the one-tap check-in")
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label MATCHES 'Day [0-9] of 5'")).firstMatch.exists)
+        XCTAssertTrue(el("athome.vaden").exists, "Vaden's number under the card")
+        // Day 0 is the day symptoms started; reported today, so Day 0.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 0 of'")).firstMatch.exists)
     }
 
     func testPositiveNeedsConfirmationAndCancelKeepsOldStatus() {
@@ -216,8 +218,10 @@ final class FlUniUITests: FlUniUITestCase {
         scrollTo(el("settings.row")).tap()
         let delete = app.buttons["settings.delete"]
         scrollTo(delete).tap()
-        XCTAssertTrue(app.staticTexts["Delete all data on this phone?"].waitForExistence(timeout: 5))
-        dialogButton("Delete my data").tap()
+        let alert = app.alerts["Delete all data on this phone?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Cancel"].exists, "a way out")
+        alert.buttons["Delete my data"].tap()
 
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].exists)
@@ -268,5 +272,35 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(app.navigationBars["I have symptoms"].waitForExistence(timeout: 5))
         XCTAssertTrue(scrollTo(el("symptom.fever")).isHittable)
         XCTAssertTrue(scrollTo(app.buttons["report.submit"]).isHittable, "submit reachable by scrolling")
+    }
+
+    // MARK: Tissue alert
+
+    /// Lisa's tissue alert near a pretend sick peer: a short drag snaps the tissue back, a long one pulls out the
+    /// sheet, "Got it" puts it away, the risk card shows the heads-up strip, and the Today footnote opens How this works.
+    func testTissueAlertPullsOutAndGotItPutsItAway() {
+        app.launchArguments += ["-hasOnboarded", "YES", "-demoPeer", "contagious@0.5"]
+        app.launch()
+        let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
+        if allow.waitForExistence(timeout: 4) { allow.tap() }
+
+        let pop = el("tissueAlert.pop"), ok = el("tissueAlert.ok")
+        XCTAssertTrue(pop.waitForExistence(timeout: 20), "the tissue pops for a heads-up")
+        if allow.exists { allow.tap() }
+        let start = pop.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.2, thenDragTo: start.withOffset(CGVector(dx: 0, dy: -30)), withVelocity: .slow, thenHoldForDuration: 0.3)
+        XCTAssertFalse(ok.waitForExistence(timeout: 1), "a short drag snaps back")
+        XCTAssertTrue(pop.exists)
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: -260)))
+        XCTAssertTrue(ok.waitForExistence(timeout: 5), "a long drag pulls out the sheet")
+        ok.tap()
+        XCTAssertTrue(ok.waitForNonExistence(timeout: 3))
+        XCTAssertFalse(pop.exists, "Got it puts it away")
+
+        XCTAssertTrue(el("today.alert").exists, "the heads-up strip in the risk card")
+        let how = scrollTo(app.buttons["How FlUni works and what it shares"])
+        XCTAssertTrue(how.isHittable, "footnote clears the tissue box")
+        how.tap()
+        XCTAssertTrue(app.navigationBars["How this works"].waitForExistence(timeout: 5), "footnote")
     }
 }

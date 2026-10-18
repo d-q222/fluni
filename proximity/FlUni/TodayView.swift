@@ -36,7 +36,7 @@ struct TodayView: View {
                         RecoverySection(store: store, risk: model.myRisk)
                             .onAppear { store.reconcile(with: model) }
                     } else {
-                        RiskHero(p: model.liveRisk, level: level) { showReport = true }
+                        RiskHero(p: model.ownScore, level: level) { showReport = true }  // ownScore = liveRisk unless self-reported (then sick mode)
                         howLink
                         DayTimelineSection(model: model, history: model.exposureHistory)
                     }

@@ -962,14 +962,14 @@ final class BlindPersonalTests: XCTestCase {
         UserDefaults().removePersistentDomain(forName: suite)
     }
 
-    // Product rule "Pause options: 1 h, until tomorrow, until resumed"; digest: untilTomorrow = next local midnight.
+    // Product rule "Pause options: 1 h, until tomorrow, until resumed"; ruling 2026-10-18: untilTomorrow = 6 AM local (today if before 6).
     func testPauseSchedule() {
         let cal = la()
         let now = localDate(2026, 10, 17, 23, 30, cal)
         XCTAssertEqual(PauseSchedule.until(.oneHour, from: now, calendar: cal), now + 3600)
-        XCTAssertEqual(PauseSchedule.until(.untilTomorrow, from: now, calendar: cal), localDate(2026, 10, 18, 0, 0, cal))
+        XCTAssertEqual(PauseSchedule.until(.untilTomorrow, from: now, calendar: cal), localDate(2026, 10, 18, 6, 0, cal))
         let early = localDate(2026, 10, 17, 0, 10, cal)
-        XCTAssertEqual(PauseSchedule.until(.untilTomorrow, from: early, calendar: cal), localDate(2026, 10, 18, 0, 0, cal))
+        XCTAssertEqual(PauseSchedule.until(.untilTomorrow, from: early, calendar: cal), localDate(2026, 10, 17, 6, 0, cal))
         XCTAssertNil(PauseSchedule.until(.untilResumed, from: now, calendar: cal))
         let hour = PauseSchedule.state(.oneHour, from: now, calendar: cal)
         XCTAssertEqual(hour.since, now)

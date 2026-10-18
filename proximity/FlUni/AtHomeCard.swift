@@ -160,7 +160,7 @@ struct RecoverySection: View {
                     Text(line).font(.fluni(.subheadline)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 }
             }
-            // flu-decide's Vaden line (number, tap to call, hours) goes here.
+            VadenLink().padding(.leading, 17)
         }
         .padding(.horizontal, 4)
     }
@@ -196,6 +196,21 @@ struct RecoverySection: View {
     /// "Today", or the short weekday ("Thu").
     static func dayWord(_ d: Date, now: Date) -> String {
         Calendar.current.isDate(d, inSameDayAs: now) ? "Today" : d.formatted(.dateTime.weekday(.abbreviated))
+    }
+}
+
+/// Vaden's number, tap to call, and its hours (flu-decide, owner ruling): under the stay-home tips on Today and
+/// under the stay-home card on Me.
+struct VadenLink: View {
+    var body: some View {
+        // Vaden: Mon-Fri 8:15 AM-5 PM, most Saturdays 11-3 in the academic year (vaden.stanford.edu/our-hours-contact-details).
+        Link(destination: URL(string: "tel:6504982336")!) {
+            Label("Vaden Health · (650) 498-2336 · Mon–Fri 8:15–5", systemImage: "phone.fill")
+                .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink)
+                .frame(minHeight: 44, alignment: .leading)
+        }
+        .accessibilityLabel("Call Vaden Health Center, 650 498 2336. Open Monday to Friday 8:15 AM to 5 PM, most Saturdays 11 AM to 3 PM.")
+        .accessibilityIdentifier("athome.vaden")
     }
 }
 

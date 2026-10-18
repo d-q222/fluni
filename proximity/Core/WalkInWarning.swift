@@ -34,5 +34,10 @@ struct WalkInWarning {
     /// Forget every cooldown (Delete my data, and the Demo's "Reset warnings").
     mutating func resetCooldowns() { lastNotified = [:] }
 
-    static func message(for name: String) -> String { "\(name) has a lot of illness right now. Consider a mask, or a different spot." }
+    /// `sick` = the user's own status is possibly sick or contagious (the same test that puts Today in stay-home
+    /// mode): they get rest advice instead of "consider a mask, or a different spot". Trigger and cooldown are the same.
+    static func message(for name: String, sick: Bool = false) -> String {
+        sick ? "You're out at \(name) while you're unwell. Head home and rest up when you can."
+             : "\(name) has a lot of illness right now. Consider a mask, or a different spot."
+    }
 }

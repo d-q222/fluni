@@ -135,14 +135,61 @@ final class SelfReportTests: XCTestCase {
 
     // MARK: status transitions
 
-    func testNegativeAfterPositiveDoesNotClearContagious() throws {
+    func testRapidNegativeNeverClearsAPositive() throws {
         var r = try sr.reportPositive(SelfReportRecord(), kind: .rapid, date: at(2026, 10, 10), now: at(2026, 10, 10, 9))
-        let after = try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 11), now: at(2026, 10, 11, 9))
-        XCTAssertEqual(after, r)
-        XCTAssertEqual(after.risk, .contagious)
+        XCTAssertEqual(try sr.reportNegative(r, kind: .rapid, date: at(2026, 10, 11), now: at(2026, 10, 11, 9)), r)
         // Same with symptoms on top of the positive.
         r = try sr.reportSymptoms(r, symptoms: [.cough], onset: at(2026, 10, 9), now: at(2026, 10, 10, 10))
         XCTAssertEqual(try sr.reportNegative(r, kind: .rapid, date: at(2026, 10, 10), now: at(2026, 10, 10, 11)).risk, .contagious)
+    }
+
+    func testPCRDatedBeforeThePositiveDoesNotClearIt() throws {
+        let r = try sr.reportPositive(SelfReportRecord(), kind: .rapid, date: at(2026, 10, 10), now: at(2026, 10, 11, 9))
+        let after = try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 9, 23, 59), now: at(2026, 10, 11, 9))
+        XCTAssertEqual(after, r)
+    }
+
+    func testPCRNegativeOnOrAfterThePositiveDayClearsIt() throws {
+        let r = try sr.reportPositive(SelfReportRecord(), kind: .rapid, date: at(2026, 10, 10, 15), now: at(2026, 10, 10, 15))
+        // Same day (even earlier in the day) and a later day both count.
+        XCTAssertEqual(try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 10, 8), now: at(2026, 10, 10, 16)), SelfReportRecord())
+        XCTAssertEqual(try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 12), now: at(2026, 10, 12, 9)), SelfReportRecord())
+    }
+
+    func testPCRNegativeKeepsSymptomsState() throws {
+        var r = try sr.reportSymptoms(SelfReportRecord(), symptoms: [.fever, .cough], onset: at(2026, 10, 9), now: at(2026, 10, 9, 20))
+        r = try sr.reportPositive(r, kind: .pcr, date: at(2026, 10, 10), now: at(2026, 10, 10, 9))
+        let now = at(2026, 10, 11, 9)
+        let after = try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 11), now: now)
+        XCTAssertEqual(after.risk, .possible)
+        XCTAssertNil(after.positiveKind)
+        XCTAssertNil(after.positiveDate)
+        XCTAssertEqual(after.symptoms, [.fever, .cough])
+        XCTAssertEqual(after.onset, at(2026, 10, 9))
+        XCTAssertEqual(after.dayZero, at(2026, 10, 9))
+        // The fever clock still holds you at home.
+        XCTAssertEqual(after.lastFeverAt, r.lastFeverAt)
+        XCTAssertFalse(sr.isFeverFree(after, now: at(2026, 10, 10, 1)))
+    }
+
+    func testPCRNegativeWithoutSymptomsGoesBackToNone() throws {
+        let r = try sr.reportPositive(SelfReportRecord(), kind: .pcr, date: at(2026, 10, 10), now: at(2026, 10, 10, 9))
+        let after = try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 10), now: at(2026, 10, 10, 12))
+        XCTAssertEqual(after.risk, .none)
+        XCTAssertNil(after.dayZero)
+        XCTAssertNil(sr.dayNumber(after, now: at(2026, 10, 10, 12)))
+    }
+
+    func testRecordWithClearedPositiveRoundTripsAndOldJSONStillDecodes() throws {
+        var r = try sr.reportSymptoms(SelfReportRecord(), symptoms: [.cough], onset: at(2026, 10, 9), now: at(2026, 10, 9, 20))
+        r = try sr.reportPositive(r, kind: .pcr, date: at(2026, 10, 10), now: at(2026, 10, 10, 9))
+        let cleared = try sr.reportNegative(r, kind: .pcr, date: at(2026, 10, 10), now: at(2026, 10, 10, 12))
+        for rec in [r, cleared] {
+            XCTAssertEqual(try JSONDecoder().decode(SelfReportRecord.self, from: JSONEncoder().encode(rec)), rec)
+        }
+        // A record saved before this change (no new fields were added, but keep that promise honest).
+        let old = #"{"risk":1,"symptoms":["cough"]}"#.data(using: .utf8)!
+        XCTAssertEqual(try JSONDecoder().decode(SelfReportRecord.self, from: old).risk, .possible)
     }
 
     func testNegativeClearsPossibleOnOrAfterOnsetOnly() throws {
