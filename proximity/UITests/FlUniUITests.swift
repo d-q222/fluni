@@ -30,7 +30,7 @@ final class FlUniUITests: FlUniUITestCase {
         // Lisa's tissue-box bar: three buttons by id, labelled Today / Map / Me; no system tab bar.
         XCTAssertEqual(tab("Map").label, "Map")
         XCTAssertEqual(tab("Me").label, "Me")
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        XCTAssertFalse(app.tabBars.firstMatch.exists, "no system tab bar")
         openTab("Map")
         XCTAssertFalse(el("today.now").isHittable, "Today is behind")
         openTab("Me")

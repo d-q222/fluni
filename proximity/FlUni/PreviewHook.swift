@@ -40,6 +40,14 @@ enum PreviewHook {
         default: record = nil
         }
         if let record, let url = SelfReportStore.defaultURL { SelfReportFile.save(record, to: url) }
+        // The tab is chosen before the first frame (FlUniApp.init runs on the main thread).
+        MainActor.assumeIsolated {
+            switch screen {
+            case "you", "me": AppRouter.shared.tab = .me
+            case "campus", "map": AppRouter.shared.tab = .map
+            default: break
+            }
+        }
         return true
     }
 

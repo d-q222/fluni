@@ -80,7 +80,12 @@ struct YouView: View {
             } message: {
                 Text("This clears your saved status, recent contacts, today's places and setup. FlUni will start over as if it were just installed.")
             }
-            .onAppear { store.reconcile(with: model) }
+            .onAppear {
+                #if DEBUG
+                if PreviewHook.state != nil { return }  // the preview seeds the model's status a moment later
+                #endif
+                store.reconcile(with: model)
+            }
             .onChange(of: feed.myRisk) { _, _ in store.reconcile(with: model) }
         }
     }
