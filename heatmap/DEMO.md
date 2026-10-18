@@ -35,7 +35,7 @@ scripted in [../proximity/DEMO.md](../proximity/DEMO.md).
 | `J` | Open "Jump to…" (then click an item) |
 | `?` | Show this list on screen |
 | `Esc` | Close the phone and the "Why this %?" panel |
-| Header | **Room-level** / **What users see** / **Air by room**; **Display** holds the base map |
+| Header | **Room-level** / **What users see**; **Display** holds the base map |
 
 ## The beats
 

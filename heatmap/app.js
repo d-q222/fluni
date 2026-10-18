@@ -1782,8 +1782,7 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
-  // Experimental airflow heat (aerosol.js); added here so the page markup stays the design pass's.
-  $('view').append(new Option('Infectious air by room (sim)', 'airborne'));
+  // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
   // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
