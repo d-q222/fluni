@@ -9,7 +9,9 @@ struct Wire: Codable {
     enum Kind: String, Codable { case hello, uwbToken, gps }
     var kind: Kind
     var id: String? = nil       // hello: ephemeral ID (same one the BLE beacon carries)
-    var risk: Risk? = nil       // hello
+    var risk: Risk? = nil       // hello (informational: Bluetooth's risk is the one used)
+    var ext: Bool? = nil        // hello, optional: this phone supports UWB extended distance. Older builds omit it
+                                // and ignore it (unknown JSON keys are skipped), so the format stays compatible.
     var token: Data? = nil      // uwbToken: archived NIDiscoveryToken
     var lat: Double? = nil      // gps
     var lon: Double? = nil
