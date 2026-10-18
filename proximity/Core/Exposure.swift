@@ -35,12 +35,17 @@ enum AlertNotifier {
     }
 }
 
-/// One contact's input to the risk dose: the peer's rotating ID, its fused distance in metres, and the
-/// share of the tick it covers (AccrualFeed splits a long background credit into whole ticks plus a part).
+/// One contact's input to the risk dose: the peer's rotating ID, its fused distance in metres, the
+/// share of the tick it covers (AccrualFeed splits a long background credit into whole ticks plus a part),
+/// the peer's evidence level s and stage (nil: from the contact's status, illness-average stage) and the
+/// room this phone is in.
 struct DosePeer: Equatable {
     var id: String
     var distance: Double
     var share = 1.0
+    var s: Double? = nil
+    var stage: Double? = nil
+    var room: RiskEstimate.Room = .standard
 }
 
 /// Accumulates close-contact minutes with risky phones (summed across them, so ID rotation
@@ -51,7 +56,7 @@ struct ExposureTracker: Equatable {
     static let closeContactMinutes = 15.0
     static let window = 24 * 3600.0  // simulated seconds, so the demo speed-up applies
     private(set) var minutes = 0.0
-    /// Rio's unit dose per peer ID (with its evidence level s), over the 24 h window.
+    /// Rio's unit dose per peer ID (with its stage-weighted dose and highest evidence level s), over the 24 h window.
     /// Separate from `minutes`, which drives the 15-min close-contact alert.
     private(set) var sources: [String: RiskEstimate.Source] = [:]
     /// Σ unit dose over every ID in the window (shown to the user).
@@ -71,23 +76,28 @@ struct ExposureTracker: Equatable {
     /// pClose outside [0, 1] is ignored or clamped rather than allowed to erase or poison the total.
     /// `doses`: each contact's peer ID and fused distance, same order as `contacts`; nil (or a missing
     /// entry) means no dose: no distance estimate, coarse GPS only, or dropped by ContactGuard.
-    /// Healthy peers add no dose; nor does a distance beyond RiskEstimate.doseRange.
+    /// A peer adds dose only with an evidence level s > 0 (its status, or its score above the prior) and
+    /// within RiskEstimate.doseRange; minutes count only peers whose status is possibly sick or positive.
     mutating func advance(simSeconds: Double, contacts: [(pClose: Double, risk: Risk)], doses: [DosePeer?]? = nil) {
         let dt = simSeconds.isFinite ? min(max(simSeconds, 0), Self.window) : 0
         clock += dt
         var added = 0.0
         var addedDose: [String: RiskEstimate.Source] = [:]
-        for (i, c) in contacts.enumerated() where c.risk != .none {
-            if c.pClose.isFinite {
+        for (i, c) in contacts.enumerated() {
+            if c.risk != .none, c.pClose.isFinite {
                 let p = min(max(c.pClose, 0), 1)
                 added += dt / 60 * p * c.risk.weight
             }
             guard let ds = doses, i < ds.count, let x = ds[i] else { continue }
+            let s = x.s ?? RiskEstimate.evidence(c.risk)
+            guard s.isFinite, s > 0 else { continue }
+            let stage = x.stage ?? RiskEstimate.stage
             let share = x.share.isFinite ? min(max(x.share, 0), 1) : 0
-            let u = RiskEstimate.contactDose(distance: x.distance, seconds: dt * share)
-            guard u > 0 else { continue }
+            let u = RiskEstimate.contactDose(distance: x.distance, seconds: dt * share, room: x.room)
+            guard u > 0, stage.isFinite, stage >= 0 else { continue }
             addedDose[x.id, default: .init()].dose += u
-            addedDose[x.id]!.s = max(addedDose[x.id]!.s, RiskEstimate.evidence(c.risk))
+            addedDose[x.id]!.weighted += stage * u
+            addedDose[x.id]!.s = max(addedDose[x.id]!.s, min(s, 1))
         }
         if added > 0 || !addedDose.isEmpty {
             let m = Int(floor(clock / 60))
@@ -135,6 +145,7 @@ struct ExposureTracker: Equatable {
     private static func merge(_ add: [String: RiskEstimate.Source], into total: inout [String: RiskEstimate.Source]) {
         for (id, a) in add {
             total[id, default: .init()].dose += a.dose
+            total[id]!.weighted += a.weighted
             total[id]!.s = max(total[id]!.s, a.s)
         }
     }

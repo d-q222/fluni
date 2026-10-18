@@ -40,7 +40,7 @@ struct OnboardingView: View {
 
     private var page2: some View {
         slide(title: "Private by design",
-              text: "Shared with phones nearby: a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes.\n\nNot shared: your name, your location, your contacts. There's no account and no server tracking you.",
+              text: "Shared with phones nearby: a 3-level status (healthy, possibly sick or contagious), days since your symptoms or positive test began, your risk estimate and a random ID that changes every 15 minutes. FlUni never shows them to anyone, but they travel over plain Bluetooth.\n\nNot shared: your name, your location, your contacts. There's no account and no server tracking you.",
               art: AnyView(Image(systemName: "lock.shield").font(.system(size: 72)).foregroundStyle(Theme.ink2).accessibilityHidden(true)))
     }
 

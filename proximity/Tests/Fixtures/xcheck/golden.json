@@ -1504,6 +1504,1908 @@
   ],
   "p": 0.0328742563480591
  },
+ "roomDose": [
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.031077416513230222,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.16986495140215704,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0029909967601438017,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.05445980560862812,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0032433009347713542,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "default",
+   "building": null,
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.00024105239914394116,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 135,
+    "far": 0.002558627788392292
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.00617283950617284,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.03333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0005555555555555556,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.008333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0002222222222222222,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoors",
+   "building": "outdoors",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.000005566683355583366,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.030935519877951817,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.1677365018729809,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0028491001248653926,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.04594600749192357,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0018243345819872608,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "generic",
+   "building": "bld_1029436493",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.00009915576386553183,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 299.97,
+    "far": 0.00085586816505138
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.004710303852217672,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.026210113338820624,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0004973408892547084,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.011090453355282501,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0009734088925470838,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "dorm",
+   "building": "bld_1040231570",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.00008484923510472925,
+   "info": {
+    "indoor": true,
+    "quanta": 1.5,
+    "volume": 53.52,
+    "far": 0.006453937807043337
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.030963246440382123,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.16815240030943557,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.002876826687295703,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.04760960123774219,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0021016002062903645,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "classroom",
+   "building": "bld_109151789",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.00012688232629584216,
+   "info": {
+    "indoor": true,
+    "quanta": 10,
+    "volume": 216,
+    "far": 0.0011885869142151042
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.00617283950617284,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.03333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0005555555555555556,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.008333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0002222222222222222,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "outdoorPlace",
+   "building": "bld_m_white_plaza",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.000005566683355583366,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 0.2,
+   "seconds": 60,
+   "dose": 0.00617283950617284,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.03333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 1,
+   "seconds": 60,
+   "dose": 0.0005555555555555556,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 2,
+   "seconds": 3600,
+   "dose": 0.008333333333333333,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 5,
+   "seconds": 600,
+   "dose": 0.0002222222222222222,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  },
+  {
+   "kind": "arena",
+   "building": "bld_18564360",
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.000005566683355583366,
+   "info": {
+    "indoor": false,
+    "quanta": 10,
+    "volume": 0,
+    "far": 0
+   }
+  }
+ ],
+ "shared": [
+  {
+   "name": "score 0.02 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.02,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0
+    }
+   ],
+   "p": 0.02,
+   "inferP": 0.02
+  },
+  {
+   "name": "score 0.02 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.02,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0
+    }
+   ],
+   "p": 0.02,
+   "inferP": 0.02
+  },
+  {
+   "name": "score 0.02 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.02,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0
+    }
+   ],
+   "p": 0.02,
+   "inferP": 0.02
+  },
+  {
+   "name": "score 0.023 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.023,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.002999999999999999
+    }
+   ],
+   "p": 0.020170637585436486,
+   "inferP": 0.02017063758543647
+  },
+  {
+   "name": "score 0.023 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.023,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.002999999999999999
+    }
+   ],
+   "p": 0.02017997502175644,
+   "inferP": 0.020179975021756502
+  },
+  {
+   "name": "score 0.023 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.023,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.002999999999999999
+    }
+   ],
+   "p": 0.020032225889745743,
+   "inferP": 0.020032225889745847
+  },
+  {
+   "name": "score 0.05 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.05,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.030000000000000002
+    }
+   ],
+   "p": 0.02170637585436484,
+   "inferP": 0.021706375854364857
+  },
+  {
+   "name": "score 0.05 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.05,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.030000000000000002
+    }
+   ],
+   "p": 0.021799750217564404,
+   "inferP": 0.021799750217564418
+  },
+  {
+   "name": "score 0.05 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.05,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.030000000000000002
+    }
+   ],
+   "p": 0.020322258897457434,
+   "inferP": 0.020322258897457424
+  },
+  {
+   "name": "score 0.1 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.1,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.08
+    }
+   ],
+   "p": 0.024550335611639572,
+   "inferP": 0.02455033561163955
+  },
+  {
+   "name": "score 0.1 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.1,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.08
+    }
+   ],
+   "p": 0.02479933391350507,
+   "inferP": 0.024799333913505195
+  },
+  {
+   "name": "score 0.1 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.1,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.08
+    }
+   ],
+   "p": 0.020859357059886487,
+   "inferP": 0.020859357059886507
+  },
+  {
+   "name": "score 0.3 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.035926174640738495,
+   "inferP": 0.03592617464073855
+  },
+  {
+   "name": "score 0.3 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.03679766869726775,
+   "inferP": 0.03679766869726775
+  },
+  {
+   "name": "score 0.3 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.023007749709602697,
+   "inferP": 0.02300774970960273
+  },
+  {
+   "name": "score 0.5 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.5,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.48
+    }
+   ],
+   "p": 0.047302013669837426,
+   "inferP": 0.04730201366983744
+  },
+  {
+   "name": "score 0.5 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.5,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.48
+    }
+   ],
+   "p": 0.04879600348103043,
+   "inferP": 0.048796003481030414
+  },
+  {
+   "name": "score 0.5 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.5,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.48
+    }
+   ],
+   "p": 0.02515614235931891,
+   "inferP": 0.025156142359318956
+  },
+  {
+   "name": "score 0.85 0.5m/15min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.85,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.83
+    }
+   ],
+   "p": 0.06720973197076054,
+   "inferP": 0.06720973197076063
+  },
+  {
+   "name": "score 0.85 1m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.85,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.83
+    }
+   ],
+   "p": 0.0697930893526151,
+   "inferP": 0.06979308935261519
+  },
+  {
+   "name": "score 0.85 3m/60min",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.85,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.83
+    }
+   ],
+   "p": 0.028915829496322286,
+   "inferP": 0.02891582949632232
+  },
+  {
+   "name": "P=0.3 at 3m",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.02050359655408686,
+   "inferP": 0.020503596554086956
+  },
+  {
+   "name": "P=0.3 at 3m then 1m",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      },
+      {
+       "distance": 1,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.023372135484329697,
+   "inferP": 0.023372135484329704
+  },
+  {
+   "name": "P=0.3 at 3m then 1m then 0.5m",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      },
+      {
+       "distance": 1,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      },
+      {
+       "distance": 0.5,
+       "seconds": 600,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.27999999999999997
+    }
+   ],
+   "p": 0.03396325902489829,
+   "inferP": 0.033963259024898274
+  },
+  {
+   "name": "possible, score 0.3 (status wins)",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": 0.3,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.03828170343454597,
+   "inferP": 0.038281703434545955
+  },
+  {
+   "name": "possible, score 0.85 (score wins)",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": 0.85,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.83
+    }
+   ],
+   "p": 0.04528968975112193,
+   "inferP": 0.04528968975112202
+  },
+  {
+   "name": "contagious, score 0.5",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": 0.5,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.049555420552515994,
+   "inferP": 0.04955542055251605
+  },
+  {
+   "name": "score source + positive source",
+   "sources": [
+    {
+     "id": "A",
+     "status": "none",
+     "score": 0.4,
+     "contacts": [
+      {
+       "distance": 0.8,
+       "seconds": 1200,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.38
+    },
+    {
+     "id": "C",
+     "status": "contagious",
+     "score": 0.97,
+     "contacts": [
+      {
+       "distance": 2,
+       "seconds": 2700,
+       "day": 0,
+       "days": null,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.04515526028989964,
+   "inferP": 0.04515526028989969
+  },
+  {
+   "name": "contagious day 0",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": 0,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.1015823277405417,
+   "inferP": 0.10158232774054166
+  },
+  {
+   "name": "contagious day 1",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 1,
+       "days": 1,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.09374955145540081,
+   "inferP": 0.09374955145540087
+  },
+  {
+   "name": "contagious day 2",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 2,
+       "days": 2,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.06982507331824712,
+   "inferP": 0.06982507331824717
+  },
+  {
+   "name": "contagious day 3",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 3,
+       "days": 3,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.04939011523894535,
+   "inferP": 0.04939011523894543
+  },
+  {
+   "name": "contagious day 4",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 4,
+       "days": 4,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.035230178900174665,
+   "inferP": 0.03523017890017466
+  },
+  {
+   "name": "contagious day 5",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 5,
+       "days": 5,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.02679934626417297,
+   "inferP": 0.02679934626417302
+  },
+  {
+   "name": "contagious day 6",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 6,
+       "days": 6,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.023405774172331046,
+   "inferP": 0.02340577417233103
+  },
+  {
+   "name": "possible day 0",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": 0,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.07046329550961342,
+   "inferP": 0.07046329550961339
+  },
+  {
+   "name": "possible day 1",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 1,
+       "days": 1,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.06561827925076338,
+   "inferP": 0.06561827925076336
+  },
+  {
+   "name": "possible day 2",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 2,
+       "days": 2,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.05081963298035905,
+   "inferP": 0.050819632980358964
+  },
+  {
+   "name": "possible day 3",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 3,
+       "days": 3,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.038179452725120834,
+   "inferP": 0.0381794527251208
+  },
+  {
+   "name": "possible day 4",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 4,
+       "days": 4,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.029420729216602885,
+   "inferP": 0.02942072921660288
+  },
+  {
+   "name": "possible day 5",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 5,
+       "days": 5,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.024205781194333795,
+   "inferP": 0.02420578119433381
+  },
+  {
+   "name": "possible day 6",
+   "sources": [
+    {
+     "id": "A",
+     "status": "possible",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 6,
+       "days": 6,
+       "building": null
+      }
+     ],
+     "s": 0.6
+    }
+   ],
+   "p": 0.02210666443649343,
+   "inferP": 0.02210666443649345
+  },
+  {
+   "name": "contagious days 0..6 in one week",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 0,
+       "days": 0,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 1,
+       "days": 1,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 2,
+       "days": 2,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 3,
+       "days": 3,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 4,
+       "days": 4,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 5,
+       "days": 5,
+       "building": null
+      },
+      {
+       "distance": 0.7,
+       "seconds": 1200,
+       "day": 6,
+       "days": 6,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.31436581724421286,
+   "inferP": 0.31436581724421286
+  },
+  {
+   "name": "two sources at different stages",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 1,
+       "days": 1,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    },
+    {
+     "id": "C",
+     "status": "contagious",
+     "score": 0.9,
+     "contacts": [
+      {
+       "distance": 2,
+       "seconds": 3600,
+       "day": 4,
+       "days": 4,
+       "building": null
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.10232470008481566,
+   "inferP": 0.10232470008481565
+  },
+  {
+   "name": "room outdoors",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "outdoors"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "outdoors"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.028021419760789305,
+   "inferP": 0.028021419760789423
+  },
+  {
+   "name": "room generic",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_1029436493"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "bld_1029436493"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.0628607444386176,
+   "inferP": 0.06286074443861767
+  },
+  {
+   "name": "room dorm",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_1040231570"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "bld_1040231570"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.030037397361330213,
+   "inferP": 0.030037397361330265
+  },
+  {
+   "name": "room classroom",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_109151789"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "bld_109151789"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.06418866841258371,
+   "inferP": 0.06418866841258364
+  },
+  {
+   "name": "room outdoorPlace",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_m_white_plaza"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "bld_m_white_plaza"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.028021419760789305,
+   "inferP": 0.028021419760789423
+  },
+  {
+   "name": "room arena",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_18564360"
+      },
+      {
+       "distance": 3,
+       "seconds": 7200,
+       "day": 0,
+       "days": null,
+       "building": "bld_18564360"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.028021419760789305,
+   "inferP": 0.028021419760789423
+  },
+  {
+   "name": "room changes between contacts",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_109151789"
+      },
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "outdoors"
+      },
+      {
+       "distance": 1,
+       "seconds": 1800,
+       "day": 0,
+       "days": null,
+       "building": "bld_1040231570"
+      }
+     ],
+     "s": 0.97
+    }
+   ],
+   "p": 0.05864058507548012,
+   "inferP": 0.0586405850754802
+  },
+  {
+   "name": "everything at once",
+   "sources": [
+    {
+     "id": "A",
+     "status": "contagious",
+     "score": null,
+     "contacts": [
+      {
+       "distance": 0.6,
+       "seconds": 1500,
+       "day": 2,
+       "days": 2,
+       "building": "bld_109151789"
+      }
+     ],
+     "s": 0.97
+    },
+    {
+     "id": "C",
+     "status": "possible",
+     "score": 0.7,
+     "contacts": [
+      {
+       "distance": 1.5,
+       "seconds": 2400,
+       "day": 1,
+       "days": 1,
+       "building": "outdoors"
+      }
+     ],
+     "s": 0.6799999999999999
+    }
+   ],
+   "p": 0.1304163480920874,
+   "inferP": 0.13041634809208735
+  }
+ ],
+ "stageFactor": [
+  {
+   "day": -3,
+   "stage": 0
+  },
+  {
+   "day": -2,
+   "stage": 0.05
+  },
+  {
+   "day": -1,
+   "stage": 0.3
+  },
+  {
+   "day": 0,
+   "stage": 1
+  },
+  {
+   "day": 1,
+   "stage": 0.9
+  },
+  {
+   "day": 2,
+   "stage": 0.6
+  },
+  {
+   "day": 5,
+   "stage": 0.08
+  },
+  {
+   "day": 7,
+   "stage": 0.02
+  },
+  {
+   "day": 8,
+   "stage": 0
+  },
+  {
+   "day": 14,
+   "stage": 0
+  }
+ ],
+ "quietQuanta": 1.5,
+ "outdoorNearDilution": 5,
  "tiers": [
   {
    "p": 0,

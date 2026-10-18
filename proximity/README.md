@@ -42,14 +42,15 @@ Credits: hand-drawn containers (`heatmap/assets/containers`): Lisa Zheng.
 
 ## How it works
 
-Each phone advertises a **random ID that changes every 15 min** plus a **3-level risk**
-(healthy, possibly sick, contagious). Nothing else is broadcast. All matching happens on the phone,
+Each phone advertises a **random ID that changes every 15 min**, a **3-level risk** (healthy, possibly sick,
+contagious), the **days since its user's symptom onset or positive test**, and its **own risk score** (see "Shared
+risk" below). Nothing else is broadcast. All matching happens on the phone,
 with no server. (Decision 2026-10-17: live alerts beat retrospective matching for the demo; see
 WORKSTREAMS.md.)
 
 | Channel | What it carries | Distance quality |
 |---|---|---|
-| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
+| **Bluetooth LE** beacon | Packed into one 128-bit service UUID: `FLU2`, status byte (risk in bits 0-1, days since onset 0-14 in bits 2-5, 15 = unknown), score byte round(255·√p), 10-byte ID. Older builds' `FLU1` (risk, 11-byte ID) is still accepted, with score and days unknown. Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
 | **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
 | **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk + UWB capability), UWB tokens; GPS fixes **only in the harness**. New random link name on every ID rotation; every message size-capped (4 KB), rate-limited and validated; max 8 peers. The link's risk is never used (Bluetooth's is), and a hello ID counts only if Bluetooth heard it in the last 30 s | — |
 | **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link; keeps ranging through link drops (30 s grace); extended distance when both phones have the U2 chip | ~10 cm |
@@ -94,15 +95,37 @@ Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds. In
 **Risk estimate** (`RiskEstimate.swift`, "This phone's estimate"): Rio's exposure formula (Baker et al. 2021) as
 `model/infer.js` computes it, with what a phone knows. Each tick, a risky peer with a fused distance d ≤ 10 m
 (Bluetooth range; no estimate or coarse GPS alone adds nothing) adds the unit dose
-q·B·(dt/3600)·(1/(30·max(d, 0.3)²) + 1/(V·loss)): q 10 quanta/h, B 0.5 m³/h, the default room V = 50 m² × 2.7 m,
-loss = 2 ach + 0.3 settling + virus decay at the January indoor humidity (Magnus). `ExposureTracker` sums it per
-rotating peer ID over the 24 h window, with the ID's highest status (tested positive s = 0.97, symptoms 0.6). Then
-p = 0.02, and per ID p ← p + (1 − p)·s·(1 − e^(−0.352·dose)), 0.352 being the illness-average stage. ContactGuard's
-rules limit the dose as they limit minutes. The constants come from infer.js `DEFAULTS` and are checked against it
-by `Tests/CrossCheckTests.swift` (golden vectors from the real infer.js: `node Tests/Fixtures/xcheck/make_golden.mjs`).
-What the phone can't do: real rooms and ventilation, indoor/outdoor, walls, the source's days since onset,
-second-hand risk, look-back after a report, recovery, negative tests. One person seen under two rotating IDs
-counts as two sources, a slight over-estimate.
+q·B·(dt/3600)·(1/(30·max(d, 0.3)²·o) + 1/(V·loss)): q 10 quanta/h (1.5 in a dorm room), B 0.5 m³/h, V and
+ventilation of **this phone's room**, loss = ach + 0.3 settling + virus decay at the January indoor humidity
+(Magnus); outdoors o = 5 and no room term. The room comes from this phone's own GPS fix (`RoomContext`, never sent):
+inside a building, that building's representative room from `FlUni/Resources/building_rooms.csv` (the median-volume
+room of the sim run's `map/rooms.csv`, made by `tools/make_building_rooms.py`); at an outdoor place, or with the whole
+accuracy circle clear of every building, outdoors; otherwise (no fix, stale, near an edge, the harness) the default
+room 50 m² × 2.7 m at 2 ach. Each contact's dose is weighted by the peer's **stage**: infer.js `stageFactor` of the
+days since onset the peer broadcasts while it reports symptoms or a positive test, else the illness average 0.352.
+`ExposureTracker` sums Σ stage·dose per rotating peer ID over the 24 h window, with the ID's highest evidence level s
+seen in the window. Then p = 0.02, and per ID p ← p + (1 − p)·s·(1 − e^(−Σ stage·dose)). ContactGuard's rules limit
+the dose as they limit minutes. The constants come from infer.js `DEFAULTS` and are checked against it by
+`Tests/CrossCheckTests.swift` and `Tests/ShareRiskTests.swift` (golden vectors from the real infer.js:
+`node Tests/Fixtures/xcheck/make_golden.mjs`; the shared-risk, stage and room scenarios match within 1e-12).
+What the phone can't do: walls (which room the peer is in), second-hand risk and look-back after a report (need
+everyone's contacts), recovery (24 h window instead), negative tests of others. One person seen under two rotating
+IDs counts as two sources, a slight over-estimate.
+
+**Shared risk** (product owner, 2026-10-17). Each phone broadcasts its **own score**
+`ownScore = max(liveRisk, status floor)` (floor 0.97 after a reported positive test, 0.6 after reporting symptoms,
+0 otherwise; `ProximityModel.ownScore`). The beacon carries the previous tick's value (`OwnScoreLag`): a phone's
+estimate already uses its peers' scores, so the one-tick lag keeps two phones from feeding each other's current value
+back. Per peer, **s = max(status s, max(0, P_peer − 0.02))** with P_peer its latest broadcast score; an old FLU1
+beacon (no score) gives the status s. The score affects the probability only: the **"nearby" heads-up and the
+close-contact minutes still count only peers whose status is possibly sick or contagious**. ContactGuard ignores a
+score that is implausible for its status (healthy but ≥ 0.9, or moving more than 0.5 within 1 min), counts a
+"healthy" ID whose score alone gives s ≥ 0.6 toward the burst rule, and keeps at most the 2 dose sources that add
+most. **Nobody sees anyone else's score or days in FlUni** (not in Recent contacts, the developer list or the logs;
+`ScoreIsNeverShownTests`), but they travel in plain Bluetooth, so a BLE scanner app can read them: hidden, not
+secret (`RISKS.md`). The user's own status floor lasts exactly as long as their status (`myRisk`): it ends when
+the self-report goes back to healthy (Core/SelfReport.swift). `ProximityModel.selfStatusOverridesRisk` is true
+while it applies, and the risk card shows `ownScore`, so a reported-positive user never reads "Low".
 
 **Live on screen.** `ProximityModel.liveRisk` (@Published) is p, recomputed on every 1 s tick while a risky
 peer's dose accrues (per second, not per minute), on return to the foreground (the background gap is credited

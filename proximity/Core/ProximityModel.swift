@@ -4,7 +4,9 @@ import MultipeerConnectivity
 import UIKit
 import UserNotifications
 
-/// Everything known about one nearby Fluni phone, keyed by its ephemeral ID.
+/// Everything known about one nearby Fluni phone, keyed by its ephemeral ID. This is what views (the
+/// developer list) see, so it deliberately has no score and no days since onset: those stay private to
+/// ProximityModel and feed only the estimate (product owner 2026-10-17: others use it, nobody sees it).
 struct PeerState: Identifiable, Equatable {
     let id: String
     var risk = Risk.none
@@ -28,7 +30,13 @@ struct PeerState: Identifiable, Equatable {
 
 /// Glues the three channels together. All callbacks arrive on the main queue.
 final class ProximityModel: ObservableObject {
-    @Published var myRisk = Risk.none { didSet { announce() } }
+    @Published var myRisk = Risk.none {
+        didSet {
+            own.statusChanged(liveRisk: liveRisk, status: myRisk)
+            if ownScore != own.current { ownScore = own.current }
+            announce()
+        }
+    }
     @Published var speed = 1.0  // real time; demo/test launches pass -speed
     @Published var enabled: Set<Source> = Set(Source.allCases)
     @Published private(set) var peers: [PeerState] = []
@@ -41,6 +49,20 @@ final class ProximityModel: ObservableObject {
     /// risky peer's dose accrues, on return to the foreground, and when the 24 h window drops old dose.
     /// Bind the on-screen number to this.
     @Published private(set) var liveRisk = RiskEstimate.prior
+    /// This user's own score: max(liveRisk, status floor), so someone who reported a positive test reads at
+    /// least 97% (High) and someone with symptoms at least 60%, even with no exposure. Recomputed every tick
+    /// and on a status change. The beacon broadcasts last tick's value (OwnScoreLag), for other phones' estimate.
+    @Published private(set) var ownScore = RiskEstimate.prior
+    /// True while the user's own report (symptoms or a positive test) sets their risk: the UI should show
+    /// "you've reported being sick" rather than an exposure estimate.
+    var selfStatusOverridesRisk: Bool { myRisk != .none }
+    /// The user's day 0 (SelfReportRecord.dayZero), for the days-since-onset the beacon carries. Persisted.
+    @Published private(set) var myDayZero: Date?
+    /// Where this phone is, for the room-air term: FlUni sets it from building_rooms.csv. nil = default room.
+    var roomContext: RoomContext?
+    private var own = OwnScoreLag()
+    /// Score and days from each peer's latest beacon. Private: used for the estimate only, never published.
+    private var heard: [String: (score: Double?, days: Int?)] = [:]
     /// True while ContactGuard sees a burst of new risky IDs (likely spoofing); Bluetooth-only alerts are paused.
     @Published private(set) var unusualSignals = false
     private var contactGuard = ContactGuard()
@@ -96,7 +118,7 @@ final class ProximityModel: ObservableObject {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         ble.onState = { [weak self] in self?.setStatus("BLE", $0) }
-        ble.onSighting = { [weak self] id, risk, rssi in self?.bleSighting(id: id, risk: risk, rssi: rssi) }
+        ble.onSighting = { [weak self] hit, rssi in self?.bleSighting(hit, rssi: rssi) }
         ble.onLog = { [weak self] in self?.log($0) }
         ble.onRead = { [weak self] in self?.rotateIfDue(Date()) }  // a read may be our only wake-up for a while
         ble.worksInBackground = worksInBackground
@@ -139,17 +161,29 @@ final class ProximityModel: ObservableObject {
     }
 
     /// The user's own choice in the Me tab (not a launch argument): remembered across launches.
-    func setMyStatus(_ r: Risk) {
+    func setMyStatus(_ r: Risk, dayZero: Date? = nil) {
+        myDayZero = r == .none ? nil : dayZero
         myRisk = r
         statusSetAt = Date()
         UserDefaults.standard.set(r.rawValue, forKey: "savedStatus")
         UserDefaults.standard.set(statusSetAt, forKey: "savedStatusAt")
+        UserDefaults.standard.set(myDayZero, forKey: "savedDayZero")
+    }
+
+    /// The self-report's day 0 changed without a status change (e.g. a new onset date). Remembered.
+    func setMyDayZero(_ d: Date?) {
+        let v = myRisk == .none ? nil : d
+        guard v != myDayZero else { return }
+        myDayZero = v
+        UserDefaults.standard.set(v, forKey: "savedDayZero")
+        announce()
     }
 
     private func restoreSavedStatus() {
         guard !(acceptsLaunchArguments && LaunchMode.isTestLaunch) else { return }
         let d = UserDefaults.standard
         if let r = Risk(rawValue: d.integer(forKey: "savedStatus")), let at = d.object(forKey: "savedStatusAt") as? Date {
+            myDayZero = d.object(forKey: "savedDayZero") as? Date
             myRisk = r
             statusSetAt = at
         }
@@ -169,6 +203,7 @@ final class ProximityModel: ObservableObject {
         uwb.stopAll()
         gps.stop()
         byID.removeAll()
+        heard.removeAll()
         accrual.reset()  // nothing is credited across a pause
         linkIDs.removeAll()
         myFix = nil
@@ -221,6 +256,8 @@ final class ProximityModel: ObservableObject {
         UserDefaults.standard.removeObject(forKey: "pauseState")  // a relaunch starts fresh, not paused
         myRisk = .none
         statusSetAt = nil
+        myDayZero = nil
+        UserDefaults.standard.removeObject(forKey: "savedDayZero")
         resetExposure()
         exposureHistory.reset()
         lastFix = nil
@@ -296,7 +333,7 @@ final class ProximityModel: ObservableObject {
     }
 
     private func rotateID() {
-        var bytes = [UInt8](repeating: 0, count: 11)
+        var bytes = [UInt8](repeating: 0, count: BLEBeacon.idBytes)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         myID = Data(bytes)
         lastRotation = Date()
@@ -308,9 +345,16 @@ final class ProximityModel: ObservableObject {
     }
 
     private func announce() {
-        guard myID.count == 11, !isPaused else { return }  // -risk is applied before the first ID exists
-        ble.advertise(id: myID, risk: myRisk)
+        guard myID.count == BLEBeacon.idBytes, !isPaused else { return }  // -risk is applied before the first ID exists
+        advertise()
         link.send(hello())
+    }
+
+    /// The beacon: status, days since onset, last tick's own score, ID. A no-op when nothing changed.
+    private func advertise() {
+        guard myID.count == BLEBeacon.idBytes, !isPaused else { return }
+        ble.advertise(id: myID, risk: myRisk, score: own.broadcast,
+                      days: RiskEstimate.daysSinceOnset(dayZero: myDayZero, status: myRisk, now: Date()))
     }
 
     private func hello() -> Wire {
@@ -319,8 +363,10 @@ final class ProximityModel: ObservableObject {
 
     // MARK: Channel inputs
 
-    private func bleSighting(id: String, risk: Risk, rssi: Double) {
+    private func bleSighting(_ hit: BLEBeacon.Hit, rssi: Double) {
         guard !isPaused else { return }  // a callback that was already queued when we paused
+        let id = hit.id, risk = hit.risk
+        heard[id] = (hit.score, hit.daysSinceOnset)  // the latest beacon wins; not logged, not published
         if let old = byID[id]?.risk, old != risk { log("peer \(id.prefix(6)) risk=\(risk) via=ble") }
         if byID[id] == nil { log("ble seen \(id.prefix(6)) risk=\(risk)") }
         update(id) { p in
@@ -377,7 +423,7 @@ final class ProximityModel: ObservableObject {
         guard !isPaused else { return }
         switch w.kind {
         case .hello:
-            // PeerLink has validated it (22 lowercase hex ID). No state is carried from the peer's previous
+            // PeerLink has validated it (20 or 22 lowercase hex ID). No state is carried from the peer's previous
             // ID (that would link its rotating IDs), and the link's risk is never used: Bluetooth's risk for
             // the same ID always stands, so a link can neither raise nor hide anyone's status.
             guard let id = w.id else { return }
@@ -488,6 +534,7 @@ final class ProximityModel: ObservableObject {
         let dt = min(max(wall, 0), ExposureTracker.window / speed)
 
         byID = byID.filter { now.timeIntervalSince($0.value.lastSeen) < 30 }
+        heard = heard.filter { byID[$0.key] != nil }
         if sharesLocationWithPeers, let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
             lastFixSent = now
             link.send(fixWire(f))
@@ -505,11 +552,17 @@ final class ProximityModel: ObservableObject {
         var e = exposure
         // Spoof guard first, over every peer (it needs to see bursts); then background-safe accrual credits
         // only peers with a fresh estimate, each for [lastCreditedAt, now].
-        let guarded = contactGuard.apply(now: now, byID.values.map(\.guardInput), log: log)
+        let inputs = byID.values.map { p -> ContactGuard.Input in
+            var i = p.guardInput
+            i.score = heard[p.id]?.score
+            i.days = heard[p.id]?.days
+            return i
+        }
+        let guarded = contactGuard.apply(now: now, inputs, log: log)
         if unusualSignals != contactGuard.flagged { unusualSignals = contactGuard.flagged }
         let fresh = Set(byID.values.filter { $0.estimate != nil }.map(\.id))
         let fed = ExposureTick.run(guarded: guarded, fresh: fresh, now: now, wall: dt, speed: speed, accrues: accrues,
-                                   accrual: &accrual, exposure: &e) { c in
+                                   accrual: &accrual, exposure: &e, room: currentRoom(now)) { c in
             if c.risk != .none, c.pClose > 0,
                c.seconds >= 5 || UIApplication.shared.applicationState != .active {
                 log("bg credit peer=\(c.id.prefix(6)) secs=\(fmt(c.seconds)) p=\(fmt(c.pClose)) risk=\(c.risk)")
@@ -517,6 +570,7 @@ final class ProximityModel: ObservableObject {
         }
         if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
         setExposure(e)  // unchanged ticks don't republish; any change in p does
+        tickOwnScore()
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
         notifiedLevel = next.notified
@@ -535,6 +589,20 @@ final class ProximityModel: ObservableObject {
         guard e != exposure else { return }
         if !e.showsSame(as: exposure) { objectWillChange.send() }
         exposure = e
+    }
+
+    /// Own score for this tick (see OwnScoreLag), then the beacon with last tick's value.
+    private func tickOwnScore() {
+        own.tick(liveRisk: liveRisk, status: myRisk)
+        if ownScore != own.current { ownScore = own.current }
+        advertise()
+    }
+
+    /// The room this phone is in now, from its own latest fix (on the phone only).
+    private func currentRoom(_ now: Date) -> RiskEstimate.Room {
+        guard let ctx = roomContext, let f = lastFix else { return .standard }
+        return ctx.room(lat: f.coordinate.latitude, lon: f.coordinate.longitude, accuracy: f.horizontalAccuracy,
+                        fixAt: f.timestamp, now: now)
     }
 
     private func logSummary() {
@@ -583,8 +651,9 @@ final class ProximityModel: ObservableObject {
             last = now
             var e = self.exposure
             ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
-                             accrues: true, accrual: &self.demoAccrual, exposure: &e)
+                             accrues: true, accrual: &self.demoAccrual, exposure: &e, room: self.currentRoom(now))
             self.setExposure(e)
+            self.tickOwnScore()
         }
         demoTimer = t
     }
