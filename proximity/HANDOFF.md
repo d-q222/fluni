@@ -1,7 +1,28 @@
 # FlUni (proximity/): handoff
 
-Updated 2026-10-18 ~03:45 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
+Updated 2026-10-18 ~10:00 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
 together with README.md (how things work), DEMO.md (the demo) and RISKS.md (known risks, kept out of the demo).
+
+## Since 03:45 (main c6d34f1; Aiden's and Daniel's phones run it)
+- **Lisa's art in the app (#21, #25):**
+  - the hand-drawn bubble;
+  - three companion poses (fine / masked alert / sick);
+  - two-frame flipbook scenes at the top of the card: bath (all clear), keeping watch (heads-up and close contact), blanket (sick);
+  - check-in faces and track markers;
+  - the alert-strip "!";
+  - the tab bar redraw;
+  - the tissue alert closes with her red **X** (`tissueAlert.close`), with no "Got it".
+- **Dark mode:** Settings → Appearance: System / Light / Dark. The palette is adaptive in `SharedUI/Theme.swift`, using Lisa's night values. The night art is the dark appearance of each image, and the night user map is behind `prefers-color-scheme` (heat map team approved). No night art yet: Logo, FeelingSick (a resized night illo-sick stands in).
+- **Merged:** flu-notify (notification toggles, closed-app alerts) and flu-uwb (self-healing UWB, Debug "Keep screen awake", which can be set at launch with `-FLUNIKeepAwake YES`).
+  - The UWB health JSON is at `Library/Caches/fluni-uwb-health.json`. Coverage counts linked peers only.
+  - UWB soak: no errors; about 0.3 m side by side. Drops happened only when a phone left the foreground (an iOS limit).
+- **Status flip fix:** a status change now starts a new beacon ID (owner approved). Reset to healthy then a new report was being dropped for 15 min as a spoof by `ContactGuard` rule 4.
+- **Escalation:** possibly sick → contagious alerts again, in the app and as a notification, without waiting for the cooldown. Repeats at the same level keep the cooldown.
+- **Map data = the heat map pipeline (mean-field):** refresh it with `proximity/tools/sync_map_bundle.sh [run]`. The walk-in "high" is pinned to the map's rule by a test.
+  - Personal % stays phone-local (owner ruling). Porting the local mean-field is nice-to-have, parked.
+  - The "Campus model: X%" line still reads infer.js `p_sick.csv` (a shared contract).
+  - The mean-field leaves buildings blank until late day 3; keep demo times after that.
+- **Owner rulings:** sick mode keeps **"Day 0 of 5"** (the CDC convention).
 
 ## State of main (origin/main bcf5666 or later)
 - **Targets.** One XcodeGen project (`project.yml`) with two apps: **FlUni** (`com.fluni.app`, the student app) and
@@ -44,17 +65,13 @@ together with README.md (how things work), DEMO.md (the demo) and RISKS.md (know
 - **Unchanged from before:**
   - Rio's per-peer dose formula, live risk, and FLU2 own-score sharing (never shown).
   - `RiskState` persistence (no re-alert after a swipe-away).
-  - Lisa's tissue alert ("Got it" instant, drag-down reverses).
+  - Lisa's tissue alert (the X closes instantly, drag-down reverses).
   - Off-screen detection, Always location and Visits.
   - The crash fixes.
   - Demo run `influenza_none_n1000_d4_s42_73b8452c`.
 
-## In flight (branches not on main yet)
-| Work | Where | State |
-|---|---|---|
-| Notification preferences + closed-app alerts | `flu-notify` (d477842, 7dbb0d8, 1128105, merge 75fdf7a), `/Users/dqi26/fluni-notify` | **Done, not merged: needs a phone check first.** 626 unit tests pass. The full UI run failed 12/13 at launch on a busy "FlUni UITest Base" sim; the new toggle test and one other pass on iPhone 18 Pro; rerun the full UI suite on an idle sim. **What it does:**<br>• Settings toggles (Someone nearby may be sick / Close contact / Busy buildings, default on), all posting through one gate, `Core/NotificationPrefs.swift` (`SystemNotifier`).<br>• Fixes sick wording on a locked relaunch.<br>• Makes RISKS/README honest.<br>**Swipe-away:** background and locked post (code path); after a force-quit, only a location relaunch can bring FlUni back, and iOS 26.4+ may not do that. Settings now says "Don't swipe FlUni away". **To verify:** a phone test (background/locked with a possibly-sick peer), and a human swipe-away plus a walk of about 500 m. |
-| UWB reliability | `flu-uwb` (daaf68f, 56252a9), `/Users/dqi26/fluni-uwb` | **Done, not merged: needs a 10-min two-phone soak first.** 640 unit tests pass. **Findings:**<br>• `NIERROR_INVALID_CONFIGURATION_DESCRIPTION` came only from unrangeable links (FlUni↔harness on one phone, or a simulator); real pairs ranged fine.<br>• Fixes: start only when Bluetooth heard the peer; retry with backoff instead of stopping for good; keep early tokens; errors no longer drop the link; re-make sessions on foreground.<br>• Developer → Radios "UWB health" (coverage %, errors by reason, resume time).<br>**Background:** iPhone↔iPhone UWB is foreground-only (iOS). **Owner's call:** a Debug-only keep-screen-awake demo toggle. |
-| Home v5 (text-light) mockup | `/Users/dqi26/fluni-screens/home-v5/` (`compare5.png`, `mock5-sheet.png`, `PRINCIPLES.md`, `AUDIT.md`, `NOTES.md`) | **Awaiting owner approval.** −54% words on the four home states. One-line timeline rows, the alert said once, close-contact steps in a one-tap sheet with Call Vaden, sick-mode action rows, ⓘ instead of the f(x) link. Self-scored 6.1 → 7.9; an independent re-grade is offered. |
+## In flight
+Nothing: flu-notify, flu-uwb, flu-lisa2, flu-x, flu-expo, flu-dark, flu-map and flu-sync are all merged. v5 (text-light) mock: `/Users/dqi26/fluni-screens/home-v5/`, still awaiting approval.
 
 ## Open decisions for the owner
 1. **Home v5:** "build v5" or changes. Three sub-points:
@@ -82,7 +99,7 @@ together with README.md (how things work), DEMO.md (the demo) and RISKS.md (know
 - The owner is telling her in person; the issues are the written record.
 
 ## Devices and how we work
-- **Phones:** all three have bcf5666.
+- **Phones:** Aiden's and Daniel's have c6d34f1 (keep-awake on); Rio's has bcf5666.
   - **Daniel's** 17 Pro `00008150-001E213A0C80401C` (U2): healthy. Old contact history is on its timeline.
   - **Aiden's** 15 `00008120-001458620E63601E`: healthy; **disconnected** at 03:30; at the 3-app free-profile limit.
   - **Rio's** 14 "iPhone (84)" `00008110-000E491A22A0201E` (U1): locked at 03:40; **3 apps (FlUni, FluniProx,
