@@ -50,7 +50,7 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
-const DEFAULT_RUN = 'influenza_none_n1000_d14_s42_f12e71fa';
+const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
