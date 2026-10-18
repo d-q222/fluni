@@ -96,7 +96,8 @@ async function main() {
   const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
     preferCanvas: true, maxBoundsViscosity: 1.0, worldCopyJump: false, inertia: true });
   const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
-  const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440);
+  const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440), PHALO = pane('halo', 425);
+  map.getPane('halo').style.filter = 'blur(2.5px)';
   map.getPane('heat').style.filter = 'drop-shadow(0 0 4px rgba(233,149,105,.85))'; // hot buildings glow so they read zoomed out
   const lblPane = map.createPane('labels'); lblPane.style.zIndex = 450; lblPane.style.pointerEvents = 'none';
   const NEUTRAL = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
@@ -143,7 +144,7 @@ async function main() {
   function placeLabels() {
     const mapBox = rectOf($('map')), z = map.getZoom(), z0 = map.getMinZoom(), mb = map.options.maxBounds;
     const avoid = [rectOf(document.querySelector('.legend')), rectOf(document.querySelector('.chip')),
-      { left: mapBox.left, right: mapBox.right, top: mapBox.bottom - map.getSize().y * 0.2, bottom: mapBox.bottom }]; // FlUni's sheet
+      { left: mapBox.left, right: mapBox.right, top: mapBox.bottom - map.getSize().y * 0.09, bottom: mapBox.bottom }]; // FlUni's sheet
     if (z >= 16.5) {
       const view = map.getBounds(), have = new Set(lbls.map((l) => l.t + l.lat));
       for (const f of fine) if (view.contains([f.lat, f.lon]) && !have.has(f.t + f.lat) && !anchors.some((a) => a.t === f.t)) lbls.push(mkLabel(f));
@@ -190,7 +191,7 @@ async function main() {
       { stroke: false, fillColor: '#faf4e8', fillOpacity: 0.14, interactive: false, ...PVIG }).addTo(vig);
   }
   function frame() {
-    const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.2);
+    const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.09); // the slim legend strip + tab bar
     const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));
     shiftY = (bottom - top) / 2;
     map.setMinZoom(z);
@@ -233,6 +234,8 @@ async function main() {
       fill: true, fillColor: color, fillOpacity: forecast ? 0.45 : 0.82 };
   }
 
+  const haloR = () => Math.max(0, Math.min(9, (17.5 - map.getZoom()) * 4)); // px; gone by street zoom
+  map.on('zoomend', () => { const r = haloR(); for (const it of items) if (it.halo) it.halo.setRadius(r); });
   function render(force) {
     const { s, t } = snapshot();
     if (!force && s === step) return;
@@ -244,7 +247,14 @@ async function main() {
       const r = now.get(it.idx);
       const style = r ? styleFor(r[1], fc ? fc.get(it.idx) || 0 : r[2], !!fc) : styleFor(0, 0, false);
       const key = JSON.stringify(style);
-      if (key !== it.key) { it.layer.setStyle(style); it.key = key; }
+      if (key !== it.key) {
+        it.layer.setStyle(style); it.key = key;
+        // a halo with a floor on its on-screen size, so a small hot building still registers when zoomed out
+        if (style.fill) {
+          if (!it.halo) it.halo = L.circleMarker(it.layer.getBounds().getCenter(), { interactive: false, stroke: false, radius: haloR(), ...PHALO }).addTo(map);
+          it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
+        } else if (it.halo) { it.halo.remove(); it.halo = null; }
+      }
       if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx) || 0 : r[2] });
     }
     // "Now · updated 4:30 pm": the snapshot's time of day, today
