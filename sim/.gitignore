@@ -12,3 +12,9 @@ runs/influenza_none_n7000_d2_s42_5423d1a4/*.parquet
 runs/influenza_none_n7000_d2_s42_5423d1a4/timeline_by_agent/
 viewer.html
 data/osm/ways.json
+# 1,000-agent, 14-day runs with boosted spread (see README "Sample run"); big files committed as parts/.
+!runs/influenza_none_n1000_d14_s42_f12e71fa/
+!runs/influenza_none_n1000_d14_s42_183f262b/
+runs/influenza_none_n1000_d14_s42_*/contacts.csv.gz
+runs/influenza_none_n1000_d14_s42_*/timeline.csv.gz
+runs/influenza_none_n1000_d14_s42_*/*.parquet
