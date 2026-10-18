@@ -83,7 +83,7 @@ class FlUniUITestCase: XCTestCase {
     func cancelDialog() {
         let cancel = app.sheets.buttons["Cancel"]
         if cancel.waitForExistence(timeout: 2) { cancel.tap(); return }
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)).tap()  // inside the sheet, away from the dialog
     }
 
     /// You > I have symptoms (opens the report at its stickers step) > Cough > submit. The sheet shows Lisa's

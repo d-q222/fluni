@@ -1,5 +1,6 @@
 #if DEBUG
 import SwiftUI
+import UserNotifications
 
 /// Debug builds only: put the app in a known state for design screenshots, without radios.
 ///
@@ -127,6 +128,8 @@ enum PreviewHook {
         case "you", "me": router.tab = .you
         case "campus", "map": router.tab = .campus
         case "moment": router.showCloseContact()
+        case "askNotifications":  // screenshots of a real notification need permission on the simulator
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
         default: break
         }
     }

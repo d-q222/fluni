@@ -26,11 +26,14 @@ struct ReportFlow: View {
         NavigationStack(path: $path) {
             ChooseStep(model: model, store: store, pick: pick)
                 .navigationDestination(for: ReportStart.self) { step in
-                    switch step {
-                    case .symptoms: SymptomsStep(model: model, store: store, saved: saved)
-                    case .positive, .negative: TestStep(positive: step == .positive, model: model, store: store, saved: { dismiss() })
-                    case .choose: EmptyView()
+                    Group {
+                        switch step {
+                        case .symptoms: SymptomsStep(model: model, store: store, saved: saved)
+                        case .positive, .negative: TestStep(positive: step == .positive, model: model, store: store, saved: { dismiss() })
+                        case .choose: EmptyView()
+                        }
                     }
+                    .toolbar { close }  // every step can close the sheet, not only the first
                 }
                 .toolbar { close }
         }

@@ -310,7 +310,9 @@ final class FlUniUITests: FlUniUITestCase {
         dialogButton("Delete my data").tap()
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         completeOnboarding()
-        XCTAssertEqual(el("today.status").label, "All clear", "not sick any more")
+        XCTAssertTrue(el("today.now").exists, "Today's day timeline, not the stay-home track")
+        openTab("You")
+        XCTAssertTrue(el("report.fine").isSelected, "status back to healthy")
     }
 
     // MARK: Accessibility smoke
