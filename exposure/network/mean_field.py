@@ -384,6 +384,7 @@ class Model:
         clamps = defaultdict(list)
         now = np.zeros((self.n_steps, self.N), dtype=np.float32)
         ever = np.zeros((self.n_steps, self.N), dtype=np.float32)
+        shed = np.zeros((self.n_steps, self.N), dtype=np.float32)
         reruns = 0
         for n in range(self.n_steps):
             earliest = n
@@ -397,8 +398,9 @@ class Model:
             S, A, R = ckpt[n + 1]
             now[n] = A.sum(1)
             ever[n] = 1 - S
+            shed[n] = A @ self.stage     # expected infectiousness: P_j(age) x stage, summed over ages
         self.ckpt, self.clamps = ckpt, clamps
-        self.p_now, self.p_ever = now, ever
+        self.p_now, self.p_ever, self.shed = now, ever, shed
         print(f"mean-field: {self.n_steps} steps of {self.p['dt_h']:g} h, {self.K} age bins, "
               f"{reruns} look-back steps rerun, {time.time() - t0:.1f} s")
 
@@ -502,14 +504,15 @@ def run_all(m, params):
     """Model pass, explanations, the reports-only baseline, and scores against truth."""
     m.run_model()
     top = m.explain()
-    p_now, p_ever = m.p_now, m.p_ever
+    p_now, p_ever, shed = m.p_now, m.p_ever, m.shed
     # Baseline: the same model with lambda = 0, i.e. only what people reported about
     # themselves or were reported for. The gap is what the contact graph adds.
+    scale = m.p["lambda_scale"]          # m.p is params: save it before zeroing
     m.p["lambda_scale"] = 0.0
     m.run_model()
     p_base = m.p_now
-    m.p["lambda_scale"] = params["lambda_scale"]
-    m.p_now, m.p_ever = p_now, p_ever
+    m.p["lambda_scale"] = scale
+    m.p_now, m.p_ever, m.shed = p_now, p_ever, shed
     truth, first = m.truth()
 
     metrics = []

@@ -236,6 +236,11 @@ def export(m, params, p_now, p_base, truth, first, top, metrics, out_path):
         "acts": sorted(tr.acts, key=tr.acts.get),
         # hourly P(flu), as the app would show it then, x 10000
         "p": b64(np.round(np.clip(p_now, 0, 1) * 10000).astype(np.uint16)),
+        # hourly expected infectiousness (P_j(age) x stage), x 10000, for the map's risk field
+        "shed": b64(np.round(np.clip(m.shed, 0, 1) * 10000).astype(np.uint16)),
+        # standing next to someone at peak shedding for 1 h: hazard = q * scale * shed * B / (Q * d^2)
+        "field": {"q": fr.QUANTA_PEAK * params["lambda_scale"], "B": fr.BREATHING_RATE,
+                  "Q": fr.NEAR_FIELD_Q, "out_dilution": fr.OUTDOOR_NEAR_DILUTION},
         "p_base": b64(np.round(np.clip(p_base, 0, 1) * 10000).astype(np.uint16)),
         "truth": None if truth is None else b64(np.packbits(truth, axis=1)),
         "infected_at": {k: list(v) for k, v in first.items()},

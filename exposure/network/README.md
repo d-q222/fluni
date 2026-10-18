@@ -25,6 +25,18 @@ python3 -m http.server -d exposure/network 8000    # then open http://localhost:
 It takes about 2 minutes: 9.4 M agent-pair × 5-min co-locations, 336 hourly steps. Scores match
 the contact-file version within ±0.01 AUC.
 
+### The risk field: where it is dangerous to stand
+
+The shading under the dots shows, for each spot on the map, the chance you'd catch flu by standing
+there for an hour. Each student j leaves a circle of hazard around them that fades exponentially
+with distance, h_j(d) = h0_j · exp(−d / L). The circles add up as hazards, giving
+P(x) = 1 − exp(−Σ_j h_j). The peak h0_j is λ's near-field dose at 1 m for 1 h
+(q · shed_j · B / Q, diluted 5× outdoors). Here shed_j = Σ over infection ages of P_j(age) · stage(age),
+so the circle grows with j's P(flu) and with how infectious j's stage is. `movement.py` exports
+shed_j every hour. Darkness is proportional to P(x) and saturates at 1%. The fade length L
+defaults to 5 m, so circles show beyond the dots, and can be set from 1 to 10 m on the page.
+The 1/d² plume itself fades faster than that, and shared room air doesn't fade at all. Hover anywhere off a dot to read P(x).
+
 ## Run it (from contacts.csv)
 
 ```bash
