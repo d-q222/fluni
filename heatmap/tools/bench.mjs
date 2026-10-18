@@ -4,7 +4,7 @@
 //
 // Usage (serve the repo root first, e.g. python3 -m http.server 8766):
 //   node heatmap/tools/bench.mjs [--base http://localhost:8766] [--run <sim run>] [--at 2115]
-//        [--secs 4] [--views demo,phone,zoom,public,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
+//        [--secs 4] [--views demo,phone,zoom,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
 //        [--top 12] [--json out.json] [--shot dir] [--tiles] [--basemap streets|sim|drawn] [--load]
 //        [--load-limit 300]
 //
@@ -28,7 +28,7 @@ const args = Object.fromEntries(process.argv.slice(2).reduce((acc, a, i, all) =>
 const BASE = args.base || 'http://localhost:8766';
 const AT = Number(args.at || 2115);           // minutes from the start (default: Tue 11:15, a busy moment)
 const SECS = Number(args.secs || 4);
-const VIEWS = (args.views || 'demo,phone,zoom,public,airflow,embed').split(',');
+const VIEWS = (args.views || 'demo,phone,zoom,airflow,embed').split(',');
 const SPEEDS = (args.speeds || '0,1,2,3').split(',').map(Number);
 const TOP = Number(args.top || 12);
 const LOAD_LIMIT_S = Number(args['load-limit'] || 300);
@@ -40,7 +40,6 @@ const SCENES = {
   demo: { q: '', screen: DESKTOP },
   phone: { q: `&agent=${AGENT}`, screen: DESKTOP }, // demo view with an agent's phone open
   zoom: { q: `&agent=${AGENT}&zoom=18`, screen: DESKTOP }, // close up: the heat canvas is scaled way up
-  public: { q: '&view=public', screen: DESKTOP },
   airflow: { q: '&view=airflow', screen: DESKTOP },
   airborne: { q: '&view=airborne', screen: DESKTOP },
   embed: { q: '&embed=app', screen: PHONE },

@@ -21,7 +21,7 @@ scripted in [../proximity/DEMO.md](../proximity/DEMO.md).
    (and MapLibre from unpkg). Everything else is local.
 6. **Warm up:** the page opens on **Day 3 · Wed 1:20 pm, paused**, Room-level, "People" ticked, 10 min/s,
    about 35 expected sick in view. Press `J` once to check the jumps work, then reload (Cmd-R) to reset.
-7. **Phones:** the FlUni app open on the **Map tab** (its map is an offline copy of "What users see", no
+7. **Phones:** the FlUni app open on the **Map tab** (its map is an offline copy of the user map, `?embed=app`, no
    laptop needed), unlocked, Auto-Lock Never, Bluetooth on, battery over 50%. Permissions and who
    plays patient zero are in [../proximity/DEMO.md](../proximity/DEMO.md).
 
@@ -35,7 +35,7 @@ scripted in [../proximity/DEMO.md](../proximity/DEMO.md).
 | `J` | Open "Jump to…" (then click an item) |
 | `?` | Show this list on screen |
 | `Esc` | Close the phone and the "Why this %?" panel |
-| Header | **Room-level** / **What users see**; **Display** holds the base map |
+| Header | **Display** holds the base map |
 
 ## The beats
 
@@ -85,8 +85,8 @@ Beat 3 and 4 jump to different days on purpose; say "let me show two moments".
 
 ### 5. What users actually get (3:00 to 3:35)
 
-- **Do:** `Esc`, click **What users see** in the header, zoom out with the `-` button to show the campus,
-  click a building (Breer Library, if you are still on Thu 2:50 pm). Optionally pick **In 1 hour** in the new
+- **Do:** `Esc`, switch to a second tab open on `?embed=app&at=5210` (the app's heat map tab), zoom out with
+  the `-` button to show the campus, click a building (Breer Library). Optionally pick **In 1 hour** in the
   forecast menu.
 - **See:** no dots, no rooms: buildings filled by expected sick count, names on them, a slim legend.
   The tap shows **"Breer Library: about 7.3 sick of 86 people"**.
@@ -112,7 +112,7 @@ Beat 3 and 4 jump to different days on purpose; say "let me show two moments".
 | **Server died** | Run `heatmap/tools/demo.sh` again. |
 | **Page says it couldn't load the run** | You opened it from the wrong place: use the `demo.sh` URL (the server must be the repo root). |
 
-URL options (combine with `&`): `run`, `at`, `agent`, `why=1`, `view=public`, `horizon=60`, `color=truth`.
+URL options (combine with `&`): `run`, `at`, `agent`, `why=1`, `embed=app`, `horizon=60` (with `embed=app`), `color=truth`.
 The full list is in [README.md](README.md).
 
 ## Likely questions
