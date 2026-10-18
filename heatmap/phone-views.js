@@ -89,7 +89,10 @@ function atHomeCard(d) {
 
 const SAY = { none: 'All calm nearby.', nearby: "I'm keeping watch.", close: 'What to do is below.', sick: 'Rest up.' };
 const BAND = { low: 'Low', elevated: 'Elevated', high: 'High' };
-const bubble = (key, sick) => `<div class="perch"><span class="say">${esc(SAY[key])}</span><img src="${ASSET}${sick ? 'illo-sick@600.png' : 'tissue.png'}" alt="" class="${sick ? 'sickc' : ''}"></div>`;
+// Lisa's companion poses (assets/companion/): calm with flowers when all is clear, masked and on the phone for a
+// heads-up or close contact, tucked under a blanket when sick.
+const POSE = { none: 'fine', nearby: 'alert', close: 'alert', sick: 'sick' };
+const bubble = (key) => `<div class="perch"><span class="say">${esc(SAY[key])}</span><img src="${ASSET.replace('illustrations/', 'companion/')}${POSE[key]}.png" alt="" class="pose ${POSE[key]}"></div>`;
 const pluralPhones = (n) => (n === 1 ? '1 other FlUni phone' : `${n} other FlUni phones`);
 const dur = (ms) => { const m = Math.max(1, Math.round(ms / 60000)); return m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`; };
 const howLink = () => `<button class="howlink" data-act="calc"><i>f(x)</i>How your risk estimate is worked out</button>`;
