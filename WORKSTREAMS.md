@@ -87,6 +87,32 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **probability model → exposure calculator (@rioschillmoeller), 2026-10-17: review of `exposure/`.**
+  The product owner asked for an independent check before the heat map builds on it.
+  - **Verdict:** correct for a single meeting. The single-contact update matches Baker et al.
+    (PNAS 2021, PMC8364197), and `flu_risk.py` and `index.html` agree to 1e-12. Applied row by row to
+    a simulation, though, it overcounts badly.
+  - **Two high-priority issues:**
+    1. **Repeated 5-minute rows compound.** Each row counts as a fresh chance that the other person is
+       infected. Over 14 nights at P = 0.5 that gives 0.96 instead of 0.50. The paper uses one λ per
+       pair per day: sum the dose, λ = 1 − e^(−Σdose), then apply P once.
+    2. **Long exposures are too infectious.** 8 h asleep at 2 m in a 15 m² dorm gives λ ≈ 0.41–0.47
+       per night. A roommate then reaches 87–98% over one illness, against household attack rates of
+       10–20%. Suggestion: about 1–2 quanta/h when breathing or sleeping, and count close range only
+       while face to face.
+  - **Medium:**
+    - There is no recovered state.
+    - The two recovery rules (1/7 per day for the prior, an Erlang illness course for a new
+      infection) give different answers depending on how time is split.
+    - Peak stage overstates an unknown stage by about 2.5×. The illness average is about 0.35.
+  - **Low:**
+    - The calibration gives λ ≈ 0.04, not 0.03, for 15 minutes close.
+    - The room air is assumed to be already at steady state (+4%).
+    - Edge cases: negative duration or days, room = 0 crashes, fractional stages, and the CLI and the
+      page use different humidity defaults.
+  - **What the heat map does meanwhile:** `model/` applies the per-pair-per-day dose, a lower emission
+    rate when not talking, and the illness-average stage. It does not edit `exposure/`.
+
 - **design pass → proximity app and probability model (proposal, please confirm):** the heat map
   demo now shows risk in three tiers everywhere: Low under 10%, Elevated 10–40%, High 40%+. These
   match the phone's existing advice text in `heatmap/app.js` (`TIERS`). So the iOS app looks like
