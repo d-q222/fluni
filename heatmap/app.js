@@ -14,10 +14,11 @@ import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
+import * as PV from './phone-views.js';
 import { makeSeats } from './seats.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
-const DEMO = { cellM: 3, sigmaM: 18 };
+const DEMO = { cellM: 3, sigmaM: 6 }; // heat spread around each person close up (product owner: tight)
 // Heat is the expected number of infected people near each point right now: Σ P(sick) of the people
 // there, spread by the diffusion kernel (which integrates to 1, so a cloud holds exactly its people's
 // expected count). No trail of past positions: that counted people who had already left. Infectious
@@ -30,7 +31,7 @@ const BIG_RUN = 2000;
 // Long runs too: 1,000 agents x 14 days is 11 M contacts (21 s and 3.6 GB in the page); 4 days loads in 6 s.
 const BIG_AGENT_DAYS = 8000;
 let bigRun = false; // set by loadModel: this run uses the precomputed files
-const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
+const MAX_DOTS = 2000;      // above this, draw a fixed sample of dots (heat and totals still use everyone). Every agent of a 1,000-agent run is drawn, so no heat without a dot       // buildings with only 1–3 people are hidden; 4 or more are always shown
 let viewCountText = ''; // the demo legend's "≈ N expected sick", kept across legend re-renders
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
@@ -89,7 +90,11 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // Zoomed out to the campus, smaller badges so the heat in the buildings under them shows through.
-const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(4, PERSON.radius - (17 - zoom) * 4)) : PERSON.radius);
+// People are drawn at a fixed size on the ground (PERSON_M metres), so they're tiny at campus zoom and grow as
+// you zoom in, like the buildings (2 px at campus zoom, 3 px at 17, 13 px at 19).
+const PERSON_M = 3, M_PER_PX_Z0 = 156543.03 * Math.cos((37.43 * Math.PI) / 180);
+const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
+const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
@@ -98,6 +103,7 @@ const PersonMarker = L.CircleMarker.extend({
     // Only inside the renderer's redraw pass (as _updateCircle): a moved dot's update also lands here, and
     // drawing then put a stray badge-less tissue on screen until the next redraw cleared it.
     if (!ctx || !this._renderer._drawing || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    if (this._radius < 5) return; // too small for the tissue to read: just the coloured dot
     ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
   },
 });
@@ -221,6 +227,22 @@ async function loadModel(dataUrl, agentIds) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
   }
+}
+
+// What each person told the app (reports_tests.csv, a few KB): agent id -> events by time.
+async function loadReportEvents(dataUrl) {
+  const by = new Map();
+  try {
+    const base = new URL(dataUrl, location.href);
+    const cfg = await fetch(new URL('config.json', base)).then((r) => r.json());
+    const { data: rows } = await loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value']);
+    for (const r of rows) {
+      if (!by.has(r.agent_id)) by.set(r.agent_id, []);
+      by.get(r.agent_id).push({ ms: Date.parse(cfg.start) + Number(r.t) * cfg.step_min * 60000, event: r.event, value: r.value });
+    }
+    for (const l of by.values()) l.sort((a, b) => a.ms - b.ms);
+  } catch { /* no reports: nobody is sick on their phone */ }
+  return by;
 }
 
 // The sim's logged routes next to the timeline (trips.csv.gz, docs/sim-output-format.md); null if missing.
@@ -507,30 +529,46 @@ function scaleMax(heatAt, times) {
 function* asPoints(states, truth, indoorOnly = false) {
   for (const s of states) {
     if (indoorOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), building: s.buildingId };
   }
 }
 
-// The heat grid's building mask: cells whose centre is inside an outline (masks.js), plus the cells an
-// outline's corners fall in (a small building on a coarse grid had no cell, and the normalisation moved
-// its heat into other buildings), grown by one cell, so heat reaches every outline's edge and the canvas
-// clip (CanvasLayer) cuts it exactly on the drawn line.
-function heatMask(outlines, grid) {
-  const inside = rasterizeBuildings(outlines, grid).inside, { nx, ny, cellM, bounds } = grid;
-  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM;
-  for (const f of outlines.features) {
-    const g = f.geometry, polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : [];
+// The heat grid's buildings: each cell labelled with the one building it belongs to (diffuse.js keeps each
+// building's heat in its own cells). Cells whose centre is inside an outline (masks.js), plus the cells an
+// outline's corners fall in (a building smaller than a coarse cell still gets one), grown by one cell so
+// heat reaches every outline's edge and the canvas clip (CanvasLayer) cuts it exactly on the drawn line.
+// A cell next to two buildings isn't grown at all: one building's edge heat would show through the other's
+// outline (a short connector between two halls).
+// Outlines drawn twice (a hand-placed place on a real building, footprints.js) share one label.
+function heatLabels(outlines, grid) {
+  const { building, ids, byFeature } = rasterizeBuildings(outlines, grid), { nx, ny, cellM, bounds } = grid;
+  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM, label = building;
+  const labelOf = new Map(), byGeom = new Map();
+  outlines.features.forEach((f, fi) => { if (byFeature[fi] >= 0) byGeom.set(JSON.stringify(f.geometry.coordinates), byFeature[fi]); });
+  outlines.features.forEach((f, fi) => {
+    if (byFeature[fi] < 0) return;
+    const b = byGeom.get(JSON.stringify(f.geometry.coordinates)); // the copy rasterised last owns the cells
+    labelOf.set(ids[byFeature[fi]], b);
+    const g = f.geometry, polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
     for (const poly of polys) for (const [lon, lat] of poly[0]) {
       const x = Math.floor((lon - bounds.west) * kx), y = Math.floor((bounds.north - lat) * ky);
-      if (x >= 0 && y >= 0 && x < nx && y < ny) inside[y * nx + x] = 1;
+      if (x >= 0 && y >= 0 && x < nx && y < ny && label[y * nx + x] < 0) label[y * nx + x] = b;
     }
-  }
-  const out = new Uint8Array(inside.length);
+  });
+  const grown = Int32Array.from(label);
+  const near = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
   for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
-    if (!inside[y * nx + x]) continue;
-    for (let v = Math.max(0, y - 1); v <= Math.min(ny - 1, y + 1); v++) out.fill(1, v * nx + Math.max(0, x - 1), v * nx + Math.min(nx - 1, x + 1) + 1);
+    if (label[y * nx + x] >= 0) continue;
+    let only = -1;
+    for (const [dx, dy] of near) {
+      const u = x + dx, v = y + dy, l = u >= 0 && v >= 0 && u < nx && v < ny ? label[v * nx + u] : -1;
+      if (l < 0 || l === only) continue;
+      if (only >= 0) { only = -2; break; } // two buildings meet here
+      only = l;
+    }
+    if (only >= 0) grown[y * nx + x] = only;
   }
-  return out;
+  return { label: grown, labelOf, count: ids.length };
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -568,11 +606,7 @@ function formatTime(ms, numeric) {
 const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
 // FlUni's RiskEstimate.liveText: the live on-screen number, one decimal below 10% so it visibly moves, whole percent from 10%.
-const liveText = (p) => {
-  if (!(p > 0)) return '0%';
-  const tenths = Math.round(p * 1000) / 10;
-  return tenths < 10 ? `${tenths.toFixed(1)}%` : `${Math.min(100, Math.round(p * 100))}%`;
-};
+const liveText = PV.liveText;
 // FlUni's NotificationRoute.fit: whole sentences in order while they fit in 180 characters, "Tap for more details." if any are left out.
 const NOTE_BUDGET = 180, NOTE_MORE = 'Tap for more details.';
 function noteFit(sentences) {
@@ -666,6 +700,7 @@ async function main() {
     for (const a of data.samples) a.p = model.risk.pAt(a.id, a.t);
     data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
   }
+  const reportsBy = await loadReportEvents(dataUrl);
   progress('Placing everyone…', 0.75);
   const tracks = buildTracks(data.samples);
   // Walk the sim's own logged routes (trips.csv.gz) when the run has them; the Router is the fallback.
@@ -703,16 +738,14 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const mask = outlines ? heatMask(outlines, probe) : null;
-  const field = new DiffusionField(bounds, DEMO.cellM, { mask });
+  const field = new DiffusionField(bounds, DEMO.cellM, { labels: outlines ? heatLabels(outlines, probe) : null });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
   const fields = new Map([[DEMO.cellM, field]]);
   const fieldFor = (sigma) => {
     const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
     if (!fields.has(cell)) {
-      const m = outlines ? heatMask(outlines, new DiffusionField(bounds, cell)) : null;
-      fields.set(cell, new DiffusionField(bounds, cell, { mask: m }));
+      fields.set(cell, new DiffusionField(bounds, cell, { labels: outlines ? heatLabels(outlines, new DiffusionField(bounds, cell)) : null }));
     }
     return fields.get(cell);
   };
@@ -839,15 +872,14 @@ async function main() {
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
-    // 6 m steps: few cached scales. At most 30 m: with heat kept to the outlines, a wider spread only smears a
-    // building's heat into empty neighbours.
-    return Math.min(30, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6));
+    // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
+    return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom());
-    for (const m of dots.values()) if (m.getRadius() !== r) m.setRadius(r);
+    const r = personRadius(map.getZoom()), weight = personRing(r);
+    for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
     const next = sigmaForZoom();
     if (next === sigmaM) return;
     sigmaM = next;
@@ -907,7 +939,7 @@ async function main() {
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
-      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: 2, color: COLORS.ring, fillOpacity: 1,
+      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: personRing(personRadius(map.getZoom())), color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -1008,6 +1040,7 @@ async function main() {
   // s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
   // getting closer to anyone who may be sick raises it. depth: how many hops of shared scores to follow
   // (peers' own scores use their status only; the loop gain is small).
+  let lastPhoneDose = 0; // the dose behind the last phoneEstimate, for "How is this calculated?"
   function phoneEstimate(id, t, depth = 1) {
     const dose = new Map();
     for (const e of exposureLog.get(id) || []) {
@@ -1023,7 +1056,9 @@ async function main() {
       dose.set(e.other, k);
     }
     let p = MODEL.prior;
-    for (const { s, dose: x } of dose.values()) p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x));
+    let total = 0;
+    for (const { s, dose: x } of dose.values()) { p += (1 - p) * s * (1 - Math.exp(-PHONE_STAGE * x)); total += x; }
+    if (depth === 1) lastPhoneDose = total; // the top-level call, not a peer's nested score
     return p;
   }
 
@@ -1076,54 +1111,104 @@ async function main() {
     return `${when} · about ${Math.max(1, Math.round(ep.min))} min near ${ep.contagious ? 'someone who tested positive' : 'someone with symptoms'}${ep.weighted >= CLOSE_CONTACT_MIN ? ' · close contact' : ''}`;
   };
 
-  // The Today tab, top to bottom as in FlUni's TodayView.
-  const SPOOF = new URLSearchParams(location.search).get('spoof') === '1';
-  function todayHtml(me, st) {
-    const out = [];
-    const card = (cls, tint, inner) => `<div class="card ${cls}"${tint ? ` style="--tint:${tint}"` : ''}>${inner}</div>`;
-    if (st.walkIn) {
-      out.push(card('peach', '', `<div class="row">${ico('building')}<p class="grow t-sub semi">${esc(st.walkIn)} has a lot of illness right now. Consider a mask, or a different spot.</p></div>`));
+  // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
+  // (views in phone-views.js; same numbers as before: campus model P, this phone's estimate, close-contact minutes)
+  const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
+  const DAYMS = 24 * 3600000;
+  const cache = { key: '', v: null };
+  // Where this person was over the last 24 h: building visits from their timeline, newest first.
+  function visitsFor(id) {
+    const key = `${id}@${Math.floor(now / (5 * 60000))}`;
+    if (cache.key === key) return cache.v;
+    const out = [], tr = tracks.get(id) || [];
+    let cur = null;
+    for (const s of tr) {
+      if (s.t > now) break;
+      if (cur && cur.id === s.buildingId) continue;
+      if (cur) { cur.endMs = s.t; out.push(cur); cur = null; }
+      if (s.buildingId) cur = { id: s.buildingId, name: s.building || 'On campus', startMs: s.t };
     }
-    if (SPOOF) { // presenter flag ?spoof=1: FlUni's UnusualSignalsBanner (shown only while its guard has paused Bluetooth-only alerts)
-      out.push(card('', 'rgba(235,209,135,.5)', `<div class="row" style="align-items:center"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M7.5 7.5a6.400 6.400 0 0 0 0 9M16.500 7.500a6.400 6.400 0 0 1 0 9M4.500 4.500a10.600 10.600 0 0 0 0 15M19.500 4.500a10.600 10.600 0 0 1 0 15" fill="none" stroke="currentColor" stroke-width="1.700" stroke-linecap="round"/></svg><p class="grow t-foot ink2">Unusual Bluetooth signals nearby; alerts paused for a few minutes</p></div>`));
-    }
-    if (st.level === 'nearby') {
-      out.push(card('peach', '', `<div class="row">${ico('walk')}<div class="grow"><p class="t-sub semi">${ADVICE.nearby.title}</p><p class="t-foot">${esc(ADVICE.nearby.body.join(' '))}</p></div></div>`));
-    }
-    const [title, subtitle] = STATUS[st.level];
-    const lines = st.level === 'none' ? [] : ADVICE[st.level].body;
-    out.push(card(st.level === 'none' ? '' : 'peach', st.level === 'none' ? 'rgba(172,188,139,.45)' : '', `
-      <div class="vstack" style="gap:10px"><div class="row"><div class="grow vstack" style="gap:5px"><p class="t-title2">${title}</p><p class="t-sub">${subtitle}</p></div>
-        ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
-        ${lines.length ? `<div class="vstack">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`));
-
-    const p = me.p, tier = riskTier(p), phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
-    const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[tier];
-    const note = tier === 'high' ? 'fireink' : 'ink2';
-    out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
-      <p class="t-title2" style="font-variant-numeric:tabular-nums">Campus model: ${percentText(p)}</p>
-      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${liveText(phoneP)}</p>
-      <p class="t-sub">${advice(p)}</p>
-      <p class="t-foot ${note}">Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.</p>
-      ${model ? `<button class="link ${note}" data-act="why">${ico('fn')}See how this is worked out</button>` : ''}</div>`));
-
-    const mins = st.live, goal = CLOSE_CONTACT_MIN, done = mins >= goal;
-    const caption = done ? `You've reached the ${goal}-minute close-contact mark.`
-      : mins > 0 ? `About ${Math.ceil(goal - mins)} more minutes would make this a close contact.` : 'No time near someone with symptoms or a positive test.';
-    out.push(card('', '', `<div class="vstack" style="gap:8px"><p class="t-head">Close-contact time</p>
-      <div style="display:flex;align-items:baseline;gap:6px"><span class="t-large">${Math.floor(Math.min(mins, 99))}</span><span class="t-sub ink2">of ${goal} min</span></div>
-      <div class="progress ${done ? 'done' : ''}" role="progressbar" aria-valuenow="${Math.min(mins, goal).toFixed(0)}" aria-valuemax="${goal}"><i style="width:${Math.min(1, mins / goal) * 100}%"></i></div>
-      <p class="t-foot ink2">${caption}</p></div>`));
-
-    out.push(card('', '', `<div class="row" style="align-items:center"><span class="ink2">${ico('people')}</span><p class="grow" style="font-size:14px;font-weight:600;margin:0">${st.peers === 0 ? 'No other FlUni phones nearby' : st.peers === 1 ? '1 other FlUni phone nearby' : `${st.peers} other FlUni phones nearby`}</p></div>`));
-
-    const eps = recentEpisodes(me.id);
-    out.push(card('', '', `<div class="vstack" style="gap:8px"><p class="t-head">Recent contacts</p>${eps.length
-      ? eps.slice(0, 3).map((ep) => `<p class="t-sub ink2">${esc(episodeText(ep))}</p>`).join('') + `<span class="link between">See the last 14 days${ico('chevron')}</span>`
-      : '<p class="t-sub ink2">No time near someone sick in the last 14 days.</p>'}</div>`));
-    out.push(`<span class="link how">${ico('info2')}How FlUni works and what it shares</span>`);
-    return out.join('');
+    if (cur) { cur.endMs = now; cur.current = true; out.push(cur); }
+    const eps = recentEpisodes(id).filter((e) => e.start > now - DAYMS).map((e) => ({
+      type: e.weighted >= CLOSE_CONTACT_MIN ? 'close' : 'heads', key: `m${e.start}`, startMs: e.start, endMs: e.end,
+      minutes: Math.max(e.min, 1), contagious: e.contagious,
+      place: out.find((v) => v.startMs - 60000 <= e.start && e.start <= v.endMs + 60000)?.name || null }));
+    const places = out.filter((v) => v.endMs > now - DAYMS && !v.current).map((v) => {
+      const minutes = (v.endMs - v.startMs) / 60000;
+      let maxPhones = 0;
+      for (const f of [0.2, 0.5, 0.8]) { // phones in the same building at three moments of the visit
+        const t = v.startMs + f * (v.endMs - v.startMs);
+        let n = 0;
+        for (const [oid, otr] of tracks) if (oid !== id && sampleAt(otr, t)?.buildingId === v.id) n++;
+        maxPhones = Math.max(maxPhones, n);
+      }
+      const hit = eps.filter((e) => e.startMs <= v.endMs + 60000 && e.endMs >= v.startMs - 60000);
+      const tone = hit.some((e) => e.type === 'close') ? 'close' : hit.length ? 'heads' : maxPhones > 0 ? 'phones' : 'quiet';
+      return { type: 'place', startMs: Math.max(v.startMs, now - DAYMS), name: v.name, minutes, maxPhones, tone, passing: minutes < 3 };
+    });
+    const entries = [...places, ...eps].sort((a, b) => b.startMs - a.startMs);
+    const current = out.find((v) => v.current) || null;
+    const curHit = current && eps.some((e) => e.endMs >= current.startMs - 60000);
+    cache.key = key;
+    return (cache.v = { entries, current, eps, placeTone: curHit ? 'heads' : null });
   }
+
+  // Self-reports (reports_tests.csv): what this person told the app, up to now.
+  function selfStatus(id) {
+    let status = 'none', startMs = null, positive = false;
+    for (const e of reportsBy.get(id) || []) {
+      if (e.ms > now) break;
+      if (e.event === 'self_report' && e.value === 'might_be_sick') { status = 'possible'; startMs = e.ms; positive = false; }
+      else if ((e.event === 'self_report' && e.value === 'tested_positive') || (e.event === 'test_result' && e.value === 'positive')) { status = 'contagious'; startMs = startMs ?? e.ms; positive = true; }
+      else if ((e.event === 'self_report' && e.value === 'recovered') || (e.event === 'test_result' && e.value === 'negative')) { status = 'none'; startMs = null; positive = false; }
+    }
+    return { status, startMs, positive };
+  }
+  const midnight = (ms) => { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); };
+
+  function phoneData(me, st) {
+    const v = visitsFor(me.id);
+    const sr = selfStatus(me.id);
+    const phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
+    const dayNo = sr.startMs == null ? 0 : Math.round((midnight(now) - midnight(sr.startMs)) / DAYMS);
+    const stay = sr.startMs == null ? null : {
+      day: dayNo, over: dayNo > 5, positive: sr.positive, startMs: sr.startMs, lastMs: midnight(sr.startMs) + 5 * DAYMS + 12 * 3600000,
+      days: Array.from({ length: 6 }, (_, i) => ({ day: i, ms: midnight(sr.startMs) + i * DAYMS + 12 * 3600000 })),
+    };
+    return {
+      now, dateText: data.numericTime ? `Day ${Math.floor((now - t0) / DAYMS) + 1}` : new Date(now).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      place: v.current ? { name: v.current.name, startMs: v.current.startMs } : (me.building ? { name: me.building, startMs: now } : null),
+      level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
+      p: phoneP, campusP: me.p, dose: lastPhoneDose, posTest: MODEL.posTest, selfReport: MODEL.selfReport,
+      entries: v.entries, placeTone: v.placeTone, openKey: ph.openKey, seen: ph.seen,
+      status: sr.status, stamp: sr.status === 'possible', stay,
+      contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
+        text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
+    };
+  }
+  const setHtml = (el, key, html) => { if (ph.html[key] !== html) { ph.html[key] = html; el.innerHTML = html; } };
+  function renderSheet(d) {
+    const sh = $('ph-sheet');
+    if (!ph.sheet) { sh.hidden = true; ph.html.sheet = ''; return; }
+    const html = ph.sheet === 'report' ? PV.reportSheetHtml(ph, d) : ph.sheet === 'calc' ? PV.calcSheetHtml(d) : PV.howSheetHtml();
+    sh.hidden = false;
+    if (ph.html.sheet !== html) { const top = sh.querySelector('.sheet')?.scrollTop || 0; ph.html.sheet = html; sh.innerHTML = html; const el = sh.querySelector('.sheet'); if (el) { el.style.animation = top ? 'none' : ''; el.scrollTop = top; } }
+  }
+  // Taps inside the phone: sheets, the close contact folding, the stickers. Visual only: the sim never changes.
+  $('phone').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]');
+    if (!b) { if (e.target.id === 'ph-sheet') { ph.sheet = null; renderPhone(); } return; }
+    const act = b.dataset.act, key = b.dataset.key;
+    if (act === 'calc' || act === 'how') ph.sheet = act;
+    else if (act === 'report') { ph.sheet = 'report'; ph.stamped = false; }
+    else if (act === 'sheet-close') ph.sheet = null;
+    else if (act === 'sticker') { ph.picked.has(b.dataset.k) ? ph.picked.delete(b.dataset.k) : ph.picked.add(b.dataset.k); }
+    else if (act === 'when') ph.when = Number(b.dataset.i);
+    else if (act === 'report-send') { ph.stamped = true; renderPhone(); setTimeout(() => { ph.sheet = null; ph.stamped = false; renderPhone(); }, 1500); return; }
+    else if (act === 'got-it') { ph.seen.add(key); ph.openKey = `x${key}`; }
+    else if (act === 'cc-toggle') ph.openKey = ph.openKey === key ? `x${key}` : key;
+    renderPhone();
+  });
 
   // The user-facing map's input: totals now, or a forecast. Never agent data.
   function userTotals() {
@@ -1161,7 +1246,7 @@ async function main() {
     if (tab === 'map' && phoneMap) {
       phoneMap.invalidateSize();
       const me = selected && current.get(selected);
-      if (me) phoneMap.setView([me.lat, me.lon], 16);
+      if (me) phoneMap.setView([me.lat, me.lon], 15.5);
     }
   }
 
@@ -1188,7 +1273,7 @@ async function main() {
     const frame = document.querySelector('#phone .phone-frame');
     frame.querySelector('.ph-banner')?.remove();
     const b = Object.assign(document.createElement('div'), { className: 'ph-banner', role: 'alert' });
-    b.innerHTML = `<div class="ph-banner-head"><span class="ph-banner-app">FlUni</span><span>now</span></div><p>${esc(text)}</p>`;
+    b.innerHTML = `<img class="ph-banner-icon" src="assets/illustrations/tissue.png" alt=""><div class="ph-banner-body"><div class="ph-banner-head"><span class="ph-banner-app">FlUni</span><span>now</span></div><p>${esc(text)}</p></div>`;
     frame.append(b);
     clearTimeout(noticeTimer);
     noticeTimer = setTimeout(() => b.remove(), 7000);
@@ -1202,23 +1287,30 @@ async function main() {
     $('ph-time').textContent = data.numericTime
       ? formatTime(now, true).split(', ')[1]
       : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    if (ph.for !== me.id) { ph.for = me.id; ph.openKey = null; ph.seen = new Set(); ph.sheet = null; }
     const st = phoneState(me);
     phoneNotice(me, st);
-    if (phoneTab === 'today') $('ph-today').innerHTML = todayHtml(me, st);
+    const d = phoneData(me, st);
+    if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml(d));
+    else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.youHtml(d));
+    renderSheet(d);
     const where = me.walking ? 'walking' : me.building;
-    $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
+    $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''} · campus model ${liveText(me.p)} (everyone's contacts and reports)`;
 
     if (!phoneMap && phoneTab === 'map') {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
-      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines).addTo(phoneMap);
-      phoneMap.setView([me.lat, me.lon], 16);
+      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines, { badges: false, avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] }).addTo(phoneMap);
+      phoneMap.getContainer().classList.add('muted-base');
+      phoneMap.setView([me.lat, me.lon], 15.5);
       withHeat = true;
     }
     if (phoneMap && withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
     const h = Number($('horizon').value);
     if (phoneMap) {
-      const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
-      document.querySelector('#phone .ph-section').innerHTML = h ? `Forecast for ${clock(now + h * 60000)}` : `<b>Now</b> · updated ${clock(now)}`;
+      const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`));
+      $('ph-ctime').innerHTML = h ? `<b>In 1 hour</b> · around ${clock(now + h * 60000)}` : `<b>Now</b> · updated ${clock(now)}`;
+      $('ph-ramp').style.background = rampCss();
+  for (const x of document.querySelectorAll('#ph-hseg button')) x.setAttribute('aria-pressed', String(Number(x.dataset.h) === (h ? 60 : 0)));
     }
   }
 
@@ -1389,9 +1481,9 @@ async function main() {
     }
 
     const showDots = $('show-dots').checked && view !== 'public';
-    // People step back where something else is the subject: faded in "Air by room" (the rooms are), and
-    // translucent zoomed out to the campus (the heat is). Close up they're solid and clickable as ever.
-    const z = map.getZoom(), look = view === 'airborne' ? '0.2' : z < 15.5 ? '0.55' : z < 16.5 ? '0.8' : '';
+    // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
+    // (sized on the ground, PERSON_M), so no fading is needed there.
+    const look = view === 'airborne' ? '0.2' : '';
     if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
@@ -1539,7 +1631,6 @@ async function main() {
   const mapNote =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
-  document.querySelector('#phone .screen .fine').textContent = 'Grey areas: not enough people to show'; // FlUni's map key
   if (EMBED) {
     // User map only, slowest speed, playing; the time and forecast picker float over the map.
     $('view').value = 'public';
@@ -1571,9 +1662,7 @@ async function main() {
   addEventListener('resize', fitPhone);
   new ResizeObserver(fitPhone).observe($('phone'));
   for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => setPhoneTab(b.dataset.tab));
-  $('ph-today').addEventListener('click', (e) => {
-    if (e.target.closest('[data-act="why"]')) { mathOpen = !mathOpen; mathKey = ''; renderMath(); }
-  });
+  for (const x of document.querySelectorAll('#ph-hseg button')) x.addEventListener('click', () => { $('horizon').value = x.dataset.h; $('horizon').dispatchEvent(new Event('change')); });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 

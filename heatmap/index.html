@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fluni Heat Map</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Non-blocking: on flaky wifi a hung font request must not hold up the map (system-ui stands in). -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+  <style>
+    /* Type (design pass): Nunito for text, Fredoka for headings and big numbers. Both bundled in
+       vendor/fonts (SIL OFL), so the page needs no internet. */
+    @font-face { font-family: "Nunito"; src: url("vendor/fonts/nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
+    @font-face { font-family: "Fredoka"; src: url("vendor/fonts/fredoka.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+  </style>
   <link rel="icon" href="data:,">
   <!-- Leaflet 1.9.4 from vendor/ (same copy as the app bundle), so the page works with no internet. -->
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <script src="vendor/leaflet/leaflet.js"></script>
+  <link rel="stylesheet" href="phone.css">
   <style>
     :root {
       /* Palette: @lisaazheng's hand-picked "campfire" colours (sampled from her Procreate swatch).
@@ -37,7 +40,8 @@
       --alert-ink: var(--fire-ink);
       --shadow: 0 1px 2px rgba(51, 36, 28, 0.07), 0 8px 24px -6px rgba(51, 36, 28, 0.16);
       --radius: 12px;
-      --font: "Hanken Grotesk", system-ui, sans-serif;
+      --font: "Nunito", system-ui, sans-serif;
+      --font-display: "Fredoka", "Nunito", system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
@@ -139,20 +143,20 @@
     }
     /* FlUni: SF Rounded, Dynamic Type sizes at about 0.8 scale so a 390 pt screen fits the mock-up. */
     .screen { display: flex; flex-direction: column; gap: 13px; padding: 4px 12px 14px; overflow: auto; flex: 1 1 auto; min-height: 0;
-      font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; color: var(--ink); font-size: 15px; line-height: 1.3; }
-    .screen .nav-title { margin: 6px 0 0; font-size: 34px; font-weight: 700; letter-spacing: 0.01em; }
+      font-family: var(--font); color: var(--ink); font-size: 15px; line-height: 1.3; }
+    .screen .nav-title { margin: 6px 0 0; font: 600 34px/1.15 var(--font-display); letter-spacing: 0.01em; }
     .screen .stack { display: flex; flex-direction: column; gap: 13px; }
     .screen .tab[hidden] { display: none; }
     .screen .row { display: flex; gap: 10px; align-items: flex-start; }
     .screen .row > .grow { flex: 1; min-width: 0; }
     .screen .ico { width: 24px; height: 24px; flex: none; }
     .screen .ico.big { width: 30px; height: 30px; }
-    .screen .t-title2 { font-size: 22px; font-weight: 700; margin: 0; }
+    .screen .t-title2 { font: 600 22px/1.2 var(--font-display); margin: 0; }
     .screen .t-head { font-size: 17px; font-weight: 600; margin: 0; }
     .screen .t-sub { font-size: 15px; margin: 0; }
     .screen .t-sub.semi { font-weight: 600; }
     .screen .t-foot { font-size: 13px; margin: 0; }
-    .screen .t-large { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .screen .t-large { font-family: var(--font-display); font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
     .screen .ink2 { color: var(--ink-2); }
     .screen .fireink { color: var(--fire-ink); }
     .screen .vstack { display: flex; flex-direction: column; gap: 6px; }
@@ -244,6 +248,9 @@
     .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; }
     .bld-pop .tiers3 { display: flex; gap: 6px; margin-top: 2px; }
     .bld-pop .tiers3 span { flex: 1; border-top: 4px solid var(--c); padding-top: 3px; font-size: 11px; color: var(--ink-2); }
+    /* Headings in Fredoka (design pass). */
+    .brand h1, .legend h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0; }
+    .brand h1 { font-size: 18px; }
     /* ---------- hand-drawn containers (Lisa's Procreate box, assets/containers/) ----------
        9-slice border image: corners and the hatched left/bottom edges keep their shape, the middle
        stretches. Used on the presenter panels and the phone's cards.
@@ -321,20 +328,16 @@
       <div class="phone-frame">
         <div class="status-bar"><span id="ph-time"></span><i></i><span>5G</span></div>
         <div class="screen">
-          <div class="tab" id="ph-tab-today">
-            <h1 class="nav-title">Today</h1>
-            <div class="stack" id="ph-today"></div>
-          </div>
-          <div class="tab stack" id="ph-tab-map" hidden>
-            <h1 class="nav-title">Map</h1>
-            <div class="ph-section"><b>Now</b></div>
+          <div class="tab" id="ph-tab-today"><div id="ph-today"></div></div>
+          <div class="tab bleed" id="ph-tab-map" hidden>
             <div id="ph-map"></div>
-            <p class="fine"></p>
+            <div class="cchip"><span class="tt" id="ph-ctime"></span>
+              <div class="seg2" id="ph-hseg"><button type="button" data-h="0" aria-pressed="true">Now</button><button type="button" data-h="60" aria-pressed="false">In 1 hour</button></div></div>
+            <div class="cleg"><div class="strip"><span>Fewer</span><div class="ramp" id="ph-ramp"></div><span>More sick</span><button type="button" class="info" aria-label="About this map">i</button></div></div>
           </div>
-          <div class="tab" id="ph-tab-me" hidden>
-            <h1 class="nav-title">Me</h1>
-          </div>
+          <div class="tab" id="ph-tab-me" hidden><div id="ph-you"></div></div>
         </div>
+        <div id="ph-sheet" hidden></div>
         <nav class="tabbar" aria-label="FlUni tabs">
           <button data-tab="today" aria-selected="true" aria-label="Today"><img src="assets/tabbar/tab-today.png" alt=""></button>
           <button data-tab="map" aria-selected="false" aria-label="Map"><img src="assets/tabbar/tab-map.png" alt=""></button>
