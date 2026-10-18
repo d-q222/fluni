@@ -151,6 +151,7 @@ dorm quad 102 m³, 16 h at 3.7 m, quiet: 0.068 (0.024), over a whole illness 0.2
 | `negTestDays` | 3 | a negative test vouches only briefly |
 | `quantaPeak`, `breathingRate`, `nearFieldQ`, `outdoorNearDilution`, `deposition` | 10, 0.5, 30, 5, 0.3 | Rio's constants (`exposure/flu_risk.py`) |
 | `defaultRoomM2`, `ceilingM`, `defaultAch` | 50, 2.7, 2 | Rio's default room, for contacts without a known room |
+| `roomVolume` | `'map'` | `'fixed'`: the default room for every room (room sizes are sim-only, see "Room size"); the phone mirrors `'map'` |
 | `outdoorRH`, `outdoorTempC`, `indoorTempC` | 60, 10, 21 | campus in January |
 | `stageProfile` | 0.05, 0.3, 1, 0.9, 0.6, 0.35, 0.18, 0.08, 0.04, 0.02 | Rio's `STAGE_PROFILE`, days -2..7 |
 | `illnessMeanDays`, `illnessShape` | 7, 4 | Rio's `still_infected` |
@@ -178,7 +179,8 @@ look-back recomputes the dose from the row. Pair doses live in two Maps of expos
 - Look-back only starts from direct evidence. Second-hand risk is not re-applied to a person's earlier
   contacts, and nobody upstream of a sick person (their possible infector) is raised.
 - Contacts are assumed to be detected symmetrically and honestly; mask use is unknown to the app.
-- Room size and ventilation come from the map, which a real app would need too.
+- Room size and ventilation come from the map, which a real app would need too (the sim's procedural sizes; the
+  mean field no longer uses room size, `roomVolume: 'fixed'` does the same here).
 - `explain` keeps only each person's largest contributions, and `changes` ends at the last data time.
 - Reports are trusted unless flagged; a coordinated false-report campaign is not modelled.
 - Change points are written only when P moves by `minDelta` (0.01), so a very weak exposure may not
@@ -200,7 +202,7 @@ hour by hour, with every agent carrying a distribution over infection age. It is
 | P(j has flu) | transmission = Σ over j's infection ages a of P_j(a) · (1 − exp(−q · stage(a) · D)) |
 | P(i has flu) | only i's healthy mass P_S^i can be infected |
 | Duration, distance | near-field plume f·B·h / Q(d), Q = 600·d m³/h below 1 m, 600·d² beyond (two-zone near field); adds up over the meeting's 5-min rows |
-| Room size, ventilation | room air, not a pair term: each room is a well-mixed box dC/dt = Σ shed/V − (ACH + deposition + virus decay)·C, filled by everyone the contacts put in the room that hour and carried over between hours; V and ACH from `map/rooms.csv` |
+| Shared room air, ventilation | room air, not a pair term: each room is a well-mixed box dC/dt = Σ shed/V − (ACH + deposition + virus decay)·C, filled by everyone the contacts put in the room that hour and carried over between hours; V = occupants × `perPersonM3` (40 m³), **not the room's size** (see "Room size" below); ACH from `map/rooms.csv` (one value per building type) |
 | Room type | f = typical activity there (emission × breathing, `data/room-activity.js`): dorm 0.7, party 2.7, gym 5.4, class 1, … |
 | Indoors / outdoors | outdoors: no room term, plume diluted 5×; through a wall: no shared air |
 | Stage of flu | `stageProfile` around symptom onset, 2.5 days after infection |
@@ -217,10 +219,50 @@ node model/meanfield-test.mjs                          # each λ input moves the
 node model/meanfield-cli.mjs sim/runs/<run> [--calibrate]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
 ```
 
-`lambdaScale` (0.836) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
+`lambdaScale` (0.901) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
 sim's true seeds, the model's expected on-campus infections match the sim's 167. On that run the top 50
-by P hold 35–42 truly infected people from day 7 on (random 50: 6–8), AUC 0.61–0.75, 40 s in Node.
+by P hold 35–43 truly infected people from day 7 on (random 50: 6–8), AUC 0.62–0.73, ~20 s in Node.
 `--set key=value` overrides any parameter (`--set legacyDose=true --scale 0.135` is the dose before the audit below).
+
+### Room size (October 2026): not an input
+
+Which sizes enter λ_{j→i}: before this change, the shared-air term used each contact room's `volume_m3` from
+`map/rooms.csv` (the default 50 m² × 2.7 m room when a room was unknown); building footprint × floors only
+shades buildings on the heat map and never entered either model. Now no room or building size enters the
+mean field by default (`roomVolume: 'occupancy'`):
+
+- A phone knows at best which building it is in (`proximity/Core/RoomContext.swift`: GPS, never the room;
+  for `infer.js`'s room term it already uses one representative room per building, `building_rooms.csv`).
+- The `rooms.csv` volumes are not measurements: `sim/campussim/campus.py` builds them from building footprints
+  and per-type room programs (`sim/configs/map.json`: capacity × m²/person, dorm double 18 m², ceiling by type).
+  `room_id` in `contacts.csv` is the sim's ground truth too; Stanford publishes no room sizes (audit below).
+- The sim's aerosol route (`sim/campussim/disease.py` `_aerosol`, 56–64% of its infections) uses exactly these
+  volumes, so the room-volume term scores well on sim runs by construction, not because it would in reality.
+
+Replacement: each room's air is sized by the people the contacts put in it that hour,
+V = max(1, occupants) × `perPersonM3`. Rooms are built for their occupancy, so this keeps the useful part
+(one sick person among 2 roommates exposes more than one among 30 classmates) without knowing any size.
+Still from `rooms.csv`: ACH (one documented value per building type) and room type (activity f); and the room
+grouping itself relies on the contact's `room_id` (a phone would need to infer "same room", e.g. from BLE).
+`roomVolume: 'map'` restores the sim's volumes, `'fixed'` uses the default room everywhere, `'none'` drops the
+room term. `infer.js` (the phone's mirror) keeps its room volumes by default; `roomVolume: 'fixed'` there
+opts out.
+
+Mean AUC days 3–14 / mean sick in top 50 / dose-only AUC (true seeds, no reports, scored per day like the CLI, so
+not the audit table's dose-only number), `lambdaScale` refit per run
+and variant:
+
+| variant | 25fe957a | 183f262b | f12e71fa | mean AUC |
+|---|---|---|---|---|
+| `map` (rooms.csv volume; old default, λ 0.837) | 0.659 / 35.3 / 0.759 | 0.732 / 43.2 / 0.760 | 0.711 / 29.9 / 0.797 | 0.701 |
+| **`occupancy`, 40 m³/person** (new default, λ 0.901) | 0.661 / 35.8 / 0.756 | 0.721 / 43.3 / 0.742 | 0.700 / 29.8 / 0.773 | 0.694 |
+| `occupancy`, 10 / 20 / 60 / 100 m³ | 0.663 / 0.662 / 0.660 / 0.657 | 0.716 / 0.718 / 0.722 / 0.722 | 0.691 / 0.695 / 0.702 / 0.703 | 0.690–0.695 |
+| `fixed` (default room 135 m³) | 0.638 / 32.3 / 0.733 | 0.710 / 41.6 / 0.733 | 0.680 / 28.2 / 0.767 | 0.676 |
+| median volume per room type | 0.662 / 35.4 / 0.764 | 0.726 / 43.1 / 0.754 | 0.698 / 29.4 / 0.777 | 0.695 |
+| `none` (no room term) | 0.628 / 33.3 / 0.725 | 0.705 / 42.1 / 0.725 | 0.689 / 26.4 / 0.749 | 0.674 |
+
+Occupancy-sized air costs 0.007 mean AUC against the sim's own volumes (an upper bound a real deployment
+could not reach) and keeps top-50 the same; one fixed room or no room term costs 0.025–0.027.
 
 ### Accuracy audit (October 2026)
 
