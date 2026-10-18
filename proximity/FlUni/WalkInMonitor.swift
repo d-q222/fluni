@@ -99,8 +99,16 @@ final class WalkInMonitor: ObservableObject {
         UserDefaults.standard.set(warning.lastNotified.mapValues { $0.timeIntervalSince1970 }, forKey: Self.key)
     }
 
+    /// Same source as Today's stay-home mode (ProximityModel.selfStatusOverridesRisk). A background region wake
+    /// may run before Today attached the model, so fall back to the saved report.
+    private var isSick: Bool {
+        if let model { return model.selfStatusOverridesRisk }
+        guard let url = SelfReportStore.defaultURL, let r = SelfReportFile.load(url: url, defaults: .standard) else { return false }
+        return r.risk != .none
+    }
+
     private func post(_ b: BuildingHeat.Building) {
-        let c = AppNotifications.content(kind: .building, buildingID: b.id, buildingName: b.name)
+        let c = AppNotifications.content(kind: .building, buildingID: b.id, buildingName: b.name, sick: isSick)
         let window = BackgroundWindow.begin("fluni.walkin.post")  // flu-offdetect: may run on a background region wake
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "walkin-\(b.id)", content: c, trigger: nil)) { _ in
             window.end()

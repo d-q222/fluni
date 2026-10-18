@@ -2,6 +2,26 @@ import XCTest
 @testable import FluniProx
 
 final class WalkInWarningTests: XCTestCase {
+    func testSickUsersGetRestAdviceNotMaskAdvice() {
+        let well = WalkInWarning.message(for: "Green Library")
+        let sick = WalkInWarning.message(for: "Green Library", sick: true)
+        XCTAssertTrue(well.contains("Consider a mask"))
+        XCTAssertEqual(sick, "You're out at Green Library while you're unwell. Head home and rest up when you can.")
+        XCTAssertFalse(sick.contains("mask"))
+        XCTAssertEqual(WalkInWarning.message(for: "Green Library", sick: false), well)
+    }
+
+    func testNotificationTextFollowsSick() {
+        let well = NotificationRoute.text(kind: .building, detailed: true, buildingName: "Jerry").body
+        let sick = NotificationRoute.text(kind: .building, detailed: true, buildingName: "Jerry", sick: true).body
+        XCTAssertTrue(well.contains("mask"))
+        XCTAssertTrue(sick.contains("Head home and rest up"))
+        XCTAssertFalse(sick.contains("mask"))
+        // Details off stays neutral for everyone.
+        XCTAssertEqual(NotificationRoute.text(kind: .building, detailed: false, buildingName: "Jerry", sick: true).body,
+                       NotificationRoute.text(kind: .building, detailed: false, buildingName: "Jerry").body)
+    }
+
     private let jerry = BuildingHeat.Building(id: "a", name: "Jerry", lat: 1, lon: 2, radius: 40)
     private let lib = BuildingHeat.Building(id: "b", name: "Library", lat: 1, lon: 2, radius: 40)
     private let hot = BuildingHeat.Reading(people: 100, expectedSick: 50, heat: 0.6, high: true)

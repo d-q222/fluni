@@ -22,8 +22,8 @@ enum AppNotifications {
     static var detailed: Bool { UserDefaults.standard.object(forKey: detailsKey) as? Bool ?? true }
 
     /// Content with category and a tiny userInfo: the kind, plus building_id for building warnings. Nothing else.
-    static func content(kind: NotificationKind, buildingID: String? = nil, buildingName: String? = nil) -> UNMutableNotificationContent {
-        let t = NotificationRoute.text(kind: kind, detailed: detailed, buildingName: buildingName)
+    static func content(kind: NotificationKind, buildingID: String? = nil, buildingName: String? = nil, sick: Bool = false) -> UNMutableNotificationContent {
+        let t = NotificationRoute.text(kind: kind, detailed: detailed, buildingName: buildingName, sick: sick)
         let c = UNMutableNotificationContent()
         c.title = t.title
         c.body = t.body
