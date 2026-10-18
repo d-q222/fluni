@@ -46,6 +46,7 @@ const NOTICE_WINDOW_MS = 3 * 24 * 3600000; // retroactive exposure notice: conta
 const CONTAGIOUS = 0.9;     // P(sick) the app treats as "contagious" (≈ a positive test)
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
+const roomNames = new Map();       // room_id -> registrar room name, when the run has real class rooms
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
@@ -198,9 +199,11 @@ async function loadModel(dataUrl, agentIds) {
       loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s', 'room_id', 'indoor']),
       loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value', 'target_agent_id']),
       // Room volume and ventilation for Rio's room-air term (model/README.md); default room without it.
-      loadCsv(new URL('map/rooms.csv', base), ['room_id', 'volume_m3', 'ventilation_ach', 'room_type'])
+      loadCsv(new URL('map/rooms.csv', base), ['room_id', 'volume_m3', 'ventilation_ach', 'room_type', 'room_name'])
         .then((r) => new Map(r.data.map((x) => [x.room_id, x])), () => null),
     ]);
+    roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
+    for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
     const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
@@ -794,7 +797,7 @@ async function main() {
     m.bindTooltip(() => {
       const a = current.get(id);
       if (!a) return id;
-      const where = a.walking ? 'walking' : [a.building, a.room && `room ${a.room}`].filter(Boolean).join(', ');
+      const where = a.walking ? 'walking' : [a.building, a.room && (roomNames.get(a.room) || `room ${a.room}`)].filter(Boolean).join(', ');
       const truth = a.sick === null ? '' : ` · ${a.sick ? 'infected' : 'healthy'} (sim)`;
       return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${pct(a.p)}${truth}`;
     });
