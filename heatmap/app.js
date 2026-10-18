@@ -13,6 +13,7 @@ import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
+import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
@@ -537,17 +538,20 @@ const $ = (id) => document.getElementById(id);
 
 async function main() {
   let res, dataUrl;
+  progress('Reading the run…', 0.06);
   for (dataUrl of DATA_URLS) {
     // Streamed, gunzipped on the fly, keeping only columns the adapter knows: a 7,000-agent day fits.
     try { res = await loadCsv(dataUrl, Object.values(COLUMNS).flat()); break; } catch (err) { console.warn(`Couldn't load ${dataUrl}: ${err.message}`); }
   }
   if (!res) throw new Error(`couldn't load ${DATA_URLS.join(' or ')}`);
+  progress('Loading the campus map…', 0.4);
   const [paths, runBuildings, osmOutlines, rooms] = await Promise.all([
     fetch('data/stanford_paths.json').then((r) => r.json()).catch(() => null),
     loadBuildings(dataUrl),
     fetch('../sim/data/osm/buildings.geojson').then((r) => r.json()).catch(() => null),
     loadRooms(dataUrl),
   ]);
+  progress('Loading risk estimates…', 0.55);
   const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
   setSimMap({ buildings: runBuildings.outlines,
     paths: await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null) });
@@ -558,6 +562,7 @@ async function main() {
     for (const a of data.samples) a.p = model.risk.pAt(a.id, a.t);
     data.beliefFrom = 'column'; // a real estimate now, not a placeholder (legend wording)
   }
+  progress('Placing everyone…', 0.75);
   const tracks = buildTracks(data.samples);
   // Walk the sim's own logged routes (trips.csv.gz) when the run has them; the Router is the fallback.
   const trips = await loadTrips(dataUrl);
@@ -831,6 +836,22 @@ async function main() {
     }
     for (const list of exposureLog.values()) list.sort((a, b) => a.tMs - b.tMs);
   }
+  // The earliest close-contact alert anyone gets (15 weighted minutes within 6 ft over 24 h): { id, tMs } | null.
+  function firstCloseContact() {
+    let best = null;
+    for (const [id, list] of exposureLog) {
+      const q = []; let sum = 0;
+      for (const e of list) {
+        if (e.d > NEARBY_M || (best && e.tMs >= best.tMs)) continue;
+        const p = model.risk.pAt(e.other, e.tMs), w = p >= CONTAGIOUS ? 1 : p >= RISKY ? 0.5 : 0;
+        if (!w) continue;
+        q.push([e.tMs, w * e.min]); sum += w * e.min;
+        while (q[0][0] < e.tMs - EXPOSURE_WINDOW_MS) sum -= q.shift()[1];
+        if (sum >= CLOSE_CONTACT_MIN) { best = { id, tMs: e.tMs }; break; }
+      }
+    }
+    return best;
+  }
   // Weighted exposure minutes within `windowMs` before t. Live: each contact's risk as the app knew it
   // at the time. Retro: their risk as known now, i.e. people who have since reported sick.
   function exposureMinutes(id, t, windowMs, retro) {
@@ -1097,6 +1118,7 @@ async function main() {
       hoverTip.setLatLng(e.latlng); if (!map.hasLayer(hoverTip)) map.openTooltip(hoverTip);
     });
   });
+  map.on('moveend', () => updateViewCount(performance.now(), true));
   map.on('mouseout', () => { if (hover) { map.closeTooltip(hoverTip); hover = null; } });
   map.on('click', (e) => {
     if ($('view').value !== 'demo') return;
@@ -1112,8 +1134,8 @@ async function main() {
   });
   // Legend count: Σ P(sick) of everyone in view (cheap loop, a few times a second).
   let viewCountAt = 0;
-  function updateViewCount(realNow) {
-    if (realNow - viewCountAt < 300 || $('view').value !== 'demo') return;
+  function updateViewCount(realNow, force = false) {
+    if ((!force && realNow - viewCountAt < 300) || $('view').value !== 'demo') return;
     viewCountAt = realNow;
     const el = $('view-count');
     if (!el || !map._loaded) return;
@@ -1135,7 +1157,7 @@ async function main() {
         if (s) current.set(id, s);
       }
     }
-    $('time').textContent = formatTime(now, data.numericTime);
+    $('time').textContent = dayTime(now, t0, data.numericTime);
     $('slider').value = (now - t0) / 60000;
 
     const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
@@ -1266,6 +1288,7 @@ async function main() {
     ul.querySelector('.max').textContent = `${vmax.public.toFixed(1)}+`;
     ul.querySelector('.fine').textContent = `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
       + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
+    try { updateViewCount(performance.now(), true); } catch { /* the legend is drawn before the map exists */ }
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
     $('horizon').hidden = !isPublic;    // forecasts are a user-map feature
@@ -1349,6 +1372,7 @@ async function main() {
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
+  progress('Almost there…', 0.95);
   $('status').hidden = true;
   renderLegend();
   render(performance.now());
@@ -1356,6 +1380,26 @@ async function main() {
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
   if (PARAMS.get('why') && model?.risk.explain) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
+  initPresenterUI({
+    map, L, t0, t1, numericTime: data.numericTime,
+    getNow: () => now, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
+    isPlaying: () => playing, select, selected: () => selected, current: () => current,
+    steps: totals.steps.map((st, i) => ({ t: totals.times[i], expected: [...st.buildings.values()].reduce((a, b) => a + b.expected, 0) })),
+    peakBuilding() { // the building-moment with the most expected sick above baseline
+      let best = null;
+      totals.steps.forEach((st, i) => { for (const [id, b] of st.buildings) { const v = b.excess ?? b.expected; if (b.n >= MIN_PEOPLE && (!best || v > best.v)) best = { v, id, name: b.name, tMs: totals.times[i], expected: b.expected }; } });
+      return best;
+    },
+    buildingCenter: (id) => { const h = hitShapes.find((x) => x.id === id); return h && [(h.bb[1] + h.bb[3]) / 2, (h.bb[0] + h.bb[2]) / 2]; },
+    async firstReport() {
+      const base = new URL(dataUrl, location.href);
+      const cfg = await fetch(new URL('config.json', base)).then((r) => r.json());
+      const { data: rows } = await loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value']);
+      const r = rows.filter((x) => /might_be_sick|tested_positive|positive/.test(x.value)).sort((a, b) => a.t - b.t)[0];
+      return r && { tMs: Date.parse(cfg.start) + Number(r.t) * cfg.step_min * 60000, id: r.agent_id };
+    },
+    closeContact: model && exposureLog.size ? firstCloseContact : null,
+  });
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
     publicLayer, now: () => now, current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
