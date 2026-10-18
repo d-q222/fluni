@@ -93,6 +93,18 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → synthetic data (@aidenyj), 2026-10-17: false reports in the 7,000-agent run.**
+  - **What we see:** `influenza_none_n7000_d2_s42_5423d1a4` has 6 infections (all off-campus imports)
+    but 308 reports, 307 of them false: 303 false `report_other`s (294 different targets) and 4 false
+    self-reports. That is about 4% of campus falsely reported in 2 days.
+  - **Effect:** the model trusts reports, so the map shows 1,202 expected sick after one day and 2,436
+    after two (35% of campus), with up to 293 in one building. In the busy n400 run, 15 of 21
+    `report_other`s are true and the model tracks the truth (76 expected vs 77 by day 3).
+  - **Question:** is that false-report rate intended? If not, could the full-size run use the n400
+    run's report behaviour, or some transmission so the reports have something to find?
+  - **Not a blocker for you:** I reproduced this run locally byte-for-byte (seed 42; `contacts` and
+    `timeline` sha256 match your manifest), so the parts can follow at your pace.
+
 - **heat map + FlUni → synthetic data (@aidenyj), 2026-10-17: a busier default run for the demo.**
   - **Why:** the live map looks sparse. On `..._bc5cae7a` (10 agents, 3 infections), the live moment
     has data for only 4 buildings.
