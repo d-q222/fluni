@@ -29,6 +29,9 @@ const CAMPUS_PEOPLE = 7000;
 // From this many agents, read the precomputed P(sick) and user-map totals when the run has them
 // (precomputed.js): the model in the page and per-step totals take minutes and gigabytes there.
 const BIG_RUN = 2000;
+// Long runs too: 1,000 agents x 14 days is 11 M contacts (21 s and 3.6 GB in the page); 4 days loads in 6 s.
+const BIG_AGENT_DAYS = 8000;
+let bigRun = false; // set by loadModel: this run uses the precomputed files
 const MIN_PEOPLE = 4;
 const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
@@ -190,7 +193,8 @@ async function loadModel(dataUrl, agentIds) {
   try {
     const base = new URL(dataUrl, location.href);
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
-    if (agentIds.length >= BIG_RUN) { // no "Why this %?" and no contact-based phone alerts then
+    bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
+    if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
       const risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
       if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
@@ -564,7 +568,7 @@ async function main() {
   if (trips) attachTrips(tracks, trips);
   // Big runs: the user map's totals from tools/precompute.mjs, kept in heatmap/out/<run>/ (or next to the timeline).
   const runDir = new URL('.', new URL(dataUrl, location.href)), run = runDir.pathname.split('/').filter(Boolean).at(-1);
-  const pre = tracks.size < BIG_RUN ? null
+  const pre = tracks.size < BIG_RUN && !bigRun ? null
     : (await loadTotals(new URL(`out/${run}/totals.json.gz`, location.href))) || (await loadTotals(new URL('totals.json.gz', runDir)));
   if (!pre && /timeline_changes\.csv(\.gz)?$/.test(dataUrl)) { // with precomputed totals, nothing needs every step
     Object.assign(data, expandSteps(tracks, data.times, model && model.risk.pAt));
