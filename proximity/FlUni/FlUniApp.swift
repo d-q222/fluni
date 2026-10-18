@@ -65,16 +65,20 @@ struct FlUniApp: App {
                         TodayView(model: model)
                             .tabItem { Label("Today", systemImage: "sun.max") }
                             .tag(AppRouter.Tab.today)
-                            .accessibilityIdentifier("tab.today")
+                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
+                            .tissueTabBarInset()
                         BundledMapView()
                             .tabItem { Label("Map", systemImage: "map") }
                             .tag(AppRouter.Tab.map)
-                            .accessibilityIdentifier("tab.map")
+                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
+                            .tissueTabBarInset()
                         MeView(model: model)
                             .tabItem { Label("Me", systemImage: "person.crop.circle") }
                             .tag(AppRouter.Tab.me)
-                            .accessibilityIdentifier("tab.me")
+                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
+                            .tissueTabBarInset()
                     }
+                    .overlay { TissueTabBar(selection: $router.tab) }
                     .tint(Theme.ink)
                     .onAppear {
                         startOnce(); router.becomeReady()

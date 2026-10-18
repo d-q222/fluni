@@ -8,7 +8,7 @@ final class FlUniUITests: FlUniUITestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["onboarding.next"].exists)
-        XCTAssertFalse(app.tabBars.firstMatch.exists, "no tabs during onboarding")
+        XCTAssertFalse(tab("Today").exists, "no tabs during onboarding")
         completeOnboarding()
         XCTAssertTrue(app.staticTexts["All clear"].waitForExistence(timeout: 5), "fresh install is all clear")
 
@@ -192,7 +192,7 @@ final class FlUniUITests: FlUniUITestCase {
 
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].exists)
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        XCTAssertFalse(tab("Today").exists)
         // And the saved status is gone once onboarding is done again.
         completeOnboarding()
         openTab("Me")
