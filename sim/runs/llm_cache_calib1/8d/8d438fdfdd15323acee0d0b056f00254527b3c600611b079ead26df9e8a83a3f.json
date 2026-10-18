@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce, masked, said Scout might be a close contact of someone sick and asked me to tell them if I hear anything. I feel fine and will keep my distance from anyone who seems sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

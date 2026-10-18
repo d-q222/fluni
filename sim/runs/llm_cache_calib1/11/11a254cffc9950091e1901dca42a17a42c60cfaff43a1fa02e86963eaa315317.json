@@ -1,0 +1,110 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:00",
+    "place": "home",
+    "start": "06:30"
+   },
+   {
+    "activity": "gym",
+    "end": "07:25",
+    "place": "bld:bld_6593510",
+    "start": "07:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:40"
+   },
+   {
+    "activity": "study",
+    "end": "10:35",
+    "place": "plan:bld_m_green_library_f2_205",
+    "start": "08:25"
+   },
+   {
+    "activity": "gym",
+    "end": "12:15",
+    "place": "bld:bld_6593510",
+    "start": "10:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "gym",
+    "end": "15:05",
+    "place": "bld:bld_6593510",
+    "start": "13:20"
+   },
+   {
+    "activity": "practice",
+    "end": "17:35",
+    "place": "bld:bld_232715573",
+    "start": "15:35"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "bld:bld_6593510",
+    "start": "18:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "20:45",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "event:EV00100",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "22:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Friday: routine of lifting, class study, practice, and a shorter dorm hangout. Feel fine, still watching for symptoms and waiting to hear about Skyler's flu test.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Ocean, your text came through blank. Any news on Skyler's test? I feel fine.",
+    "time": "",
+    "to": "A0030"
+   }
+  ],
+  "thoughts": "Feeling fine, a bit wary with the fever rumor and Skyler awaiting a flu test. Ocean texted an empty message, maybe about Skyler. I'll keep my routine, watch for symptoms, and skip the long dorm hangout late to be safe-ish but still show up briefly. Friday, so a social evening feels normal. Practice is the main thing.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

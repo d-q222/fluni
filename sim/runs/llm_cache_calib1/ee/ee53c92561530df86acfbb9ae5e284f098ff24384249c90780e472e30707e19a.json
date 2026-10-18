@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Winter! Hey, you made it! This place is packed, so hyped for the game. Where are you sitting?",
+  "shared_health": false
+ }
+}

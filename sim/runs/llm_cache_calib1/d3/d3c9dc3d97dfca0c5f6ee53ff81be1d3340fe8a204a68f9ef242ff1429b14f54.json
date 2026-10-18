@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm good, feeling fine. Kinda wary of the bugs going around too, so respect. Probably should do the same honestly.",
+  "shared_health": true
+ }
+}

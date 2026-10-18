@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Nice mask, are you feeling okay or just being careful? I'm heading to study group at 7:50 and then hanging out later if you want to come.",
+  "shared_health": false
+ }
+}

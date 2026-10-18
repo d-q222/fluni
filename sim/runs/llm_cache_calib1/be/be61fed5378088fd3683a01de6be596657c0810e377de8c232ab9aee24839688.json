@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! What's up, you grabbing dinner too? How's the first Monday of the quarter treating you?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:50",
+    "place": "home",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "13:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:55"
+   },
+   {
+    "activity": "relax",
+    "end": "14:45",
+    "place": "home",
+    "start": "13:45"
+   },
+   {
+    "activity": "class",
+    "end": "16:05",
+    "place": "class:STATS118_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:05",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "00:25",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:25"
+   }
+  ],
+  "diary": "Thu Jan 8: Keeping routine with class and dinner at Stern with Campbell, masking in crowds. Feeling fine, waiting on news about Skyler and Sidney.",
+  "messages": [],
+  "thoughts": "Skyler is awaiting a flu test and Sidney is sick, so I'm a bit more wary. I'll keep my routine, wear a mask in crowds, and go to class. Dinner at Stern with Campbell is planned, and it's crowded, so I'll mask and then go home instead of the dorm hangout.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

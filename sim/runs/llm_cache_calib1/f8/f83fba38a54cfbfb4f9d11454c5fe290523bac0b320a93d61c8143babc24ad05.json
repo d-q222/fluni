@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Just being careful, I feel fine. Been a bit anxious with stuff going around, so I'd rather mask up. Good luck studying, I'll see you tonight!",
+  "shared_health": true
+ }
+}

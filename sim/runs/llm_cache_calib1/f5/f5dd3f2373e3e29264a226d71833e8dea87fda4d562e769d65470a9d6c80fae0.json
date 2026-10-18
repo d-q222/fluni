@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told True about Dakota and Chris testing positive; True already knew, feels fine, and is staying in tonight too. We agreed to keep masking and check in tomorrow.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

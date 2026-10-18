@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel fine, just a little wary with how crowded Stern's been. Smart move with the mask. Heading to the gym after this, then class. You?",
+  "shared_health": true
+ }
+}

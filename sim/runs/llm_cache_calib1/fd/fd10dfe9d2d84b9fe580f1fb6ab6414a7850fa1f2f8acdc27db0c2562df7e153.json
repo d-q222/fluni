@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, I've got practice till 6:20 and then dinner, so I'll probably skip it. Catch you at practice though!",
+  "shared_health": false
+ }
+}

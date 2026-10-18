@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Chris at Lakeside dinner; they're heading to Flo Mo with Dakota at 6:30 and will definitely be at Taper later tonight. Both seem fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

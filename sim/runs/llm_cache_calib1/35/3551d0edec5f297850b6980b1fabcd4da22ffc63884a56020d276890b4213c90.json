@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Yeah, totally, I'm starving. First Monday's been great, classes, gym, now food. I've got a couple more dinners lined up after this, so I can't stay super long, but let's sit!",
+  "shared_health": false
+ }
+}

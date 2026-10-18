@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Good call. I feel fine, just a bit wary. Thanks for the heads up about Scout, I'll keep an eye out too. Hope it stays nothing!",
+  "shared_health": true
+ }
+}

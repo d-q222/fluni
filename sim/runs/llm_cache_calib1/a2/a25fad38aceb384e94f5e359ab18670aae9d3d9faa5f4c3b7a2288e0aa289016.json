@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Just chilling for a bit, then I've got lab at 10:30. You?",
+  "shared_health": false
+ }
+}

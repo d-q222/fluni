@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Fallon, masked, said they feel fine but are masking because Teagan and Dakota are sick in our dorm, and they're skipping the lounge. I'll keep my distance in the dorm and text Fallon if I get symptoms or an app alert.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

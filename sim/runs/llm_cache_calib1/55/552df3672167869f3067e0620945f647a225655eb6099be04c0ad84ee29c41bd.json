@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Max about the Arizona game tonight; they might come after lifting and will find us if so. Both seem fine, plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

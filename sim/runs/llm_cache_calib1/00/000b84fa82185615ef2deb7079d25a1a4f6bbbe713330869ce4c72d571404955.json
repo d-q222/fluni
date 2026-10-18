@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Armani at the dorm hangout; they skipped lab and will study late. Nothing notable, no health talk.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

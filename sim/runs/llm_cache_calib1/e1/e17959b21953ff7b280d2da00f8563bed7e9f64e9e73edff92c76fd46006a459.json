@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley. I'm fine, just eating before studying. Why the mask though? You feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Wynn at Maples before the Arizona game; going to sit with them, Dell, and Onyx. Taper after the game still the plan, though Wynn mentioned maybe the dorm lounge instead. Feeling fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

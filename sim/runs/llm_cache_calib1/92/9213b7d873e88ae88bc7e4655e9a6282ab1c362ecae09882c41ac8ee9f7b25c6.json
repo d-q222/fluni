@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon! I'm good, feel fine actually. Yeah, I keep hearing about it, Ari said Bailey and Sidney have been sick. You doing okay?",
+  "shared_health": true
+ }
+}

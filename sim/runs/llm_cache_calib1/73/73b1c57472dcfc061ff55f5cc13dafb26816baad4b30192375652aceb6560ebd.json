@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Watched the Arizona game at Maples with Lake, masked in the crowd. Feel fine, heading home to relax and sleep early, still watching for illness.",
+  "messages": [],
+  "thoughts": "The arena is crowded with about 42 people, and I've heard the dorm fever rumor, so I'm a bit wary. I feel fine, though. I'll stay for the game, since it's a team thing and I'm already masked. Then I'll head home to relax and sleep early because of morning practice.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

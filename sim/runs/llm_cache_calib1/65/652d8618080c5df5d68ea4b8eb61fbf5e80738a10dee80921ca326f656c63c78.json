@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Wynn at Maples before the Arizona game; neither of us has heard from Onyx yet, so we're going in to find the group. Both feel fine. Taper afterward still on.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

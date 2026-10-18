@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "23:15",
+    "place": "home",
+    "start": "19:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Ate quickly at crowded Stern Dining and went back to my room to study masked. Still no word on Jesse's test; I feel fine.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 44 people, so I'll eat quickly with my mask on when not actually chewing and head back to my room. I feel fine, but Jesse's test is still pending, so I'll keep a low profile, study at home, and sleep at a decent hour.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

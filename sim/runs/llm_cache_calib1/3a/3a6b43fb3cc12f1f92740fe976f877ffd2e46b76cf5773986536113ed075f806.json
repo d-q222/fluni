@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Heads up, I was around Dakota Friday and they tested positive, so I'm masking up and keeping my distance. I feel fine though. How are you doing?",
+  "shared_health": true
+ }
+}

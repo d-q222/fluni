@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Mask looks smart, everything okay? I'm heading to the Arizona game tonight if you want to come, a bunch of us are going.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler, what's up? Good game yesterday, you guys were in the stands right? Grabbing lunch before I hit the gym.",
+  "shared_health": false
+ }
+}

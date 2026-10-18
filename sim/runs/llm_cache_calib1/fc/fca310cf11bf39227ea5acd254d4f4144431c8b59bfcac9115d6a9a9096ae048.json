@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, same here, I've been trying to be careful. I feel fine though. Anyway, I've got lab soon, so I'll catch you back at the dorm!",
+  "shared_health": true
+ }
+}

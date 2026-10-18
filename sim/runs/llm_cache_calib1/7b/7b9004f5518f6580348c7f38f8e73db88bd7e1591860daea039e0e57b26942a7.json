@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Scout (masked, feels fine) got a close contact warning from Wesley and said they'd look into testing. I talked with Wesley yesterday, so I'll watch for symptoms and keep my mask on and distance from Scout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

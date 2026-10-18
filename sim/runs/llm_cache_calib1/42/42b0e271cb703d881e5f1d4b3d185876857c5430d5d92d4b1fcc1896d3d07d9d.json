@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Campbell confirmed Skyler tested negative and is still going to the 8pm hangout, maybe unmasked. I told them I'm skipping it to study and stay careful; plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

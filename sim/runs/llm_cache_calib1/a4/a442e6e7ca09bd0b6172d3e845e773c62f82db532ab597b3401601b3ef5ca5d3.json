@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Waverly that Sidney and Bailey are sick and that I'm fine and negative, still masked. Waverly feels fine and is heading to lab. Nothing changes; I'll finish dinner and go to lab.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

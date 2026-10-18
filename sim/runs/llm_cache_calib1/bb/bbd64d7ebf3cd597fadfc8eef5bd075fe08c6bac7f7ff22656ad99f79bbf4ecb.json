@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Umi is masked and said Skyler is awaiting a flu test and Sidney is sick. I told Umi I'm skipping the hangout and suggested they skip it too. Sticking to my plan to go home, study, and sleep early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris... you sound rough too. I'm waiting on a flu test, I've got a fever and cough since this morning. Maybe we should keep some distance, sorry.",
+  "shared_health": true
+ }
+}

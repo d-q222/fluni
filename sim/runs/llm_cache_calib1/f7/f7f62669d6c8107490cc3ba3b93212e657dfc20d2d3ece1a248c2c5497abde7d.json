@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, definitely, let's grab seats. Maybe toward the side so it's less crowded?",
+  "shared_health": false
+ }
+}

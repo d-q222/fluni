@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Zuri! Mask on, huh? Is it getting that bad in the dorm?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,113 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m76"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "08:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:55",
+    "place": "home",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:ENERGY120_LEC01",
+    "start": "12:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:50"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CLASSICS6G_LNG01",
+    "start": "15:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "19:55",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:45",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:20",
+    "place": "home",
+    "start": "20:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "23:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Thursday: kept my routine but decided to stop by the Stern lounge hangout at 8 with a mask, since it's low-key and in my own dorm. Skipping Taper and Lakeside; feeling fine but a little anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks all! I'll pop into the Stern lounge at 8 for a bit, masked. Skipping the others, enjoy!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I feel fine and my routine works for me. Crowds make me anxious, but Onyx said the lounge hangout is low-key and masks are fine, and it's in my own dorm, so I could drop by briefly with a mask. Dakota's lounge invite is at 19:45, close to Onyx's at 20:00, so one short stop covers both. I'll skip Taper and the Lakeside dinner and stick with Stern dining.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

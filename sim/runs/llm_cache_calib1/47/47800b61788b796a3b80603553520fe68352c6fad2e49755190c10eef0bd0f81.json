@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with roommate Finley this morning; both of us feel fine and agreed to keep telling each other if anything feels off. Illness is going around, so I'll stay watchful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

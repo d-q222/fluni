@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! You lifting again today? I think I'm skipping the gym this morning, got class at 10:30. Also, do you know what time practice is? I need to check the team chat.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,105 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:55",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "08:25",
+    "place": "home",
+    "start": "07:55"
+   },
+   {
+    "activity": "study",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:EARTHSYS183_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CLASSICS2L_LNG01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:25",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Jesse is sick and Emerson warned the group. I feel fine, so I'll keep masking, skip the lab, study at home in the evening, and watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're feeling awful, Jesse. Rest up and drink fluids. Let me know if you need anything dropped off. I'll keep my mask on.",
+    "time": "",
+    "to": "A0170"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Emerson. I feel fine so far, masking and watching for symptoms. Tell me if you feel anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Jesse is sick and I was near them at the hangout, though masked and at the edge. I feel fine. I'll keep my routine but stay masked, avoid crowded spots, and cut back on the evening lab so I can rest and watch for symptoms. I'll reply kindly to the group and check on Jesse.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

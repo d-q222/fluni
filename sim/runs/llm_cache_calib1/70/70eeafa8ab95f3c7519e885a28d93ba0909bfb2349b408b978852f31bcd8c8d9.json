@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "14:30",
+    "place": "home",
+    "start": "11:40"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "home",
+    "start": "14:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:05",
+    "place": "bld:bld_m_the_oval",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Sunday: feel fine, still a close contact of Dakota, so I'm staying low-key with a quiet study day and early night. Dell sent a stray 'x' and I checked in.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Got a lone 'x' from you, all good? I feel fine, staying low-key and masked, and watching for symptoms.",
+    "time": "",
+    "to": "A0126"
+   }
+  ],
+  "thoughts": "Dell texted just 'x', probably an accidental warn. I feel fine but I'm a close contact of Dakota, so I'll stay low-key. I'll study at home, grab an early dinner at Stern with a mask, take a short walk outside, and get to bed early. I'll send Dell a quick reply to check in.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

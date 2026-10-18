@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told roommate Emerson I'll be at Green 4-7 on a different floor to focus; they'll arrive around 5:45 masked. Nothing health-related, no plans changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max outside the packed dorm hangout; we both plan to mask up, stay a short while, and text each other if it gets gross. Plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

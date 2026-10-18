@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, grabbing lunch. I'm definitely going to the game, I'm saving seats for the group around 7. You in? Lounge hangout afterward too!",
+  "shared_health": false
+ }
+}

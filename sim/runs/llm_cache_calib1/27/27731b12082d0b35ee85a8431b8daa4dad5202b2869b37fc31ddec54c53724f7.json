@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel fine, just masking to be safe. How about you? Heard Skyler tested negative at least, so that's a relief.",
+  "shared_health": true
+ }
+}

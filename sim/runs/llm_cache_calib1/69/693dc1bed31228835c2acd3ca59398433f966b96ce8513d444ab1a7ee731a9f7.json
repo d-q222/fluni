@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Carter I'm fine, just masking up because I'm anxious about illness going around. Carter is staying in to study till lunch and seemed healthy. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

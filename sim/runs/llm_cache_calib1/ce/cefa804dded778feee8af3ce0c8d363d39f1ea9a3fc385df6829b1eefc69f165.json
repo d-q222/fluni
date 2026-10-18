@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! What's up, you hanging out here tonight too?",
+  "shared_health": false
+ }
+}

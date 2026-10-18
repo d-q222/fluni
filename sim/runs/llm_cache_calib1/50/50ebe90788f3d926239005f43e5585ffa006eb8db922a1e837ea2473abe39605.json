@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:55",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "12:45",
+    "place": "bld:bld_26250731",
+    "start": "11:50"
+   },
+   {
+    "activity": "rest",
+    "end": "22:30",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Sick with fever and cough, and Chris's positive test makes me think it's the same bug. Skipping football and the party, going to Vaden for a test and resting, masked when out. Told the group.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Same here, I woke up with fever, chills, cough and aches. Heading to Vaden for a test today, then resting. If you hung out with me last night, watch for symptoms and mask up.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm already sick with fever, chills and cough, and Chris testing positive makes it likely I have the same thing. Normally I'd push through, but I already decided to skip football and the party. I'll sleep, grab food, go to Vaden for a test, mask up when out, then rest. I should let Dell, Carter and Onyx know since we were all around each other last night.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, I'm actually not masking, just keeping an eye on things. I feel fine though, just busy with problem sets and lab. You doing okay?",
+  "shared_health": true
+ }
+}

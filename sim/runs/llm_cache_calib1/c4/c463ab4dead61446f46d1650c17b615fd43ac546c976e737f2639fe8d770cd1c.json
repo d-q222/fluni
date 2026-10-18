@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for telling me. I feel fine too, just a bit worried. Maybe get tested at Vaden tomorrow if you can, just to be safe? I'll keep my distance a little, no offense. Hope you stay okay!",
+  "shared_health": true
+ }
+}

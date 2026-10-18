@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "13:20",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:10",
+    "place": "home",
+    "start": "13:50"
+   },
+   {
+    "activity": "relax",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "FlUni extended my stay-home advice until Wed Jan 14. I feel fine but worried, so I'm staying in my room, studying on a regular schedule, and I've told my friends.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Hey, FlUni told me to stay home until Jan 14. I feel fine, but I'm skipping class and the study group today to be safe. Stay careful, everyone!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "FlUni says stay home until Jan 14. I feel fine, but I'm worried and disciplined, so I'll follow it: skip the CHEM 31B lecture and the study group, and stay in my room. I'll study, eat in the room, relax, and sleep on a regular schedule. I'll text the group so nobody is surprised that I'm absent.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

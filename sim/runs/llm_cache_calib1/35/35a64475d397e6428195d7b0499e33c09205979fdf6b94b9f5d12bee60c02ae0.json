@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah, negative and feeling fine, thanks. Good call masking, a lot of people in the dorm look sick. How about you?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:50",
+    "place": "home",
+    "start": "07:40"
+   },
+   {
+    "activity": "lab",
+    "end": "08:55",
+    "place": "plan:bld_232841933_f2_203",
+    "start": "07:55"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "lab",
+    "end": "12:45",
+    "place": "plan:bld_232841933_f2_203",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_232841933_f2_203",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:05"
+   },
+   {
+    "activity": "lab",
+    "end": "21:10",
+    "place": "plan:bld_232841933_f2_203",
+    "start": "19:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:15"
+   },
+   {
+    "activity": "study",
+    "end": "01:20",
+    "place": "plan:bld_m_green_library_f3_301",
+    "start": "22:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:00",
+    "place": "home",
+    "start": "01:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:00"
+   }
+  ],
+  "diary": "Friday: sticking to my usual routine of lab, classes, problem sets and late study. Feeling fine, still a bit wary of illness.",
+  "messages": [],
+  "thoughts": "Feeling fine. Friday, so I'll follow my usual routine: lab, classes, problem sets. Still wary of illness with all the coughing around, but no symptoms. I'll keep my distance from people and skip any extra socializing.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

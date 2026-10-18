@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Doing okay, feeling fine, just a little wary. A couple people I know might be sick, so I'm keeping my mask on. Enjoy lunch, Chris!",
+  "shared_health": true
+ }
+}

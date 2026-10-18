@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Sawyer at Stern Dining: they are a close contact too but tested flu-negative and feel fine, masking in crowds. I'm untested and feeling fine, will go to Vaden if symptoms appear. Plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

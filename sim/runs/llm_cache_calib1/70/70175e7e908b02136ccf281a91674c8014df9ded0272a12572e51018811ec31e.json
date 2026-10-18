@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Yeah, packed again. I'm fine, just eating fast too, then lab. Still watching for symptoms after the dorm exposure notices though. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

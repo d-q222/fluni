@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden, still doing the mask thing? I'm good, just grabbing dinner then gym. Skipping Acacia tonight though, with Chris and Dakota sick.",
+  "shared_health": true
+ }
+}

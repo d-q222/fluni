@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler. Heads up, I'm waiting on a flu test, so I'm keeping my distance. I've got a fever and cough.",
+  "shared_health": true
+ }
+}

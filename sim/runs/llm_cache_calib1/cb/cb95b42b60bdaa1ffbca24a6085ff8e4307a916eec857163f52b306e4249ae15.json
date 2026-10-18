@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:25",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "17:25",
+    "place": "class:ENGLISH91_WKS06",
+    "start": "14:30"
+   },
+   {
+    "activity": "class",
+    "end": "18:20",
+    "place": "class:SLE92_LEC01_2",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "18:25"
+   },
+   {
+    "activity": "eat",
+    "end": "20:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "20:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Wed: Stern was crowded so I ate fast, masked up, and kept my study and class routine. Waiting to hear Sawyer's Vaden flu result; still a bit anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope your test comes back fine! Let me know the result, and take care.",
+    "time": "",
+    "to": "A0050"
+   }
+  ],
+  "thoughts": "Stern Dining is crowded with about 48 people, and I'm anxious about illness going around. I'll finish eating quickly, keep my mask on, and head to Lathrop to study before my afternoon classes. I'll skip the basketball game again since it will be crowded. For dinner I'll go a bit later or earlier to avoid the crowd, perhaps still Stern but quick. I'm waiting to hear from Sawyer about their flu test.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

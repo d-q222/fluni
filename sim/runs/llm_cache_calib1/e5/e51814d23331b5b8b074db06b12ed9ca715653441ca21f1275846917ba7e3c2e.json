@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:40"
+   },
+   {
+    "activity": "lab",
+    "end": "14:10",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "11:25"
+   },
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:10"
+   },
+   {
+    "activity": "relax",
+    "end": "16:55",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "lab",
+    "end": "18:50",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_1040629370",
+    "start": "18:55"
+   },
+   {
+    "activity": "lab",
+    "end": "21:35",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "19:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Teagan's positive result confirmed. I feel fine, staying masked, doing lab and study, avoiding the lounge and the game, and sleeping earlier.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Teagan. Feel better and let us know if you need anything. I'll stay away from the lounge.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan's positive result is already known to me, so nothing new, but it reinforces my caution. I feel fine and my last test was negative. I'll keep my routine of lab and study, stay masked, avoid the lounge and the game, and eat at less crowded times. I'll text Teagan briefly to wish them well and keep an eye out for symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

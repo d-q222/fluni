@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:45",
+    "place": "home",
+    "start": "07:05"
+   },
+   {
+    "activity": "eat",
+    "end": "08:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "08:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:00",
+    "place": "bld:bld_m_lake_lagunita",
+    "start": "11:40"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_m_green_library_f2_211",
+    "start": "12:25"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:ARTHIST129_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:25",
+    "place": "plan:bld_m_green_library_f3_309",
+    "start": "14:50"
+   },
+   {
+    "activity": "class",
+    "end": "19:15",
+    "place": "class:ENGR248_LEC02",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Stuck to my usual Tuesday of library study, ARTHIST and ENGR lectures, with a mask indoors. Feeling fine but still a bit cautious.",
+  "messages": [],
+  "thoughts": "Feeling fine, just a bit cautious. Tuesday routine is solid: library blocks, classes, meals. I'll follow it and wear a mask indoors.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

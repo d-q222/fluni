@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel fine, no symptoms. Just a little anxious since Wesley said they're a close contact. Good luck with the problem sets, tell me if anything feels off, okay?",
+  "shared_health": true
+ }
+}

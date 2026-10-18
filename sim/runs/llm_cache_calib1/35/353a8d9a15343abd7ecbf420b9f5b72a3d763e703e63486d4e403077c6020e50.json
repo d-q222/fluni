@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter, you're in my dorm right? Mika. How's your week going so far?",
+  "shared_health": false
+ }
+}

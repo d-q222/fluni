@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Wynn and I agreed to meet outside the dorm around 5:30 and head to the Arizona game at Maples together after dinner. Nothing health-related came up.",
+  "messages": [],
+  "replan": true,
+  "worry": 2
+ }
+}

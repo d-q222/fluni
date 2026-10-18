@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx. Good to see you masked too. I'm just grabbing a quick dinner and heading back, with all the dorm fevers going around. How are you doing?",
+  "shared_health": false
+ }
+}

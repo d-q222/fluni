@@ -1,0 +1,54 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:45",
+    "place": "home",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "home",
+    "start": "12:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Skipping the Cal game and the Acacia party because of the dorm fevers. Staying home, masking, short Stern meals. Still anxious but feeling fine.",
+  "messages": [],
+  "thoughts": "Chris is sick, dorm fevers are going around, and I'm anxious. A crowded football game and a late party are poor choices for me right now, and I'm a homebody anyway. I'll sleep, eat quick masked meals at Stern, and study and relax at home. Skipping the game and the party.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

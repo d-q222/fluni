@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell was also near Dakota, feels fine, is masked and heading to Green to study after dinner. We agreed to text each other if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

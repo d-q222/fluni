@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "09:45",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "11:30",
+    "place": "bld:bld_26250731",
+    "start": "09:45"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Feverish and achy, so I skipped everything today, went to Vaden to get checked, and stayed isolated in my room the rest of the day. Anxious about having exposed people at the hangout.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks both. Going to Vaden this morning, then staying in my room all day. Skipping lab and class. Will update you after the visit.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I woke with fever, chills, cough, sore throat and aches. I'm anxious and honest, so I'll stay in and rest, skip lab, class and library, and mask if anyone's around. Vaden is the responsible step, so I'll go in the morning once it opens, then come straight back to rest. I'll take meals easy, maybe skip the dining hall to avoid spreading it.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

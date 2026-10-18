@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sure, that sounds good! I've got a bit of downtime after dinner, so I can head to Green in a bit. Save me a spot?",
+  "shared_health": false
+ }
+}

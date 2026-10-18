@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain. You feeling okay still? I'm fine so far, just keeping to dinner, lab, and my room. Did you hear anything more about Teagan?",
+  "shared_health": true
+ }
+}

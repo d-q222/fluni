@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good, let's head over. Maybe we can grab seats near the door so there's more air.",
+  "shared_health": false
+ }
+}

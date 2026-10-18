@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Lake at Stern Dining; we agreed to lift together at the gym around 8:50. Lake seemed fine.",
+  "messages": [],
+  "replan": true,
+  "worry": 2
+ }
+}

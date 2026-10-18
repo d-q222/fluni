@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "14:10",
+    "place": "bld:bld_232805662",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:15"
+   },
+   {
+    "activity": "relax",
+    "end": "16:35",
+    "place": "dorm_lounge",
+    "start": "15:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "plan:bld_m_green_library_f1_106",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:00",
+    "place": "plan:bld_m_green_library_f1_106",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:05"
+   }
+  ],
+  "diary": "Sun Jan 11: Feel fine but worried with Chris and Dakota sick and Oli sniffling. Masking, studying, skipping the dorm hangout and the game.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris and Dakota! I feel fine, masking and keeping it low-key today. Skipping the party too. Oli is sniffly so I'm watching myself.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris and Dakota are sick, and my roommate Oli is sniffling. I feel fine, but I'm worried. I'll sleep in, then keep a low-key day: study at Coupa and Green with a mask, skip the crowded game, keep the gym short and quiet, and skip the dorm hangout. I'll text Carter and Onyx to check in.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

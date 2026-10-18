@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:10",
+    "place": "home",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "16:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:30",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Dakota tested positive and I was near them. I feel fine but worried, so I'm masking, skipping the game and hangout, and staying low-key.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update Dakota, feel better soon! I feel fine, staying low-key, masking, and skipping the hangout. Text if you need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota tested positive and I was near them. I feel fine, but I'm worried. I'll sleep in, keep my day low-key, mask in public, skip the game and the dorm hangout. I'll study a bit at Green Library and eat, then stay home. I'll text Dakota something supportive and tell the group I'm fine.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

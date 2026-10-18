@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Paxton (masked, feels fine, negative test) told me Teagan tested positive and Dakota in our dorm is sick. I'm staying masked, keeping distance, and still heading to Green to study.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

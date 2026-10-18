@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey. Yeah, ready. Thanks for grabbing the table. I see you're masked, everything okay? I feel fine, just wary with all the coughing going around.",
+  "shared_health": true
+ }
+}

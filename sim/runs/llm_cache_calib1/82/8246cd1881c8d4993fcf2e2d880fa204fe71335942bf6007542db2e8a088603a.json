@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Umi. Heading to study, so I'll keep my distance, but good to see you're masked.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:25"
+   },
+   {
+    "activity": "relax",
+    "end": "22:45",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:45"
+   }
+  ],
+  "diary": "Went to the crowded Arizona game with True and friends; feel fine but heard a rumor of a fever in a dorm. Heading home to relax and sleep early for practice.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Made it to the Arizona game at Maples, it's packed! Heads up there's a rumor of someone in a dorm with a fever, so wash hands.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I feel fine. The game is crowded and True mentioned a rumor of a fever in a dorm. I'll stay for most of the game since I'm with friends, then head back to the dorm to relax and sleep. I'm a swimmer with early practice likely, so I'll sleep at a decent hour. I'll text Chris that I arrived. Skip the mask indoors as usual but stay a bit wary.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "14:30",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "14:40"
+   },
+   {
+    "activity": "relax",
+    "end": "18:40",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "02:30",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:30"
+   }
+  ],
+  "diary": "Dylan says Dakota in our dorm has flu symptoms too. I feel fine but am staying masked, skipping the game, and going only to lab, a late dinner, and home. Quite worried; watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Dylan. Hope your test comes back okay. Please share the result, and I'll keep masking.",
+    "time": "",
+    "to": "A0150"
+   }
+  ],
+  "thoughts": "Teagan is positive and Dakota from my dorm has flu symptoms, so I'm worried. I feel fine, but I may be exposed. I'll stay masked in shared spaces, skip the game, and keep lab short, since lab is an organized commitment but others may be there. I'll eat at Stern at an off-peak time, then study at home. I'll watch for symptoms and go to Vaden if anything starts.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

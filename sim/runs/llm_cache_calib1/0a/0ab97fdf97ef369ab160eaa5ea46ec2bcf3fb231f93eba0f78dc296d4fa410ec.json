@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, definitely! I've got Flo Mo dinner first, then I'll head over around 8:30 too. We can walk together if you want. Everyone's kinda wary of that illness going around, but I feel fine so whatever.",
+  "shared_health": true
+ }
+}

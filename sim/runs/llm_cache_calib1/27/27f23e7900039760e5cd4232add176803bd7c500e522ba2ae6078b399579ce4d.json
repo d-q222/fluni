@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, deal, I'll hang here for a bit instead. Lounge sounds sketchy anyway. Let's bounce if anyone starts coughing.",
+  "shared_health": false
+ }
+}

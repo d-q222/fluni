@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:15",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "class",
+    "end": "12:05",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "relax",
+    "end": "19:15",
+    "place": "home",
+    "start": "18:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Regular Monday: class, meals at Stern, studying in my room. Feeling fine, just a bit wary about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick to my usual routine: sleep, breakfast at Stern, class, study in my room. Maybe a mask in class since I'm a little worried, but nothing dramatic.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

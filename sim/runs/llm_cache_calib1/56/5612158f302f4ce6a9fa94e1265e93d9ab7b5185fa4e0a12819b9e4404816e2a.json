@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:00",
+    "place": "bld:bld_232841950",
+    "start": "20:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:50",
+    "place": "event:EV00060",
+    "start": "21:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "bld:bld_232841950",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Dinner at Stern with the group; everyone is wary about Skyler's flu test and Sidney being sick. I'll hit Taper, pop into the dorm hangout briefly, then sleep. A bit more worried than usual, and I owe Mika and Umi an update if I hear Skyler's result.",
+  "messages": [],
+  "thoughts": "Everyone's talking about Skyler's flu test and Sidney being sick. I'm social and don't usually follow health advice, but I'm a bit more paranoid tonight. I'll finish dinner, then pop into Taper for a bit, make a short appearance at the dorm hangout, and head to bed at a reasonable hour. I'll keep my promise to update Mika and Umi if I hear anything.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

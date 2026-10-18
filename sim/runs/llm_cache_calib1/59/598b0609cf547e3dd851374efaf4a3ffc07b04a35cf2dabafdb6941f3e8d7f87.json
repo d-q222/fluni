@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "21:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "21:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Ate quickly in a crowded Stern Dining, masked, then studied at Green and went home. Feeling fine but still wary with the FlUni flag rumors going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 40 people, and illness is going around the dorm. I feel fine, so I'll finish eating quickly, mask up indoors, and move on. Studying at Green is quieter than here. Then I'll head home to relax and sleep. I'll skip the basketball game since crowds make me uneasy and I'm introverted. I'll keep distance and keep masking.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Oli, my roommate, was masked up out of caution since illness is going around, said they're fine and left for their study group. I feel fine; plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat near the aisle with Zuri in BIO 84, both masked and keeping some space. Told Zuri my friends are sick and I tested negative; Zuri was understanding. Nothing changes in my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

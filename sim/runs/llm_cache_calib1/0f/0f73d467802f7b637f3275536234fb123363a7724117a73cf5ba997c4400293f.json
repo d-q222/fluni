@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same kind of day, class then practice later tonight. Gym's at 11:45 for me, so maybe I'll see you there. Stay healthy!",
+  "shared_health": false
+ }
+}

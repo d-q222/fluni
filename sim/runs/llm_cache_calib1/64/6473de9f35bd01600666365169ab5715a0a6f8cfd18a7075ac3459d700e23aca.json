@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Dell at Maples before the Arizona game; we're sitting with Wynn and Onyx who saved seats, then Taper after. Feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

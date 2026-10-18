@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Finley, I'm fine too, nothing off. Keep the mask on, and text me if you hear anything from Wesley. Have a good class.",
+  "shared_health": true
+ }
+}

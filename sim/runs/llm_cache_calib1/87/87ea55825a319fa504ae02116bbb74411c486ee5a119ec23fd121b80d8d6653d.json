@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief breakfast chat with Stevie at Stern; both feel fine and are masking and careful. Nothing changes, I'm heading home to study.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

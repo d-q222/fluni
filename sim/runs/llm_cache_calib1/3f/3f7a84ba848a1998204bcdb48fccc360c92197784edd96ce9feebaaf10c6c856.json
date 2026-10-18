@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! You heading to the party later too? Eden said there were fevers in Stern, you feeling okay?",
+  "shared_health": false
+ }
+}

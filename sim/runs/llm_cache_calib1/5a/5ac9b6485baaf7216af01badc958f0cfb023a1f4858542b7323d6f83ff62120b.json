@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, it came back negative, I feel totally fine. Thanks for asking! Seems like a few people in our dorm are sick though, so I'm keeping some distance. How are you feeling?",
+  "shared_health": true
+ }
+}

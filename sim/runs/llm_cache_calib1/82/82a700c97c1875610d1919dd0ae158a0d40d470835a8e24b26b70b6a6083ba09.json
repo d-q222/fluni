@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Didn't expect to run into you here. You eating dinner too?",
+  "shared_health": false
+ }
+}

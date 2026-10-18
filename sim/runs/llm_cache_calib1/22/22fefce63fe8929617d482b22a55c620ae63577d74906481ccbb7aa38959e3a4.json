@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:10",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "relax",
+    "end": "11:40",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:45"
+   },
+   {
+    "activity": "event",
+    "end": "15:45",
+    "place": "event:EV00113",
+    "start": "13:05"
+   },
+   {
+    "activity": "gym",
+    "end": "17:35",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:40",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:10"
+   },
+   {
+    "activity": "gym",
+    "end": "20:05",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Dakota and Chris are sick, I feel fine. Doing study, the game, gym and Stern dinner, skipping the Acacia party and staying in tonight. Somewhat more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Dakota and Chris! I feel fine, skipping the Acacia party tonight. Keeping an eye on symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota and Chris are sick, and I feel fine. I was around Dakota possibly, so I'm a bit more worried, but I'm not changing my whole day. I'll keep study, the football game, gym and dinner. The Acacia party is a stretch with this many sick people, and I already decided to skip it. I'll hang at home instead and maybe mask in the crowd at the game, though I rarely do.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

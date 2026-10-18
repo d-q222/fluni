@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Carter at Lakeside; we both feel fine, are masking and staying careful. Carter may take Onyx's spare mask, and we agreed to a quick Taper stop then bail from the lounge if people are coughing a lot.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

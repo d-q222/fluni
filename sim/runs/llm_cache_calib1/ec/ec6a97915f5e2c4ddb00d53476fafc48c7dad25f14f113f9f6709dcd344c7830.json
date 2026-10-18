@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, figured I'd mask up since it's packed. Smart to bail early if it's too much. I'll probably stay a little while and then head home.",
+  "shared_health": false
+ }
+}

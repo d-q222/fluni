@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Maybe, but I've got class at 11:30 so probably not. Thanks though. Catch you later.",
+  "shared_health": false
+ }
+}

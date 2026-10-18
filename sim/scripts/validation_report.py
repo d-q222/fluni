@@ -183,6 +183,10 @@ def report(cal, published, fitted, sources):
                          f"| NO FIT | {cite} |")
             continue
         matched.add(key)
+        if p["rate"] is None:  # published finding is not a rate (effect size / direction): list, don't compare
+            lines.append(f"| {p.get('id', '')} | {p['behavior']} | {ctx or '(all)'} | {_fmt(f['rate'])} ({_fmt(f['lo'])}–{_fmt(f['hi'])}) "
+                         f"| {f['n']} | {pub} | – | {tol:.2f} | not a rate | {cite} |")
+            continue
         gap = f["rate"] - float(p["rate"])
         ok = abs(gap) <= tol
         flagged += not ok

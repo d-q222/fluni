@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Heads up, I was around Dakota on Friday and they tested positive. I feel fine, but I'm staying masked and low-key tonight. How are you doing?",
+  "shared_health": true
+ }
+}

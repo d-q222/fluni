@@ -1,0 +1,54 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:10",
+    "place": "class:MATH51_LEC04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:20"
+   },
+   {
+    "activity": "class",
+    "end": "19:15",
+    "place": "class:ASNAMST4B_SEM01",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:10",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:10"
+   }
+  ],
+  "diary": "Wed Jan 7: Stern was crowded so I ate quickly masked up. Still feel fine but anxious about Wesley's exposure; sticking to class and library, then home.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 48 people and Wesley is a close contact, so I'm anxious. I'll finish eating quickly with my mask on when not chewing, then go to MATH 51 and keep my routine. I feel fine, so no need to cancel anything. I'll skip the second dinner at crowded Stern and maybe eat a bit earlier or later, then go home to rest.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

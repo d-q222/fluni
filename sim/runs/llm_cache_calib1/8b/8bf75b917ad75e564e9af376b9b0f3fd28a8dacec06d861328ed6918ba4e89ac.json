@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Mask on, huh? Is the dorm that bad right now, or are you just being careful?",
+  "shared_health": false
+ }
+}

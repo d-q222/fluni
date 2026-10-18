@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Good idea, near the door works. Let's go.",
+  "shared_health": false
+ }
+}

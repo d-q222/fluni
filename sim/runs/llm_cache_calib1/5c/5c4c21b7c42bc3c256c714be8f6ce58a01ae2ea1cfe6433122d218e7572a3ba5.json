@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh nice, yeah I'd take one, thanks. I've been meaning to sort that out since I heard some fever rumor in the dorm. I feel fine though, just trying to be careful.",
+  "shared_health": true
+ }
+}

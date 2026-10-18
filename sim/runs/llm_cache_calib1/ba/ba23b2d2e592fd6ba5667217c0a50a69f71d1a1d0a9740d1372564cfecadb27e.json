@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Practice is 3:30 for me, at least that's what my schedule says. Max mentioned lifting around 6 after class, maybe that's what they mixed up. Check the team chat though!",
+  "shared_health": false
+ }
+}

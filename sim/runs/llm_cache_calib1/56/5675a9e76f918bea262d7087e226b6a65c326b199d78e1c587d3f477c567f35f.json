@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter is fine but worried about Chris and Dakota; they plan to go to Green and maybe the dorm hangout. I'm still heading home, masking, and skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

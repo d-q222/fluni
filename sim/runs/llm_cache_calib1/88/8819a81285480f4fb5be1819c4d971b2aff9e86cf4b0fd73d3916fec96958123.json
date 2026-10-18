@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell. Heading to study, so I'll keep it quick. Hope you're doing okay with all the coughing going around the dorm.",
+  "shared_health": false
+ }
+}

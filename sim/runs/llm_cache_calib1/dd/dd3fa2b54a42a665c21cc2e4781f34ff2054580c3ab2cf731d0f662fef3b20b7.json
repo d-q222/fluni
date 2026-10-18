@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Onyx I'm going to the Arizona game tonight after the gym; Onyx will save seats near the group and we'll hang in the lounge after. Feeling fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same, feeling fine, just being careful. Anyway, enjoy dinner, good luck with lab later!",
+  "shared_health": true
+ }
+}

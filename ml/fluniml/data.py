@@ -45,6 +45,8 @@ class Run:
     b: np.ndarray           # (E,) int32
     ch: np.ndarray          # (E, 9) float32, minutes per channel in that hour
     config: dict            # the run's full config.json (disease params etc.)
+    mask: np.ndarray = None  # (N,) bool, optional: only these agents' labels are used/scored
+                             # (within-run agent splits); None = all agents
 
     @property
     def N(self):
@@ -52,38 +54,52 @@ class Run:
 
     @property
     def scored(self):
-        """Agents that count for metrics: everyone except the seeds."""
-        return ~self.seed
+        """Agents whose labels count: everyone except the seeds (and outside `mask`, if set)."""
+        return ~self.seed if self.mask is None else ~self.seed & self.mask
 
 
-def _day_edges(c: pd.DataFrame, idx, N):
+def _codes(col, table: dict):
+    """Dictionary-encoded Arrow column -> int64 ids via `table` (new values get new ids if the
+    table is growable, i.e. not the agent table). Null and "" -> -1."""
+    col = col.combine_chunks() if hasattr(col, "combine_chunks") else col
+    cats = col.dictionary.to_pylist()
+    look = np.empty(len(cats) + 1, np.int64)
+    for i, v in enumerate(cats):
+        if v is None or v == "":
+            look[i] = -1
+        elif v in table:
+            look[i] = table[v]
+        else:
+            look[i] = table.setdefault(v, len(table))
+    look[-1] = -1
+    idx = col.indices.to_numpy(zero_copy_only=False)
+    idx = np.where(col.indices.is_null().to_numpy(zero_copy_only=False), len(cats), idx)
+    return look[idx.astype(np.int64)]
+
+
+def _batch_edges(c: dict, N):
     """Hourly (key, channel minutes) for one batch of contact rows that holds whole steps."""
-    a = c.agent_a.map(idx).to_numpy(np.int64)
-    b = c.agent_b.map(idx).to_numpy(np.int64)
-    a, b = np.minimum(a, b), np.maximum(a, b)
-    tier = c.distance_tier.to_numpy(np.int64)
-    indoor = c.indoor.to_numpy(bool)
-    room = c.room_id.fillna("").to_numpy(str)
-    has_room = room != ""
-    chan = np.full(len(c), -1, np.int64)
+    a, b = np.minimum(c["a"], c["b"]), np.maximum(c["a"], c["b"])
+    tier, indoor, room, t = c["tier"], c["indoor"], c["room"], c["t"]
+    has_room = room >= 0
+    chan = np.full(len(t), -1, np.int64)
     close = tier <= 3
     chan[indoor & has_room & close] = tier[indoor & has_room & close] - 1
     chan[~indoor & close] = tier[~indoor & close] + 2
     chan[indoor & ~has_room & close] = 6
     chan[tier == 4] = 7
     assert (chan >= 0).all(), "unexpected contact row type"
-    t = c.t.to_numpy(np.int64)
     key = ((t // STEPS_PER_HOUR) * N + a) * N + b
     uk, inv = np.unique(key, return_inverse=True)
     ch = np.zeros((len(uk), len(CHANNELS)), np.float32)
     np.add.at(ch, (inv, chan), 5.0)
     # occupancy: distinct agents seen in a room at a step (rows with any room_id, as in the sim)
-    occ_df = pd.DataFrame({"t": np.concatenate([t, t]), "r": np.concatenate([room, room]),
-                           "g": np.concatenate([a, b])})
-    occ_df = occ_df[occ_df.r != ""].drop_duplicates()
-    occ = occ_df.groupby(["t", "r"]).size()
+    R = int(room.max()) + 2
+    tr = t[has_room] * R + room[has_room]
+    who = np.unique(np.concatenate([tr * N + a[has_room], tr * N + b[has_room]])) // N
+    occ_key, occ_n = np.unique(who, return_counts=True)
     in_room = indoor & has_room
-    n_occ = occ.reindex(pd.MultiIndex.from_arrays([t[in_room], room[in_room]])).to_numpy()
+    n_occ = occ_n[np.searchsorted(occ_key, t[in_room] * R + room[in_room])]
     np.add.at(ch[:, 8], inv[in_room], 5.0 / n_occ)
     return uk, ch
 
@@ -99,25 +115,40 @@ def _build(run_dir: Path):
     assert step_min == 5, "channels assume 5-minute steps"
 
     # Stream the contacts one row group at a time (the sim writes one per day), so a 7,000-agent
-    # run fits in memory. Rows of a batch's last step are held back and joined to the next batch,
-    # so a step is never split even if row groups don't line up with days.
+    # run fits in memory; string columns are read dictionary-encoded and turned into int ids.
+    # Rows of a batch's last step are held back and joined to the next batch, so a step is never
+    # split even if row groups don't line up with days.
     cols = ["t", "agent_a", "agent_b", "distance_tier", "room_id", "indoor"]
-    pf = pq.ParquetFile(run_dir / "contacts.parquet")
+    pf = pq.ParquetFile(run_dir / "contacts.parquet", read_dictionary=["agent_a", "agent_b", "room_id"])
+    rooms = {}
     keys, chs, carry = [], [], None
     for g in range(pf.num_row_groups):
-        c = pf.read_row_group(g, columns=cols).to_pandas()
+        tb = pf.read_row_group(g, columns=cols)
+        c = {"t": tb["t"].to_numpy().astype(np.int64),
+             "a": _codes(tb["agent_a"], idx), "b": _codes(tb["agent_b"], idx),
+             "tier": tb["distance_tier"].to_numpy().astype(np.int64),
+             "indoor": tb["indoor"].to_numpy(zero_copy_only=False).astype(bool),
+             "room": _codes(tb["room_id"], rooms)}
+        del tb
+        assert len(idx) == N and (c["a"] >= 0).all() and (c["b"] >= 0).all(), "unknown agent id"
         if carry is not None:
-            c = pd.concat([carry, c], ignore_index=True)
+            c = {k: np.concatenate([carry[k], v]) for k, v in c.items()}
         if g < pf.num_row_groups - 1:
-            last = c.t.to_numpy() == c.t.max()
-            carry, c = c[last], c[~last]
-        if len(c):
-            k, ch = _day_edges(c, idx, N)
+            last = c["t"] == c["t"].max()
+            carry = {k: v[last] for k, v in c.items()}
+            c = {k: v[~last] for k, v in c.items()}
+        if len(c["t"]):
+            k, ch = _batch_edges(c, N)
             keys.append(k)
             chs.append(ch)
-    uk, inv = np.unique(np.concatenate(keys), return_inverse=True)
-    ch = np.zeros((len(uk), len(CHANNELS)), np.float32)
-    np.add.at(ch, inv, np.concatenate(chs))     # an hour can span two batches
+        del c
+    disjoint = all(keys[i][-1] < keys[i + 1][0] for i in range(len(keys) - 1))
+    if disjoint:            # usual case: each batch covers its own hours, already sorted
+        uk, ch = np.concatenate(keys), np.concatenate(chs)
+    else:                   # an hour spans two batches: merge
+        uk, inv = np.unique(np.concatenate(keys), return_inverse=True)
+        ch = np.zeros((len(uk), len(CHANNELS)), np.float32)
+        np.add.at(ch, inv, np.concatenate(chs))
     del keys, chs
 
     inf = pd.read_csv(run_dir / "infections.csv")
@@ -193,4 +224,4 @@ def meta(run: Run) -> Run:
     e = np.zeros(0, np.int32)
     return Run(run.run_id, run.agent_ids, run.seed, run.label, run.t_inf, run.route, run.hours,
                e, e, e,
-               np.zeros((0, len(CHANNELS)), np.float32), run.config)
+               np.zeros((0, len(CHANNELS)), np.float32), run.config, run.mask)

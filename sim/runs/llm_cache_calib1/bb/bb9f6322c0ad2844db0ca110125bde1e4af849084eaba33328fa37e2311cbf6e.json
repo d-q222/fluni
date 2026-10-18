@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dylan, masked, said they tested negative and feel fine, and that Teagan and Dakota are sick in our dorm. I told them I feel fine and will keep masking and skip the lounge.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, you're a lifesaver! Window table sounds perfect, let's go.",
+  "shared_health": false
+ }
+}

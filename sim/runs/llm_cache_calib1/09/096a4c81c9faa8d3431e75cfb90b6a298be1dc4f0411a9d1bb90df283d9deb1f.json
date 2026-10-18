@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Perfect timing, I'm starving. How was your day so far?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "blocked_calls": 0,
+ "budget_usd": 25.0,
+ "by_model": {
+  "claude-sonnet-5-5": {
+   "cache_read": 1659761,
+   "cache_write": 1928094,
+   "calls": 2456,
+   "input": 4322019,
+   "output": 543511,
+   "usd": 19.2313
+  }
+ },
+ "calls": 2456,
+ "capped": false,
+ "error_calls": 0,
+ "spent_usd": 19.2313,
+ "tokens": {
+  "cache_read": 1659761,
+  "cache_write": 1928094,
+  "input": 4322019,
+  "output": 543511
+ },
+ "unknown_models_priced_as_most_expensive": []
+}

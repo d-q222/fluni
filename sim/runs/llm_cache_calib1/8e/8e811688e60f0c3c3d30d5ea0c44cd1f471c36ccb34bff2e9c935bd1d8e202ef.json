@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'll be there! Walking over together sounds good, let's meet at the dorm around 8:30. I'll text you if practice runs late.",
+  "shared_health": false
+ }
+}

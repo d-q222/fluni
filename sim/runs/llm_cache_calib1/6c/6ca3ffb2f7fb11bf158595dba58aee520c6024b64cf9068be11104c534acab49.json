@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Max that Skyler tested negative; Max is going to the dorm hangout tonight after practice and dinner, and I said I'd go too and maybe mask if it's packed. Nothing changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:45",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "08:50"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:PHYSICS266_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "lab",
+    "end": "12:35",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "plan:bld_m_green_library_f4_407",
+    "start": "13:35"
+   },
+   {
+    "activity": "lab",
+    "end": "18:20",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "15:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:20",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "21:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thursday: kept to class, lab and study, masked and distanced from Scout. Skipped the party since I'm still anxious about illness; watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, still anxious about Scout being a close contact. I'll stick to my routine, masked indoors and keeping distance. A crowded party late at night doesn't fit my worry level, so I'll skip it and relax at home after lab, then sleep earlier.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

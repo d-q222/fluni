@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli! I've got lab first, then Green later tonight. Heads up, a couple people in our dorm got exposure notices, so I'm keeping my mask on and watching for symptoms. Stay safe!",
+  "shared_health": false
+ }
+}

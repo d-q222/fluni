@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! Yeah, I'm heading to the game at 7 after a quick study stop at Green. You going? We could walk over together.",
+  "shared_health": false
+ }
+}

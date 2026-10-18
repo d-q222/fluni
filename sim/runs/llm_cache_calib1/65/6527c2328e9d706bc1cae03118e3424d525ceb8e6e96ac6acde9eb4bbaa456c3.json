@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Finley feels fine but is anxious because Wesley said they're a close contact. I asked them to keep the mask on at home and to tell me if Wesley tests positive; we'll keep checking in with each other. I'll stay watchful.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

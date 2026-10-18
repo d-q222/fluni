@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the invite, but I'm skipping it, I've got lab tonight and I'm trying to avoid big crowds right now. Have fun though!",
+  "shared_health": false
+ }
+}

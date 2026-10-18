@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, we lifted yesterday! Practice is later, I think 3:30, but I still gotta check the team chat. Max thinks it's around 6 though, so who knows. You know the time?",
+  "shared_health": false
+ }
+}

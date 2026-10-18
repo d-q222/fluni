@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "10:30"
+   },
+   {
+    "activity": "lab",
+    "end": "13:15",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "11:25"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "13:25"
+   },
+   {
+    "activity": "lab",
+    "end": "16:40",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "14:10"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "20:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "20:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Still feel fine but worried with Sidney and Bailey sick. Doing lab and problem sets, studying in my room, keeping distance and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks, Ari. Feel better, Sidney and Bailey. I'm fine so far, keeping my distance. Text if you need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I feel fine, but Sidney and Bailey are still sick, so I'm staying careful. Sunday lab and problem sets still need doing, so I'll keep the usual routine but skip the crowded lounge time in favor of studying in my room. I'll eat at Wilbur at off-peak times, keep my distance from people, and watch for symptoms.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ocean (masked) said Skyler is still waiting on a flu test result and is keeping distance; they'll tell me when Skyler hears back. I feel fine, will see Ocean at practice at 3:15 and keep watching for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do, I'll text you as soon as I hear back. Thanks for understanding! I'll catch you later at the dorm.",
+  "shared_health": false
+ }
+}

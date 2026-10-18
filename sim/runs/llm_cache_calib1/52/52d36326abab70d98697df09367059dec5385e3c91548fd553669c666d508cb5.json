@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:50",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_232715666",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "14:15",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:25",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_232715666",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "21:20",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:35",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "21:25"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Teagan tested positive. I feel fine, will mask, avoid the game and crowds, do lab and study, and sleep a bit earlier.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Feel better! I feel fine right now, masking, skipping the game and crowds. Will text if I get symptoms. Check FlUni, everyone.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan's positive for flu. I feel fine and my last test was negative, but I've been around friends who were near Teagan. I'll keep masking, skip the game and crowded Stern, and keep to my routine: lab, study, dining at Ricker at off-peak times. I'll reply to the group so they know I'm fine and watching symptoms. Honest about it if anything changes.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

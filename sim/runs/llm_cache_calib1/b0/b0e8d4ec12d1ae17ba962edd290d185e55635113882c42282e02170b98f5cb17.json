@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Carter and Onyx are saving me an aisle seat around 7. You should come, it'll be packed and loud.",
+  "shared_health": false
+ }
+}

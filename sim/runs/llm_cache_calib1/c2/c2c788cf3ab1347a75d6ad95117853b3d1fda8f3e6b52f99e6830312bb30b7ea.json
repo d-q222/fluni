@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey. Lot of coughing in the dorm lately, huh? I'm fine, just keeping my distance. Heading to dinner and lab later.",
+  "shared_health": true
+ }
+}

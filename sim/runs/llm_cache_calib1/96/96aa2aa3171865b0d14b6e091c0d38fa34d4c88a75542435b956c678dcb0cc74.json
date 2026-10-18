@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, that's good to know. I feel fine too, but I'll keep the mask on indoors and keep my distance. Hope your lab goes okay tonight!",
+  "shared_health": true
+ }
+}

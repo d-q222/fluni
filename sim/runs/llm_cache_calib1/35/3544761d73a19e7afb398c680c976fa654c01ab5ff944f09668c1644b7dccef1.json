@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Onyx at Lakeside; they feel fine but are a bit wary of the illness going around. They have a study group at Green until ~9 and may text me about Taper afterward.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

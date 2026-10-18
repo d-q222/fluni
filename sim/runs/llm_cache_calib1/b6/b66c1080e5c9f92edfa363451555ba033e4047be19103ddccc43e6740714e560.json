@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Chris at Lakeside; they're masked, feel fine, and are in for Taper then the lounge at 8:45. We agreed to leave the lounge if lots of people start coughing.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Wesley. I feel fine, no symptoms so far, just anxious. Glad you're keeping your distance, I'll do the same. Text me if anything feels off.",
+  "shared_health": true
+ }
+}

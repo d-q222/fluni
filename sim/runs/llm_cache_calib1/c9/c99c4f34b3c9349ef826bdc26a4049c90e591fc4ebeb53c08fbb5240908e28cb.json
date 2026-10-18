@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:20",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:35"
+   },
+   {
+    "activity": "study",
+    "end": "22:15",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:15"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Ate quickly masked in crowded Stern, then planned to study, attend CHEM141 masked, skip the game and gym, and keep watching for symptoms after the Wesley contact.",
+  "messages": [],
+  "thoughts": "Stern is crowded with 48 people and I'm a close contact, so I'll eat fast with a mask and leave. Then study at home, go to CHEM141 masked since I care about grades, and avoid the game and gym. Dinner is crowded too, so I'll eat early or briefly. Then study at Green in the reading room masked, and come home to sleep.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

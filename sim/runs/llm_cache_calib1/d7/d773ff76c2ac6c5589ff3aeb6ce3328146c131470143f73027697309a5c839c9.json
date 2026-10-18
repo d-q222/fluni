@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "No rush, take your time. There's plenty of space if it turns out we both can stay, I don't mind sharing the table.",
+  "shared_health": false
+ }
+}

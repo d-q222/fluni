@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "12:15",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "12:05"
+   },
+   {
+    "activity": "health_visit",
+    "end": "13:10",
+    "place": "bld:bld_26250731",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:05",
+    "place": "home",
+    "start": "13:15"
+   },
+   {
+    "activity": "relax",
+    "end": "19:30",
+    "place": "home",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "20:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:35"
+   },
+   {
+    "activity": "study",
+    "end": "00:05",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:10",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:10"
+   }
+  ],
+  "diary": "FlUni told me to get tested at Vaden after Teagan's positive result. I feel fine but worried, so I'm masking, getting tested, skipping the game, and studying at home, and I'll watch for symptoms.",
+  "messages": [],
+  "thoughts": "FlUni says get tested and Teagan, my dormmate, tested positive. I feel fine but I'm worried and honest, so I'll go to Vaden to get tested, then head home and mostly stay away from others. I'll skip the game and crowds, mask up, and avoid sitting in shared spaces. Studying alone at home is safer than Green until I know my result.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

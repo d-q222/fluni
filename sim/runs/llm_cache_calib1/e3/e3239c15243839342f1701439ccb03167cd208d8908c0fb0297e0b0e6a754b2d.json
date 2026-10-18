@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:00"
+   }
+  ],
+  "diary": "Wallace texted that they're sick with fever and cough. I feel fine but am more wary since they're a close contact. Went to sleep and will monitor symptoms tomorrow.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Wallace. Sorry you feel awful. Rest up and let us know if you need anything. I'll watch for symptoms.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "Wallace is sick and I was a close contact. It's midnight, so I'll just sleep at home. I feel fine, a bit more wary now. I'll send a short reply to Wallace wishing them well and will watch for symptoms in the morning.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

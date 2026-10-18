@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Aspen! Yeah, just popping in for a bit with my mask on too, then straight to bed. Good to know about the fever rumors, thanks. I'll keep my distance and stay careful.",
+  "shared_health": false
+ }
+}

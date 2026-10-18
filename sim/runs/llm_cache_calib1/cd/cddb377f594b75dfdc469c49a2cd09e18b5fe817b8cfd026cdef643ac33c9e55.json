@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm doing fine, just long lab days. I get the anxious part, I've been a bit wary too. Heard Scout might be a close contact of someone sick, so I'm keeping an eye on things. Anyway, I'm gonna finish eating and head home to study.",
+  "shared_health": true
+ }
+}

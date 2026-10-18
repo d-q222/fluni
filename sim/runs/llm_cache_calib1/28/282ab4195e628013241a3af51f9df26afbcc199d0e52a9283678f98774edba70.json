@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks! Good luck with practice, stay healthy. I'm heading out soon, see you around the dorm!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden is wearing a mask and skipping Taper tonight to stay in, being careful about the illness going around. I'm feeling fine and still going to Taper at 20:30 with Wynn.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

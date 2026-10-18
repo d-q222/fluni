@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Yeah, practice at 3:15. Thanks for the heads up, that's good to know. I feel fine, just keeping an eye out. Let me know when Skyler hears back?",
+  "shared_health": true
+ }
+}

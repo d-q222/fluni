@@ -1,0 +1,57 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:45",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:15",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "Sat Jan 10: Skipping the Cal game and staying in my room, with masked quick meals at Stern. Feeling fine but still worried about Mika and the dorm.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the invite! I'm gonna skip the game, too many people for me right now. Have fun though!",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Campbell's game invite is tempting since it's outdoors, but a big crowd while the dorm is dealing with illness and Mika has a stay-home notice is not what I want. I'll decline by staying in my room, keep meals quick and masked at Stern, and text Campbell a friendly no.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

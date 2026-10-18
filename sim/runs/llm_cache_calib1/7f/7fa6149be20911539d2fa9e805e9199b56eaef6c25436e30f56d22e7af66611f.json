@@ -1,0 +1,69 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "13:20",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:MATH20_LEC04",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "18:50",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Woke up with fever, chills, cough and aches. Told the group I'm sick and skipped dinner and hangout plans; masked for MATH class, then resting at home. Worried I got it from Stern.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Hey all, I woke up with fever, chills, cough and a sore throat. I'm skipping Lakeside, Taper and the lounge tonight so I don't spread it. Eden's warning was right, stay careful!",
+    "time": "",
+    "to": "group"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry Carter, can't make it to Lakeside, I'm sick and staying in. Have fun with Onyx!",
+    "time": "",
+    "to": "A0061"
+   }
+  ],
+  "thoughts": "I woke up with fever, chills, cough, sore throat and body aches, and Eden's warning about Stern fevers makes this feel real. I'm fairly honest and usually follow health advice, but I'm social and tend to push through. Still, I shouldn't pack the lounge with people while sick. I'll sleep in, skip the gym, go to MATH lecture masked, then rest. I'll bail on the evening hangouts, tell the group I'm sick, and maybe have a quick dinner at Stern Dining, then rest at home.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

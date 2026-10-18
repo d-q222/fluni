@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! Just being careful, I feel fine. There's a lot of stuff going around so I'm keeping the mask on indoors. You doing okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_232715666",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:10",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:10"
+   }
+  ],
+  "diary": "Stern was crowded so I ate fast and masked up. Skipping the game, studying at Green, and checking in on Val, who has the flu. I feel fine but stay worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope you feel better soon, Val. Let me know if you want food left outside your door.",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Stern Dining is crowded with 41 people and Val just tested positive for flu. I feel fine but I'm worried. I'll finish eating quickly with my mask on afterward, skip the football game, and head to Green to study in the reading room. Later I'll get dinner at Ricker and keep to my routine, then go home to relax and sleep. I'll text Val to check in.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

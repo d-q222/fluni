@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon, I'm heading to class soon. Still feeling fine, you? Let me know if anything feels off, okay?",
+  "shared_health": true
+ }
+}

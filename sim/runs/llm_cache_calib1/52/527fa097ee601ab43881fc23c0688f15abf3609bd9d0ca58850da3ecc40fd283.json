@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good! My plan has me at Wilbur for dinner, but let's meet outside the dorm around 5:30 and head to Maples together after. See you then!",
+  "shared_health": false
+ }
+}

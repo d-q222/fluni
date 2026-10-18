@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "05:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:25",
+    "place": "home",
+    "start": "05:50"
+   },
+   {
+    "activity": "gym",
+    "end": "08:05",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "06:30"
+   },
+   {
+    "activity": "eat",
+    "end": "08:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:35",
+    "place": "bld:bld_m_meyer_green",
+    "start": "08:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "10:20",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "09:40"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:25"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:ECON107_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "relax",
+    "end": "14:45",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "14:45"
+   },
+   {
+    "activity": "practice",
+    "end": "17:25",
+    "place": "plan:bld_232805658_f1_101",
+    "start": "15:35"
+   },
+   {
+    "activity": "class",
+    "end": "19:15",
+    "place": "class:TIGRYLNG2_LNG01",
+    "start": "17:30"
+   },
+   {
+    "activity": "gym",
+    "end": "22:25",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:05",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:05"
+   }
+  ],
+  "diary": "Normal Thursday: lift, class, practice, evening gym. Feeling fine, masking indoors since a fever rumor is going around the dorms.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine. There's a rumor of a fever in a dorm and Stevie's friend got a FlUni alert, so I'll keep masking indoors and wash my hands. No need to skip anything.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

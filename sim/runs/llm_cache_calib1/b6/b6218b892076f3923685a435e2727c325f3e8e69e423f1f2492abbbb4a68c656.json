@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Winter at Taper; both feel fine. Winter heard from Skyler that Hadley and Sidney looked sick at Vaden (Sidney had fever and cough). Agreed to keep distance from anyone coughing at the party.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

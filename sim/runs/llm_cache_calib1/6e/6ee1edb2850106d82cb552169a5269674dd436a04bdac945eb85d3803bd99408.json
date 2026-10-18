@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same, I feel fine. Skyler tested negative for flu, so that's a relief, but I heard Hadley and Sidney look rough. Good call on the mask. I'm heading to study, see you around!",
+  "shared_health": true
+ }
+}

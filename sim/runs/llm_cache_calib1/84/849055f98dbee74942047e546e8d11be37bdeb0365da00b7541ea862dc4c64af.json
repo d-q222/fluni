@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "10:30",
+    "place": "class:HUMBIO3A_LEC01",
+    "start": "10:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:PSYCH1_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:05"
+   },
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "13:35"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "plan:bld_m_green_library_f3_301",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:10",
+    "place": "plan:bld_m_green_library_f3_306",
+    "start": "17:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "21:55",
+    "place": "plan:bld_m_green_library_f3_306",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:25",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:25"
+   }
+  ],
+  "diary": "Sawyer got a FlUni test notice and is getting tested; they feel fine. I'm keeping my usual schedule, masking indoors, and avoiding a shared table with Sawyer tonight until results are in.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Sawyer, and for getting tested. Let me know the result. I'll skip sharing a table tonight just to be safe, hope it's nothing!",
+    "time": "",
+    "to": "A0050"
+   }
+  ],
+  "thoughts": "Sawyer is getting tested and feels fine, and we have been studying together. I'm fine and always careful, so I'll keep my routine, keep my mask on indoors, and thank Sawyer for the heads-up. I'll skip sharing a table tonight until Sawyer's result is back, and study on a different floor.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

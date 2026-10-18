@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel totally fine, no symptoms. Kinda sketchy about Sidney and Hadley though. Let's keep an eye out tonight, and if anyone's coughing at the party maybe we keep our distance. See you there!",
+  "shared_health": true
+ }
+}

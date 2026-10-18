@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:30",
+    "place": "home",
+    "start": "06:10"
+   },
+   {
+    "activity": "gym",
+    "end": "07:45",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "06:50"
+   },
+   {
+    "activity": "eat",
+    "end": "08:40",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:20",
+    "place": "bld:bld_232805662",
+    "start": "08:50"
+   },
+   {
+    "activity": "gym",
+    "end": "11:20",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "10:35"
+   },
+   {
+    "activity": "eat",
+    "end": "12:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "relax",
+    "end": "13:50",
+    "place": "home",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "15:15",
+    "place": "plan:bld_m_green_library_f2_205",
+    "start": "13:55"
+   },
+   {
+    "activity": "practice",
+    "end": "17:50",
+    "place": "plan:bld_18564360_f1_101",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "20:30",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:10",
+    "place": "event:EV00100",
+    "start": "20:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:10",
+    "place": "home",
+    "start": "23:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Fri Jan 9: Usual routine of lifting, practice and the dorm hangout tonight. Feeling fine, keeping the spare mask handy and washing hands.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual Friday routine of lifting, class, practice and the dorm hangout tonight. Still a bit wary after the fever rumor, so I'll keep the spare mask in my bag and wash my hands, but I won't wear it indoors much. I'll skip the CS 111 lecture overlap with lunch the way I normally would and just eat at Stern.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

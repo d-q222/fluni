@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm feeling fine too, just a little wary. People in the dorm keep mentioning illness going around, though I haven't heard of any confirmed cases. Good that your test was negative. I'm heading to Green to study, you?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:25",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "14:30",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "14:40"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:45",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:45"
+   }
+  ],
+  "diary": "Teagan is confirmed positive. I feel fine but may be exposed, so I'm masking, skipping the game and crowds, and sticking to meals, lab and my room. Watching for symptoms; fairly worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Teagan. Feel better. I feel fine so far, staying masked and keeping to lab, meals and my room. Will say if symptoms show.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan's positive and I may be exposed, but I feel fine. I'll stay disciplined: keep to routine, mask when out, skip the football game and crowds. Lab is short and I can mask there. I'll take meals at Stern while masked, or at off-peak times, and watch for symptoms. I'll reply briefly to the group.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

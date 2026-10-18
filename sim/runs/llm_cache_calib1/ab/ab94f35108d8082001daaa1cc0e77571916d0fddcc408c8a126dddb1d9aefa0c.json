@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:10",
+    "place": "home",
+    "start": "08:00"
+   },
+   {
+    "activity": "gym",
+    "end": "09:20",
+    "place": "bld:bld_232715642",
+    "start": "08:15"
+   },
+   {
+    "activity": "relax",
+    "end": "10:55",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "09:25"
+   },
+   {
+    "activity": "study",
+    "end": "11:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "10:55"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "13:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "13:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:EARTHSYS177M_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "gym",
+    "end": "17:15",
+    "place": "bld:bld_232715642",
+    "start": "16:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:15",
+    "place": "bld:bld_m_the_oval",
+    "start": "17:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "21:45"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "23:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Tuesday: gym, Taper, class, dinner at Stern then study group and hanging out. Feeling fine, only slightly worried about illness going around.",
+  "messages": [],
+  "thoughts": "Tuesday. I feel fine, so I'll mostly follow my usual routine. Sleep in, gym, hang at Taper, class, dinner at Stern with friends before study group. I'm a bit worried about illness going around but I'm not masking up.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

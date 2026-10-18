@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden! I feel fine, just really paranoid. Chris tested positive and Dakota's sick after we hung out Friday, so I'm skipping the party and staying low-key. Maybe keep a bit of distance in case, and you should watch for symptoms too.",
+  "shared_health": true
+ }
+}

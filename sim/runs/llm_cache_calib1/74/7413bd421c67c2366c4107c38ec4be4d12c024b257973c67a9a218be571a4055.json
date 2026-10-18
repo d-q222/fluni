@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, yeah, whatever, I feel fine too. Sure, meet at the dorm around 8:15 and we'll bike over. Don't be late!",
+  "shared_health": true
+ }
+}

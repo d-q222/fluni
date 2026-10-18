@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Yeah, masking indoors and keeping my distance, I'm feeling fine though. How about you, doing okay?",
+  "shared_health": true
+ }
+}

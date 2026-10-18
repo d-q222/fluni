@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, enjoy the fresh air! I've got a study group in the dorm lounge at 7:50, then studying in my room. Stern's definitely a lot at peak hours, so I'm trying to eat quick. See you around!",
+  "shared_health": false
+ }
+}

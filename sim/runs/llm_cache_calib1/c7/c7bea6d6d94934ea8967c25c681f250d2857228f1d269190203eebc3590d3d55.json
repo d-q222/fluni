@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dylan. Heads up, Teagan has a fever and is getting tested, and I was near them at Stern yesterday. I feel fine, but I'm keeping my mask on and skipping the hangout tonight. You might want to watch out too.",
+  "shared_health": true
+ }
+}

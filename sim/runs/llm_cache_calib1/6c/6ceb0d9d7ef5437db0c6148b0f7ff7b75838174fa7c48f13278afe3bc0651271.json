@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi, how's it going? Saw you're masked up, everything okay?",
+  "shared_health": false
+ }
+}

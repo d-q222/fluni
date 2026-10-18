@@ -3,7 +3,7 @@
 // warm sun -> fire fills, a halo with a pixel floor so a small hot building registers zoomed out, tap a
 // building for "about X sick of Y people" (no count badges: users see only the shading). The presenter adds
 // building names. It takes only per-building totals, never agent positions, so nothing finer than a building can be drawn.
-import { buildingStyle, HIDDEN, haloRadius, GLOW, HALO_BLUR, fmt } from './userstyle.js';
+import { buildingStyle, HIDDEN, haloRadius, GLOW, HALO_BLUR, fmt, heatColor, darker } from './userstyle.js';
 import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
 const TAP = { stroke: false, fill: true, fillColor: '#000', fillOpacity: 0 };
@@ -49,6 +49,7 @@ export class BuildingTotalsLayer {
     this.map = map;
     this.group.addTo(map);
     this.haloGroup.addTo(map);
+    map.getPane('ub-fill').style.pointerEvents = '';
     this.added = true;
     if (this.last) this.update(...this.last);
     return this;
@@ -59,6 +60,9 @@ export class BuildingTotalsLayer {
     this.haloGroup?.remove();
     this.labels?.setItems([]);
     this.map?.closePopup(this.pop);
+    // Leaflet keeps the pane's canvas after its layers go: without this it sits above the people (z 430) and eats
+    // their clicks once "What users see" has been opened and closed.
+    if (this.map) this.map.getPane('ub-fill').style.pointerEvents = 'none';
     this.map = null;
     this.added = false;
     this._labelsBuilt = false;
@@ -122,4 +126,58 @@ export class BuildingTotalsLayer {
     this.openId = id;
     this.pop.setLatLng(latlng).setContent(this._html(id)).openOn(this.map);
   }
+}
+
+// The presenter's default view: each building shaded by the expected number of infected people inside it right now,
+// Σ P(infected) over everyone there (the same P the dots show). Darkness is linear in that sum, on a fixed scale
+// (vmax, from the whole run), along the campfire ramp (HEAT_STOPS): 0 is clear, vmax and above the darkest.
+// Empty buildings are left plain. Not interactive: app.js's buildingAt() does hover and click.
+export class BuildingShadeLayer {
+  constructor(geojson) {
+    this.features = geojson ? geojson.features : [];
+    this.items = new Map(); // buildingId -> { layer, key }
+    this.map = null;
+  }
+
+  addTo(map) {
+    if (!this.group) {
+      const p = map.getPane('bshade') || map.createPane('bshade');
+      p.style.zIndex = 395; // over the base map's buildings, under the people (overlayPane, 400)
+      p.style.pointerEvents = 'none';
+      const opt = { pane: 'bshade', renderer: L.canvas({ pane: 'bshade', padding: 0.2 }), interactive: false, style: () => HIDDEN };
+      this.group = L.layerGroup();
+      for (const f of this.features) {
+        const layer = L.geoJSON(f, opt);
+        this.items.set('bld_' + String(f.properties.id).split('/')[1], { layer, key: '' });
+        this.group.addLayer(layer);
+      }
+    }
+    this.map = map;
+    this.group.addTo(map);
+    return this;
+  }
+
+  remove() {
+    this.group?.remove();
+    this.map = null;
+  }
+
+  // sums: Map buildingId -> expected infected there now (buildings missing from it are empty); vmax: full darkness.
+  update(sums, vmax) {
+    if (!this.map) return;
+    for (const [id, it] of this.items) {
+      const e = sums.get(id);
+      // in 1/128 steps: each restyle repaints the canvas, so tiny changes don't each cost one
+      const q = e === undefined ? -1 : Math.round(128 * Math.min(1, e / vmax));
+      if (q === it.key) continue;
+      it.key = q;
+      it.layer.setStyle(q < 0 ? HIDDEN : shadeStyle(q / 128));
+    }
+  }
+}
+
+// x in 0..1 (expected infected / vmax) -> Leaflet style: the HEAT_STOPS colour and alpha at x, darker as x grows.
+export function shadeStyle(x) {
+  const { color, alpha } = heatColor(x);
+  return { stroke: x > 0.02, weight: 0.8, color: darker(color), opacity: Math.min(0.7, alpha), fill: true, fillColor: color, fillOpacity: alpha };
 }

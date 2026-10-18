@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "gym",
+    "end": "13:55",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "13:40"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "bld:bld_m_green_library",
+    "start": "14:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "plan:bld_m_green_library_f4_401",
+    "start": "15:35"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "event:EV00161",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: heard Dakota and Chris in the dorm tested positive. I feel fine, keeping routine but masking and keeping the dorm hangout short.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, I feel fine. Masking in crowds too. Will keep the hangout short.",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "Positive cases in my dorm, but I feel fine. I'll keep my routine, finish the lift, study at Green, and eat at Stern. I'll skip the crowded dorm hangout or keep it short with a mask, since cases are in the dorm. Mostly keep to myself tonight and rest.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

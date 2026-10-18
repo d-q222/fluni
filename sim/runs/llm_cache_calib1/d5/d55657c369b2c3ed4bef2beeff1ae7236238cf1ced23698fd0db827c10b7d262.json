@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan, morning. Still on for Green around 11 tonight? I'll text you when I'm out of lab.",
+  "shared_health": false
+ }
+}

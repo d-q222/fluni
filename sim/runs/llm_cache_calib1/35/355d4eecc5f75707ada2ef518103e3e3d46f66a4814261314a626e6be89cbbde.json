@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:10",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:40",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "plan:bld_m_green_library_f3_311",
+    "start": "11:45"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:40",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:10",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "gym",
+    "end": "17:15",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:55",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:25",
+    "place": "bld:bld_232841950",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "event:EV00099",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick and Dell's roommate is coughing. I feel fine, so I'm doing class, gym, dinner and Taper, then a shorter dorm hangout and early sleep.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Chris. Feel better, rest up and get checked at Vaden!",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "thoughts": "Chris is sick and Oli in Dell's place is coughing, plus Stern has fevers. I feel fine and rarely worry, but I'll be a bit more careful. Keep classes and gym, skip the crowded lounge hangout stretch, still do Taper briefly, and show up at the dorm hangout for less time. Reply to Chris to wish them well.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

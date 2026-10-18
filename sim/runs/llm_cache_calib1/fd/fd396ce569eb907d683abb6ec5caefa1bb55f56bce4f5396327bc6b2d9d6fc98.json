@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Nah, I'm staying in to study till lunch. Hey, you're already masked up, everything okay or just being careful?",
+  "shared_health": false
+ }
+}

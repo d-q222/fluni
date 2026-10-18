@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oli (masked, seems fine) about the dorm exposure notices; they're masking too. Nothing changes: lab, then Green, mask on, watching for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

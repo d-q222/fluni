@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Harper at Taper; they're wearing a mask but say they feel fine, skipping the Arizona game for lab and to avoid crowds. I feel fine and my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

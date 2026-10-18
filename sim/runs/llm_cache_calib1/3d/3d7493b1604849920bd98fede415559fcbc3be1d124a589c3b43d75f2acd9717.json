@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika, morning. Glad you're masked too. How are you feeling? Heard a few people in the dorm might be sick.",
+  "shared_health": false
+ }
+}

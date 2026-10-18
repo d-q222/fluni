@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:40",
+    "place": "bld:bld_333374283",
+    "start": "08:10"
+   },
+   {
+    "activity": "lab",
+    "end": "10:20",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:MATH273A_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "lab",
+    "end": "16:10",
+    "place": "class:BIOE123_LBS03",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:15",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "17:30"
+   },
+   {
+    "activity": "lab",
+    "end": "23:20",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "23:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Tuesday Jan 6: stuck to the usual lab, class and study grind. Feeling fine, still a little wary about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Tuesday. I feel fine, so I'll stick with my routine: lab, class, study, and the long evening lab session. Mask isn't necessary indoors. A bit wary of illness but nothing to act on yet.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

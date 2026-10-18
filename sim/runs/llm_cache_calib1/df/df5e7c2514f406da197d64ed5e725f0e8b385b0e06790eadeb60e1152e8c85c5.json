@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Perfect, same plan here. I feel fine too, and I've got masks if you need one. See you at Taper!",
+  "shared_health": true
+ }
+}

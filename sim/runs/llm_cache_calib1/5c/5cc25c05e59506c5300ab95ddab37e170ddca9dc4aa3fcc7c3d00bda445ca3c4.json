@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm doing fine, no symptoms. Just a little wary too. Smart move with the mask. I've got lab and library stuff all evening, so I'm heading out soon. See you around the dorm!",
+  "shared_health": true
+ }
+}

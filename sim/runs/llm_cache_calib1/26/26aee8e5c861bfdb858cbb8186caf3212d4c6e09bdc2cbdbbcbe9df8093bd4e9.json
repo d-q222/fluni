@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I feel fine too, no symptoms. I'll keep the mask on in here until we hear. Just text me the second you get the result, I told Neo I'd pass it along.",
+  "shared_health": true
+ }
+}

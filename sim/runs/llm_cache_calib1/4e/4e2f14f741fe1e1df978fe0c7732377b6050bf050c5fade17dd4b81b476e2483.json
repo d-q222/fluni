@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Scout at Stern Dining; both feel fine, anxious but masking and avoiding the lounge. We'll text each other if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

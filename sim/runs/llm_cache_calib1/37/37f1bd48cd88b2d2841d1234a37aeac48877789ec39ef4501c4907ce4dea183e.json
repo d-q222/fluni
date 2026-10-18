@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Yeah, just being careful, I feel fine though. So many people are coughing lately. You doing okay?",
+  "shared_health": true
+ }
+}

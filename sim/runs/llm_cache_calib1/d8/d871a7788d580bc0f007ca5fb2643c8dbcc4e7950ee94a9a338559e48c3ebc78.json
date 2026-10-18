@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Okay, thanks for telling me. Jesse's fever is worth taking seriously. I'll mask up in the room and keep my distance until the test comes back. Let me know the result?",
+  "shared_health": false
+ }
+}

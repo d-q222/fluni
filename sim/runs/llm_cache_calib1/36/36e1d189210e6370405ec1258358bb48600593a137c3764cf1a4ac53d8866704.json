@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "plan:bld_m_green_library_f4_408",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Dinner at Stern was crowded so I ate fast and left. Studied at Green Library, then a quiet night in my room. Feeling fine, a little wary.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 49 people, so I'll finish eating quickly and leave. I feel fine, so I'll stick to my routine: a quiet study session in the Green Library study room, then back to my room to relax and sleep. I'll wear a mask while in the crowded dining room.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

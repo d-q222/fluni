@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Val! Yeah, getting a head start on problem sets before class. You too?",
+  "shared_health": false
+ }
+}

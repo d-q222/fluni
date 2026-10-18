@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good! I'll probably join you guys after I knock out some reading. Save me a seat!",
+  "shared_health": false
+ }
+}

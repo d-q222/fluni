@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same, I feel totally fine, just cautious. Let's head over, and maybe we keep some distance inside and leave early like we said.",
+  "shared_health": true
+ }
+}

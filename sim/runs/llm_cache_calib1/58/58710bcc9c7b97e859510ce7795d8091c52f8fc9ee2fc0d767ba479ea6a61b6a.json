@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:25"
+   },
+   {
+    "activity": "lab",
+    "end": "10:25",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "09:20"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:EE108_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS194W_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS146_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:25",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "14:50"
+   },
+   {
+    "activity": "class",
+    "end": "18:15",
+    "place": "class:ECON102B_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "21:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "21:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Wednesday: kept to my usual routine of class, lab and study, masked indoors and keeping distance since Scout may be a close contact. Still anxious, watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, but I talked with Wesley on Monday and Wesley apparently warned Scout about being a close contact of someone sick. I'll keep my usual routine, wear a mask indoors, and watch for symptoms. Staying organized and skipping the basketball game to limit crowds.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

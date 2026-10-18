@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Smart, same here, I've got a mask from Onyx. I feel fine too. We're hitting Taper around 7:15 if you want to tag along, but sounds like you're keeping your distance. Text me when you're home safe!",
+  "shared_health": true
+ }
+}

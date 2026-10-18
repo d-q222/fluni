@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Marley (masked, feels fine) told me their friend Wallace is a FlUni close contact; I kept my mask on, kept some distance at the window table, and suggested they get tested if symptoms appear.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon. Yeah, I'm feeling fine, just staying careful. I've been masked and keeping my distance since Scout might be a close contact of someone sick. Have you noticed any symptoms?",
+  "shared_health": true
+ }
+}

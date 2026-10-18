@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Wynn at Taper; both feel fine. Wynn is wary of Sidney and Hadley, and we'll keep distance from anyone coughing at the party. Still going tonight as planned.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

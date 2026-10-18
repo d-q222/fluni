@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Ocean (friend, dorm) I'm waiting on my flu test but feel fine; they appreciated it and I promised to text them the result. Keeping some distance and masking in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh no, thanks for the heads up. I'm fine too, no symptoms, staying masked. I'll steer clear of the lounge in our dorm too. Text me if anything pings, okay?",
+  "shared_health": true
+ }
+}

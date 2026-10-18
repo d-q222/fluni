@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah, grabbing lunch real quick. Wait, I thought practice was at 4:20? I've got lifting then Green and CS182 first. Let me know if it moved though.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Jesse in the lobby before the hangout; they're masked and feel fine, and we both heard the fever rumors. We agreed to stay by the edge, leave early, and keep masks on.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Haven't seen you around the dorm much. How's your day going?",
+  "shared_health": false
+ }
+}

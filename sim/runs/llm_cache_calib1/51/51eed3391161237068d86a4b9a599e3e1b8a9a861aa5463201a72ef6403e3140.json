@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:ENGR14_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:20",
+    "place": "bld:bld_232841950",
+    "start": "15:20"
+   },
+   {
+    "activity": "lab",
+    "end": "18:40",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "23:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "00:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Fri Jan 9: Stern was crowded but I feel fine. Keeping my usual lab, class and study routine, a bit aware of the flu going around.",
+  "messages": [],
+  "thoughts": "Stern is crowded but I feel fine. Flu is going around, though I'm not very worried. I'll head to lab, then class, and keep my routine mostly the same.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Yeah, need caffeine before I start studying. You heading to class too?",
+  "shared_health": false
+ }
+}

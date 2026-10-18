@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Flo Mo round two, right? You still coming to Taper at 8?",
+  "shared_health": false
+ }
+}

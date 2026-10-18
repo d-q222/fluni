@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Neo at Stern breakfast; they're fine but wary too, keeping distance from anyone who sounds sick. I feel fine, no plans changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

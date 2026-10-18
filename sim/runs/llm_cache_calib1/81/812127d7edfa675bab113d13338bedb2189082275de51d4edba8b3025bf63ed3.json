@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Yeah, lounge in a bit and then the party later. You going? Heads up, people say Chris has a fever and Oli's coughing, so I'm gonna bail if it gets coughy in there.",
+  "shared_health": false
+ }
+}

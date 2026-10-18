@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Morgan told me they may have been exposed to Teagan on Wednesday, feels fine, is masking and skipping the dorm hangout. I said I'm fine, masking and skipping it too, and will share any news.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

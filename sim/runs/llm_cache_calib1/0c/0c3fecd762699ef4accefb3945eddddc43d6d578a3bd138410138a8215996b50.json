@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:10",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:55",
+    "place": "event:EV00073",
+    "start": "22:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "23:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Thursday: Stern was crowded so I ate fast and headed to lab. Masked indoors, keeping distance, feeling fine and a little worried. Hangout, Green, then bed.",
+  "messages": [],
+  "thoughts": "Stern is crowded with 44 people. I feel fine, but with the flu test news going around I'll finish eating quickly and head to lab as planned. Mask on indoors. I'll keep the dorm hangout but stay masked and keep distance, then Green, and text Morgan when I'm out of lab.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:05",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:10",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "11:35"
+   },
+   {
+    "activity": "gym",
+    "end": "13:40",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:45"
+   },
+   {
+    "activity": "class",
+    "end": "17:45",
+    "place": "class:SLE92_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:15",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "17:50"
+   },
+   {
+    "activity": "study",
+    "end": "23:25",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Regular tuesday: class, gym, long lab evening. Feeling fine, only slightly worried about illness going around.",
+  "messages": [],
+  "thoughts": "Feel fine, so a regular Tuesday. Stick to the usual routine: sleep, lunch, gym, study, class, long lab evening. Not very worried, no mask. Nothing to text about.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

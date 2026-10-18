@@ -1,0 +1,114 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:00",
+    "place": "home",
+    "start": "07:50"
+   },
+   {
+    "activity": "eat",
+    "end": "08:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:05"
+   },
+   {
+    "activity": "gym",
+    "end": "09:25",
+    "place": "bld:bld_232715573",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:ME30_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:HISTORY106E_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_1040629370",
+    "start": "12:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:50",
+    "place": "bld:bld_m_white_plaza",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "15:05",
+    "place": "plan:bld_m_green_library_f3_303",
+    "start": "13:55"
+   },
+   {
+    "activity": "lab",
+    "end": "19:30",
+    "place": "plan:bld_469393555_f1_105",
+    "start": "15:10"
+   },
+   {
+    "activity": "eat",
+    "end": "20:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:35"
+   },
+   {
+    "activity": "study",
+    "end": "21:20",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "event:EV00061",
+    "start": "21:20"
+   },
+   {
+    "activity": "study",
+    "end": "01:20",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "relax",
+    "end": "02:10",
+    "place": "home",
+    "start": "01:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:10"
+   }
+  ],
+  "diary": "Wednesday: kept to my routine of classes, lab and study, masked in crowded spots and stopped by the dorm hangout briefly. Feeling fine, still a little anxious about illness.",
+  "messages": [],
+  "thoughts": "I feel fine, so I'll stick to my routine. Organized and disciplined, so classes, lab, and study as usual. I'll wear a mask in crowded indoor places since I'm anxious about illness going around. Dorm hangout is short and low-key, so I'll go briefly.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

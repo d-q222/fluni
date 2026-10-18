@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Not that I've heard, but I've been a little watchful too. I feel fine, just trying to be careful. Have you heard of people getting sick in your lab?",
+  "shared_health": true
+ }
+}

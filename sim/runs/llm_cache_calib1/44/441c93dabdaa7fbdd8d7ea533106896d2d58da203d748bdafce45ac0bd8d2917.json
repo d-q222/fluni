@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer, a masked dorm neighbor, said FlUni flagged them this morning, they tested at Vaden, the last test was negative and they feel fine. I'll keep my mask on, keep distance, and watch for symptoms after Scout's and Sawyer's exposures.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

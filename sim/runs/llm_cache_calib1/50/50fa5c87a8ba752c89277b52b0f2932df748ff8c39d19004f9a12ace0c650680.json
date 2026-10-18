@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm feeling fine too, just a little wary with everything going around. Smart move though. I've got CS109 at 3, then lab all evening. You heading to class too?",
+  "shared_health": true
+ }
+}

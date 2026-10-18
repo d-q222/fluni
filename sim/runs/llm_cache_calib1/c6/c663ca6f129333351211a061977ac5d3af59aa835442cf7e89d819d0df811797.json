@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "21:00",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "22:20",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:55"
+   }
+  ],
+  "diary": "Sun Jan 11 evening: Dining was crowded so I ate fast, then lab and quiet time in my room. Feeling fine, still careful about the dorm flu and waiting on Jesse's result.",
+  "messages": [],
+  "thoughts": "Dining room is crowded and flu is confirmed in my dorm. I feel fine, so I'll eat quickly and head to lab as planned, keeping my distance. In the evening I'll stay in my room rather than the lounge. I'll keep my lab block but not linger anywhere crowded.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Morning! Yep, still on. I'll be at Green around 5:40, though I have CHEM lab till 6:15 so maybe a bit after. Good luck in lab!",
+  "shared_health": false
+ }
+}

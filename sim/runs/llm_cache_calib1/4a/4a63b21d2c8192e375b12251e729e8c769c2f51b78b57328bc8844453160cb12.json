@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:10"
+   },
+   {
+    "activity": "lab",
+    "end": "11:45",
+    "place": "class:BIOE123_LBS02",
+    "start": "09:00"
+   },
+   {
+    "activity": "lab",
+    "end": "12:25",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:ARCHLGY103_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:40",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:50"
+   },
+   {
+    "activity": "gym",
+    "end": "18:45",
+    "place": "bld:bld_232805714",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:55",
+    "place": "event:EV00073",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Thu Jan 8: Feeling fine. Following my usual routine with mask on indoors, keeping distance from Sawyer until their flu test result is known.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine. Sawyer in my dorm is waiting on a flu test, so I'll keep masking indoors and keep some distance. I'll go to the dorm hangout but wear my mask and leave early if it's crowded.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

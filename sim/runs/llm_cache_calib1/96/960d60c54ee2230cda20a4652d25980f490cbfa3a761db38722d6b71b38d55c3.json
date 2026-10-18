@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "08:40"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:25"
+   },
+   {
+    "activity": "study",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "17:00",
+    "place": "event:EV00138",
+    "start": "15:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Stuck to my study routine, skipped the crowded dorm hangout and stayed in my room that evening. Still feel fine but anxious about the Wesley contact.",
+  "messages": [],
+  "thoughts": "Feeling fine, still anxious about the Wesley contact. I'll stick with my routine since it's mostly quiet study. I'll skip the crowded dorm hangout and stay in my room. The study group is small, so I'll go, but I'll watch symptoms and text if anything changes. I'll mask only in crowded spots, which means mostly no mask.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

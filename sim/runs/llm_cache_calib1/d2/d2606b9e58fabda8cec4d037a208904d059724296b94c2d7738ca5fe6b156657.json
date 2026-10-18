@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter. How's it going? Have you been okay with all the flu stuff going around the dorm?",
+  "shared_health": false
+ }
+}

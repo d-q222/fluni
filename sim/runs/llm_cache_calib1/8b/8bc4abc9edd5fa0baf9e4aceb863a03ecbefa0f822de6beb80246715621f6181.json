@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Zuri! Good to see another masked person. Ready for BIO 84?",
+  "shared_health": false
+ }
+}

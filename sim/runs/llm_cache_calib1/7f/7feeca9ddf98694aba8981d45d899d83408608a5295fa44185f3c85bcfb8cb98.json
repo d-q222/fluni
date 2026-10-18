@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern lunch; invited them to the Arizona game at 7 and the lounge after, they might come after lifting. Feeling fine, no plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

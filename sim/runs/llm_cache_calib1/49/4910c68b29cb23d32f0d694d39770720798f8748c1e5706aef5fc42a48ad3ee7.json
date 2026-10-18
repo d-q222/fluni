@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Not yet, I'll tell you as soon as I hear. I feel fine so far, still masking though. How are you feeling?",
+  "shared_health": true
+ }
+}

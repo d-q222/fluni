@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:55",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "relax",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:40",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Stayed in my dorm all day following FlUni's advice to stay home until Jan 11, skipping classes and studying on my own. Feeling fine but still worried.",
+  "messages": [],
+  "thoughts": "FlUni told me to stay home until Jan 11, and I almost always follow health advice. I feel fine but I'm worried, so I'll stay in my dorm today, skip gym and classes, study and keep a regular schedule. I'll eat at home or grab something quickly, but avoiding dining halls is safest. I'll keep it simple and stay in my room.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

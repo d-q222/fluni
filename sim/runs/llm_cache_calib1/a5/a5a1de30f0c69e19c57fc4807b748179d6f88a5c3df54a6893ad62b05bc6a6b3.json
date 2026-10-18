@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce is masked and feels fine, just anxious about the Stern fever stuff and Scout maybe being a close contact. I said I feel fine too, we'll watch each other for cough or fever, and I'm going to bed soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

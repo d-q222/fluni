@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Armani I feel fine but worried since Dakota and Chris tested positive; Armani feels fine too and is heading off to study. Sticking with my low-key plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

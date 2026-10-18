@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Deal. Masks on in the room, and we'll tell each other right away if anything feels off. Maybe we should crack a window too.",
+  "shared_health": false
+ }
+}

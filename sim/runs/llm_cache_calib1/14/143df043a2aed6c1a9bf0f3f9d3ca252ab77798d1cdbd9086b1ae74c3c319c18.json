@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Still on for Taper after this? How's your roommate, still coughing?",
+  "shared_health": false
+ }
+}

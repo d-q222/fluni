@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:20",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "09:40"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "10:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:30",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "14:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:35"
+   },
+   {
+    "activity": "relax",
+    "end": "15:45",
+    "place": "home",
+    "start": "14:10"
+   },
+   {
+    "activity": "study",
+    "end": "17:15",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:50"
+   },
+   {
+    "activity": "relax",
+    "end": "18:10",
+    "place": "home",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:45",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "dorm_lounge",
+    "start": "19:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "event:EV00099",
+    "start": "21:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "23:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Fri Jan 9: Feel fine, a bit wary of the Stern fever rumor but keeping plans: Lakeside, Taper, lounge, dorm hangout. No mask.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit wary about the Stern fever rumor, but I'm very social and rarely change plans. I'll sleep in, grab food, study a bit, then do dinner at Lakeside, Taper, the lounge, and the dorm event. I'll keep my distance a little but no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

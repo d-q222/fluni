@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Jody! Yeah it's been kind of sketchy lately, I feel fine though. Good call on the mask. Good luck studying!",
+  "shared_health": true
+ }
+}

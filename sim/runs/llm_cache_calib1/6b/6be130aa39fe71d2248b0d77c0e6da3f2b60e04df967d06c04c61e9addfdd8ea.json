@@ -1,0 +1,33 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wednesday night: stayed in at home and skipped both the game and Taper because crowds make me anxious. Feeling fine, still masking, going to bed at a reasonable hour.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Have fun at the game and Taper! I'm staying in tonight, hope it's a good one.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Everyone's heading to the game and then Taper, but crowds make me nervous and I already said I'd skip. I feel fine, so I'll stay in, relax at home, and maybe text a friendly reply. Onyx mentioned the dorm lounge, but I'd rather recharge alone. Early sleep is fine.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "08:05"
+   },
+   {
+    "activity": "eat",
+    "end": "08:45",
+    "place": "bld:bld_333374283",
+    "start": "08:25"
+   },
+   {
+    "activity": "lab",
+    "end": "11:20",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "09:05"
+   },
+   {
+    "activity": "class",
+    "end": "12:10",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "lab",
+    "end": "12:50",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_333374283",
+    "start": "13:10"
+   },
+   {
+    "activity": "lab",
+    "end": "14:55",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "13:35"
+   },
+   {
+    "activity": "class",
+    "end": "16:05",
+    "place": "class:BIOE123_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:50",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_333374283",
+    "start": "17:55"
+   },
+   {
+    "activity": "class",
+    "end": "20:10",
+    "place": "class:EDUC98SI_ACT04",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Normal packed Monday of lab and classes. Feeling fine, just a bit wary about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my normal routine. Monday is packed with lab and classes. I'll keep a slightly modified schedule but basically follow autopilot. No need for masks, no symptoms. Not texting anyone.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

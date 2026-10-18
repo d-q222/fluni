@@ -1,0 +1,104 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:00",
+    "place": "home",
+    "start": "06:50"
+   },
+   {
+    "activity": "eat",
+    "end": "09:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:05"
+   },
+   {
+    "activity": "gym",
+    "end": "11:25",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:40"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:CHINLANG7_LNG01",
+    "start": "11:30"
+   },
+   {
+    "activity": "relax",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:30",
+    "place": "class:COLLEGE102_SEM47",
+    "start": "13:30"
+   },
+   {
+    "activity": "gym",
+    "end": "15:20",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "14:50"
+   },
+   {
+    "activity": "practice",
+    "end": "18:05",
+    "place": "plan:bld_232715640_f1_101",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "relax",
+    "end": "20:50",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:20",
+    "place": "bld:bld_232841950",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Feel fine and my test was negative, so I told Ocean. Sticking to my usual routine, masking in crowds and keeping some distance in the dorm since Hadley and Sidney looked sick.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Ocean, my test came back negative! Feeling fine. Thanks for checking, and wash hands out there.",
+    "time": "",
+    "to": "A0030"
+   }
+  ],
+  "thoughts": "I feel fine and my last test was negative, but Hadley and Sidney looked really sick at Vaden and there's a rumor of a fever in a dorm. I'll keep my normal routine of lifting, class and practice, and mask in crowds like Stern at lunch. I promised Ocean and Umi I'd share my test result, so I'll text Ocean that it came back negative. I'll keep some distance in the dorm and wash my hands.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

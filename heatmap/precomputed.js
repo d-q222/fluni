@@ -39,6 +39,37 @@ export async function loadPSick(url) {
   }
 }
 
+// model/out/<run>/meanfield.csv (node model/meanfield-cli.mjs): the mean-field model's P(sick) and expected
+// infectiousness (shed) per agent, as change points. A stand-in for meanFieldRisk()'s result.
+export async function loadMeanField(url) {
+  try {
+    const { data } = await loadCsv(url, ['agent_id', 't_iso', 'p_sick', 'shed']);
+    const changes = new Map();
+    for (let k = 0; k < data.length;) {
+      const id = data[k].agent_id;
+      let j = k;
+      while (j < data.length && data[j].agent_id === id) j++;
+      const t = new Float64Array(j - k), p = new Float32Array(j - k), s = new Float32Array(j - k);
+      for (let i = k; i < j; i++) { t[i - k] = Date.parse(data[i].t_iso); p[i - k] = Number(data[i].p_sick); s[i - k] = Number(data[i].shed); }
+      changes.set(id, { t, p, s });
+      k = j;
+    }
+    const at = (key, before) => (id, tMs) => {
+      const c = changes.get(id);
+      if (!c || tMs < c.t[0]) return before;
+      let lo = 0, hi = c.t.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (c.t[mid] <= tMs) lo = mid; else hi = mid - 1;
+      }
+      return c[key][lo];
+    };
+    return { pAt: at('p', PRIOR), shedAt: at('s', 0), explain: null, flags: [], params: { prior: PRIOR, method: 'meanfield' } };
+  } catch {
+    return null;
+  }
+}
+
 // totals.json.gz -> { totals, forecaster } shaped like aggregate.js buildTotals() / forecast.js.
 // Rooms aren't in the file (the phone's walk-in warning uses building totals).
 export async function loadTotals(url) {

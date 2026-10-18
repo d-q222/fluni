@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Skipped the 8pm lounge hangout after Mika's suggestion since Sidney is sick and Skyler awaits test results. Studied masked in my room and planned bed around midnight. Feeling fine but wary.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Sidney in my dorm has a fever and cough, and Skyler is waiting on a flu test. I'm skipping the dorm hangout and staying in. Mask up and stay safe!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Mika's point makes sense. Sidney is sick, Skyler is awaiting a flu test, and both are dorm neighbors. I'm a homebody anyway, so I'll finish dinner, skip the lounge hangout, and go home to study masked. Early-ish bed.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

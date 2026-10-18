@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "20:35",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:10",
+    "place": "event:EV00100",
+    "start": "20:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:10",
+    "place": "home",
+    "start": "23:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Fri Jan 9: Ate quickly at crowded Stern, then downtime and the dorm hangout tonight. Feeling fine, spare mask handy and washing hands.",
+  "messages": [],
+  "thoughts": "Stern is crowded, so I'll finish eating quickly. I feel fine and a bit wary, but the dorm hangout is part of my routine and Ocean and Skyler will be there. I'll keep the spare mask handy and maybe wear it if the hangout is packed. Otherwise I'll follow the usual plan, with a little downtime at home before it.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

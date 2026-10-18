@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean. Yeah, I'm doing fine, my test at Vaden came back negative. Still pretty worried though, so I'm grabbing food and heading back to my room to study. You should probably keep your distance too.",
+  "shared_health": true
+ }
+}

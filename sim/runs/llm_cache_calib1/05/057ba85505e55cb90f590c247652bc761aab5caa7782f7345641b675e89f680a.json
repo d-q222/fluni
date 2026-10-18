@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody. Still no word on Jesse's test, I'll text you the second I hear. You feeling okay?",
+  "shared_health": true
+ }
+}

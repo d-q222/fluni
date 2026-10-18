@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "lab",
+    "end": "22:25",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "00:50",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:45",
+    "place": "home",
+    "start": "00:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:45"
+   }
+  ],
+  "diary": "Ate quickly at crowded Stern Dining, then lab and problem sets. Feeling fine, still masking indoors and a bit wary of crowds.",
+  "messages": [],
+  "thoughts": "Dining room is crowded, so I'll eat quickly with my mask on whenever I'm not chewing, then head to lab as planned. I feel fine, so I'll stick with my organized routine: lab, then problem sets at home, then sleep.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

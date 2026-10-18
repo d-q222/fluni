@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat down for dinner with Carter at Lakeside; they'll be at Green for a study session, then the Taper hangout and the dorm lounge later, so we'll cross paths tonight. Nothing health-related came up.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

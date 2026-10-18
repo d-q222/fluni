@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli! Yeah, the PSYCH 1 study group. I see you've got a mask on too, with everything going around it seems smart.",
+  "shared_health": false
+ }
+}

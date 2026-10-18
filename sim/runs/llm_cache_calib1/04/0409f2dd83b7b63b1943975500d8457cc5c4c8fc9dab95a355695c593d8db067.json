@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Devon said their neighbor Sidney has a fever and cough and was told to get checked; Devon feels fine. Skyler is still awaiting a flu test result. I'll keep masking and distance, and stay on my usual plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

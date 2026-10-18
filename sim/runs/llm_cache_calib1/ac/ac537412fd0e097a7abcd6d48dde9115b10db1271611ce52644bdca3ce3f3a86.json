@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Max what Skyler said about Sidney's fever and cough at Vaden; Max feels fine and is still going tonight, maybe masked. I'll show up at the Taper hangout briefly, stay near the door, and leave if anyone coughs.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

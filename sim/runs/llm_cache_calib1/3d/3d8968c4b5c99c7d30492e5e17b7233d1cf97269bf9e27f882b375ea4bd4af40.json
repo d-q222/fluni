@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sidney! Pretty normal so far, just gym, classes and lab. Kind of a long day though. I noticed the mask, is everything okay or just being careful?",
+  "shared_health": false
+ }
+}

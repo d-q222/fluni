@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer! Glad it came back negative, that's a relief. I'm doing fine, just grabbing dinner before heading to Green to study. Want to share a table at the library later?",
+  "shared_health": true
+ }
+}

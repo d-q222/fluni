@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:00",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "relax",
+    "end": "14:15",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "study",
+    "end": "17:20",
+    "place": "home",
+    "start": "14:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:30",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Still staying in my dorm per FlUni until Jan 11, skipping CME106 and the CHEM 31B study group, studying alone. Feeling fine but still worried.",
+  "messages": [],
+  "thoughts": "FlUni told me to stay home until Jan 11, and I still feel fine, so I'll keep following that. I'll stay in my dorm, skip class and the study group, and study on my own. I can still eat, so I'll plan a quiet meal in my room. Staying masked if anyone is around.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

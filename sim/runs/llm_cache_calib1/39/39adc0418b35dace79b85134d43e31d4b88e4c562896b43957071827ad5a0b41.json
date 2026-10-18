@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Pretty chill, just lunch then back to my room to study. Enjoy the lift though, I'm too much of a homebody for that.",
+  "shared_health": false
+ }
+}

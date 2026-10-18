@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce, my roommate, is masking up out of anxiety about stuff going around, but says they feel fine. Nothing changes in my plans; still studying at home till lunch.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

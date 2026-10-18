@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Rain (dorm neighbor, masked) I'm waiting on a flu test from Vaden and feel fine; they said they'd keep distance and wear their mask. Still need to text Val and Oli when my result comes back.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Yeah, sure, let's grab a table. I'm meeting Campbell here soon too, but there's room for all of us.",
+  "shared_health": false
+ }
+}

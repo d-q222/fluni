@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nope, feeling fine, no symptoms. I'll keep my mask handy though, since we share a room. Let's keep an eye on each other and say something if either of us gets a cough or a fever. I'm heading to bed soon.",
+  "shared_health": true
+ }
+}

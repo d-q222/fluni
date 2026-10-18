@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:45",
+    "place": "bld:bld_232841950",
+    "start": "12:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00132",
+    "start": "14:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:45",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_333374283",
+    "start": "18:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "bld:bld_232805662",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Plan is Taper study, UCLA game, dinner, then Coupa with friends and early night. Feeling fine, avoiding the coughy lounge.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "event:EV00132",
+    "text": "Anyone want to go to the UCLA women's basketball game today? Outdoors-ish vibes, big arena, plenty of space!",
+    "time": "14:00",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sunday, feeling fine. Dorm is coughy and Mika is staying home, so I'll be a bit careful but still social. Sleep in, then study at Taper, catch the UCLA game with friends, dinner at Arrillaga, and a hangout at Coupa or Taper in the evening instead of the lounge.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

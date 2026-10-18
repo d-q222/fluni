@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Morning! Yeah, I'm good, no symptoms. Same deal, let's keep telling each other if anything feels off. Heading out to the Oval soon, then class.",
+  "shared_health": true
+ }
+}

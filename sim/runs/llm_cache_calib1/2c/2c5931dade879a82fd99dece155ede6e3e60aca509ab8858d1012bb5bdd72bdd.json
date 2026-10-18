@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:15",
+    "place": "home",
+    "start": "06:40"
+   },
+   {
+    "activity": "eat",
+    "end": "07:45",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "07:30"
+   },
+   {
+    "activity": "relax",
+    "end": "10:10",
+    "place": "home",
+    "start": "08:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:05",
+    "place": "home",
+    "start": "10:10"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:PHYSWELL80_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:55",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "15:15",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "practice",
+    "end": "16:15",
+    "place": "bld:bld_232715573",
+    "start": "15:35"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:DESIGN141_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:30"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Wednesday: routine of class, practice, design lecture, then the basketball game in the evening. Feeling fine, a bit wary of crowds.",
+  "messages": [],
+  "thoughts": "Normal Wednesday. I feel fine, so I'll follow my routine: sleep, breakfast, class, practice, design lecture, dinner, then some studying. The basketball game at 19:00 sounds fun and I'm outgoing, so I'll go instead of the library for a bit, but crowds make me a little wary. I'll skip the mask outdoors and check the team chat for practice.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

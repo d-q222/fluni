@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, my bad, I misread that. Nope, I feel totally fine, just being careful. I haven't heard anything specific, it's just a vibe lately. Are you feeling okay?",
+  "shared_health": true
+ }
+}

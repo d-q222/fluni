@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Carter at Coupa; both feel fine and masked. I suggested Carter skip the football game because of the crowd, and Carter will think about it. We agreed to text each other if either feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

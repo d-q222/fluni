@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Heard you tested negative for flu, that's a relief. How are you feeling?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:30",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "20:35",
+    "place": "dorm_lounge",
+    "start": "20:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:45",
+    "place": "event:EV00100",
+    "start": "20:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Stern was crowded at dinner so I ate fast and left. Still feeling fine and masking; meeting Lake at 8:30 for the dorm hangout, then home to sleep.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll finish eating quickly and head back to the dorm. I feel fine and I've been masking. I'll study at home for a bit, then meet Lake at 8:30 and go to the hangout, masked. The hangout might be packed, so I'll leave a little early to sleep.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

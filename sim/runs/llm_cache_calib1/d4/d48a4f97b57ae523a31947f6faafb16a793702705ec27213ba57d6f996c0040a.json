@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:45",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "gym",
+    "end": "10:25",
+    "place": "bld:bld_232715573",
+    "start": "08:50"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:SYMSYS1_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "lab",
+    "end": "15:50",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:10",
+    "place": "home",
+    "start": "16:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:15"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Friday: gym, class, lab, early dinner, skipped the dorm hangout and late study to sleep early. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "Friday. Feeling fine, a little wary with illness going around. I'll stick to my routine: sleep, gym, class, lab, study, early dinner. I'll skip the crowded dorm hangout and late library session to stay low-risk, and get to bed earlier. No mask indoors, as usual.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Waverly! Doing okay? I'm only staying a bit here, flu's been going around the dorm so I'm keeping it short.",
+  "shared_health": false
+ }
+}

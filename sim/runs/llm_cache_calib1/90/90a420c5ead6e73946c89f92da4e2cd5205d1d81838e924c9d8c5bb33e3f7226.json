@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks! Yeah, negative, feeling fine. I'm planning to chill at home for a bit, then maybe the hangout later. Are you going?",
+  "shared_health": true
+ }
+}

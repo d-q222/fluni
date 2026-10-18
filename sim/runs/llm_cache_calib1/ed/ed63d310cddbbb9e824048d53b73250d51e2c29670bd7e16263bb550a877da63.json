@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan! It's been okay, just busy with classes. I'm a little anxious with everything going around, so I'm keeping the mask on when I can. How about you, doing alright?",
+  "shared_health": false
+ }
+}

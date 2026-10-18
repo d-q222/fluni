@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, oh wow, I totally forgot I had it on, guess I'm more wary than I thought! I'm fine though, promise. Lead the way, let's grab those seats!",
+  "shared_health": true
+ }
+}

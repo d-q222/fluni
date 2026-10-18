@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Morning. You still feeling good? I'm fine, just keeping an eye out with everyone in the dorm getting sick.",
+  "shared_health": true
+ }
+}

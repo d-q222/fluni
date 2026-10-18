@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Good to see you, nice mask. I feel fine but I'm staying careful since Dakota and Chris are sick. How are you doing?",
+  "shared_health": true
+ }
+}

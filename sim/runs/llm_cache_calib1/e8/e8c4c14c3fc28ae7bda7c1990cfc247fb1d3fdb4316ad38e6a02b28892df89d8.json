@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, problem sets. Smart on the mask, I've heard a lot of coughing lately. I feel fine, just staying wary. Anyway, I should get back to it.",
+  "shared_health": true
+ }
+}

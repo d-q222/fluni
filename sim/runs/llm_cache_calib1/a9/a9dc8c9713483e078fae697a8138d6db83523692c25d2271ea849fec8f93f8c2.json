@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli. Heads up, Chris tested positive and Dakota's sick too, so I'm staying in tonight. I feel fine, but I'm watching for symptoms. How are you feeling? You're still coughing, right?",
+  "shared_health": true
+ }
+}

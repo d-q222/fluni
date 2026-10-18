@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Morning. You headed to breakfast too? I've got gym right after, so I'm fueling up.",
+  "shared_health": false
+ }
+}

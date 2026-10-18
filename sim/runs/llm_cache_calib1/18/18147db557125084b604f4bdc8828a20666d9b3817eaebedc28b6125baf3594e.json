@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I'm fine, thanks. Glad you got tested, hope it comes back clear. I'll keep my mask on and give you some space, let me know how it turns out.",
+  "shared_health": true
+ }
+}

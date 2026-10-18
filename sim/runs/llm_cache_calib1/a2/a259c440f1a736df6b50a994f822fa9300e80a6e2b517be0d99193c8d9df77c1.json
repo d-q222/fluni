@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "off_campus",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:00",
+    "place": "off_campus",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "off_campus",
+    "start": "11:00"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "off_campus",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "off_campus",
+    "start": "14:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "off_campus",
+    "start": "17:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Saturday: Wallace still sick. I feel fine, so I'm staying home to keep contacts low, studying and resting, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for letting us know, Wallace. Rest up and text if you need anything. I'll stay clear but I'm around.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "Wallace is still sick, and I've been a close contact. I feel fine, so I'll keep my contacts low. It's Saturday, so I'll stay home, sleep, study, and rest. No need to go to the football game or the lecture. I'll send Wallace a short reply wishing them well.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel fine, just kind of worried since Dakota and Chris tested positive. I'm keeping it low-key today. You feeling okay?",
+  "shared_health": true
+ }
+}

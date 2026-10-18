@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, hey, no worries. I didn't book it, I just grabbed an empty spot. Let me check, which room number do you have? You can sit if it's yours, I can move.",
+  "shared_health": false
+ }
+}

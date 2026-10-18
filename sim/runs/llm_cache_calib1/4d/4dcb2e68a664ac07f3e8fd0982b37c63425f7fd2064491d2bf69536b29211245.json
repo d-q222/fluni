@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Finley! Yeah, quick breakfast then Green before class. I see you've got a mask on too, are you doing okay?",
+  "shared_health": false
+ }
+}

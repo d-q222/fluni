@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Lake (teammate, feels fine) that Skyler's flu test is pending and promised to text when I hear back. Plans unchanged; staying a bit careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

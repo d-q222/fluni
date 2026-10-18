@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Morgan at Stern about the pasta; they're heading to lab. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

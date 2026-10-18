@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "relax",
+    "end": "19:40",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Stayed in my room per FlUni, only quick masked meals at Stern. Still feel fine and watching for symptoms; checked in on Wallace.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope your fever is easing. I'm staying in my room until Wednesday per FlUni. Let me know if you need anything.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "FlUni told me to stay home until Wednesday. I feel fine, so I'll keep to my room, sleep in, and only do a quick masked meal at Stern. Skip the outdoor wandering and the Haas hangout. I'll check in on Wallace by text.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

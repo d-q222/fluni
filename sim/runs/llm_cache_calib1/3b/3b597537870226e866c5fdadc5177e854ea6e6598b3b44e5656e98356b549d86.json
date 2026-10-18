@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, same here, I'm waiting on a flu test too. Fever, cough, the whole thing. Yeah, let's keep some space. Hope yours comes back okay.",
+  "shared_health": true
+ }
+}

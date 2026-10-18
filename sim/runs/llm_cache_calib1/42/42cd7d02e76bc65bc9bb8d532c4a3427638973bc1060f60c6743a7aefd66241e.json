@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Skyler, a dormmate, at Stern breakfast; they said they feel fine and were heading to Green to study. Nothing changes, I'm sticking with my routine and mask.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon, heading to bed soon. Did you hear if anyone on our floor has been sick lately?",
+  "shared_health": false
+ }
+}

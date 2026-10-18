@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie. I heard two people in our dorm tested positive, but not who. Thanks for telling me. My test isn't until 2:15 today, so nothing yet. I feel fine, just masking and staying in my room after. I'll let you know how it goes.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Scout told me they're a close contact of a FlUni case but feel fine and are masked. I said I feel fine too; I'll keep some distance from Scout in the dorm and head to sleep soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

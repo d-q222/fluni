@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:00",
+    "place": "home",
+    "start": "09:15"
+   },
+   {
+    "activity": "class",
+    "end": "12:05",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "17:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Keeping routine with class and meals at Stern, masked, but skipping the gym and the Taper lounge to stay home more. Feeling fine, still a bit worried about Skyler and Sidney.",
+  "messages": [],
+  "thoughts": "Still feel fine, but Skyler and Sidney are possibly sick and there are fever rumors in the dorm. I'll keep my routine mostly, mask in crowded places, skip the gym to limit exposure, and stay home more. I'll still go to class and eat at Stern at off-peak times.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

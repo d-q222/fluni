@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Didn't know you were here too. Grabbing dinner? Taper later tonight if you're around, a bunch of us are heading over after the gym.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "09:45"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Fri Jan 9: FlUni told me to stay home until Jan 14. I feel fine but I'm following it, skipping classes and the hangout, and studying from my room. Still worried.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "FlUni just told me to stay home until Jan 14. I feel fine but I'm going to skip classes and stay in my room. Stay careful, with people in the dorm sick.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "The FlUni app says to stay home until Jan 14. I feel fine, but I'm already worried and people in my dorm are sick, so I'll follow the advice. I'll head home, wear a mask on the way, and skip classes today. I'll study from my room and let my friends know where I am. Staying in fits my homebody side anyway.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

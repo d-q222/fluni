@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Dinner at crowded Stern, ate quickly with a mask and went home to relax and sleep. Skyler tested negative but others in the dorm are sick, so I'm staying careful.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 44 people and a few in my dorm are sick. I'll finish up quickly, mask on, and head home to relax and sleep. No hangout tonight.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

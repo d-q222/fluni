@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I feel fine. Seems like stuff's going around so I figured why not. You heading to Green after? I'll be there later tonight too.",
+  "shared_health": true
+ }
+}

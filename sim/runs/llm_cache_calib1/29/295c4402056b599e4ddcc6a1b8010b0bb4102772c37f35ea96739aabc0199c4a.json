@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm good, no symptoms so far. Just keeping my distance from the sick folks and watching for anything. Let me know if you start feeling off, and I'll do the same.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:15",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Wed Jan 7: Heard Sidney is sick and Skyler awaits a flu test, so I skipped the dorm hangout and stayed home after dinner. Feeling fine, more worried now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Umi. I'm skipping the dorm hangout too and staying in tonight. Campbell, maybe skip it too? Will share if I hear about Skyler's test.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sidney in Umi's dorm is sick and Skyler awaits a flu test. That dorm hangout is likely to be full of dorm-mates, so I'll skip it. I'll finish dinner masked-ish, go home, study, and relax. I'll text the group to say I'm skipping the hangout too and to ask Campbell to skip it.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

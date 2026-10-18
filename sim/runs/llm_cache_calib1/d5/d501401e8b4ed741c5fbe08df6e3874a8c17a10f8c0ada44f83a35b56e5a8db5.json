@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "gym",
+    "end": "14:20",
+    "place": "plan:bld_255490604_f1_102",
+    "start": "13:15"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_1040629370",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:00"
+   },
+   {
+    "activity": "study",
+    "end": "00:10",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:05",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:05"
+   }
+  ],
+  "diary": "Saturday: Stern Dining was crowded so I ate quickly masked and left. Keeping to gym, study and meals, skipping the game. Feeling fine but still anxious.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 48 people and I'm anxious. I'll finish up quickly, put my mask on, and move on to the gym and study as usual. I'll skip the football game crowd. Dinner at Lakeside might be crowded too, but I'll stay flexible and keep the routine otherwise.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

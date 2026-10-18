@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh nice, yeah I'll take the spare, thanks! Let me text Chris real quick and then I'll grab food.",
+  "shared_health": false
+ }
+}

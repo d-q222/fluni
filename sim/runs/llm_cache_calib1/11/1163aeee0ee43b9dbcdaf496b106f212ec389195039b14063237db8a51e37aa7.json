@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Morning, how's your quarter going so far?",
+  "shared_health": false
+ }
+}

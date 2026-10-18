@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "08:05"
+   },
+   {
+    "activity": "eat",
+    "end": "08:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:PWR2KAA_SEM02",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:50",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "20:05"
+   },
+   {
+    "activity": "gym",
+    "end": "22:00",
+    "place": "bld:bld_232715629",
+    "start": "21:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Followed my usual Monday of classes and library study, masked indoors. Feeling fine but a little watchful about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick with my routine: sleep, Stern breakfast, library study, PWR and CHEM classes, then more study and the gym. I'll mask indoors since I'm a little worried about illness going around. PHYSICS 41 isn't on my usual routine, so I'll skip it.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "study",
+    "end": "17:40",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Friday: Stern was crowded at lunch, so I ate fast masked and went back to my room. Staying in until Sunday per FlUni, skipping the party, still fine but anxious.",
+  "messages": [],
+  "thoughts": "Stern is crowded, so I should finish up and head back to my room. FlUni says to stay in until Jan 11, and I'm anxious, so I'll keep to that. I'll study remotely all afternoon, skip the party, and maybe grab a quick masked dinner, or take it back to my room. Relax in the evening, then sleep.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Dakota! Hey, you here for the Arizona game too? Carter and Onyx are saving seats around seven, come sit with us.",
+  "shared_health": false
+ }
+}

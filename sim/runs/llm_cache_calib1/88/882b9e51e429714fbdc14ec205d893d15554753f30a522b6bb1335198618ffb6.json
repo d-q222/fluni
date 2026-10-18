@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:40"
+   },
+   {
+    "activity": "relax",
+    "end": "13:15",
+    "place": "bld:bld_232805662",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_1040629370",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "plan:bld_m_green_library_f1_104",
+    "start": "13:55"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:55",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "event",
+    "end": "22:00",
+    "place": "event:EV00099",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Friday: Chris is sick and Eden and Dell are skipping the lounge. I feel fine; keeping Lakeside with Onyx and Taper, and will check the lounge but leave if people are coughing.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "No worries Chris, rest up and feel better! Let me know if you need anything.",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "thoughts": "Chris is sick and Eden and Dell are skipping the lounge. I feel fine, I'm calm and social, so I'll keep most plans but stay cautious. Sleep in, eat, study, Lakeside dinner with Onyx, Taper, then check the lounge event and bail if people are coughing. I'll bring Onyx's mask and wish Chris well.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

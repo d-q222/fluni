@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Yeah, I should be at Green by then, though I'm aiming to head home a bit earlier tonight. Text me when you're out and we'll see.",
+  "shared_health": false
+ }
+}

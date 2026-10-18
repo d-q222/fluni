@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'll swing by the hangout at 8, but I'll keep my mask on and probably head out early to study. Let me know if you hear Skyler's result?",
+  "shared_health": false
+ }
+}

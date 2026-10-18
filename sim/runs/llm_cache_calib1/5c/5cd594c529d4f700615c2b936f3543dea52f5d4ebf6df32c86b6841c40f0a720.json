@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "plan:bld_1169967277_f2_201",
+    "start": "09:20"
+   },
+   {
+    "activity": "lab",
+    "end": "12:15",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:40",
+    "place": "bld:bld_m_the_oval",
+    "start": "13:15"
+   },
+   {
+    "activity": "relax",
+    "end": "16:15",
+    "place": "bld:bld_232841950",
+    "start": "13:55"
+   },
+   {
+    "activity": "class",
+    "end": "18:05",
+    "place": "class:CEE283_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "bld:bld_1169967277",
+    "start": "18:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_1040629370",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "plan:bld_1169967277_f3_301",
+    "start": "19:40"
+   },
+   {
+    "activity": "relax",
+    "end": "22:40",
+    "place": "home",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:35",
+    "place": "plan:bld_1169967277_f2_201",
+    "start": "22:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Thursday: sticking to the usual routine of study, lab, class and evening study. Feeling fine, still a bit wary of the flu going around, keeping my distance in crowds.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit worried about flu going around. I'll stick to my usual routine: classes, lab, study. Skip the crowded extras and head to bed at a reasonable time. No mask indoors, but I'll keep some distance.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

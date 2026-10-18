@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody. Mask on, huh? Smart, honestly, Dakota and Chris both tested positive. I feel fine though, you doing okay?",
+  "shared_health": true
+ }
+}

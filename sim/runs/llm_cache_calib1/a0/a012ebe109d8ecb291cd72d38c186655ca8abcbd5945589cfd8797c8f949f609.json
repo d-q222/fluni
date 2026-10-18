@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx (my roommate, masked, feels fine) said Chris tested positive and Dakota is sick; they briefly thought I was still coughing but I feel fine. We agreed to keep masks on in the room, crack a window, and tell each other right away if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

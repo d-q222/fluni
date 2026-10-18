@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, I'm fine, totally! Just a habit, I wear it indoors since everything's going around and I get anxious about it. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm still in for Taper! Smart on the mask, Chris is doing the same. We're keeping the lounge short after, so see you there!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Walked up to the dorm hangout with Emerson, who is masked and careful too. We both plan a short stay, then bed early. I'm fine and will keep my mask on.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

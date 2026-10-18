@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, fair, honestly I'm feeling totally fine, just a little worried about catching something lately. Anyway I've got dinner plans soon, but we should hang out in the dorm sometime!",
+  "shared_health": true
+ }
+}

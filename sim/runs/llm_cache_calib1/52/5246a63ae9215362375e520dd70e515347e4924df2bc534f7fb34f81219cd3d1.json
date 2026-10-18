@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told True about the rumored fever and cough in a dorm; True feels fine and asked who it was, I don't know. Nothing changes, staying a bit careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

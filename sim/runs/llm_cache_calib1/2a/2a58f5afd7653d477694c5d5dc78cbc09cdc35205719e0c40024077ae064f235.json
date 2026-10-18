@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I feel fine. You know me, I worry. I'll keep my mask on in common areas though. Let me know if you start feeling off, okay?",
+  "shared_health": true
+ }
+}

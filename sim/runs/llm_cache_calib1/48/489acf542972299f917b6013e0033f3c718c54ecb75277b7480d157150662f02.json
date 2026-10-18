@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Morning. Feeling okay? I'm still masking up with that fever rumor going around the dorms.",
+  "shared_health": true
+ }
+}

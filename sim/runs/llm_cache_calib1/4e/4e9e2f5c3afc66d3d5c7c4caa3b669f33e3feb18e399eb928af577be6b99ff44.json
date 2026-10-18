@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter is skipping the Stern lounge because Sidney and Hadley are sick in our dorm; I agreed to hang by the door at Taper with them and skip the lounge, and we'll bounce if anyone coughs.",
+  "messages": [],
+  "replan": true,
+  "worry": 3
+ }
+}

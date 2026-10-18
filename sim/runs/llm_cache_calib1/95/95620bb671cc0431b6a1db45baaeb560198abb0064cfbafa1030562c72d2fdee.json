@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:25",
+    "place": "home",
+    "start": "07:45"
+   },
+   {
+    "activity": "lab",
+    "end": "10:15",
+    "place": "class:CHEM31B_LBS03",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:55",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_1040629370",
+    "start": "12:00"
+   },
+   {
+    "activity": "lab",
+    "end": "14:30",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "12:25"
+   },
+   {
+    "activity": "gym",
+    "end": "15:50",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "14:35"
+   },
+   {
+    "activity": "study",
+    "end": "16:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:30",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "16:55"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:35"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Stuck to my usual Tuesday routine with a mask indoors since people are coughing. Feeling fine, still a bit watchful.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick close to my usual routine. There's a BIO 199W seminar at 10:30 that isn't in my autopilot plan, but I'll keep to the routine since it's what I normally do. Lots of coughing around, so I'll wear a mask indoors today to be careful. I'll sleep a bit more at the end rather than staying up too late.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

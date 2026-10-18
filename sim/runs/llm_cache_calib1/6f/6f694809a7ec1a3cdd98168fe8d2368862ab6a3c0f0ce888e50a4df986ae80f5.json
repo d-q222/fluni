@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I've heard it too. I'm fine, but Jesse had a fever after the hangout and is getting tested, so I'm masking and watching for symptoms. Maybe keep your mask on in the room for now?",
+  "shared_health": true
+ }
+}

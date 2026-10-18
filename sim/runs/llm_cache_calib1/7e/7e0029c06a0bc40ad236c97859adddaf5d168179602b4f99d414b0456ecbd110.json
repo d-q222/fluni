@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx told me they were near Dakota Friday too and feel fine, masked and low-key. I said same, I'm heading to Green to study, and we agreed to text if either feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

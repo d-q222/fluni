@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm fine, no symptoms. Just feeling a bit wary with everything going around, so I'm being careful. How about you?",
+  "shared_health": true
+ }
+}

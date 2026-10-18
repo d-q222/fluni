@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton! Yeah, dinner then home for a bit, lab later tonight. Same here, I've been masking indoors too. Feeling fine though, you?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Rain is masked and feels fine; they'll go to Green after the hangout and asked me to text if I hear anything about the tests. I'm staying at the edge of the hangout and heading home to study soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

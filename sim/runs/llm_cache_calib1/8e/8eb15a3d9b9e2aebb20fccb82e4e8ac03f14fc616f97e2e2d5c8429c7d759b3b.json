@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Emerson at Stern Dining; both masked and being careful. They're heading to Green Library to study and we may sit together, though my plan is Lathrop Library.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

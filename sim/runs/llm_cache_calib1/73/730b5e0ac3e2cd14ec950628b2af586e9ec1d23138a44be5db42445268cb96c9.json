@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Perfect, see you both at Taper! Yeah let's grab food, lead the way.",
+  "shared_health": false
+ }
+}

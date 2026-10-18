@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Tuesday evening: dinner at crowded Stern, then studied at Green and relaxed at home. Feeling fine, still keeping an eye out for illness.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, but I feel fine. I'll finish dinner quickly, then head to Green to study as planned. Mask isn't needed in the library; I'll keep my routine and go home to relax and sleep on time for morning practice.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

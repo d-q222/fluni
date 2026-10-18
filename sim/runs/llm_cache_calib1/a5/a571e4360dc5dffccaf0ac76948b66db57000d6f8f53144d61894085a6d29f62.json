@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sure, but I only have a few minutes before I head to study. Let's grab a spot, and I'll keep my mask on until I actually eat.",
+  "shared_health": false
+ }
+}

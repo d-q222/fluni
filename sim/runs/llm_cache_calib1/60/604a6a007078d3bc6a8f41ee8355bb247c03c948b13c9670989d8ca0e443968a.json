@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika! Morning. Good call on the mask, with all the rumors going around.",
+  "shared_health": false
+ }
+}

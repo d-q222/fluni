@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Dell! Hey, you made it to Taper. Grab a seat, everyone's trickling in.",
+  "shared_health": false
+ }
+}

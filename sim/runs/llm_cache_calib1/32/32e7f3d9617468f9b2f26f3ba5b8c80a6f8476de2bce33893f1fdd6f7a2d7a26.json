@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie. I'm feeling fine, just keeping the mask on since people in the dorm are sick. You doing okay?",
+  "shared_health": true
+ }
+}

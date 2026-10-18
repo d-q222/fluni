@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Devon at Stern Dining; both of us feel fine and agreed to tell each other if we start feeling off. Keeping my lab and class plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

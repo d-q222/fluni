@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks! Nah, I'm gonna pass on the hangout, got practice and gym tonight and want to rest. Have fun though, maybe keep your mask on if it's packed. See you around!",
+  "shared_health": false
+ }
+}

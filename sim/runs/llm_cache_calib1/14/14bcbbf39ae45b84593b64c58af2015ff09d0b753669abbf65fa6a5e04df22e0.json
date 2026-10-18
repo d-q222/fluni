@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, I'll let you know. I feel fine too, just keeping my mask on and staying out of the lounge. Text me if anything changes, and take care!",
+  "shared_health": true
+ }
+}

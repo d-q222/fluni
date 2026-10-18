@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Val! I see you're masking too. I'm waiting on a flu test from Vaden, FlUni told me to get checked even though I feel fine, so I'm keeping my distance a bit. How are you doing?",
+  "shared_health": true
+ }
+}

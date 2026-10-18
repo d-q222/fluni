@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Perfect, let's go! I'm starving, hopefully the line isn't too crazy.",
+  "shared_health": false
+ }
+}

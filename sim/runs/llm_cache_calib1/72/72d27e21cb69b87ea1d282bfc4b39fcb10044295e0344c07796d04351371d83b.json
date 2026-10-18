@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:MATH51_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:ENGR14_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:20",
+    "place": "bld:bld_232841950",
+    "start": "15:20"
+   },
+   {
+    "activity": "lab",
+    "end": "18:40",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "23:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "00:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Fri Jan 9: Keeping my usual class, lab and study routine. I feel fine, a bit aware of the flu going around but not changing plans.",
+  "messages": [],
+  "thoughts": "I feel fine. Illness is going around, with Bailey and Sidney sick and a FlUni alert last night, but I rarely follow health advice. I'll keep my usual routine of classes, lab and study, and skip the mask. I'm only a little worried.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

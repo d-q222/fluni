@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:20"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "lab",
+    "end": "10:55",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "11:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "bld:bld_232841950",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:CHEM31B_LEC02",
+    "start": "12:30"
+   },
+   {
+    "activity": "relax",
+    "end": "14:40",
+    "place": "bld:bld_232841950",
+    "start": "13:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:25",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "14:45"
+   },
+   {
+    "activity": "class",
+    "end": "18:45",
+    "place": "class:CHEM31B_LEC02_2",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841910_f2_204",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Followed my usual Wednesday routine with a mask indoors since people are still coughing. Feeling fine, still a bit watchful.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll follow my usual Wednesday routine. People are coughing around campus, so I'll wear a mask indoors again and stay organized. Evening lab as usual, then wind down alone.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

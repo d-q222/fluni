@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "12:05",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:20",
+    "place": "bld:bld_m_meyer_green",
+    "start": "12:10"
+   },
+   {
+    "activity": "lab",
+    "end": "14:55",
+    "place": "class:DESIGN1_LBS04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "bld:bld_m_green_library",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:45",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick with a fever and Eden is staying in. I'm skipping the Stern lounge, masking for Lakeside and a shorter Taper, then home early. Feeling fine but a bit more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "",
+    "time": "",
+    "to": "A0061"
+   }
+  ],
+  "thoughts": "Chris woke up sick and Eden is out too. I'm fine but I've been around Chris a lot, so I'll be more careful. I'm very social so I won't hide away completely, but I'll skip the lounge hangout, wear a mask, and keep to the lab, library, Lakeside and a shorter Taper stop with friends. I'll check in on Chris and the group.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

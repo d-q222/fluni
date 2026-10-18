@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, quick bite before class. You? Good first Monday back so far?",
+  "shared_health": false
+ }
+}

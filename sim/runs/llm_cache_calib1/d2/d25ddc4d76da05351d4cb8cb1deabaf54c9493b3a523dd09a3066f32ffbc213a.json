@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "16:35",
+    "place": "event:EV00113",
+    "start": "13:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "gym",
+    "end": "20:10",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Stayed at the crowded Cal game masked with friends, feeling fine. Then study, dinner, gym, and resting at home, skipping the dorm hangout.",
+  "messages": [],
+  "thoughts": "The stadium is crowded, but I'm masked, feeling fine, and tested negative. I'll stay for the game with True, Ocean and Oakley, then follow my routine: study, dinner, gym, and rest at home. I'll still skip the dorm hangout since it'll be packed and I want sleep before practice.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

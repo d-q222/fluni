@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, see you at Taper! If anyone's coughing at the lounge we bail, deal? Enjoy dinner!",
+  "shared_health": false
+ }
+}

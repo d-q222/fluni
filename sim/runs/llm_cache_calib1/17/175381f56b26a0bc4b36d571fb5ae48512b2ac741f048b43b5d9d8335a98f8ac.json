@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_232715666",
+    "start": "08:40"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "plan:bld_m_green_library_f3_303",
+    "start": "09:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "plan:bld_m_green_library_f3_303",
+    "start": "12:30"
+   },
+   {
+    "activity": "gym",
+    "end": "18:00",
+    "place": "bld:bld_232805671",
+    "start": "16:35"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "23:50",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Sat Jan 10: Val tested positive and is isolating. I feel fine but worried; masking in crowds, studying in quiet spots, and offering Val a food drop-off.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "So sorry Val, rest up. Happy to drop food outside your door, just tell me what you'd like. I'll keep my distance.",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Val is positive and isolating. I feel fine and tested negative, but I'm worried. I'll keep a mostly normal studious routine, mask in crowded places, avoid close contact, and offer Val a food drop-off. Skip the football game and keep to quieter library rooms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

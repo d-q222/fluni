@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm good, feeling fine. Smart move though, it's packed in here. See you in BIO 84!",
+  "shared_health": true
+ }
+}

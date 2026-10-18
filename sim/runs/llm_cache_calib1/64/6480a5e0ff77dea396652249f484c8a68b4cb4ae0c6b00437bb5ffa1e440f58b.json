@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah, feeling fine, my last test came back negative. Gym after this, then we've got the UCLA game. Wait, people in the dorm are getting sick? Who? Keep your mask on if it's packed in here.",
+  "shared_health": true
+ }
+}

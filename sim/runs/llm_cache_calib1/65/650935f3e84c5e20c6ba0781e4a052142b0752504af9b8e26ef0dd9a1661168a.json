@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Sawyer at Stern breakfast; both masked and feel fine. We'll both be on Green 2nd floor and agreed to tell each other right away if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer! Yeah, Green after this, I'll be on the second floor. I feel fine too, just staying masked. Let me know if anything feels off and I'll do the same.",
+  "shared_health": true
+ }
+}

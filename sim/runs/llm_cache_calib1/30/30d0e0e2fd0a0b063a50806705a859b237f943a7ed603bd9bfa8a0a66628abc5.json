@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah I'll probably pop in, but same, I'll bail early if it gets coughy. Lots of sick people in Stern lately, kinda paranoid lol. Catch you there maybe!",
+  "shared_health": false
+ }
+}

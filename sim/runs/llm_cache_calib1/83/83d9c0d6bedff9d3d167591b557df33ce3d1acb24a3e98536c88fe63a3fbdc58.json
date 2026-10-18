@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika, back at Stern again? I heard Dakota and Chris tested positive, so I'm keeping the hangout tonight short. You doing okay?",
+  "shared_health": false
+ }
+}

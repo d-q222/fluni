@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Chris at Stern Dining; they and a group head to the Arizona game at Maples around 6:45 and want me to text when I arrive. I feel fine, nothing health-related shared.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

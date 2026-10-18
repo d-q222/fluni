@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Fancy seeing you here. How's your week starting off?",
+  "shared_health": false
+ }
+}

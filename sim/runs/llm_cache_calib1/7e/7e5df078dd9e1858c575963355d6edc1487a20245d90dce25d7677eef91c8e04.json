@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ocean told me Skyler tested negative and that they'll be at the dorm hangout tonight, maybe wearing a mask if it's packed. I'm still going after practice and dinner, and I'll keep my spare mask handy.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

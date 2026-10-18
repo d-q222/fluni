@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce (my roommate) wore a mask and said Scout might be a close contact of someone sick; I told them I feel fine and will watch for symptoms. Eden also warned of fevers in Lucie Stern, so I'm a bit more cautious but keeping my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

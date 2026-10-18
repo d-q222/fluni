@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "21:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:40"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Heard more dorm people are sick. Feel fine but anxious. Finished studying masked, skipped the dorm hangout, home early to rest.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Wesley. I feel fine, skipping the hangout and staying out of the lounge, masked. Text if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Wesley's warning confirms sick people in my dorm. I'll skip the dorm hangout and avoid the lounge. I'll finish studying masked, then head home a bit earlier, relax in my room and sleep on time. I feel fine, but I'm anxious.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

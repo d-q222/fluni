@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, same. I feel fine so far, just trying not to push it. Hope the lounge folks get tested. Anyway, stay safe, see you around.",
+  "shared_health": true
+ }
+}

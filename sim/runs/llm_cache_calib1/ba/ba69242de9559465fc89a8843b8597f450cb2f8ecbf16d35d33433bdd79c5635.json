@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Emerson said Jesse (their friend) had a fever after a hangout and is getting tested; Emerson is masking. I agreed to mask in the room and keep distance until the result, and asked Emerson to tell me the result.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

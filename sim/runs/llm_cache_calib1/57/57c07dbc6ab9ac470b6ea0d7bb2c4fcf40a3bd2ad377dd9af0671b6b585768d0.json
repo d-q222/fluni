@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I feel fine too, just watching for symptoms. I'll text you if I hear Jesse's test result. Take care, see you around!",
+  "shared_health": true
+ }
+}

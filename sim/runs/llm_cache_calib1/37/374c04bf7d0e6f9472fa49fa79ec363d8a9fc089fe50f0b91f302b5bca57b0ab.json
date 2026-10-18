@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nah, I'm skipping the lounge. Sidney and Hadley are sick in our dorm and I'm not risking it. I'm just chilling here at Taper by the door for a bit. Feel fine though, you?",
+  "shared_health": true
+ }
+}

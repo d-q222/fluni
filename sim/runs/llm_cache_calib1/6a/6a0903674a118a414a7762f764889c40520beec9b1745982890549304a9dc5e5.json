@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter, what's up? Heard you're going to the Arizona game tonight.",
+  "shared_health": false
+ }
+}

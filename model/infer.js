@@ -34,6 +34,8 @@ export const DEFAULTS = {
   outdoorNearDilution: 5, // wind dilutes the plume 5x more outdoors
   deposition: 0.3,        // 1/h particle settling
   defaultRoomM2: 50, ceilingM: 2.7, defaultAch: 2.0, // room when the contact has no known room
+  roomVolume: 'map',      // 'map': volume_m3 of the contact's room in map/rooms.csv; 'fixed': the default room
+                          //   for every room (sim-only sizes, see model/README.md "Room size"). The phone mirrors 'map'.
   wallFactor: 0,          // our addition: an indoor pair with an empty room_id is < 5 m apart across a
                           //   wall (docs/sim-output-format.md) and shares no air; dose x this
   outdoorRH: 60, outdoorTempC: 10, indoorTempC: 21,  // campus in January: heated indoor air is dry (~30% RH)
@@ -93,7 +95,9 @@ export function doseModel(params = {}, rooms = null) {
     let r = cache.get(id);
     if (!r) {
       const s = rooms.get(id), v = Number(s?.volume_m3), a = Number(s?.ventilation_ach);
-      r = s ? mkRoom(v > 0 ? v : defRoom.volume, a > 0 ? a : P.defaultAch, String(s.room_type || '').startsWith('dorm')) : defRoom;
+      // roomVolume 'fixed': the default room's volume for every room (a phone knows neither the room nor its size)
+      const vol = P.roomVolume === 'fixed' || !(v > 0) ? defRoom.volume : v;
+      r = s ? mkRoom(vol, a > 0 ? a : P.defaultAch, String(s.room_type || '').startsWith('dorm')) : defRoom;
       cache.set(id, r);
     }
     return r;

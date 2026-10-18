@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Rain, masked and feeling fine, warned me Teagan has a fever and is getting tested, and that they were near Teagan at Stern yesterday. I said I'm masking and skipping the hangout, and we'll share test news.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

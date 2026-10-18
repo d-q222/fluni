@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Woke up feeling feverish and achy around midnight, so I told my friends and am staying in my dorm to rest. Very worried.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Heads up, I've started feeling sick: fever, chills, cough, sore throat, body aches. I've been staying in my dorm per FlUni, and I'll keep isolating. Maybe check in with Vaden if you feel off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I just started feeling feverish with chills, cough, sore throat and body aches. It's nearly midnight, so the sensible thing is to stay in my room and sleep. I'll tell my friends honestly in the morning so they can keep their distance. I've been isolating already, so I probably haven't exposed anyone recently. I'll keep my room as is and rest.",
+  "wear_mask": false,
+  "worry": 5
+ }
+}

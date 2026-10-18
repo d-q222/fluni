@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh hey, True. Hi, you live in my dorm, right? How's your day going?",
+  "shared_health": false
+ }
+}

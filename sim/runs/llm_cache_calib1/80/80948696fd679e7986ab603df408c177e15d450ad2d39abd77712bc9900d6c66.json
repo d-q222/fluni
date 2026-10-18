@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks! I've got lab until 12:15 then lunch at Stern, so I'll probably miss it. Have fun though!",
+  "shared_health": false
+ }
+}

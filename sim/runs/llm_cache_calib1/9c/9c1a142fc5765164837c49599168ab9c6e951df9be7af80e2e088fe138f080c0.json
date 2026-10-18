@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Morgan at Green Library; they're doing problem sets before lab. Nothing health-related came up, so I'll keep masking and sticking to my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

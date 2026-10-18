@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I feel fine. Illness seems to be going around and I tend to worry, so the mask is more for my peace of mind. Long day for me too, I've got lab tonight.",
+  "shared_health": true
+ }
+}

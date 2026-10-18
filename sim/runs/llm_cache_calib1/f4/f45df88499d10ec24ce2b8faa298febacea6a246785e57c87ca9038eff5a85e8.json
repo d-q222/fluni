@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jaden! Just being careful, I feel fine. I've heard some stuff might be going around, so I'd rather play it safe. How about you?",
+  "shared_health": true
+ }
+}

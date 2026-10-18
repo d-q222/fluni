@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oakley (masked, feels fine) at Stern; they have class at 11:30 and gym tonight. Nothing changes; I'll keep distance and stay careful while Skyler's test is pending.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

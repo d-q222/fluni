@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, I'm fine, just being careful. Fever rumor? I hadn't heard, that's kind of making me more anxious. Do you know anything more about it?",
+  "shared_health": true
+ }
+}

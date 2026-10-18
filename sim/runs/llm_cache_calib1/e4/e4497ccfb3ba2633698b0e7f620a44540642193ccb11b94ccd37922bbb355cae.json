@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "12:35"
+   },
+   {
+    "activity": "lab",
+    "end": "15:50",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Teagan has flu symptoms and I may be exposed. I feel fine; sticking to lab, dinner, and home, masking, skipping the hangout, sleeping early. Moderately worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for letting us know, Teagan. Hope the test comes back quickly and you feel better soon. Let me know if you need anything left at your door.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan is sick with flu symptoms and I may have been exposed Wednesday. I feel fine, but I'm organized and cautious. I'll keep to my routine, but minimize contact: study at home, go to lab with a mask since it's required work, take dinner early or grab it quickly, skip the dorm hangout, and sleep early. I'll monitor for symptoms and reply to Teagan kindly.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

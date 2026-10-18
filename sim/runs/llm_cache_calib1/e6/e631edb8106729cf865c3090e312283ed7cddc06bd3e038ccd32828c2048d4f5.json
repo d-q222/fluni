@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine too, just a little wary with everything going around. Honestly might start wearing a mask myself. Good luck with midterms, hope the lab goes quick.",
+  "shared_health": true
+ }
+}

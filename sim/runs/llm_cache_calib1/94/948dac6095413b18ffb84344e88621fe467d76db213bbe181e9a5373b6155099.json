@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, just sitting down for dinner. Week's going good, a little busy but fine. Gym and Taper later if you want to come. You?",
+  "shared_health": false
+ }
+}

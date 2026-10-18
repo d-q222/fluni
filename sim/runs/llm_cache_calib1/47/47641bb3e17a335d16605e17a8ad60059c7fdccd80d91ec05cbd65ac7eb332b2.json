@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:15"
+   },
+   {
+    "activity": "relax",
+    "end": "10:55",
+    "place": "home",
+    "start": "09:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_232715666",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:10",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:10"
+   }
+  ],
+  "diary": "Val tested positive for flu. I feel fine, so I'm staying masked, skipping the game, and studying at Green. I offered Val a food drop-off.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Val. Feel better soon. I'm happy to drop off food or supplies outside your door. Sawyer, let's keep masking and watch for symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Val tested positive for flu. I feel fine, so I'll keep my disciplined routine, mask indoors, skip the football game, and study at Green. I'll keep distance from others and text the group to say I'm thinking of Val and offer a food drop-off.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

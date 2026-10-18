@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm fine, no symptoms. Just masking in crowded spots to be careful, the dining hall's packed. Bryce said someone might be a close contact of a sick person, so I'm being extra cautious. Anyway, enjoy your break!",
+  "shared_health": true
+ }
+}

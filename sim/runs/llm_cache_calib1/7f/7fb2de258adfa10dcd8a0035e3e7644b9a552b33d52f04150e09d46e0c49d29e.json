@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I heard too. I'm actually a close contact of Dakota, feel fine so far, but keeping my distance too. Probably getting tested tomorrow. Stay safe!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "10:15",
+    "place": "home",
+    "start": "09:35"
+   },
+   {
+    "activity": "lab",
+    "end": "11:25",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "10:20"
+   },
+   {
+    "activity": "class",
+    "end": "12:25",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:10",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:05"
+   },
+   {
+    "activity": "lab",
+    "end": "17:10",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "15:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:00",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "17:15"
+   },
+   {
+    "activity": "lab",
+    "end": "22:35",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "18:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Friday: Harper has to stay home until Jan 14. I feel fine so I'm keeping my usual classes and lab, staying a bit careful, and aiming for bed by 23:30.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Harper. Rest up and feel better soon!",
+    "time": "",
+    "to": "A0215"
+   }
+  ],
+  "thoughts": "Harper is staying home per FlUni, but I feel fine and have no notice myself. I'll keep my usual routine, stay a bit careful, maybe skip the crowded dining hall lingering. Send Harper a quick reply wishing them well. Aim for bed around 23:30.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

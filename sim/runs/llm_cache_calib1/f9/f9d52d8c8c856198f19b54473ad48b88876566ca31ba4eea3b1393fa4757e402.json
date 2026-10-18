@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Woke up at 1:30am with fever, chills, cough, sore throat and body aches. I'm resting in my room, told Aspen and Emerson, and will consider Vaden and skipping class tomorrow. Feeling anxious.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Heads up: I woke up with fever, chills, cough, sore throat and body aches. I'm staying in my room and will probably get checked at Vaden tomorrow. Since we were at the hangout together, please watch for symptoms and keep your distance from others if you feel off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I just woke up with fever, chills, cough, sore throat and body aches, right after the hangout and the Stern fever rumors. I'm honest and cautious, so I'll stay in my room and rest, and I won't go anywhere tonight. I should tell my friends, especially Aspen and Emerson, who were near me at the hangout. It's 1:30am, so I'll text them now and they'll see it when they wake up. I'll decide about Vaden and classes in the morning.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

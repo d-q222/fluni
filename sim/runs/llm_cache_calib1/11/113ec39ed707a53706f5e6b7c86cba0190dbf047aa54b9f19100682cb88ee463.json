@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "14:30",
+    "place": "event:EV00113",
+    "start": "13:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:30",
+    "place": "bld:bld_m_meyer_green",
+    "start": "14:40"
+   },
+   {
+    "activity": "hangout",
+    "end": "18:00",
+    "place": "bld:bld_m_white_plaza",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:35",
+    "place": "bld:bld_232841950",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "21:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Sat Jan 10: Friends skipped the Cal game so I left early for Meyer Green, then plaza, Flomo, and Taper. Feeling fine, skipping the coughy lounge tonight and sleeping earlier.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "No worries, thanks all! I'm bailing from the game too, too crowded. Rest up and see you soon!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "My friends all bailed on the game and the stadium is packed with 41 people. I'm fine but a bit wary, and sitting in a crowd alone isn't much fun. I'll leave the game and head to White Plaza, then Flomo dinner, Taper, and keep the evening lighter. I'll skip the coughy lounge late tonight and sleep earlier. No mask, that's just not me.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

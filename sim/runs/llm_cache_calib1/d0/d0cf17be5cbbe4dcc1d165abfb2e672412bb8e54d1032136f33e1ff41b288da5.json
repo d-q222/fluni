@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon! Are you heading to 194W too? I like that you're masked up, I've been doing the same.",
+  "shared_health": false
+ }
+}

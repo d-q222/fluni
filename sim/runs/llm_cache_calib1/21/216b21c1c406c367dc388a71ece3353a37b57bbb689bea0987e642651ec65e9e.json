@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Skyler, a dorm neighbor, at Stern; they feel great and I told them I'm just being careful. Nothing changes for my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Jody said Emerson's friend Jesse has a fever and is getting tested; Jody will text me the result after lab. I feel fine and will stay careful and keep my distance from anyone who seems sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

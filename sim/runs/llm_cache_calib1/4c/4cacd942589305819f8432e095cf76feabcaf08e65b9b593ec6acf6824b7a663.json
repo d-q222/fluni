@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "bld:bld_232805662",
+    "start": "12:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:50",
+    "place": "bld:bld_m_meyer_green",
+    "start": "13:40"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:30",
+    "place": "bld:bld_232841950",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Chris and Dakota are sick and I was near Dakota. I feel fine but I'm skipping the game and party, masking, and keeping things low-key. More worried now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Chris and Dakota. Feel better! I feel fine so far but I was near Dakota last night, so I'm masking, skipping the game and party, and watching for symptoms. Wynn, be careful tonight.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris and Dakota are both sick now, and I was around Dakota last night, plus Oli is coughing in my room. I feel fine and I'm calm, but I should be more careful. I'll sleep in, skip the crowded game and party, and keep things low-key. I'll still see a few friends at Taper with a mask and eat at an off-peak time. Then I'll head home early and watch for symptoms.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

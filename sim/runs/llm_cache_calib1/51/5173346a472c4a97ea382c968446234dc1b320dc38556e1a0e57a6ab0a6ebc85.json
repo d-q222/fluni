@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! You coming to the Arizona game tonight at 7? A bunch of us are going, then lounge hangout after.",
+  "shared_health": false
+ }
+}

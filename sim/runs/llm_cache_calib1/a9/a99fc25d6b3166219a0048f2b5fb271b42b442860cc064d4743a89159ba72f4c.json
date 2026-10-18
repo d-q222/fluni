@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232805691_f1_102",
+    "start": "09:15"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:FRENLANG1_LNG02",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_333374283",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "13:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS106EA_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS124_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "gym",
+    "end": "17:20",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "16:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "17:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:20",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:40",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "00:25"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Tuesday: sticking to my usual routine of classes, gym, long lab, and late study at Green. Feeling fine, mask on indoors, a little worried about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual organized Tuesday: classes, gym, lab in the evening. Keeping my mask on indoors since I'm a bit worried about illness going around. I'll text Morgan when I head to Green tonight as promised.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

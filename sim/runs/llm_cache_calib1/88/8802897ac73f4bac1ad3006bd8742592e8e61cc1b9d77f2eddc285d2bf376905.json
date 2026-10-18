@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm heading to the gym right at 8:50, so I'll probably see you there. Want to lift together?",
+  "shared_health": false
+ }
+}

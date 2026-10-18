@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do, I'll let you know as soon as Skyler texts me. See you at practice!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm in! Gym first, then I'll head over. See you guys around 7, save me a spot by the aisle.",
+  "shared_health": false
+ }
+}

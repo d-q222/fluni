@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "11:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_1040629370",
+    "start": "12:05"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "gym",
+    "end": "17:50",
+    "place": "bld:bld_6593510",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "home",
+    "start": "18:50"
+   },
+   {
+    "activity": "party",
+    "end": "00:45",
+    "place": "event:EV00131",
+    "start": "22:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:00",
+    "place": "home",
+    "start": "01:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:00"
+   }
+  ],
+  "diary": "Saturday: football game, gym, party tonight, masked in crowds and skipping the lounge. Feel fine but watching for symptoms since Chris is sick.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris! Rest up, let us know if you need anything.",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "thoughts": "Saturday, I feel fine. Chris is sick and Dell's roommate is coughing, so I'll be careful but I'm too social to skip everything. I'll keep the football game and the party, wear a mask in crowds, and skip the lounge. Gym and study are fine.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Skyler's flu test came back negative, by the way, they said they feel fine. I'm skipping the hangout tonight though, a few people in our dorm are sick.",
+  "shared_health": false
+ }
+}

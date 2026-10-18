@@ -1,0 +1,69 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "11:30",
+    "place": "home",
+    "start": "11:15"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "health_visit",
+    "end": "13:30",
+    "place": "bld:bld_26250731",
+    "start": "12:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "18:30",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "01:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Started feeling sick this morning with fever, chills, cough and aches. Skipped lab and the dorm hangout, told my friends, went to Vaden for a test, and am isolating at home. Feeling anxious.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Heads up, I woke up with fever, chills, cough and sore throat. I'm going to get tested at Vaden and then isolating in my room. If you've been near me the last couple days, please watch for symptoms and mask up. Sorry!",
+    "time": "",
+    "to": "group"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Morgan, since we talked Wednesday about the exposures, I'm now symptomatic. Please check FlUni and keep an eye on how you feel.",
+    "time": "",
+    "to": "A0282"
+   }
+  ],
+  "thoughts": "I just started getting fever, chills, cough, sore throat and body aches right after the dorm exposures. I'm anxious and honest, so I should stop going around people. I'll head home, mask on while walking, skip lab and the hangout, rest, and tell my lab contacts and friends. A Vaden visit makes sense since FlUni flagged exposure; I'll go for a test early afternoon, then return home to rest.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

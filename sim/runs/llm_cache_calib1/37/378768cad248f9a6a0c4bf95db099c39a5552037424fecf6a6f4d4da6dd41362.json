@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Mask's probably smart with everything going around. I'm just grabbing food and heading out.",
+  "shared_health": false
+ }
+}

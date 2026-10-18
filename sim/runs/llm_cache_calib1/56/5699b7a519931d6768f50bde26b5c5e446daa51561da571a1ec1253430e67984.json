@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell, who is masked and feels fine, suggested I skip the football game since it's a big crowd and I was exposed to Dakota. I said I'd think about it and we agreed to text each other if either of us feels off.",
+  "messages": [],
+  "replan": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "That's what Umi said, Sidney's sick, no idea with what. I'd skip it if I were you, but it's your call. Text me what Skyler's test says, okay?",
+  "shared_health": false
+ }
+}

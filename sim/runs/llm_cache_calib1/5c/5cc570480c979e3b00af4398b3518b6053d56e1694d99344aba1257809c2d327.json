@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, just being careful in the crowd. I feel fine though, you? Oh, and Skyler got a FlUni alert and is waiting on test results, so I'm keeping my distance a bit.",
+  "shared_health": true
+ }
+}

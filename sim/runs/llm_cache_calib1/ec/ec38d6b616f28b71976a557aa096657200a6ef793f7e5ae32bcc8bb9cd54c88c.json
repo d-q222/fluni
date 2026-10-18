@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hadn't heard about Skyler. My neighbor Sidney told me this morning they have a fever and cough, so I told them to get checked. I feel fine, just keeping my distance from everyone. Hope Skyler's okay.",
+  "shared_health": true
+ }
+}

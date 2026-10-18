@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Emerson! Heading to the dorm hangout too? I'm just glad to be done with lab for the day.",
+  "shared_health": false
+ }
+}

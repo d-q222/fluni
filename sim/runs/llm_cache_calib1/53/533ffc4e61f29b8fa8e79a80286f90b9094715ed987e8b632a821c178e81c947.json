@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer, still feeling okay? I'm fine so far, just keeping the mask on and watching for symptoms.",
+  "shared_health": true
+ }
+}

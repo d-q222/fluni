@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Carter at Lakeside; they'll be at Taper around 8:25 after a study block. I feel fine and my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

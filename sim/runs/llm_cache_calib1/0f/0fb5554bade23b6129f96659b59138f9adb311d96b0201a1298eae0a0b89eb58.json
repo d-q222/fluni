@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "class",
+    "end": "21:25",
+    "place": "class:MUSIC160_PRA01",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:15",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "Ate quickly at crowded Stern Dining, then went to MUSIC 160, then problem sets at home. Feeling fine, a little watchful about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll eat quickly and not linger. I feel fine and I'm calm about it. I'll go to MUSIC 160 at 19:00, then study at home, relax and sleep as usual. I won't wear a mask, since I almost never do indoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

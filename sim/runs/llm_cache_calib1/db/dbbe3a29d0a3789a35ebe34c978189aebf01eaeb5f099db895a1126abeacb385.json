@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:35"
+   }
+  ],
+  "diary": "Jesse texted that they woke up with fever and other symptoms after the dorm hangout. I feel fine, replied kindly, and went back to sleep. I'll keep masking and watch for symptoms tomorrow.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Jesse. Sorry you feel awful, please rest and get checked at Vaden. I'll watch for symptoms and keep masking. Let me know if you need anything.",
+    "time": "",
+    "to": "A0170"
+   }
+  ],
+  "thoughts": "Jesse is sick and we were at the hangout together. I feel fine right now, so I'll go back to sleep at home. I'll reply to be supportive and say I'll watch for symptoms and keep masking. It's the middle of the night so no reason to go anywhere.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

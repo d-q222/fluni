@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:10"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Still sick and positive, stayed in my room to rest and study lightly. Bailey is sick too; I checked in by text and plan to keep resting.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Bailey. I'm still sick and positive too, staying in my room. Rest up and text if you need anything.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "Still sick and positive, so I'm staying in my room. Bailey is also sick, so I'll send a short reply to keep my distance. I'll study lightly, rest, eat something light, and go to bed on time.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

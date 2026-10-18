@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sure, that works. Distance is fine with me. Let's grab seats before it fills up.",
+  "shared_health": false
+ }
+}

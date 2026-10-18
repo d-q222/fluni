@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Totally get that, lab all evening sounds rough. Hope you stay healthy! I'm heading back to the dorm soon, see you around.",
+  "shared_health": false
+ }
+}

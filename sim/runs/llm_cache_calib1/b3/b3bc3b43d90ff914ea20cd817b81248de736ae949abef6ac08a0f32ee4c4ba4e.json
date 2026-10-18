@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "gym",
+    "end": "16:10",
+    "place": "bld:bld_232715573",
+    "start": "15:25"
+   },
+   {
+    "activity": "study",
+    "end": "17:50",
+    "place": "bld:bld_232841950",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_333374283",
+    "start": "17:55"
+   },
+   {
+    "activity": "relax",
+    "end": "19:50",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:25",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Wesley warned us they're a close contact. I feel fine but am anxious; masking everywhere, skipped the second gym session, and will watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Wesley. Feel better soon and stay in. I feel fine but I'm masking and will tell you both right away if I feel off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Wesley's warning is worrying, since we all had breakfast together yesterday. I feel fine, but I'm anxious. I'll keep my routine mostly, but mask up everywhere indoors, skip the crowded dining hall by eating early or quietly, and cut the second gym session to reduce exposure. I'll text Wesley a thanks and tell the group I'll monitor symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

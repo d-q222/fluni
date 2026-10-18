@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Dakota at the Arizona game; they're sitting with Wynn, Dell and Onyx, so we'll all sit together. Plan Taper or the lounge after, depending on noise. Both seem fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

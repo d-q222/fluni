@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden! Why the mask, are you feeling okay? You coming to Taper tonight?",
+  "shared_health": false
+ }
+}

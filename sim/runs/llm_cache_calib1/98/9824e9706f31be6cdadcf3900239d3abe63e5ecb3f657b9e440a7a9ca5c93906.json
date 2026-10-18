@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Emerson in the lobby; both masked and going to the dorm hangout briefly before bed. They'll keep distance and stay careful. Plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

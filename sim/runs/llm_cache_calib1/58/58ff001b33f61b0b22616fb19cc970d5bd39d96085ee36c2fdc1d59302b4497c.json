@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, thanks for telling me. I feel fine, but I'm pretty anxious about it too. Maybe get tested and keep the mask on? I'll give you some space, and I just talked to Wesley yesterday so I'll keep an eye out too.",
+  "shared_health": true
+ }
+}

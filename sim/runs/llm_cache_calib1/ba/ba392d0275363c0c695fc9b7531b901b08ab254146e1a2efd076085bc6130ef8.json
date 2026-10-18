@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do. I'm heading to lab after dinner, so I'll text you if Emerson tells me the result. Stay careful.",
+  "shared_health": false
+ }
+}

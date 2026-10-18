@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Pretty good, just anxious about the illness going around. Heads up, I got a close contact warning from Wesley, so I feel fine but I'm keeping my distance a bit. How about you?",
+  "shared_health": true
+ }
+}

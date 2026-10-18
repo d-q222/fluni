@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Okay, that's a relief, thanks. I'll keep masking too. Good luck with the problem sets, I've got class soon. See you around!",
+  "shared_health": true
+ }
+}

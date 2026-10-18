@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:30",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "relax",
+    "end": "11:45",
+    "place": "home",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "18:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Dakota and Chris are sick. I'm staying home, masking, skipping the game and party, and keeping Stern meals short. I feel fine but very anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better soon Dakota and Chris! Let us know what the test says. I'm staying in and masking, and I feel fine so far.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota and Chris are sick, and I feel fine but anxious. I'll stay in, mask, skip the game and party, and keep Stern meals short and quiet. I'll text Dakota a short supportive reply and keep to my routine.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Morgan at Stern Dining: both of us feel fine and are masking. Nothing new on Teagan beyond the positive test. We agreed to tell each other if symptoms show up. Plans unchanged: lab tonight, then study at home.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

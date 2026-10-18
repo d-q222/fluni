@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "gym",
+    "end": "19:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:20",
+    "place": "plan:bld_m_green_library_f3_305",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "22:10",
+    "place": "home",
+    "start": "21:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:10"
+   }
+  ],
+  "diary": "Normal Monday evening: quick dinner at crowded Stern, lift, study at Green, then bed. Feeling fine and not worried.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 42 people, so I'll finish eating quickly and head out. I feel fine and I'm not very worried, so I'll keep my usual routine: lift at Roble, study at Green, then wind down at home. I'll skip a mask since I feel fine.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

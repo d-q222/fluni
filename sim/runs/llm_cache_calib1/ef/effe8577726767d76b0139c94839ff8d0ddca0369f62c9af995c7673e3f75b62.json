@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good. Text me if it gets gross in there, I'll do the same. See you in a bit.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, no study group for me, I've got Flo Mo with Chris at 6:30 and then probably Taper with Wynn. You should come to Taper after if you're free!",
+  "shared_health": false
+ }
+}

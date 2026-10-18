@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "09:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:35"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:LINGUIST197A_SEM01",
+    "start": "10:00"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:05",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "16:55"
+   },
+   {
+    "activity": "relax",
+    "end": "19:35",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:05",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Kept to my routine, masked in crowds, skipped the Theta party, and still watching for symptoms after the Wesley contact. Feeling fine but anxious.",
+  "messages": [],
+  "thoughts": "Still feel fine, but I'm a close contact via Wesley and anxious. I'll keep my careful routine: classes, study, masked in crowds. Skipping the party since it's a crowded indoor event and I'm an introvert anyway. Home and rest early instead.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

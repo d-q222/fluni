@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika, what's up? Good call on the mask, I've been hearing rumors about someone in a dorm with a fever.",
+  "shared_health": false
+ }
+}

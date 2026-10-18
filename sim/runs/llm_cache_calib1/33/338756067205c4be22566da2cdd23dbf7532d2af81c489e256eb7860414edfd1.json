@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Yeah, grabbing dinner before heading to Flo Mo later. Day's been good, first Monday of the quarter and I feel great. Some of us are doing a hangout at Taper tonight if you want to come!",
+  "shared_health": true
+ }
+}

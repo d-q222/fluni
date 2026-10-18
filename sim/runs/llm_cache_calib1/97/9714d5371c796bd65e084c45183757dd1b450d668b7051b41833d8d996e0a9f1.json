@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "08:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "health_visit",
+    "end": "10:00",
+    "place": "bld:bld_26250731",
+    "start": "08:55"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "10:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "rest",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "I woke up with a fever and cough, told Devon and the group, and went to Vaden. I'm skipping classes and lab to rest in my room. I'm feeling worried and run down.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Heads up, I woke up with a fever, chills and a cough. I'm going to Vaden and then staying in my room to rest. I'm skipping class and lab, so please keep your distance and take care.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I have a fever, chills, cough and sore throat, and I'm already anxious about illness. Devon is right: I should go to Vaden, then rest at home. I'll skip the gym, classes, lab and the hangout. I'll tell the group honestly that I'm sick so they can keep their distance. I'll wear a mask on the way.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

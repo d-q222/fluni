@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:00",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:30",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "relax",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Sat Jan 10: Staying in my room per FlUni advice, with quick masked meals at Stern. Feeling fine but still worried.",
+  "messages": [],
+  "thoughts": "I feel fine, but FlUni asked me to stay home until Jan 14 and I'm worried. I'll keep to my room, sleep, study, and eat quickly at Stern at off-peak times with a mask on. I'm skipping the football game and the evening study spot. I'll rest early.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}
