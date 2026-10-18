@@ -328,4 +328,122 @@ final class RiskStateTests: XCTestCase {
         _ = fresh.step(.none, now: t0.addingTimeInterval(600))
         XCTAssertEqual(fresh.step(.nearby, now: t0.addingTimeInterval(605)), .nearby)
     }
+    // MARK: Reopening the app (owner: "I get a notification every time I re-open the app")
+
+    /// One app run, the way ProximityModel.tick runs it: each 1 s tick credits the peer through ExposureTick (the
+    /// first sighting after a launch credits nothing), then the gate decides on a notification.
+    private struct Run {
+        var exposure = ExposureTracker()
+        var gate = AlertGate()
+        var accrual = SightingAccrual()
+        var posted: [NotificationKind] = []
+
+        init(exposure: ExposureTracker = ExposureTracker(), gate: AlertGate = AlertGate()) {
+            self.exposure = exposure
+            self.gate = gate
+        }
+
+        /// Ticks at start+1 ... start+seconds; the sick peer (0.5 m) is in range when `peer` says so.
+        mutating func ticks(from start: Date, seconds: Int, peer: (Int) -> Bool = { _ in true }) {
+            let est = Estimate(distance: 0.5, sigma: 0.1, sources: [.uwb])
+            let g = ContactGuard.Output(id: "sick", risk: .contagious, pClose: Fusion.exposurePClose(est),
+                                        distance: Fusion.doseDistance(est), corroborated: true)
+            for i in 1 ... seconds {
+                let now = start.addingTimeInterval(Double(i))
+                let here = peer(i)
+                ExposureTick.run(guarded: here ? [g] : [], fresh: here ? [g.id] : [], now: now, wall: 1, speed: 1,
+                                 accrues: true, accrual: &accrual, exposure: &exposure)
+                if let k = gate.step(exposure.level, now: now) { posted.append(k) }
+            }
+        }
+    }
+
+    func testReopeningMidHeadsUpPostsNothingNew() throws {
+        var first = Run()
+        first.ticks(from: t0, seconds: 180)                             // 3 min beside a contagious peer
+        XCTAssertEqual(first.posted, [.nearby])
+        XCTAssertEqual(first.exposure.level, .nearby)
+        store().save(first.exposure, gate: first.gate, now: t0.addingTimeInterval(180))   // swiped away
+
+        // Reopened 1 min later; the peer is re-found after 5 s (Bluetooth) and stays 5 more minutes.
+        let r = try XCTUnwrap(store().load(now: t0.addingTimeInterval(240)))
+        var second = Run(exposure: r.exposure, gate: r.gate)
+        second.ticks(from: t0.addingTimeInterval(240), seconds: 300) { $0 > 5 }
+        XCTAssertEqual(second.exposure.level, .nearby)
+        XCTAssertLessThan(second.exposure.minutes, ExposureTracker.closeContactMinutes)
+        XCTAssertEqual(second.posted, [], "no new notification on reopening")
+
+        // Without the saved state the same reopening notifies again (the owner's bug), so the check above can fail.
+        var unsaved = Run()
+        unsaved.ticks(from: t0.addingTimeInterval(240), seconds: 300) { $0 > 5 }
+        XCTAssertEqual(unsaved.posted, [.nearby])
+    }
+
+    func testReopeningMidCloseContactPostsNothingNewAndKeepsTheLevel() throws {
+        var first = Run()
+        first.ticks(from: t0, seconds: 16 * 60)
+        XCTAssertEqual(first.posted, [.nearby, .closeContact])
+        store().save(first.exposure, gate: first.gate, now: t0.addingTimeInterval(960))
+
+        // Crash and relaunch twice within the hour, the peer still there each time.
+        var at = t0.addingTimeInterval(960)
+        var exposure = first.exposure, gate = first.gate
+        for _ in 0 ..< 2 {
+            at = at.addingTimeInterval(30)
+            let r = try XCTUnwrap(store().load(now: at))
+            XCTAssertEqual(r.exposure.level, .closeContact, "the close-contact level is there on the first frame")
+            var run = Run(exposure: r.exposure, gate: r.gate)
+            run.ticks(from: at, seconds: 600) { $0 > 3 }
+            XCTAssertEqual(run.posted, [])
+            XCTAssertEqual(run.exposure.level, .closeContact)
+            at = at.addingTimeInterval(600)
+            store().save(run.exposure, gate: run.gate, now: at)
+            exposure = run.exposure; gate = run.gate
+        }
+        XCTAssertGreaterThan(exposure.probability, first.exposure.probability, "the contact kept accruing")
+        XCTAssertEqual(gate.lastNotifiedAt, first.gate.lastNotifiedAt, "nothing notified since the first run")
+    }
+
+    func testReopeningAfterTheHeadsUpCooldownWithTheSickPeerStillThereNotifiesOnce() throws {
+        var first = Run()
+        first.ticks(from: t0, seconds: 180)
+        XCTAssertEqual(first.posted, [.nearby])
+        store().save(first.exposure, gate: first.gate, now: t0.addingTimeInterval(180))
+
+        // 30 min after the heads-up (exactly the cooldown) the app is reopened next to the same sick person.
+        let reopen = t0.addingTimeInterval(1 + BackgroundAlert.nearbyCooldown - 5)
+        let r = try XCTUnwrap(store().load(now: reopen))
+        var second = Run(exposure: r.exposure, gate: r.gate)
+        second.ticks(from: reopen, seconds: 120) { $0 > 5 }
+        XCTAssertEqual(second.posted, [.nearby], "one heads-up again, once the cooldown is over")
+        XCTAssertLessThan(second.exposure.minutes, ExposureTracker.closeContactMinutes)
+    }
+
+    func testAnAlertReadInTheAppStaysReadAcrossARelaunchForItsCooldown() throws {
+        var e = ExposureTracker()
+        contact(&e, seconds: 16 * 60)
+        let m = ProximityModel(riskStore: store())
+        XCTAssertFalse(m.isAlertRead(.closeContact, now: t0))
+        store().save(e, gate: AlertGate(), now: Date())
+        let m2 = ProximityModel(riskStore: store())
+        XCTAssertFalse(m2.isAlertRead(.closeContact), "never read: the tissue may pop")
+        m2.markAlertRead(.closeContact)                                 // "Got it", saved at once
+
+        let m3 = ProximityModel(riskStore: store())                     // relaunch
+        XCTAssertEqual(m3.exposure.level, .closeContact)
+        XCTAssertTrue(m3.isAlertRead(.closeContact), "read before the relaunch: no pop")
+        XCTAssertFalse(m3.isAlertRead(.nearby), "a heads-up is a different alert")
+        XCTAssertTrue(m3.isAlertRead(.none))
+        XCTAssertFalse(m3.isAlertRead(.closeContact, now: Date().addingTimeInterval(BackgroundAlert.closeContactCooldown + 1)))
+
+        var g = AlertGate()
+        g.markRead(.nearby, now: t0)
+        XCTAssertTrue(g.isRead(.nearby, now: t0.addingTimeInterval(1799)))
+        XCTAssertFalse(g.isRead(.nearby, now: t0.addingTimeInterval(1800)), "pops again when a notification could")
+        XCTAssertFalse(g.isRead(.nearby, now: t0.addingTimeInterval(-1)), "clock set back: not hidden")
+
+        // Delete my data forgets reads too.
+        m3.forgetEverything()
+        XCTAssertFalse(ProximityModel(riskStore: store()).isAlertRead(.closeContact))
+    }
 }
