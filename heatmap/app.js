@@ -59,6 +59,8 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
+// 4 days (DEMO.md is timed on it). "2 weeks" in the header's run picker is influenza_none_n1000_d14_s42_25fe957a: the
+// same scenario and seed, only longer; a big run (BIG_AGENT_DAYS), so it reads the precomputed model/out/ and heatmap/out/ files.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
 // ?model=meanfield: people's P(sick) from Baker et al.'s mean-field (model/meanfield.js) instead of infer.js.
@@ -86,6 +88,24 @@ const runUrls = (run) => [`../sim/runs/${run}/timeline_changes.csv.gz`, `../sim/
 const DATA_URLS = PARAMS.get('data') ? [PARAMS.get('data')]
   : PARAMS.get('run') ? runUrls(PARAMS.get('run'))
     : runUrls(DEFAULT_RUN); // no silent fallback to mock or fake data: a failure must be visible
+// Run picker in the header (index.html <select id="run">: "4 days" / "2 weeks"): reloads with ?run=<name>,
+// keeping the other URL options. Usable while a run is still loading. Any other ?run= gets its own entry.
+{
+  const pick = document.getElementById('run');
+  if (pick && !EMBED) {
+    const cur = PARAMS.get('data') ? null : PARAMS.get('run') || DEFAULT_RUN;
+    if (cur && ![...pick.options].some((o) => o.value === cur)) pick.add(new Option(cur, cur));
+    if (!cur) pick.add(new Option('Custom data', ''), 0);
+    pick.value = cur || '';
+    pick.addEventListener('change', () => {
+      if (!pick.value) return;
+      const q = new URLSearchParams(location.search);
+      q.delete('data'); q.delete('at'); q.delete('agent'); // a time or person from the other run means nothing here
+      if (pick.value === DEFAULT_RUN) q.delete('run'); else q.set('run', pick.value);
+      location.assign(location.pathname + (q.size ? `?${q}` : '') + location.hash);
+    });
+  } else if (pick) pick.hidden = true;
+}
 
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
