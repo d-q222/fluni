@@ -26,6 +26,7 @@ const put = (rel, from) => { mkdirSync(dirname(join(out, rel)), { recursive: tru
 put('index.html', join(hm, 'usermap.html'));
 for (const f of ['usermap.js', 'heat.js', 'userstyle.js']) put(f, join(hm, f)); // heat.js: the colour stops; userstyle.js: how a building is coloured (shared with the presenter)
 put('vendor/leaflet', join(hm, 'vendor/leaflet'));
+put('vendor/fonts', join(hm, 'vendor/fonts'));   // Nunito + Fredoka (design pass)
 // (the illustrated assets/trace/campus_trace.webp is no longer bundled: the vector layers read better and save 0.37 MB)
 put('assets/trace/campus_trace_bounds.json', join(hm, 'assets/trace/campus_trace_bounds.json'));
 put('assets/containers/box-paper.png', join(hm, 'assets/containers/box-paper.png'));
