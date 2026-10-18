@@ -297,6 +297,9 @@ class LLMAgents:
         bits.append("You bike around campus." if int(pop.transport[i]) == 1 else "You walk around campus.")
         n_fr = int((np.asarray(pop.friend_group) == pop.friend_group[i]).sum()) - 1
         bits.append(f"Your friend group has {n_fr} other people.")
+        if getattr(pop, "big_five", None) is not None:
+            from .personality import describe
+            bits.append(describe(pop.big_five[i]))
 
         def lvl(v, words):
             return words[min(int(v * len(words)), len(words) - 1)]

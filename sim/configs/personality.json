@@ -1,0 +1,23 @@
+{
+  "_doc": "Big Five personalities (docs/AGENT_FRAMEWORK.md section 1, campussim/personality.py). mode 'off' keeps the per-archetype trait Betas in population.json (and run ids); 'big_five' draws openness..neuroticism per agent from Beta(mean * concentration, (1 - mean) * concentration) and derives compliance, mask_propensity, honesty, the sick response and social_scale (multiplier on party/event/hangout rates) from them. Archetype means of the derived traits equal today's. weights: logit (or log-prob / log) change per unit of (score - archetype mean); placeholders until calibration.",
+  "mode": "off",
+  "concentration": 12,
+  "noise_sd": 0.65,
+  "social_scale_max": 2.5,
+  "big_five_mean": {
+    "studious": {"openness": 0.55, "conscientiousness": 0.72, "extraversion": 0.40, "agreeableness": 0.55, "neuroticism": 0.55},
+    "social":   {"openness": 0.60, "conscientiousness": 0.45, "extraversion": 0.78, "agreeableness": 0.60, "neuroticism": 0.42},
+    "athlete":  {"openness": 0.45, "conscientiousness": 0.65, "extraversion": 0.65, "agreeableness": 0.55, "neuroticism": 0.38},
+    "stem":     {"openness": 0.62, "conscientiousness": 0.66, "extraversion": 0.40, "agreeableness": 0.50, "neuroticism": 0.52},
+    "commuter": {"openness": 0.50, "conscientiousness": 0.58, "extraversion": 0.42, "agreeableness": 0.55, "neuroticism": 0.48},
+    "homebody": {"openness": 0.50, "conscientiousness": 0.55, "extraversion": 0.28, "agreeableness": 0.58, "neuroticism": 0.60}
+  },
+  "weights": {
+    "compliance": {"conscientiousness": 3.0, "agreeableness": 1.5},
+    "mask_propensity": {"conscientiousness": 2.0, "neuroticism": 2.0},
+    "honesty": {"agreeableness": 2.5, "conscientiousness": 1.5},
+    "sick_stay_home": {"conscientiousness": 1.5, "neuroticism": 1.5, "extraversion": -1.5},
+    "sick_vaden": {"conscientiousness": 2.0, "neuroticism": 1.0, "extraversion": -0.5},
+    "social_scale": {"extraversion": 2.0, "openness": 0.5}
+  }
+}

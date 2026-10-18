@@ -68,6 +68,25 @@ Every run also writes `timeline_changes.csv.gz`, the compact timeline the heat m
 ([docs/timeline-changes-format.md](../docs/timeline-changes-format.md)): only rows where something
 changes plus the last row of each stay. It's about 5× smaller than `timeline.csv.gz`.
 
+## Big Five personalities
+
+`--set personality.mode=big_five` gives every agent openness, conscientiousness, extraversion,
+agreeableness and neuroticism scores, drawn from a range typical for its archetype
+(`configs/personality.json`). The behavior traits are then computed from those scores instead of
+drawn on their own:
+
+- compliance follows conscientiousness and agreeableness;
+- mask wearing follows conscientiousness and neuroticism;
+- honesty follows agreeableness and conscientiousness;
+- extraverts carry on when sick more often, and go to more parties, events and hangouts (`social_scale`).
+
+Each archetype's averages stay the same as with personality off, so the influenza calibration
+holds. Big Five only changes who varies around the average. Dorms, friend groups, teams and classes
+are identical either way. The run writes `personality.csv` (scores plus `social_scale`), and Claude
+agents' personas describe the personality in words. The weights are placeholders until the
+calibration loop in [docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md) fits them. Off by default,
+so run ids are unchanged. Check it with `scripts/smoke_personality.py`.
+
 ## Claude-driven agents
 
 By default every agent follows the scheduler's plan (`plans.py`) and a scripted sick response.
@@ -216,6 +235,7 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 | `campussim/reports.py` | sick-behavior choice, Vaden tests, honest/dishonest self-reports, report_other |
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
 | `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
+| `campussim/personality.py` | Big Five personalities; derives compliance, masks, honesty, sick response, social_scale |
 | `campussim/llm_agents.py` | Claude-driven agents: daily plans and re-plans from the Claude API, cached |
 | `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |

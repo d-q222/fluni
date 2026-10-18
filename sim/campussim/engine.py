@@ -40,6 +40,8 @@ def recorded_config(cfg):
         rec.get("interventions", {}).pop("fluni", None)
     if not _llm_on(rec):  # keeps run ids of runs without Claude-driven agents unchanged
         rec.pop("llm_agents", None)
+    if rec.get("personality", {}).get("mode", "off") == "off":  # keeps run ids of runs without Big Five
+        rec.pop("personality", None)
     return rec
 
 
@@ -108,6 +110,9 @@ def run(cfg, external_provider=None, quiet=False, llm_client=None):
     writer.write_config(recorded_config(cfg), run_id, campus.version, code_version(), fractions)
     campus.write(run_dir / "map")
     writer.write_table("agents_static.csv", pop.to_frame(campus, sections))
+    if pop.big_five is not None:
+        from .personality import frame as personality_frame
+        writer.write_table("personality.csv", personality_frame(pop))
     writer.write_table("schedule/sections.csv", sections_frame_for_csv(sections))
     writer.write_table("schedule/events.csv", events_frame_for_csv(events, pop))
 

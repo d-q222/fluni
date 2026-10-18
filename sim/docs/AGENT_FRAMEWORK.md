@@ -136,7 +136,8 @@ silently tuned away.
 ## Build order
 
 1. **Big Five personalities** for all agents, with traits derived from them. Off by default; check
-   that the trait means match today's and R is unchanged.
+   that the trait means match today's and R is unchanged. **Done** (`campussim/personality.py`,
+   `configs/personality.json`, `scripts/smoke_personality.py`).
 2. **Worry state and drift** (rule-based jumps and decay), plus the `worry` answer from Claude
    agents.
 3. **Structured outcomes and `llm_events.csv`**, including `shared_health` on talk turns.
