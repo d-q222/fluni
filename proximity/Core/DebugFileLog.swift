@@ -17,12 +17,15 @@ final class DebugFileLog {
     private var handle: FileHandle?
     private var observers: [NSObjectProtocol] = []
 
-    /// Starts a fresh file. Called once, on a test launch.
+    /// Opens the file for appending. Called once per process, on a test launch.
     func start(log: @escaping (String) -> Void) {
         guard handle == nil, let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
         let url = dir.appendingPathComponent("fluni-test.log")
-        FileManager.default.createFile(atPath: url.path, contents: nil)
+        // Appends, so a relaunch (iOS ended FlUni and restored it for Bluetooth) keeps the earlier lines.
+        if !FileManager.default.fileExists(atPath: url.path) { FileManager.default.createFile(atPath: url.path, contents: nil) }
         handle = try? FileHandle(forWritingTo: url)
+        _ = try? handle?.seekToEnd()
+        append("=== process start pid=\(ProcessInfo.processInfo.processIdentifier)")
         #if canImport(UIKit)
         let nc = NotificationCenter.default
         let states: [(Notification.Name, String)] = [

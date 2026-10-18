@@ -68,7 +68,11 @@ final class ProximityModel: ObservableObject {
     private var lastSummary = Date.distantPast
     private var lastFixSent = Date.distantPast
     private var timer: Timer?
-    private var notifiedLevel = AlertLevel.none
+    /// flu-offdetect: which alert levels get a notification (crossings up, per-level cooldown), the same on a
+    /// background wake-up as in the foreground.
+    private var alertGate = AlertGate()
+    /// Posts alerts; the default keeps FlUni running until iOS has taken the request (UNPoster).
+    var alertPoster: AlertPosting = UNPoster()
     /// Per-peer "credited up to" times: exposure accrues from sightings, so it keeps counting while iOS
     /// only wakes FlUni for Bluetooth events, and the timer and those wake-ups never count a second twice.
     private var accrual = SightingAccrual()
@@ -229,7 +233,7 @@ final class ProximityModel: ObservableObject {
     func resetExposure() {
         exposure.reset()
         accrual.reset()
-        notifiedLevel = .none
+        alertGate = AlertGate()
     }
 
     /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
@@ -341,9 +345,12 @@ final class ProximityModel: ObservableObject {
     private func scheduleBackgroundTick() {
         guard !backgroundTickPending else { return }
         backgroundTickPending = true
+        // flu-offdetect: hold the wake-up open until that tick (and any notification it posts) has run.
+        let window = BackgroundWindow.begin("fluni.tick")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             self?.backgroundTickPending = false
             self?.tick()
+            window.end()
         }
     }
 
@@ -521,9 +528,13 @@ final class ProximityModel: ObservableObject {
         if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
         if e != exposure { exposure = e }  // unchanged ticks don't republish; any change in p does
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
-        notifiedLevel = next.notified
-        if let level = next.notify { notify(level) }
+        if let kind = alertGate.step(exposure.level, now: now) {
+            log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")")
+            if UIApplication.shared.applicationState == .active {
+                UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
+            }
+            alertPoster.post(kind)
+        }
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
 
         // Ease GPS off while any enabled UWB reading was fresh in the last 15 s (hysteresis vs flapping).
@@ -584,9 +595,17 @@ final class ProximityModel: ObservableObject {
     }
     #endif
 
-    private func notify(_ level: AlertLevel) {
-        UINotificationFeedbackGenerator().notificationOccurred(level == .closeContact ? .error : .warning)
-        let c = AppNotifications.content(kind: level == .closeContact ? .closeContact : .nearby)  // category + userInfo + neutral text
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil))
+}
+
+/// Posts through UNUserNotificationCenter (text from NotificationRoute via AppNotifications, which respects the
+/// lock-screen details setting). A background task keeps FlUni running until iOS has accepted the request, so a
+/// wake-up that crosses a threshold can't be suspended halfway through posting it (flu-offdetect).
+final class UNPoster: AlertPosting {
+    func post(_ kind: NotificationKind) {
+        let window = BackgroundWindow.begin("fluni.alert")
+        let c = AppNotifications.content(kind: kind)  // category + userInfo + neutral text
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil)) { _ in
+            window.end()
+        }
     }
 }

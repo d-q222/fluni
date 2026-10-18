@@ -99,8 +99,12 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
     private func entered(_ id: String) {
         guard status == .authorizedAlways, !WalkInMonitor.pausedOnDisk else { return }
         pendingEntries[id] = Date()
+        // flu-offdetect: a region event (possibly a relaunch) gives FlUni only seconds; keep it running while the
+        // fix is awaited and the warning is posted.
+        let window = BackgroundWindow.begin("fluni.walkin")
         manager.requestLocation()
         DispatchQueue.main.asyncAfter(deadline: .now() + GeofenceEntry.fixTimeout + 1) { [weak self] in
+            defer { window.end() }
             guard let self else { return }
             self.pendingEntries = GeofenceEntry.pruned(self.pendingEntries, now: Date())
         }
