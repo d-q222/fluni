@@ -1,7 +1,7 @@
 # FlUni: known risks and open trade-offs
 
 This is a working record for later. It is not part of the demo or the pitch: don't show it, link to it from the app or
-mention it in the presentation. Last updated 2026-10-17.
+mention it in the presentation. Last updated 2026-10-18.
 
 ## Privacy
 
@@ -60,10 +60,42 @@ mention it in the presentation. Last updated 2026-10-17.
   work; the details belong here once verified on the phones.
 - iOS background Bluetooth is slower and coarser than foreground (overflow-area advertising, no UWB, no
   MultipeerConnectivity).
+- **UWB is foreground only, by iOS design** (checked against Apple's NI docs and the iOS 27.1 SDK headers,
+  2026-10-18). When FlUni goes to the background or the screen locks, iOS suspends every iPhone-to-iPhone NI
+  session; a long suspension ends it. Background NI exists only for third-party UWB accessories paired over
+  Bluetooth (`NINearbyAccessoryConfiguration(accessoryData:bluetoothPeerIdentifier:)`), not for other iPhones.
+  FlUni doesn't fake it: off screen, distance comes from Bluetooth alone with its wider error (±(70 % + 0.3 m)),
+  and UWB comes back when FlUni is opened (sessions re-made at once; a dropped link needs a 2.5-4.5 s handshake
+  first). Keeping FlUni on screen during a demo (idle timer off while Today is shown) would keep UWB on, but it
+  drains battery: proposed as a Debug-only demo toggle, not built; owner to decide.
+- **How many UWB sessions at once:** iOS sets the limit dynamically (no published number); past it a session
+  fails with activeSessionsLimitExceeded and FlUni retries it every 5-30 s. Links are capped at 8 per identity
+  (up to 16 sessions briefly during an ID rotation's make-before-break).
+- **Nearby Interaction permission:** asked on the first session (onboarding explains it first). "Don't Allow"
+  means no UWB; FlUni tries once more each time it is foregrounded in case it was changed in Settings, and the
+  Developer screen shows "NOT ALLOWED in Settings".
+- **Low Power Mode:** Apple documents no effect on NI; not measured. The `uwb metric` line records it so a soak
+  can tell.
+- **Camera assistance** is not used (distance only; it would need the camera).
 
 ## Reliability
 
 - **MultipeerConnectivity `_BrowserCancel` crash:** 12 FlUni and 7 harness crashes on 2026-10-17. Partial fix a8ab90b;
   a full fix is in progress. Record the outcome here.
-- **UWB `NIERROR_INVALID_CONFIGURATION_DESCRIPTION`:** logged 19 times in one soak; under investigation.
+- **UWB `NIERROR_INVALID_CONFIGURATION_DESCRIPTION` (cause found, fixed in flu-uwb, not yet soaked on phones).**
+  Every one of ~180 in the 2026-10-17/18 logs followed a link to a peer whose hello ID Bluetooth never heard
+  (`heard=no`): the other FlUni app on the same phone (FlUni and the harness share the MPC service type) or FlUni
+  in a simulator over the Mac's network. Apple: invalidConfiguration means the peer's discovery token is invalid
+  for this device, so those can never range. Real phone pairs, including U2 pairs with extended distance on,
+  ranged fine (e.g. 0.66-0.88 m). The old "extended distance rejected" reading was a misattribution.
+  Fix: no NI session for a link peer until Bluetooth hears its hello ID (UWBRanger.setHeard).
+- **UWB uptime (fixed in flu-uwb, needs a phone soak to measure).** Before: an invalid configuration stopped UWB
+  for that link for good (retried only on a new link, which may never come), a token that arrived before our
+  session existed was dropped, the stop also cleared the peer's link ID, and sessions were re-made in the
+  background where iOS suspends them at once. Now: retry with a fresh session and token after 0.5, 1, 2 … 30 s,
+  forever while the phone is linked and heard; early tokens are kept; no sessions in the background and every
+  missing one is re-made the moment FlUni is foregrounded. Coverage and invalidation counts are on the Developer
+  screen ("UWB health") and in `uwb metric` log lines. Coverage before/after is **not measured yet**.
+- **Two FlUni apps on one phone** (FlUni + harness) link to each other over MPC. Harmless now (no UWB without a
+  Bluetooth-heard ID, and the hello's ID is ignored), but each such link uses one of the 8 link slots.
 - **Phones auto-lock during tests:** demo phones need Auto-Lock set to Never.

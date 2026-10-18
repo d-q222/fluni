@@ -53,7 +53,7 @@ WORKSTREAMS.md.)
 | **Bluetooth LE** beacon | Packed into one 128-bit service UUID: `FLU2`, status byte (risk in bits 0-1, days since onset 0-14 in bits 2-5, 15 = unknown), score byte round(255·√p), 10-byte ID. Older builds' `FLU1` (risk, 11-byte ID) is still accepted, with score and days unknown. Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
 | **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
 | **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk + UWB capability), UWB tokens; GPS fixes **only in the harness**. New random link name on every ID rotation; every message size-capped (4 KB), rate-limited and validated; max 8 peers. The link's risk is never used (Bluetooth's is), and a hello ID counts only if Bluetooth heard it in the last 30 s | — |
-| **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link; keeps ranging through link drops (30 s grace); extended distance when both phones have the U2 chip | ~10 cm |
+| **UWB** (Nearby Interaction, U1/U2 chip) | **foreground only** (iOS suspends iPhone-to-iPhone sessions in the background). Needs tokens swapped over the peer link, and starts only for a linked phone whose hello ID Bluetooth hears (others can't range: see RISKS.md). Self-healing: after any invalidation a fresh session and token after 0.5 → 30 s backoff, forever while linked and heard; missing sessions re-made the moment FlUni is foregrounded; keeps ranging through link drops (30 s grace); a new session and token exchange per ID rotation. Extended distance when both phones have the U2 chip, dropped for a pair NI rejects. Health (Developer > Radios > "UWB health", log `uwb metric`): coverage = share of foreground peer-seconds with a UWB distance ≤ 3 s old while a UWB phone is heard on Bluetooth; invalidations by reason; time from foreground to the first distance | ~10 cm |
 | **GPS** | FlUni: your own fix, used **only on your phone** (building warnings); never sent. Harness: also sent to the linked phone for GPS ranging tests | 5–20 m, poor indoors |
 
 **Fusion** (`Fusion.swift`): fresh readings are averaged, each weighted by 1/σ². UWB dominates when
@@ -234,6 +234,8 @@ crashes the app now and then inside Apple's code (`_BrowserCancel` SIGTRAP, see 
 Retired browsers are parked until iOS backgrounds the app. The app logs
 `[fluni] link metric handshake=…` per link and `link metric uwb_resume gap=… after_drop=…` when UWB comes
 back; `tools/stress.py` reports them (`handshake_med`, `link_failed`, `uwb_gap_max`, `uwb_after_drop_max`).
+UWB health: `uwb metric coverage=… eligible_s=… covered_s=… sessions=… timeouts=… suspended=… invalid=reason:n,… lowPower=…`
+every minute and on each trip to the background, and `uwb metric resume_after_foreground=…` (not yet parsed by `stress.py`).
 
 ## Demo
 
