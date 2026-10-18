@@ -1,1 +1,1 @@
-{"images": [{"filename": "pull-0-rim.png", "idiom": "universal", "scale": "2x"}], "info": {"author": "xcode", "version": 1}}
+{"images":[{"filename":"pull-0-rim.png","idiom":"universal","scale":"2x"},{"filename":"pull-0-rim-night.png","idiom":"universal","scale":"2x","appearances":[{"appearance":"luminosity","value":"dark"}]}],"info":{"author":"xcode","version":1}}

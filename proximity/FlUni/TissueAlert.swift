@@ -265,22 +265,22 @@ struct TissueAlert: View {
     private func noteText(_ lines: [String], more: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(level == .closeContact ? "CLOSE CONTACT" : "HEADS-UP")
-                .font(.fluni(.caption, weight: .bold)).tracking(0.8).foregroundStyle(Theme.fireInk)
-            Text(Advice.title(level)).font(.fluni(.title2, weight: .semibold)).foregroundStyle(Theme.ink)
+                .font(.fluni(.caption, weight: .bold)).tracking(0.8).foregroundStyle(Theme.dayFireInk)
+            Text(Advice.title(level)).font(.fluni(.title2, weight: .semibold)).foregroundStyle(Theme.dayInk)
                 .minimumScaleFactor(lines.isEmpty ? 0.5 : 1)
             ForEach(lines, id: \.self) { line in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("•")
                     Text(line)
                 }
-                .font(.fluni(.subheadline)).foregroundStyle(Theme.ink)
+                .font(.fluni(.subheadline)).foregroundStyle(Theme.dayInk)
             }
             if more {
-                Text("More advice on Today.").font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2)
+                Text("More advice on Today.").font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.dayInk2)
             }
         }
         .padding(8)
         // The sheet's colour, so her fold lines don't run through the words.
-        .background(Color(hex: 0xf8e3aa).opacity(0.94), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color(day: 0xf8e3aa, dayAlpha: 0.94, night: 0xdab779, nightAlpha: 0.94), in: RoundedRectangle(cornerRadius: 10))
     }
 }

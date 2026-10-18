@@ -90,8 +90,8 @@ async function main() {
   map.getPane('halo').style.filter = HALO_BLUR;
   map.getPane('heat').style.filter = GLOW; // hot buildings glow so they read zoomed out
   const lblPane = map.createPane('labels'); lblPane.style.zIndex = 450; lblPane.style.pointerEvents = 'none';
-  const NEUTRAL = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
-  const CTX = {
+  const NEUTRAL_DAY = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
+  const CTX_DAY = {
     green: { stroke: false, fill: true, fillColor: '#c3cf9c', fillOpacity: 0.5 },
     water: { stroke: false, fill: true, fillColor: '#adc9cc', fillOpacity: 0.7 },
     road: { color: INK, weight: 1.2, opacity: 0.2, fill: false },
@@ -101,16 +101,37 @@ async function main() {
     shopping: { color: INK, weight: 0.7, opacity: 0.2, fill: true, fillColor: INK, fillOpacity: 0.05 },
     hospital: { color: INK, weight: 0.7, opacity: 0.2, fill: false },
   };
+  // Night (Lisa's phone-mock night map): cream lines on cocoa, heat keeps its colours. Follows the web view's
+  // appearance (FlUni's Appearance setting sets it), so no message from the app is needed.
+  const NIGHT_INK = '#f1e2c6';
+  const CTX_NIGHT = { green: { fillColor: '#5f6e45', fillOpacity: 0.55 }, water: { fillColor: '#4d6a70', fillOpacity: 0.75 },
+    road: { color: NIGHT_INK, opacity: 0.22 }, street: { color: NIGHT_INK, opacity: 0.12 }, rail: { color: NIGHT_INK, opacity: 0.2 },
+    town: { color: NIGHT_INK, opacity: 0.15 }, shopping: { color: NIGHT_INK, fillColor: NIGHT_INK, opacity: 0.2 }, hospital: { color: NIGHT_INK, opacity: 0.2 } };
+  const NEUTRAL_NIGHT = { color: NIGHT_INK, opacity: 0.2, fillColor: '#33281f' };
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const CTX = { ...CTX_DAY };
+  let NEUTRAL = NEUTRAL_DAY;
+  const ctxLayers = {};
+  let neutralLayer = null;
   const B = bounds || { south: 37.417142, west: -122.183335, north: 37.437912, east: -122.156460 };
   const campus = L.latLngBounds([B.south, B.west], [B.north, B.east]);
   if (ctx) for (const k of ['green', 'water', 'street', 'road', 'rail', 'town', 'shopping', 'hospital']) { // fills first, lines on top
-    L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) },
+    ctxLayers[k] = L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) },
       { style: () => CTX[k], interactive: false, ...PCTX }).addTo(map);
   }
-  const pathStyle = () => ({ color: INK, weight: 0.7 + Math.max(0, map.getZoom() - 15) * 0.3, opacity: 0.12, fill: false });
+  const pathStyle = () => ({ color: dark.matches ? NIGHT_INK : INK, weight: 0.7 + Math.max(0, map.getZoom() - 15) * 0.3, opacity: 0.12, fill: false });
   let pathLayer = null;
   if (paths) pathLayer = L.geoJSON(paths, { style: () => pathStyle(), interactive: false, ...PPATH }).addTo(map);
-  L.geoJSON(geo, { style: () => NEUTRAL, interactive: false, ...PNEU }).addTo(map);
+  neutralLayer = L.geoJSON(geo, { style: () => NEUTRAL, interactive: false, ...PNEU }).addTo(map);
+  const restyle = () => {
+    const n = dark.matches;
+    NEUTRAL = n ? { ...NEUTRAL_DAY, ...NEUTRAL_NIGHT } : NEUTRAL_DAY;
+    for (const k of Object.keys(CTX_DAY)) { CTX[k] = n ? { ...CTX_DAY[k], ...CTX_NIGHT[k] } : CTX_DAY[k]; ctxLayers[k]?.setStyle(CTX[k]); }
+    neutralLayer.setStyle(NEUTRAL);
+    pathLayer?.setStyle(pathStyle());
+  };
+  dark.addEventListener('change', restyle);
+  restyle();
 
   // One tap target per outline. Some sim places share their building's outline exactly (a dining hall
   // inside its dorm: footprints.js gives a hand-placed box the real building's outline), so they're one
@@ -184,8 +205,10 @@ async function main() {
   const ringOf = (b) => [b.getNorthWest(), b.getNorthEast(), b.getSouthEast(), b.getSouthWest()];
   for (const m of [0, 60, 130, 230, 380, 600]) {
     L.polygon([ringOf(outer), ringOf(pad(campus, m * 0.000009, m * 0.0000113))],
-      { stroke: false, fillColor: '#faf4e8', fillOpacity: 0.14, interactive: false, ...PVIG }).addTo(vig);
+      { stroke: false, fillColor: dark.matches ? '#221a17' : '#faf4e8', fillOpacity: 0.14, interactive: false, ...PVIG }).addTo(vig);
   }
+  const revig = () => vig.eachLayer((l) => l.setStyle({ fillColor: dark.matches ? '#221a17' : '#faf4e8' }));
+  dark.addEventListener('change', revig);
   function frame() {
     const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.09); // the slim legend strip + tab bar
     const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));

@@ -129,7 +129,7 @@ struct DemoTimeBadge: View {
                 .font(.fluni(.caption, weight: .semibold))
                 .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(Theme.sun.opacity(0.7), in: Capsule())
+                .background(Theme.sunWash, in: Capsule())
                 .overlay(Capsule().stroke(Theme.ink2, lineWidth: 1))
                 .accessibilityIdentifier("demo.badge")
         }

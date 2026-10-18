@@ -325,7 +325,7 @@ struct AlertStrip: View {
         }
         .foregroundStyle(Theme.ink)
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Color(hex: close ? 0xe6a088 : 0xecbba0), in: RoundedRectangle(cornerRadius: 12))
+        .background(close ? Theme.peachClose : Theme.peach, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.ink, lineWidth: 1.5))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("today.alert")
@@ -357,7 +357,7 @@ struct AlertIcon: View {
 /// A 1.5 pt dashed hairline across the full width (the mockup's dividers).
 struct DashedRule: View {
     var body: some View {
-        Line().stroke(Color(hex: 0xe4d8c2), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+        Line().stroke(Color(day: 0xe4d8c2, night: 0x5a4a3e), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
             .frame(height: 1.5)
             .accessibilityHidden(true)
     }

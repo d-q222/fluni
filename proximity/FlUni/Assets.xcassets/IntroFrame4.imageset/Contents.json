@@ -1,1 +1,1 @@
-{"images": [{"filename": "intro-frame-4.png", "idiom": "universal", "scale": "2x"}], "info": {"author": "xcode", "version": 1}}
+{"images":[{"filename":"intro-frame-4.png","idiom":"universal","scale":"2x"},{"filename":"intro-frame-4-night.png","idiom":"universal","scale":"2x","appearances":[{"appearance":"luminosity","value":"dark"}]}],"info":{"author":"xcode","version":1}}

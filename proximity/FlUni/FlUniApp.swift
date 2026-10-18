@@ -155,6 +155,8 @@ private struct AppRoot: View {
     let startOnce: () -> Void
     let afterOnboarding: () -> Void
     @AppStorage("hasOnboarded") private var hasOnboarded = false
+    @AppStorage(AppearanceChoice.key) private var appearanceRaw = AppearanceChoice.system.rawValue
+    private var appearance: AppearanceChoice { AppearanceChoice(rawValue: appearanceRaw) ?? .system }
     @Environment(\.scenePhase) private var phase
     /// Lisa's opening animation, played each time the student opens FlUni (Core/IntroGate.swift); off for UI
     /// tests and unit-test hosts so they never wait on it.
@@ -219,8 +221,8 @@ private struct AppRoot: View {
         .onAppear { if UIApplication.shared.applicationState == .active { introPhase(.active) } }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in introPhase(.active) }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in introPhase(.background) }
-        // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
-        .preferredColorScheme(.light)
+        // Settings > Appearance: System / Light / Dark (the intro's own window follows it too: IntroController).
+        .preferredColorScheme(appearance.colorScheme)
         // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
         .tint(Theme.ink)
         // The app may be killed in the background: save an exposure that is still going on, so a relaunch continues it.
@@ -249,6 +251,7 @@ final class IntroController {
         w.windowLevel = .alert + 1
         w.isUserInteractionEnabled = false
         w.backgroundColor = .clear
+        w.overrideUserInterfaceStyle = AppearanceChoice.saved.uiStyle  // follows Settings > Appearance
         let host = UIHostingController(rootView: LaunchIntro { [weak self] in self?.done(thisRun) })
         host.view.backgroundColor = .clear
         w.rootViewController = host

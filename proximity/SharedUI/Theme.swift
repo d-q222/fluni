@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// "Campfire" palette and shape tokens, from Lisa Zheng's (lisaazheng) heat map design pass.
-/// The app is forced to light mode (see FluniProxApp): the palette is defined and contrast-checked
-/// on warm paper only, and a status colour that changes meaning in a dark variant is worse than none.
+/// Day values are contrast-checked below; night values are Lisa's night mock (heatmap/index.html). The status
+/// colours (sage / sun / ember / fire) do not change at night.
 ///
 /// Contrast (WCAG 2.x), every foreground/background pair the apps use. Body text needs 4.5, large text
 /// and icons/graphics 3. Tints are the token at the opacity the views use, over paper/surface.
@@ -30,22 +30,61 @@ import SwiftUI
 ///       peach box (WalkInBanner): ink only, 8.6. ink-2 4.2, ink-3 3.3 and fire-ink 4.4 stay banned there.
 ///   * = below 4.5 for body text; do not use that pair.
 enum Theme {
+    // Heat and status colours are the same in day and night (Lisa's night mock keeps them).
     static let sage = Color(hex: 0xacbc8b)      // healthy
     static let sun = Color(hex: 0xebd187)
     static let ember = Color(hex: 0xe99569)
     static let fire = Color(hex: 0xdb6c59)      // infected / alert (fills, never small text)
-    static let fireInk = Color(hex: 0x8e3a28)   // alert text, 6.9:1 on paper
-    static let paper = Color(hex: 0xfaf4e8)     // background
-    static let surface = Color(hex: 0xfffaf1)
-    static let surface2 = Color(hex: 0xf4ead6)
-    static let ink = Color(hex: 0x33241c)       // text
-    static let ink2 = Color(hex: 0x6a5244)
-    static let ink3 = Color(hex: 0x7a6152)
-    static let hairline = Color(red: 0x33 / 255, green: 0x24 / 255, blue: 0x1c / 255, opacity: 0.12)
+    // Night palette: heatmap/index.html `#phone[data-theme="night"]` (Lisa): cocoa paper, cream ink.
+    static let fireInk = Color(day: 0x8e3a28, night: 0xf09a7e)   // alert text, 6.9:1 on paper (night 6.0:1)
+    static let paper = Color(day: 0xfaf4e8, night: 0x221a17)     // background
+    static let surface = Color(day: 0xfffaf1, night: 0x2c231e)
+    static let surface2 = Color(day: 0xf4ead6, night: 0x382c25)
+    static let ink = Color(day: 0x33241c, night: 0xf1e2c6)       // text (night 12.9:1)
+    static let ink2 = Color(day: 0x6a5244, night: 0xd2bc9f)
+    static let ink3 = Color(day: 0x7a6152, night: 0xb8a287)
+    static let hairline = Color(day: 0x33241c, dayAlpha: 0.12, night: 0xf1e2c6, nightAlpha: 0.14)
+    /// Dark ink for text sitting on a fill that is the same in day and night (sage, sun, ember buttons, the tissue
+    /// alert's light sheet). `ink` turns cream at night, which is unreadable on those.
+    static let dayInk = Color(hex: 0x33241c)
+    static let dayInk2 = Color(hex: 0x6a5244)
+    static let dayFireInk = Color(hex: 0x7a2e1e)
+    /// Tinted boxes: Lisa's day washes, and her night strength (sun 13%, fire 20%) so cream text sits on them.
+    static let sunWash = Color(day: 0xebd187, dayAlpha: 0.5, night: 0xebd187, nightAlpha: 0.13)
+    static let fireWash = Color(day: 0xdb6c59, dayAlpha: 0.18, night: 0xdb6c59, nightAlpha: 0.2)
+    static let peach = Color(day: 0xecbba0, night: 0x4f322a)       // heads-up strip (night: fire 20% over surface)
+    static let peachClose = Color(day: 0xe6a088, night: 0x5c3529)  // close-contact strip
     static let radius: CGFloat = 12
+
+    /// Text colour that reads on `fill`: dark ink on light fills, `ink` otherwise (resolved per appearance).
+    static func ink(on fill: Color, _ scheme: ColorScheme) -> Color {
+        let ui = UIColor(fill).resolvedColor(with: UITraitCollection(userInterfaceStyle: scheme == .dark ? .dark : .light))
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        ui.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return a > 0.9 && (0.299 * r + 0.587 * g + 0.114 * b) > 0.55 ? dayInk : ink
+    }
+}
+
+/// The Appearance choice in Settings (System / Light / Dark), kept in UserDefaults under `key`.
+enum AppearanceChoice: String, CaseIterable, Identifiable {
+    case system, light, dark
+    static let key = "appearance"
+    var id: String { rawValue }
+    var title: String { rawValue.capitalized }
+    /// nil follows the system.
+    var colorScheme: ColorScheme? { self == .system ? nil : (self == .dark ? .dark : .light) }
+    var uiStyle: UIUserInterfaceStyle { self == .system ? .unspecified : (self == .dark ? .dark : .light) }
+    static var saved: AppearanceChoice { AppearanceChoice(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .system }
 }
 
 extension Color {
+    /// A colour that follows the appearance (light/dark), resolved by UIKit so it also works in UIKit/WebKit places.
+    init(day: UInt32, dayAlpha: Double = 1, night: UInt32, nightAlpha: Double = 1) {
+        func ui(_ h: UInt32, _ a: Double) -> UIColor {
+            UIColor(red: CGFloat((h >> 16) & 0xff) / 255, green: CGFloat((h >> 8) & 0xff) / 255, blue: CGFloat(h & 0xff) / 255, alpha: a)
+        }
+        self.init(UIColor { $0.userInterfaceStyle == .dark ? ui(night, nightAlpha) : ui(day, dayAlpha) })
+    }
     init(hex: UInt32) {
         self.init(red: Double((hex >> 16) & 0xff) / 255, green: Double((hex >> 8) & 0xff) / 255, blue: Double(hex & 0xff) / 255)
     }
@@ -136,7 +175,7 @@ enum CardStyle {
         guard let ui = UIImage(named: name), let cg = ui.cgImage else { return Image(name) }
         return Image(uiImage: UIImage(cgImage: cg, scale: 4, orientation: .up))
     }
-    var flat: Color { self == .paper ? Theme.surface : Color(hex: 0xecbba0) }
+    var flat: Color { self == .paper ? Theme.surface : Theme.peach }
 }
 
 /// A card drawn as Lisa's hand-drawn box. `fill` tints the inside of the box (risk tiers etc.).
@@ -179,11 +218,12 @@ extension View {
 
 struct PrimaryButtonStyle: ButtonStyle {
     var fill: Color = Theme.sage
-    var text: Color = Theme.ink
+    var text: Color? = nil
+    @Environment(\.colorScheme) private var scheme
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.fluni(.headline))
-            .foregroundStyle(text)
+            .foregroundStyle(text ?? Theme.ink(on: fill, scheme))
             .frame(maxWidth: .infinity, minHeight: 48)
             .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
             .opacity(configuration.isPressed ? 0.8 : 1)
@@ -197,10 +237,11 @@ struct ChunkyButtonStyle: ButtonStyle {
     var radius: CGFloat = 14
     var lift: CGFloat = 3
     var minHeight: CGFloat = 50
+    @Environment(\.colorScheme) private var scheme
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(Theme.ink(on: fill, scheme))
             .multilineTextAlignment(.center)
             .padding(.horizontal, 10).padding(.vertical, 6)
             .frame(maxWidth: .infinity, minHeight: minHeight)
