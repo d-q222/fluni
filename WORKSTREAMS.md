@@ -58,8 +58,9 @@ Claim a row before you start. Update the status as you go. Agents should name th
 - **2026-10-18 — Mean-field starting prevalence from the run (@aidenyj, edited `model/` and one line of
   `heatmap/app.js` directly).** `model/meanfield.js` takes `input.initialPrevalence` (the CLI and `?model=meanfield`
   pass `initial_seeds / n_agents`) instead of the fixed 2% prior, which overpredicted ~10x on the 7,500-agent runs.
-  `meanfield-cli.mjs --calibrate --holdout` fits `lambdaScale` without held-out agents. Default `lambdaScale` update
-  to follow. `infer.js` and the heat map's 2% baseline are unchanged. The committed `model/out/*/meanfield.csv`
+  `meanfield-cli.mjs --calibrate --holdout` fits `lambdaScale` without held-out agents (its bracket now grows past 1;
+  the 7,500-agent runs fit 1.128 and 1.401). The default stays 0.901: the fits differ per run, so refit per run.
+  `infer.js` and the heat map's 2% baseline are unchanged. The committed `model/out/*/meanfield.csv`
   were made with the old prior and are not regenerated yet.
 - **2026-10-17 — Demo phone alerts follow the proximity app.** 6 ft distance; an immediate heads-up;
   a close-contact alert at 15 weighted minutes in 24 h (contagious 1, possibly sick 0.5). Added on

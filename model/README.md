@@ -238,10 +238,16 @@ the heat map's `?model=meanfield` pass `initialPrevalence(config)` = `params.run
 not who). On the 7,500-agent runs (5 seeds, 0.07%) the 2% prior started ~150 phantom cases; with R ~ 1.5-2 they
 put mean P(ever infected) at ~0.40 on runs with 4-10% infected, per-agent KL 0.56 vs 0.18-0.34 for a constant guess.
 `--holdout` keeps a list of agents out of `--calibrate`'s target, so the fitted model can be scored on them.
+`input.prep` (an empty object, passed to every call) reuses the contact preprocessing across calls that change only
+`lambdaScale`, `prior` or `importPerDay`; `--calibrate` uses it, so each bisection pass on a 7,500-agent run takes
+~1 min instead of ~3. The result also has `sFinal`, each agent's P(never infected) at the end (1 − it = P(ever infected)).
 
 `lambdaScale` (0.901) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
-sim's true seeds, the model's expected on-campus infections match the sim's 167. Refit it per run: on the
-7,500-agent runs 0.901 is too high (refit values pending). On that run the top 50
+sim's true seeds, the model's expected on-campus infections match the sim's 167. Refit it per run. On the two
+7,500-agent runs (5 seeds, `--holdout` = 10% validation agents) it is **1.128** (fixed, sim transmission scale 1.2)
+and **1.401** (frankenstein, 1.446): their ratio 1.24 tracks the sim's 1.21. With the 2% prior, 0.901 looked too high
+(mean P 0.40) only because the prior's ~150 phantom cases did the spreading; from the true 0.07% it is too low.
+Scores on held-out agents: [`ml/KL_RESULTS.md`](../ml/KL_RESULTS.md). On that run the top 50
 by P hold 35–43 truly infected people from day 7 on (random 50: 6–8), AUC 0.62–0.73, ~20 s in Node.
 `--set key=value` overrides any parameter (`--set legacyDose=true --scale 0.135` is the dose before the audit below).
 
