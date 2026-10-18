@@ -1,154 +1,125 @@
-# Heat map and probability model: handoff (2026-10-17)
+# Heat map and probability model: handoff (2026-10-18)
 
-Owner: @d-q222 (heat map `heatmap/`, probability model `model/`). Read this with `README.md`, `ROADMAP.md`
-and `WORKSTREAMS.md`.
+**Owner:** @d-q222 (heat map `heatmap/`; probability model `model/`, which another session is now
+extending, see "Model"). Read this with `README.md`, `DEMO.md` (the live-demo run-of-show) and
+`WORKSTREAMS.md`.
 
 ## What it is now
 
-- **Built on the sim** (@aidenyj, `sim/`):
-  - positions come from the compact timeline;
-  - people walk the sim's own routes (`trips.csv.gz`, `motion.js`);
-  - the map is the sim viewer's look (`?basemap=sim`, the default): OpenFreeMap Positron plus the run's
-    footprints and paths;
-  - "Infectious air by room (sim)" draws `room_exposure.csv.gz`;
-  - truth heat is weighted by the sim's `infectiousness`.
-- **The heat is the expected number of infected people nearby now:** Σ P(sick) through a unit kernel
-  (`diffuse.js`), per 1,000 m².
-  - The spread follows the zoom: 18 m close up, ~16 px zoomed out, with a colour scale per spread.
-  - Heat stays inside building outlines. There is no trail of past positions.
-- **P(sick) comes from Rio's exposure formula** (`exposure/`, Baker et al. PNAS 2021), ported into
-  `model/infer.js`:
-  - dose from the real distance, duration and room volume/ventilation, indoor/outdoor and humidity;
-  - λ = 1 − e^(−stage·Σdose), applied per pair;
-  - p ← p + (1−p)·s·λ;
-  - Erlang recovery.
-  - Review fixes are ours, not Rio's: a per-pair summed dose, quiet emission in dorm rooms, no dose
-    across walls, and the illness-average stage when onset is unknown. The review is posted for Rio in
-    WORKSTREAMS Requests.
-  - Roommates of the confirmed case reach 17–26% over the illness.
-- **User map:** building totals only.
-  - Small runs are ×50; buildings with fewer than 4 people are hidden.
-  - Forecasts at +1/+2/+3 h.
-  - In-page `view=public`, the offline app bundle `usermap.html` (`tools/build_app_bundle.mjs` →
-    `out/app-bundle/`, which FlUni ships), and `?embed=app`.
-- **Presenter phone:**
-  - mirrors FlUni's Today screen: status, risk ("Campus model" + "This phone's estimate", using
-    FlUni's on-device formula), close-contact time, nearby, recent contacts, a tab bar;
-  - a fixed 393×852 screen;
-  - "Why this %?" (`mathpanel.js`) shows Rio's dose with real numbers;
-  - presenter-only sim truth is shown outside the phone.
+- **Default run:** `influenza_none_n1000_d4_s42_73b8452c`.
+  - 1,000 agents over 4 days, 50 seed cases, transmission ×2.
+  - Homes are spread over about 53 dorms (the sim's opt-in `population.housing.assignment=spread`).
+  - 4 days keeps the in-page model live (1.5 M contacts, about 5 s to load), so "Why this %?" and the
+    phone alerts work.
+- **Runs of 2,000+ agents, or agents × days ≥ 8,000,** read precomputed files: `model/out/<run>/p_sick.csv`
+  and `heatmap/out/<run>/totals.json.gz`. They load in about 5 s but have no "Why this %?". These
+  include the 14-day runs `…_f12e71fa`, `…_183f262b` and `…_25fe957a`.
+- **Heat (Room-level view):**
+  - One zone per building at every zoom; no rooms, and no rectangles or lines.
+  - Each person adds max(0, P − 2%) · exp(−d²/2σ²), where d is the walking distance through their own
+    building's cells. Walls, wing gaps and courtyards stop it: links across a wall are cut, so it
+    never jumps a gap narrower than a cell.
+  - σ is 6 m close up, about 6 screen px zoomed out, and at most 15 m. From zoom 18 it uses a 1.5 m grid
+    and a softer σ (8–10 m).
+  - The colour scale is fixed: full red at P = 50% above the baseline (`ZONE_VMAX`).
+  - Outdoor people make a lighter, tighter heat on Aiden's separate layer.
+- **Zoom:** continuous and centred on the cursor (`smoothZoom` in `baseMap()`), with zoomSnap 0 and a
+  range of 13–20.
+  - Only CSS transforms happen during a gesture.
+  - Once it settles (140 ms), there is one heat recompute plus a 280 ms crossfade.
+  - An idle warm-up builds each level's grid after load.
+- **People:**
+  - Every agent is drawn up to 2,000 agents (MAX_DOTS), seated inside their building and sized in
+    metres (2 px at campus zoom).
+  - The dot fill is the app's estimate; a dark red ring means actually infected (sim truth).
+  - Every dot is clickable, nearest wins, and opens that person's phone.
+- **Building click:** shows Σ P, the tiers, and **everyone inside** (estimate, truth, why). Clicking a row
+  opens that person's phone.
+- **Views:**
+  - **Room-level:** the above.
+  - **What users see:** the user map, the same as FlUni's bundle: building totals, soft shading, tap for
+    stats, a minimum of 4 people (privacy), and no ×7 scaling.
+  - "Air by room" was removed. The experimental airflow view is still reachable with `?view=airflow`.
+- **Phone mock:** mirrors FlUni.
+  - It shows the "your day" timeline, Lisa's tissue alert and her tab bar (Today / Map / Me), the
+    stay-home card, and night mode.
+  - "This phone's estimate" follows the product owner's risk-sharing rule:
+    - each phone broadcasts its own score, max(estimate, status floor), with floors of 0.97 for a
+      positive test and 0.6 for symptoms;
+    - other phones use it but never show it;
+    - per peer, s = max(status, score − prior).
+- **User map bundle** (`tools/build_app_bundle.mjs` → `out/app-bundle/`, which FlUni ships):
+  - totals are thinned to 15-minute steps;
+  - outlines shared by two places (a dining hall inside its dorm) are one tap target;
+  - every tap answers.
+- **Pitch page** `demo/` (Aiden's PR #7) embeds this heat map in an iframe.
 
-## Data contracts I own
+## Contracts
 
-- `docs/p-sick-format.md`: `model/out/<run>/p_sick.csv` (`node model/cli.mjs sim/runs/<run>`).
-- `docs/building-heat-format.md`: `heatmap/out/<run>/building_heat.csv` (`tools/precompute.mjs`),
-  including `radius_m` and the "Which moment is 'now'" live-clock rule. FlUni uses both.
-- FlUni's phone estimate must match `model/infer.js` (`doseModel()`). Its golden vectors will be in
-  `proximity/Tests/Fixtures/xcheck/golden.json`. Bluetooth range ≤ 10 m and 6 ft are both inclusive.
-- The phone-side constants are in their message log. Any change to `DEFAULTS` must be announced to the
-  FlUni session (fluni-11).
+- `docs/p-sick-format.md`: `model/out/<run>/p_sick.csv`.
+- `docs/building-heat-format.md`: `heatmap/out/<run>/building_heat.csv`.
+  - `heat`/`high` = risk above the 2% prior.
+  - No scaling from 500 agents (×50 below that).
+  - The live clock's rule 3: a weekday the run doesn't cover → the run's **last** day.
+  - FlUni reads it and checks 0 malformed rows. precompute reads `buildings.csv` with quoted fields.
+- **Phone estimate parity:**
+  - FlUni's golden vectors are in `proximity/Tests/Fixtures/xcheck/golden.json`.
+  - FlUni's FLU2 additions are NOT yet in the mock: per-source stage, the phone's room, the 2-source cap,
+    and the 5-day isolation floor. A parity agent's work is parked uncommitted in the scratch worktree
+    `parity`: it passes the goldens but is too slow (115 s on a cold call).
+- **Announce** any `model/infer.js` DEFAULTS change to FlUni (fluni-11) and to the sim (Aiden's Python
+  port `sim/campussim/psick.py`).
 
-## Runs
+## Model
 
-- **Default:** `influenza_none_n10_d14_s2_bc5cae7a`: 10 agents, 14 days, 3 infections. It looks sparse
-  live.
-- **`influenza_none_n500_d2_s42_aea9db72`:** almost no illness.
-- **`influenza_none_n7500_d2_s42_2a1d8bfd`:** local only, not in git, and has no trips. Its 290
-  reports are all false. The model takes ~31 s on it. The lag agent regenerated it with the current
-  sim as **`influenza_none_n7500_d2_s42_cca0fef5`** (gitignored, has trips): use that id.
-- **Requested from Aiden (WORKSTREAMS Requests, 8e970c7):** a busier official demo run, using FlUni's
-  scored config: `n400 d3`, seed 5 (25 seeds tried), transmission ×4. Expected id
-  `influenza_none_n400_d3_s5_1513ab3f`. When it lands:
-  - `node model/cli.mjs sim/runs/<run>` → `p_sick.csv`;
-  - `node heatmap/tools/precompute.mjs <run>` → `building_heat.csv` and `totals.json.gz`;
-  - `node heatmap/tools/build_app_bundle.mjs` → the FlUni bundle;
-  - switch `DEFAULT_RUN` in `app.js` (after the product owner agrees) and tell fluni-11.
-  - The same command already reproduces that exact id locally in 5 s (78 infections, 40 infectious
-    by day 3). Use a scratch venv from `sim/requirements.txt`; the sim has no `.venv` here. It is
-    copied to `sim/runs/` (gitignored) with `model/out/<run>/p_sick.csv`. The whole pipeline takes
-    1.3 s and the presenter loads it.
+- **This session's work:** Rio's formula is ported in `model/infer.js`.
+  - `model/TESTS.md` (13/13), `COMPARISON.md` (Rio's script vs our port vs `model/alt`) and
+    `calibrate.py`.
+  - GitHub issue #5 asks Rio 4 questions (λ vs the sim's R ≈ 1.6, corroborated `report_other`, and two
+    more). Unanswered.
+- **Another session** is now extending `model/`. It uses real hourly Stanford weather
+  (`model/data/stanford_weather_hourly.csv`) and has a WORKSTREAMS request to the sim. Stay out of its
+  files.
+- **Aiden** added `ml/`, a contacts-only ML risk model.
 
-## In flight at handoff (background agents)
+## Open items (product owner's priorities first)
 
-1. **7,500-agent performance (the lag agent).** ETA ~1.5 h from 17:30.
-   - Done: on the 10-agent run, heat costs 1.9 ms and redraws every frame (it was 23 ms every
-     ~60 ms); the cloud sits 1–2 m from its dot (p50; it was 5–10 m); load takes 1.0 s.
-   - Next: read `p_sick.csv` and `totals.json.gz` for big runs, heat from stay positions for
-     non-sampled agents, and ≤600 dots.
-   - Product owner direction: show a dot sample, but compute the heat from all 7,500.
-   - Use precomputed `p_sick.csv` and `totals.json.gz` for big runs.
-   - Its benchmark is `tools/bench.mjs`.
-2. **Alternative flu model, `model/alt/` (done, f61ae54; not integrated).** It works from the product
-   owner's "best existing methodologies" prompt.
-   - Method: a two-zone transient Wells–Riley dose, humidity via absolute humidity, emission scaled by
-     the shedding stage, a summed pair-day dose, and S/E/I/R with Erlang phases (so recovered people
-     are immune).
-   - Calibration: a 15-min close chat gives λ 0.7%; a roommate over an illness reaches 20.7%.
-   - Against Rio's formula it gives about 0.17× λ overall and 0.03× for a night asleep as a roommate.
-   - Its recommendation: use it for the heat map and sum `states.I`.
-   - The product owner decides. Our Rio port with review fixes already gives roommates 17–26%.
-3. **A complete user map for FlUni (done: 6de233f, ddc13ae, eabc499, 2aff552; FlUni synced 81c8f50).**
-   - The product owner's final ruling: soft Leaflet bounds (campus pad 0.1), min zoom = the first
-     view, no hard clamp.
-   - Warm heat fills with a halo of at least 9 px, a muted base, a one-line legend with details
-     behind (i), and a fade outside campus.
-   - Bounded to Stanford, with faint outside context.
-   - Every building in neutral paper, plus footpaths, green spaces and labels.
-   - Bundle under 3 MB. The agent messages fluni-11 to re-sync when done.
-   - FlUni's screenshots of how the map looks in the app are in `/Users/dqi26/fluni-screens/mapdemo/`
-     (local). The app overlays a sheet on the bottom ~20% of the screen, so the map needs that much
-     bottom padding when fitting campus.
-   - Work in progress (uncommitted in the shared tree): `tools/fetch_context.mjs` (Overpass fetch of
-     paths, green space and labels) and `data/context.geojson`.
-   - The lag agent's uncommitted edits are `tools/bench.mjs` and `tools/precompute.mjs`. Neither is
-     mine to commit; let the agents commit their own paths.
+1. **In flight:** the views agent is updating the phone mock to the actual app look.
+   - Fonts: Nunito and Fredoka.
+   - References: FlUni's fresh screenshots in `/Users/dqi26/fluni-screens/phoneref2/`.
+   - The phone's Map tab = the presenter map without dots.
+   - Delivery: one local commit for review, then push.
+2. **Remaining zoom pop:** from zoom 18, dots switch to see-through in one frame at settle.
+3. **Keyboard zoom:** keyboard +/− still uses Leaflet's discrete zoom.
+4. **Presenter "What users see":** shared outlines (a dining hall in its dorm) aren't merged into one
+   tap target as they are in usermap.js. Not silent, but it can show the dining hall alone.
+5. **Phone mock and sick users:** FlUni now shows sick users the stay-home card with no risk %
+   (9d1b919). Check that the mock matches; the views agent's task covers it.
+6. **Pitch page contrast:** `demo/` has contrast failures, posted for Aiden in WORKSTREAMS Requests.
+   The heat map itself passes in light and dark (audit scripts `audit.mjs` and `inpage.js` in the
+   scratchpad).
 
-## Model results (for Rio: WORKSTREAMS Requests, 905aca5)
+## How to work in this repo (product owner's rules)
 
-- `model/COMPARISON.md` (`node model/compare.mjs`): Rio's script = our port on λ (0.0459 for a
-  15-min 1 m chat); `model/alt` is about 6× lower.
-- `model/TESTS.md` (`node model/test.mjs`, 13/13): each of the 9 spec inputs moves P the right way,
-  and the update matches Baker's product form.
-- `model/calibrate.py`: Σ P against the sim's true infections.
-  - Busy run: the model lags while the seeds are silent, then reaches 76 vs 77 by day 3. AUC ~0.63.
-  - Quiet n500 run: 6 false `report_other`s inflate the expected count to 28 vs 0–1 truly infected.
-- The web phone matches FlUni's golden vectors exactly (60/60, Δp = 0).
-
-## Open questions for the product owner
-
-- "Vary the agents": different runs, different-looking people, or more varied sim behaviour?
-- Which flu model, Rio's (current) or the alternative, after the comparison?
-- Whether to switch the default run once Aiden publishes a busier one.
-- Whether to down-weight uncorroborated `report_other`s (they drive the false heat on quiet runs).
-- **Colour scale is relative to each run.** The user map's top colour is the 90th percentile of each
-  step's busiest building, and the presenter heat scales per spread. A quiet run therefore looks as
-  red as a busy one. An absolute scale (fixed expected-sick count), or a blend, would make runs
-  comparable but leave quiet runs almost blank.
-
-## Known issues to fix later
-
-- ~~**Phone mock, tissue notification:** the back of the tissue box shook while the alert was showing.~~
-  Fixed (Lisa's design pass): the popped layer held the box rim too, and the wiggle rotated all of it.
-  Now `pull-0-tissue.png` wiggles about its base and `pull-0-rim.png` stays still.
-- **Presenter "What users see":** places sharing one outline (a dining hall inside its dorm) aren't
-  merged into one tap target there, as they are in usermap.js (f1d0e73). It never goes silent, but it
-  can show the dining hall's numbers alone.
-
-## How to work in this repo
-
-- **Shared working tree.** Several sessions and agents edit `/Users/dqi26/fluni`.
-  - Commit only your own paths (`git commit <paths>`). Never leave anything staged, never
-    `git add -A`, never stash or rebase.
-  - Push only your commit from a clean worktree: `git worktree add --detach <tmp> origin/main`,
-    cherry-pick, push.
-  - Then sync the shared tree with the safe sync script (in the session scratchpad as `sync.sh`).
-    A bare `git reset --soft origin/main` leaves stale copies of every file that changed upstream, and
-    they then look like local reverts of other people's work. This happened once and was repaired.
-    The script updates each upstream-changed file whose working copy still equals the old commit,
-    and leaves real local edits alone. An ff-merge fails whenever an untracked file collides with an
-    incoming one.
-- **Servers.**
-  - `python3 heatmap/tools/serve.py <port>` serves the repo root with no cache.
+- **Commit rarely.** Batch into one reviewed commit; teammates (Aiden, Lisa, FlUni) are disrupted by
+  constant pushes. Their PRs take priority: merge them when the product owner asks and build on them.
+- **Agents** work in their own git worktrees, commit locally, and never push. Review their screenshots
+  and numbers, then cherry-pick onto a fresh `origin/main` worktree and push.
+- **Attribution:** Claude-Session trailers are fine in this repo (product owner, 2026-10-18).
+- **Shared tree** `/Users/dqi26/fluni`: other sessions edit it.
+  - Commit only your own paths (`git commit <paths>`).
+  - Never `add -A`, stash or rebase there.
+  - To sync it, update every upstream-changed file whose working copy still equals the old commit,
+    then run `git reset --soft origin/main && git reset`. Leave real local edits alone; a bare soft
+    reset makes upstream changes look like local reverts. The script was `sync.sh` in the session
+    scratchpad.
+- **Servers** (`python3 heatmap/tools/serve.py <port>`, no cache):
   - 8766 serves the shared tree.
-  - 8767 serves a clean origin/main copy in the scratch worktree, which the monitor keeps updated.
-- **Never merge someone else's PR.** Product-owner decisions go in WORKSTREAMS "Decisions".
+  - 8767 serves a clean origin/main copy kept in sync by a monitor.
+- **Launcher:** `heatmap/tools/demo.sh` starts the server and opens the page; see `DEMO.md`.
+- **Headless checks:**
+  - Chrome needs `--use-angle=swiftshader --enable-unsafe-swiftshader` for MapLibre.
+  - Use the GPU (Metal) for real frame times.
+  - `window.fluni` exposes the map, `current()`, `select(id)`, `seek(t)`, `now()` and
+    `phoneScore(id)`.
+  - `window.fluniUserMap` exposes the user map's tap targets.
