@@ -43,22 +43,44 @@ final class FlUniUITests: FlUniUITestCase {
         launchPastOnboarding()
         let card = el("risk.card")
         XCTAssertTrue(card.waitForExistence(timeout: 10))
-        XCTAssertNotNil(card.label.range(of: #"(<1|\d{1,3})%"#, options: .regularExpression),
+        XCTAssertNotNil(card.label.range(of: #"\d{1,3}(\.\d)?%"#, options: .regularExpression),
                         "risk card should show a percentage, got: \(card.label)")
         XCTAssertTrue(card.label.contains("Your risk estimate"), card.label)
 
         scrollTo(app.buttons["risk.how"]).tap()
         XCTAssertTrue(app.navigationBars["How is this calculated?"].waitForExistence(timeout: 5))
-        // With no nearby phones: "You: 0.0 of 15", "Your exposure dose: 0.000", "This phone's estimate: 2%".
+        // With no nearby phones: "You: 0.0 of 15", "Your exposure dose: 0.000", "This phone's estimate: 2.0%".
         XCTAssertTrue(app.staticTexts["You: 0.0 of 15"].exists)
         XCTAssertTrue(app.staticTexts["Your exposure dose: 0.000"].exists)
         let estimate = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "This phone's estimate: ")).firstMatch
         XCTAssertTrue(estimate.exists, "the estimate line with p")
-        XCTAssertNotNil(estimate.label.range(of: #"estimate: (<1|\d{1,3})%"#, options: .regularExpression), estimate.label)
+        XCTAssertNotNil(estimate.label.range(of: #"estimate: 2\.0%"#, options: .regularExpression), estimate.label)
 
         app.buttons["Done"].tap()
         XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.navigationBars["How is this calculated?"].exists)
+    }
+
+    /// Debug -demoPeer puts a pretend contagious phone 0.5 m away (no radios); at -speed 30 each 1 s tick
+    /// credits 30 s, so the headline number must climb on screen within a few seconds, one decimal at a time.
+    func testRiskNumberClimbsLiveNearAPretendContagiousPeer() {
+        app.launchArguments += ["-demoPeer", "contagious@0.5", "-speed", "30"]
+        launchPastOnboarding()
+        let card = el("risk.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        func shown() -> Double? {
+            guard let r = card.label.range(of: #"\d{1,3}\.\d(?=%)"#, options: .regularExpression) else { return nil }
+            return Double(card.label[r])
+        }
+        var seen: [Double] = []
+        for _ in 0 ..< 6 {
+            if let v = shown() { seen.append(v) }
+            Thread.sleep(forTimeInterval: 1.2)
+        }
+        XCTAssertEqual(seen.count, 6, "one-decimal percentage on the card: \(card.label)")
+        for (a, b) in zip(seen, seen.dropFirst()) { XCTAssertGreaterThanOrEqual(b, a, "never drops: \(seen)") }
+        XCTAssertGreaterThanOrEqual(Set(seen).count, 4, "changes almost every reading: \(seen)")
+        XCTAssertGreaterThan(seen.last!, 2.0, "\(seen)")
     }
 
     // MARK: Self-report
