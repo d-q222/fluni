@@ -89,7 +89,11 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // Zoomed out to the campus, smaller badges so the heat in the buildings under them shows through.
-const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(4, PERSON.radius - (17 - zoom) * 4)) : PERSON.radius);
+// People are drawn at a fixed size on the ground (PERSON_M metres), so they're tiny at campus zoom and grow as
+// you zoom in, like the buildings (2 px at campus zoom, 3 px at 17, 13 px at 19).
+const PERSON_M = 3, M_PER_PX_Z0 = 156543.03 * Math.cos((37.43 * Math.PI) / 180);
+const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
+const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
@@ -98,6 +102,7 @@ const PersonMarker = L.CircleMarker.extend({
     // Only inside the renderer's redraw pass (as _updateCircle): a moved dot's update also lands here, and
     // drawing then put a stray badge-less tissue on screen until the next redraw cleared it.
     if (!ctx || !this._renderer._drawing || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    if (this._radius < 5) return; // too small for the tissue to read: just the coloured dot
     ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
   },
 });
@@ -846,8 +851,8 @@ async function main() {
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom());
-    for (const m of dots.values()) if (m.getRadius() !== r) m.setRadius(r);
+    const r = personRadius(map.getZoom()), weight = personRing(r);
+    for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
     const next = sigmaForZoom();
     if (next === sigmaM) return;
     sigmaM = next;
@@ -907,7 +912,7 @@ async function main() {
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
-      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: 2, color: COLORS.ring, fillOpacity: 1,
+      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: personRing(personRadius(map.getZoom())), color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -1389,9 +1394,9 @@ async function main() {
     }
 
     const showDots = $('show-dots').checked && view !== 'public';
-    // People step back where something else is the subject: faded in "Air by room" (the rooms are), and
-    // translucent zoomed out to the campus (the heat is). Close up they're solid and clickable as ever.
-    const z = map.getZoom(), look = view === 'airborne' ? '0.2' : z < 15.5 ? '0.55' : z < 16.5 ? '0.8' : '';
+    // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
+    // (sized on the ground, PERSON_M), so no fading is needed there.
+    const look = view === 'airborne' ? '0.2' : '';
     if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
