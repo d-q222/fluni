@@ -28,6 +28,15 @@ struct AtHomeCard: View {
             // Lisa's "feeling sick" tissue (design pass).
             Image("FeelingSick").resizable().scaledToFit().frame(maxHeight: 110)
                 .frame(maxWidth: .infinity).accessibilityHidden(true)
+                .overlay(alignment: .topTrailing) {
+                    // Lisa's "Self-reported" stamp while the status comes from symptoms, not a test.
+                    if r.positiveKind == nil && !r.symptoms.isEmpty {
+                        Image("StampSelfReported").resizable().scaledToFit()
+                            .frame(width: 64)
+                            .rotationEffect(.degrees(-12))
+                            .accessibilityLabel("Self-reported")
+                    }
+                }
             header(phase)
             if case .periodOver(let feverFree) = phase {
                 periodOver(feverFree: feverFree)
