@@ -96,7 +96,7 @@ final class ProximityModel: ObservableObject {
     private var timer: Timer?
     /// flu-offdetect: which alert levels get a notification (crossings up, per-level cooldown), the same on a
     /// background wake-up as in the foreground.
-    private var alertGate = AlertGate()
+    private(set) var alertGate = AlertGate()
     /// Posts alerts; the default keeps FlUni running until iOS has taken the request (UNPoster).
     var alertPoster: AlertPosting = UNPoster()
     /// Per-peer "credited up to" times: exposure accrues from sightings, so it keeps counting while iOS
@@ -106,6 +106,21 @@ final class ProximityModel: ObservableObject {
     private var backgroundTickPending = false
     /// Local-only list of past exposure episodes (14 days), shown on Today.
     let exposureHistory = ExposureHistoryStore()
+    /// flu-persist: the exposure and alert state on this phone, so a relaunch keeps the estimate.
+    let riskStore: RiskStateStore
+
+    /// flu-persist: starts from the saved state (moved on to now; nothing credited for the time FlUni wasn't
+    /// running), so the first frame already shows the restored estimate.
+    init(riskStore: RiskStateStore = RiskStateStore()) {
+        self.riskStore = riskStore
+        if let r = riskStore.load(now: Date()) {
+            exposure = r.exposure
+            alertGate = r.gate
+            liveRisk = r.exposure.probability
+            own = OwnScoreLag(liveRisk: liveRisk)
+            ownScore = own.current
+        }
+    }
 
     /// Ephemeral IDs rotate like GAEN's rolling proximity IDs (shorter via -rotate for tests).
     private var rotationInterval: TimeInterval = 15 * 60
@@ -164,6 +179,9 @@ final class ProximityModel: ObservableObject {
         // rather than on the timer's next fire.
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in self?.tick() }
+        // flu-persist: iOS may end FlUni while it is in the background; save the risk state on the way out.
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil,
+                                               queue: .main) { [weak self] _ in self?.saveRiskState() }
     }
 
     /// @Published fires on every set, even an equal one; skip those.
@@ -278,6 +296,12 @@ final class ProximityModel: ObservableObject {
         setExposure(ExposureTracker())
         accrual.reset()
         alertGate = AlertGate()
+        riskStore.clear()  // flu-persist
+    }
+
+    /// flu-persist: writes the exposure and alert state now (going to the background).
+    func saveRiskState() {
+        riskStore.save(exposure, gate: alertGate, now: Date())
     }
 
     /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
@@ -599,6 +623,7 @@ final class ProximityModel: ObservableObject {
             }
             alertPoster.post(kind)
         }
+        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before)  // flu-persist
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
         // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
         // once per background scan; a restart lets phones that came near be found again).
@@ -680,10 +705,12 @@ final class ProximityModel: ObservableObject {
             let wall = min(max(now.timeIntervalSince(last), 0), ExposureTracker.window / self.speed)
             last = now
             var e = self.exposure
+            let before = e.level
             ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
                              accrues: true, accrual: &self.demoAccrual, exposure: &e, room: self.currentRoom(now))
             self.setExposure(e)
             self.tickOwnScore()
+            self.riskStore.saveIfDue(e, gate: self.alertGate, now: now, levelChanged: e.level != before)  // flu-persist
         }
         demoTimer = t
     }
