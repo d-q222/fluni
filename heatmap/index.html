@@ -224,8 +224,10 @@
     /* ---------- Night mode for the phone (design pass, theme.js) ----------
        Cozy, not inverted: warm cocoa paper, cream ink, Lisa's drawings swapped for their lamp-lit night
        versions (assets/night/). The campfire swatches stay as they are; text colours are lifted so every
-       pairing still passes WCAG AA (cream ink 12.9:1, ink-2 8.2:1, fire-ink 6.0:1 on the paper). */
-    #phone[data-theme="night"] {
+       pairing still passes WCAG AA (cream ink 12.9:1, ink-2 8.2:1, fire-ink 6.0:1 on the paper).
+       The tokens are set on the frame, not #phone: the "Presenter only" bar under it is not part of the app
+       and stays on its day peach box, so it keeps the day ink (cream ink there was 1.5:1). */
+    #phone[data-theme="night"] .phone-frame {
       --paper: #221a17; --surface: #2c231e; --surface-2: #382c25; --surface-3: #42342c; --paper-box: #2c231e;
       --ink: #f1e2c6; --ink-2: #d2bc9f; --ink-3: #b8a287; --fire-ink: #f09a7e;
       --hairline: rgba(241, 226, 198, 0.14); --alert-bg: #3a2620; --alert-ink: #f09a7e;
@@ -255,6 +257,8 @@
     #phone[data-theme="night"] .sticker.on { box-shadow: inset 0 0 0 2.5px var(--ink); }
     #phone[data-theme="night"] .circ { background: var(--surface-2); box-shadow: 0 0 0 1px var(--hairline); }
     #phone[data-theme="night"] #ph-sheet { background: rgba(0, 0, 0, 0.45); }
+    /* FlUni's notification banner (presenter-ui.js): the dark material, so its cream words read (was 1.2:1) */
+    #phone[data-theme="night"] .ph-banner { background: rgba(56, 44, 37, 0.88); box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--hairline); }
     #phone[data-theme="night"] .screen .progress { background: var(--hairline); }
     #phone[data-theme="night"] .cchip { box-shadow: var(--shadow); }
     /* the campus map at night: restyled in app.js (cream lines on cocoa), heat in its usual colours */
