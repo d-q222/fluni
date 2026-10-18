@@ -33,7 +33,8 @@ class FlUniUITestCase: XCTestCase {
         completeOnboarding()
     }
 
-    func tab(_ name: String) -> XCUIElement { app.tabBars.buttons[name] }
+    /// Lisa's tissue tab bar: buttons with ids tab.today / tab.map / tab.me (the system tab bar is hidden).
+    func tab(_ name: String) -> XCUIElement { app.buttons["tab.\(name.lowercased())"] }
 
     func openTab(_ name: String, file: StaticString = #filePath, line: UInt = #line) {
         let t = tab(name)
