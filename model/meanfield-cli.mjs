@@ -1,6 +1,10 @@
 // Run the mean-field model (meanfield.js, Baker et al. PNAS 2021) on a sim run folder, score it against
 // the sim's truth, and write what the heat map reads for big runs.
 // Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate [--holdout ids.json]] [--set key=value ...]
+//   Default (no --scale / --calibrate): the online self-calibrated model (meanFieldOnline: starting prevalence and
+//   lambdaScale refitted daily from the reports seen so far; no seed count, no ground truth), with sim runs' starting
+//   cases just infected (priorAge 'new'). This is what the heat map shows. Contacts come from model/cache/<run>/
+//   when model/tools/contacts_cache.py made it.
 //   --holdout: a JSON list of agent ids (or {val_ids: [...]}) kept out of --calibrate's target, so a model fitted
 //   here can be scored on them: the target is the other non-seed agents' infections, scaled to the whole run.
 //   --set overrides an MF_DEFAULTS / infer.js DEFAULTS parameter (numbers, true/false, strings), e.g. --set roomVolume=map
@@ -13,7 +17,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { meanFieldRisk, MF_DEFAULTS, initialPrevalence } from './meanfield.js';
+import { meanFieldRisk, meanFieldOnline, MF_DEFAULTS, initialPrevalence } from './meanfield.js';
 
 const args = process.argv.slice(2), dir = args.find((a) => !a.startsWith('--') && !/^\d/.test(a) && !a.includes('='));
 if (!dir) { console.error('usage: node model/meanfield-cli.mjs <run_dir> [--scale x] [--calibrate]'); process.exit(1); }
@@ -44,16 +48,26 @@ function readGz(name) {
 
 const config = JSON.parse(read('config.json'));
 const agentIds = parseCsv(read('agents_static.csv').toString()).map((a) => a.agent_id);
-const contacts = readGz('contacts.csv.gz');
+const online = !opt('--scale') && !args.includes('--calibrate');
+const cacheDir = join(dirname(fileURLToPath(import.meta.url)), 'cache', run);
+let columns = null;
+if (online && existsSync(join(cacheDir, 'meta.json'))) { // typed-array contacts: an 11M-row run in seconds
+  const meta = JSON.parse(readFileSync(join(cacheDir, 'meta.json')));
+  const arr = (f, T) => { const b = readFileSync(join(cacheDir, f)); return new T(b.buffer, b.byteOffset, b.byteLength / T.BYTES_PER_ELEMENT); };
+  columns = { t: arr('t.i4', Int32Array), a: arr('a.i4', Int32Array), b: arr('b.i4', Int32Array), dist: arr('dist.f4', Float32Array),
+    tier: arr('tier.i1', Int8Array), indoor: arr('indoor.u1', Uint8Array), room: arr('room.i4', Int32Array), dur: arr('dur.i4', Int32Array), roomIds: meta.rooms };
+}
+const contacts = columns ? [] : readGz('contacts.csv.gz');
 for (const c of contacts) { c.t = +c.t; c.distance_m = +c.distance_m; c.duration_s = +c.duration_s; }
 const reports = parseCsv(read('reports_tests.csv').toString());
 let rooms = null;
 try { rooms = new Map(parseCsv(read('map/rooms.csv').toString()).map((r) => [r.room_id, r])); } catch { /* default room */ }
 const infections = existsSync(join(dir, 'infections.csv')) ? parseCsv(read('infections.csv').toString()) : [];
 const startMs = Date.parse(config.start), stepMs = config.step_min * 60000, DAY = 86400000;
-const input = { contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs, weather: config.params?.weather, days: config.days,
-  initialPrevalence: initialPrevalence(config) }; // the run's seed share replaces the 2% prior
-console.log(`${run}: ${agentIds.length} agents, ${contacts.length.toLocaleString()} contact rows, ${reports.length} reports, prior ${input.initialPrevalence ?? MF_DEFAULTS.prior}`);
+const input = { contacts, columns, reports, rooms, agentIds, stepMin: config.step_min, startMs, weather: config.params?.weather, days: config.days,
+  initialPrevalence: online ? undefined : initialPrevalence(config) }; // --scale / --calibrate: the run's seed share as the prior
+const nRows = columns ? columns.t.length : contacts.length;
+console.log(`${run}: ${agentIds.length} agents, ${nRows.toLocaleString()} contact rows, ${reports.length} reports, ${online ? 'online self-calibration' : `prior ${input.initialPrevalence ?? MF_DEFAULTS.prior}`}`);
 
 let scale = Number(opt('--scale')) || MF_DEFAULTS.lambdaScale;
 if (args.includes('--calibrate')) {
@@ -78,8 +92,9 @@ if (args.includes('--calibrate')) {
 }
 
 const t0 = Date.now();
-const risk = meanFieldRisk(input, { ...over, lambdaScale: scale });
-console.log(`mean-field (lambdaScale ${scale}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+const risk = online ? meanFieldOnline(input, { priorAge: 'new', ...over }) : meanFieldRisk(input, { ...over, lambdaScale: scale });
+if (online) for (const f of risk.fits) console.log(`  fit at day ${f.day}: prior ${f.prior.toPrecision(3)}, lambdaScale ${f.lambdaScale.toPrecision(3)} (${f.reports} reporters)`);
+console.log(`mean-field (${online ? 'online' : `lambdaScale ${scale}`}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 
 // Score: AUC of P(flu) against "infected in the last illnessDays" (sim truth), at the end of each day.
 const infAt = new Map();

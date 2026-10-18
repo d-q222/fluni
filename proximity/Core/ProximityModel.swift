@@ -34,7 +34,10 @@ final class ProximityModel: ObservableObject {
         didSet {
             own.statusChanged(liveRisk: liveRisk, status: myRisk)
             if ownScore != own.current { ownScore = own.current }
-            announce()
+            // flu-expo: a status change starts a new ID (which announces it). Other phones' ContactGuard ignores an
+            // ID whose status reverses for 15 min (rule 4), so "reset to healthy, then report" under one ID hid
+            // the sick phone completely; and a held link's status cached before the change can't land on the new ID.
+            if myRisk != oldValue, myID.count == BLEBeacon.idBytes, !isPaused { rotateID() } else { announce() }
         }
     }
     @Published var speed = 1.0  // real time; demo/test launches pass -speed
@@ -427,7 +430,7 @@ final class ProximityModel: ObservableObject {
         if !isPaused, now.timeIntervalSince(lastRotation) >= rotationInterval { rotateID() }
     }
 
-    private func rotateID() {
+    func rotateID() {  // internal for tests
         var bytes = [UInt8](repeating: 0, count: BLEBeacon.idBytes)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         myID = Data(bytes)
@@ -664,7 +667,7 @@ final class ProximityModel: ObservableObject {
             byID[id] = p
         }
 
-        let before = exposure.level
+        let before = exposure.alert
         var e = exposure
         // Spoof guard first, over every peer (it needs to see bursts); then background-safe accrual credits
         // only peers with a fresh estimate, each for [lastCreditedAt, now].
@@ -687,18 +690,18 @@ final class ProximityModel: ObservableObject {
         if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
         setExposure(e)  // unchanged ticks don't republish; any change in p does
         tickOwnScore()
-        if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        let kind = alertGate.step(exposure.level, now: now)
+        if exposure.alert != before { log("ALERT \(exposure.alert) minutes=\(fmt(exposure.minutes))") }
+        let kind = alertGate.step(exposure.alert, now: now)
         if let kind {
             log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")"
                 + (SystemNotifier.shared.prefs.allows(kind) ? "" : " setting=off"))
             if UIApplication.shared.applicationState == .active {
                 UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
             }
-            alertPoster.post(kind)
+            alertPoster.post(kind, level: exposure.alert)
         }
         // flu-persist: a level change or a notification is written at once (a swipe-away gives no callback).
-        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before || kind != nil)
+        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.alert != before || kind != nil)
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
         // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
         // once per background scan; a restart lets phones that came near be found again).
@@ -757,9 +760,11 @@ final class ProximityModel: ObservableObject {
         guard counting else { return }
         if let last = lastCoverageTick {
             var e = 0, c = 0
+            let linked = Set(linkIDs.values)  // a Bluetooth-only device or a stale rotated ID has no UWB link
             for p in byID.values {
                 let k = UWBCoverage.classify(bleAge: p.ble.map { now.timeIntervalSince($0.at) },
-                                             uwbAge: p.uwb.map { now.timeIntervalSince($0.at) }, capable: uwbCapable[p.id])
+                                             uwbAge: p.uwb.map { now.timeIntervalSince($0.at) },
+                                             capable: linked.contains(p.id) ? uwbCapable[p.id] : false)  // only link peers can range
                 if k.eligible { e += 1 }
                 if k.covered { c += 1 }
             }
@@ -873,7 +878,9 @@ final class UNPoster: AlertPosting {
     let notifier: SystemNotifier
     init(notifier: SystemNotifier = .shared) { self.notifier = notifier }
 
-    func post(_ kind: NotificationKind) {
-        notifier.post(kind, content: AppNotifications.content(kind: kind))  // category + userInfo + neutral text
+    func post(_ kind: NotificationKind) { post(kind, level: .nearby) }
+
+    func post(_ kind: NotificationKind, level: AlertLevel) {
+        notifier.post(kind, content: AppNotifications.content(kind: kind, level: level))  // category + userInfo + neutral text
     }
 }

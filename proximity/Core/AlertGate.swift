@@ -20,7 +20,7 @@ enum BackgroundAlert {
     static func cooldown(_ level: AlertLevel) -> TimeInterval {
         switch level {
         case .none: return 0
-        case .nearby: return nearbyCooldown
+        case .nearby, .nearbyContagious: return nearbyCooldown
         case .closeContact: return closeContactCooldown
         }
     }
@@ -37,7 +37,7 @@ enum BackgroundAlert {
     static func kind(_ level: AlertLevel) -> NotificationKind? {
         switch level {
         case .none: return nil
-        case .nearby: return .nearby
+        case .nearby, .nearbyContagious: return .nearby  // one Settings toggle for both heads-ups
         case .closeContact: return .closeContact
         }
     }
@@ -46,6 +46,12 @@ enum BackgroundAlert {
 /// Posts a FlUni notification. The app posts through UNUserNotificationCenter; tests record.
 protocol AlertPosting: AnyObject {
     func post(_ kind: NotificationKind)
+    /// `level`: the alert behind it, for the wording (a contagious heads-up reads stronger). Defaults to `post(kind)`.
+    func post(_ kind: NotificationKind, level: AlertLevel)
+}
+
+extension AlertPosting {
+    func post(_ kind: NotificationKind, level: AlertLevel) { post(kind) }
 }
 
 /// The per-phone alert state: last level seen and when each level was last notified. Saved with the exposure
@@ -65,7 +71,7 @@ struct AlertGate: Equatable, Codable {
     /// contact): the same rule as notifications, so the in-app alert pops again exactly when a notification could.
     func isRead(_ level: AlertLevel, now: Date) -> Bool {
         guard level != .none else { return true }
-        guard let t = lastReadAt[level] else { return false }
+        guard let t = Self.latest(lastReadAt, for: level) else { return false }
         let since = now.timeIntervalSince(t)
         return since >= 0 && since < BackgroundAlert.cooldown(level)
     }
@@ -73,7 +79,8 @@ struct AlertGate: Equatable, Codable {
     /// Feed the tracker's level after each tick. Returns the kind to notify, if any.
     mutating func step(_ new: AlertLevel, now: Date) -> NotificationKind? {
         defer { level = new }
-        guard BackgroundAlert.shouldNotify(previous: level, new: new, lastNotifiedAt: lastNotifiedAt[new], now: now) else {
+        guard BackgroundAlert.shouldNotify(previous: level, new: new, lastNotifiedAt: Self.latest(lastNotifiedAt, for: new),
+                                           now: now) else {
             return nil
         }
         lastNotifiedAt[new] = now
@@ -82,6 +89,13 @@ struct AlertGate: Equatable, Codable {
 
     /// Same, posting through `poster`.
     mutating func step(_ new: AlertLevel, now: Date, poster: AlertPosting) {
-        if let k = step(new, now: now) { poster.post(k) }
+        if let k = step(new, now: now) { poster.post(k, level: new) }
+    }
+
+    /// flu-expo: when `level` was last notified or read. A plain heads-up also counts a contagious one (a stronger
+    /// alert already covers it, so a weaker one doesn't follow within the cooldown); a contagious heads-up counts
+    /// only its own, so possibly sick -> contagious alerts once, whatever the possibly-sick heads-up's cooldown.
+    private static func latest(_ times: [AlertLevel: Date], for level: AlertLevel) -> Date? {
+        level == .nearby ? [times[.nearby], times[.nearbyContagious]].compactMap { $0 }.max() : times[level]
     }
 }

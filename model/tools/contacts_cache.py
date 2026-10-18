@@ -13,6 +13,7 @@ meta.json {rows, rooms}. model/cache/ is not committed.
 import csv, json, os, sys
 import numpy as np
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.csv as pacsv
 import pyarrow.parquet as pq
 
@@ -31,7 +32,7 @@ def read_contacts(run):
     opts = pacsv.ConvertOptions(include_columns=COLS, column_types={"room_id": pa.string(), "indoor": pa.string()},
                                 strings_can_be_null=False)
     t = pa.concat_tables([pacsv.read_csv(x, convert_options=opts) for x in paths])
-    return t.set_column(t.schema.get_field_index("indoor"), "indoor", pa.compute.equal(t["indoor"], "True"))
+    return t.set_column(t.schema.get_field_index("indoor"), "indoor", pc.equal(t["indoor"], "True"))
 
 
 def main():

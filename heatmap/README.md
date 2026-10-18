@@ -29,7 +29,7 @@ screen; it never falls back silently to mock or fake data (use `?run=mock_boring
 
 The 2-week run is a big run (see "Big runs"), so it has no "Why this %?" panel and no contact-based phone
 alerts. It reads the precomputed `model/out/<run>/p_sick.csv`,
-`model/out/<run>/meanfield.csv` (`?model=meanfield`) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
+`model/out/<run>/meanfield.csv` (the default P) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
 After a change to `model/` or the user map's totals, regenerate them (commands under "Big runs").
 
 URL options, which can be combined:
@@ -43,16 +43,21 @@ URL options, which can be combined:
   `?data=../sim/runs/<run>/timeline.csv.gz`.
 - `?at=200`: open at a moment, in minutes from the start of the data.
 - `?agent=A0008`: open with that agent's phone showing. Handy for demo scenes.
-- `?view=public`: open on the user-facing map. Add `&horizon=60` (or 120 or 180) for a forecast.
 - `?embed=app`: the Swift app's heat map tab (`proximity/FluniProx/HeatmapView.swift`). Only the
   user-facing map, full screen, playing slowly and looping; the time and forecast picker float on top.
+  Add `&horizon=60` (or 120 or 180) to start on a forecast. This is the only place the main page shows
+  the user map; the presenter has no "What users see" view any more (an old `?view=public` opens the default).
   Serve the repo root and point the tab at `http://<laptop>.local:8000/heatmap/?embed=app`.
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
-- `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
-  `model/infer.js`, for the dots and so also the building shading. No "Why this %?" panel then. Big runs need
-  `node model/meanfield-cli.mjs sim/runs/<run>` first.
+- People's P(sick), for the dots, the phone and so also the building shading and the user map, is Baker et al.'s
+  mean-field (`model/meanfield.js`), self-calibrated online: from the reports seen so far it estimates the starting
+  prevalence and `lambdaScale` (no seed count, no ground truth) and refits each day, as the app would
+  (`meanFieldOnline`; scores in `model/MEANFIELD_EVAL.md`). It is precomputed in `model/out/<run>/meanfield.csv` by
+  `node model/meanfield-cli.mjs sim/runs/<run>`; a run without the file computes it in the page (slower). It has no
+  explain(), so no "Why this %?" panel.
+- `?model=infer`: the older single-pass estimate (`model/infer.js`) instead, with the "Why this %?" panel.
 - `?color=truth`: dots *and* the building shading follow the sim's true status instead of the app's
   estimate (a building's shade is then the number of people in it actually infected). This is the same as
   choosing "Color: true status (sim)".
@@ -62,7 +67,7 @@ Demo scenes on the sim's mock run:
 - `?at=2115&agent=A0008`: Tue 11:15. The person next to A0008 in class is sick.
 - `?at=4200&agent=A0002`: Wed 22:00. A0002 walks back into the dorm room where their reported-sick
   roommate is isolating, which triggers the walk-in warning.
-- `?view=public&horizon=60&at=2115`: the user-facing map with a forecast for one hour ahead.
+- `?embed=app&horizon=60&at=2115`: the user-facing map with a forecast for one hour ahead.
 
 ## Demo map vs. user map
 
@@ -70,17 +75,20 @@ Demo scenes on the sim's mock run:
 - **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
   buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
-  app's fonts (`assets/fonts/`, OFL). Campus is the user map. The risk number on Today (and its Low/Elevated/High
+  app's fonts (`assets/fonts/`, OFL). The Map tab mirrors the main map without the people: the same base map and landmarks and
+  the same building shading (values and scale of "Expected infected"), but no people dots (the main map still shows
+  them); it opens at the main map's centre and zoom and then pans and zooms on its own (`?tab=map` opens on it).
+  Tapping a building there opens the user map's popup. The risk number on Today (and its Low/Elevated/High
   tier, the advice line, Lisa's mood and "How is this calculated?") is the campus model's P for that person, `model.risk.pAt(id, now)`
-  (infer.js, or the mean-field with `?model=meanfield`): the same number as the dot's tooltip, the building card's list and the presenter
+  (the mean-field, or infer.js with `?model=infer`): the same number as the dot's tooltip, the building card's list and the presenter
   bar. The on-device estimate (`phoneEstimate`, doseModel over the last 24 h, mirrored by `proximity/`) is no longer shown; it stays as
   `window.fluni.phoneScore` for proximity's cross-check. Taps are visual only.
-- **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
+- **The user map** (`?embed=app`) is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
   (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
-  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Expected infected per
+  numbers; the embed adds a count badge on each hot building, building names and tap-for-popup. **Expected infected per
   building** (the default view): hover a building for "≈ N expected infected · M people", click it for Σ P, above-baseline,
   Low/Elevated/High counts and the top 3 people driving it (click one to open the phone).
-- **User map** (the phone, and "What users see" on the main map): built only from totals in
+- **User map** (the phone's building popup, and `?embed=app`): built only from totals in
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
@@ -136,8 +144,8 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   label is a quarter of its maximum.
 - **"Expected infected per building"** (the presenter's default view, `BuildingShadeLayer` in `buildings.js`): no
   heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
-  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
-  with `?model=meanfield`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
+  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: the mean-field, or `model/infer.js`
+  with `?model=infer`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
   floor space: footprint area (its outline) × floors. Floors come from `data/building-floors.json` for the 70 busiest
   buildings (88% of indoor time), researched from Stanford's Campus Access Guide (maps.stanford.edu/ada), the 2018
   General Use Permit historic-resources appendix, R&DE housing pages and OSM, each with its source, confidence and a
@@ -174,8 +182,6 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   drew a map of crowds. This applies to the room-level heat, the airflow sources, and the user
   map's building colours (`excess` in the totals; the counts shown stay Σ P). The truth views still
   use the sim's infectiousness.
-- **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
-  people shown.
 - **People (demo only)**: one per agent, drawn as Lisa's hand-drawn tissue on a round badge.
   The badge colour is the app's estimate of P(sick) in three tiers, the same tiers as the phone's
   advice: Low under 10% (sage), Elevated 10–40% (yellow), High 40%+ (red). Or colour by the
@@ -236,7 +242,8 @@ took 52 s and a 4 GB JS heap to open.
 ```bash
 node --max-old-space-size=12000 heatmap/tools/precompute.mjs sim/runs/<run> --out heatmap/out/<run>
 mkdir -p model/out/<run> && mv heatmap/out/<run>/p_sick.csv model/out/<run>/
-node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # for ?model=meanfield
+node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # the default P; run it before precompute.mjs,
+                                                                         # whose totals use it (--model infer: infer.js)
 ```
 
 `precompute.mjs` reads whole `timeline.csv.gz` and `contacts.csv.gz` files. For a run the sim split into

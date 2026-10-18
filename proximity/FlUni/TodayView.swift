@@ -21,7 +21,7 @@ struct TodayView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    private var level: AlertLevel { model.exposure.level }
+    private var level: AlertLevel { model.exposure.alert }
     private var sick: Bool { model.selfStatusOverridesRisk }
 
     var body: some View {
@@ -73,7 +73,7 @@ struct TodayView: View {
         if model.isPaused { return "Taking a break." }
         switch level {
         case .none: return "All calm nearby."
-        case .nearby: return "I'm keeping watch."
+        case .nearby, .nearbyContagious: return "I'm keeping watch."
         case .closeContact: return "What to do is below."
         }
     }
@@ -208,7 +208,7 @@ struct SpeechBubble: View {
 /// Lisa's two-frame scene (760 x 594) at the top of a card: the frames swap like a flipbook, about a second a cycle.
 /// Reduce Motion holds frame 1. Decorative, so hidden from VoiceOver.
 struct SceneFlip: View {
-    let name: String   // SceneFine or SceneSick, + 1 / 2
+    let name: String   // SceneFine, SceneAlert or SceneSick, + 1 / 2
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -238,7 +238,10 @@ struct RiskHero: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if level != .none { AlertStrip(level: level).padding(.bottom, 6) } else { SceneFlip(name: "SceneFine") }
+            if level != .none {
+                SceneFlip(name: "SceneAlert")
+                AlertStrip(level: level).padding(.bottom, 6)
+            } else { SceneFlip(name: "SceneFine") }
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .firstTextBaseline, spacing: 14) { number; indicator }
                 VStack(alignment: .leading, spacing: 4) { number; indicator }

@@ -92,4 +92,39 @@ final class AlertGateTests: XCTestCase {
         // pClose = Φ((1.83 - 0.5) / ((0.4·0.5 + 0.3)·√2)) = 0.97001; credits 1.94, +3.88 (gap over a stale wake), 1.94, …
         XCTAssertEqual(crossedAt, 18, "17.46 min at 18 s; 13.58 at 14 s, and 16 s was a stale wake")
     }
+
+    /// flu-expo (owner retest): a possibly-sick heads-up, then that person tests positive. The contagious heads-up
+    /// notifies once at once (no 30 min wait) with the stronger wording; repeats and the weaker one keep the cooldown.
+    func testPossiblySickToContagiousAlertsOnceWithoutWaitingForTheCooldown() {
+        var t = ExposureTracker()
+        t.advance(simSeconds: 1, contacts: [(1, .possible)])
+        XCTAssertEqual(t.alert, .nearby)
+        t.advance(simSeconds: 1, contacts: [(1, .contagious)])
+        XCTAssertEqual(t.alert, .nearbyContagious)
+        XCTAssertEqual(t.level, .nearby, "the episode level itself is unchanged")
+        t.advance(simSeconds: 1, contacts: [(1, .possible)])
+        XCTAssertEqual(t.alert, .nearby)
+        XCTAssertTrue(AlertLevel.nearby < .nearbyContagious && AlertLevel.nearbyContagious < .closeContact)
+
+        var g = AlertGate()
+        XCTAssertEqual(g.step(.nearby, now: t0), .nearby)
+        XCTAssertEqual(g.step(.nearbyContagious, now: t0.addingTimeInterval(60)), .nearby, "escalation alerts at once")
+        XCTAssertNil(g.step(.nearby, now: t0.addingTimeInterval(120)))
+        XCTAssertNil(g.step(.nearbyContagious, now: t0.addingTimeInterval(180)), "same level again: cooldown")
+        XCTAssertNil(g.step(.none, now: t0.addingTimeInterval(240)))
+        XCTAssertNil(g.step(.nearby, now: t0.addingTimeInterval(300)), "a weaker heads-up never follows a stronger one")
+        XCTAssertEqual(g.step(.closeContact, now: t0.addingTimeInterval(360)), .closeContact)
+
+        // The in-app alert: reading the possibly-sick one doesn't hide the contagious one; reading that covers both.
+        var r = AlertGate()
+        r.markRead(.nearby, now: t0)
+        XCTAssertFalse(r.isRead(.nearbyContagious, now: t0.addingTimeInterval(60)))
+        r.markRead(.nearbyContagious, now: t0.addingTimeInterval(60))
+        XCTAssertTrue(r.isRead(.nearby, now: t0.addingTimeInterval(120)))
+
+        XCTAssertEqual(Advice.title(.nearbyContagious), "Someone within 6 ft has tested positive")
+        XCTAssertTrue(NotificationRoute.text(kind: .nearby, detailed: true, level: .nearbyContagious).body
+            .hasPrefix("Someone within 6 ft has tested positive."))
+        XCTAssertTrue(NotificationRoute.text(kind: .nearby, detailed: true).body.hasPrefix("Someone within 6 ft may be sick."))
+    }
 }

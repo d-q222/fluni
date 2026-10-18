@@ -84,4 +84,36 @@ final class WalkInWarningTests: XCTestCase {
     func testMessage() {
         XCTAssertEqual(WalkInWarning.message(for: "Jerry"), "Jerry has a lot of illness right now. Consider a mask, or a different spot.")
     }
+
+    /// The walk-in warning fires on building_heat.csv's `high`; the Map tab shades from the bundled totals.json.
+    /// Both must call a building "high" for the same reason: at least MIN_PEOPLE people and
+    /// sqrt(expected sick above the baseline / colour max) >= 0.5 (the map's dark half of the ramp).
+    /// totals.json rounds counts to 2 decimals, so a building within 0.01 of the line may differ.
+    func testWarningHighMatchesWhatTheMapShadesDark() throws {
+        let src = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("FlUni/Resources")
+        let heat = try BuildingHeat.parse(try Fixture.data("building_heat.csv", sourcePath: src.appendingPathComponent("building_heat.csv")))
+        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: src.appendingPathComponent("app-bundle/data/totals.json"))) as! [String: Any]
+        let ids = (json["buildings"] as! [[String: Any]]).map { $0["id"] as! String }
+        let steps = json["steps"] as! [[[Double]]]
+        let stepMs = json["stepMs"] as! Double, minPeople = json["minPeople"] as! Double
+        func excess(_ r: [Double]) -> Double { r.count > 3 ? r[3] : r[2] }
+        let peaks = steps.map { $0.map(excess).max() ?? 0 }.sorted()
+        let vmax = peaks[Int(0.9 * Double(peaks.count - 1))]
+        XCTAssertGreaterThan(vmax, 0)
+        var checked = 0, high = 0
+        for (s, rows) in steps.enumerated() {
+            guard let snap = heat.state(at: Double(s) * stepMs / 1000 + (heat.timeRange?.lowerBound ?? 0)) else { continue }
+            for r in rows where r[1] >= minPeople {
+                guard let reading = snap.readings[ids[Int(r[0])]] else { continue }
+                let x = (excess(r) / vmax).squareRoot()
+                if abs(x - 0.5) < 0.01 { continue }
+                checked += 1
+                if reading.high { high += 1 }
+                XCTAssertEqual(reading.high, x >= 0.5, "step \(s) \(ids[Int(r[0])])")
+            }
+        }
+        XCTAssertGreaterThan(checked, 1000)
+        XCTAssertGreaterThan(high, 100)
+    }
 }

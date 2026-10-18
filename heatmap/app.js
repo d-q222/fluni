@@ -13,7 +13,7 @@ import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
-import { meanFieldRisk, initialPrevalence } from '../model/meanfield.js';
+import { meanFieldOnline } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -62,9 +62,10 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // same scenario and seed, only longer; a big run (BIG_AGENT_DAYS), so it reads the precomputed model/out/ and heatmap/out/ files.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
-// ?model=meanfield: people's P(sick) from Baker et al.'s mean-field (model/meanfield.js) instead of infer.js.
-// No "Why this %?" panel then (meanfield.js has no explain()).
-const MEAN_FIELD = PARAMS.get('model') === 'meanfield';
+// People's P(sick): Baker et al.'s mean-field (model/meanfield.js), self-calibrated online from the reports seen so far
+// (meanFieldOnline; precomputed in model/out/<run>/meanfield.csv by node model/meanfield-cli.mjs sim/runs/<run>).
+// ?model=infer: the older single-pass estimate (model/infer.js), which also has the "Why this %?" panel (explain()).
+const MEAN_FIELD = PARAMS.get('model') !== 'infer';
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
 const EMBED = PARAMS.get('embed') === 'app';
@@ -268,11 +269,10 @@ async function loadModel(dataUrl, agentIds) {
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
-      let risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      // ?model=meanfield: Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs
+      // the mean-field (default), precomputed; infer.js's p_sick.csv with ?model=infer or when it's missing
       const mf = MEAN_FIELD ? await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base)) : null;
       if (MEAN_FIELD && !mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): using infer.js.`);
-      if (mf) risk = mf;
+      const risk = mf || await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
       if (risk) return { risk, mf: mf && (() => mf), contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
@@ -286,13 +286,16 @@ async function loadModel(dataUrl, agentIds) {
     roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    let risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
-    // ?model=meanfield: Baker et al.'s mean-field over the same contacts and reports colours people (and so the
-    // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
-    let mfRisk = null;
-    const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
-      weather: config.params?.weather, days: config.days, initialPrevalence: initialPrevalence(config) }));
-    if (MEAN_FIELD) risk = mf();
+    // The mean-field from its precomputed file; if the run has none, computed here (refits every 2 days: slower).
+    // ?model=infer: infer.js.
+    let risk = null, mf = null;
+    if (MEAN_FIELD) {
+      const pre = await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base));
+      const m = pre || meanFieldOnline({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
+        weather: config.params?.weather, days: config.days }, { priorAge: 'new' }, { checkpointDays: Array.from({ length: Math.floor((config.days || 14) / 2) }, (_, k) => 2 * (k + 1)) });
+      if (!pre) console.info(`No model/out/${config.run_id}/meanfield.csv: computed the mean-field in the page.`);
+      risk = m; mf = () => m;
+    } else risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
@@ -1302,7 +1305,7 @@ async function main() {
   const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const shadeLayer = new BuildingShadeLayer(shapeOutlines); // the default view's building shading, one feature per outline
-  const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
+  const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // the user map, shown only in ?embed=app
 
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
@@ -1609,12 +1612,13 @@ async function main() {
   });
 
   // The user-facing map's input: totals now, or a forecast. Never agent data.
+  const forecastH = () => Number($('horizon')?.value) || 0; // the forecast picker exists only in ?embed=app
   function userTotals() {
-    const h = Number($('horizon').value);
+    const h = forecastH();
     return h ? forecaster.forecast(now, h) : totalsAt(totals, now).buildings;
   }
   const updateUserLayer = (layer) =>
-    layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: Number($('horizon').value) > 0 });
+    layer.update(userTotals(), vmax.public, { minPeople: MIN_PEOPLE, forecast: forecastH() > 0 });
 
   // "Why this %?": the model's explanation for the selected person, beside the phone (presenter only).
   const mathBox = Object.assign(document.createElement('aside'), { id: 'math', hidden: true });
@@ -1676,45 +1680,37 @@ async function main() {
     noticeTimer = setTimeout(() => b.remove(), 7000);
   }
 
-  // The phone's Map tab: the presenter's own map (sim basemap, Lisa's landmarks, the same building heat at the same moment),
-  // without people or truth rings. It has its own view, so its heat is computed at its zoom, into its own canvases (the
-  // presenter's fade canvas belongs to the presenter's layer). Tapping a building still opens the user map's popup.
+  // The phone's Map tab: the main map, mirrored, without the people. The same base map and Lisa's landmarks and the same
+  // building shading (the values and fixed scale the main map's "Expected infected" view uses, at the same moment); no
+  // people dots (the main map keeps its own). It keeps its own pan and zoom. Tapping a building still opens the user
+  // map's popup.
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
-  function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
-  let phoneHeat = null, phoneOutdoor = null, phoneDirty = true, phoneSettle = 0;
+  // Opened at the main map's centre and zoom (the same scale), or the campus before the main map has a view.
+  let phoneViewSet = false; // false until it has taken the main map's view (the main map may get its view later)
+  function fitPhoneMap() {
+    phoneViewSet = Boolean(map._loaded) && map.getSize().x > 0;
+    if (phoneViewSet) phoneMap.setView(map.getCenter(), map.getZoom(), { animate: false });
+    else phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false });
+  }
+  let phoneShade = null, phoneDirty = true, lastShadeSums = null;
   function buildPhoneMap() {
     const m = baseMap('ph-map', { zoomControl: false, attributionControl: false, maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
     addLandmarks(m);
-    phoneOutdoor = outlines ? new CanvasLayer([sw, ne]).addTo(m) : null;
-    phoneHeat = new CanvasLayer([sw, ne]).addTo(m);
-    // taps: the user map's building popup, drawn invisibly over the heat
+    phoneShade = shading ? new BuildingShadeLayer(shapeOutlines).addTo(m) : null;
+    // taps: the user map's building popup, drawn invisibly over the shading
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false, invisible: true }).addTo(m);
-    m.on('moveend', () => { // like the presenter: the heat waits for the gesture to settle, the old heat fades under the new
-      clearTimeout(phoneSettle);
-      phoneSettle = setTimeout(() => { phoneDirty = true; phoneHeat.fadeOut(); phoneOutdoor?.fadeOut(); if (!playing) render(performance.now()); }, SETTLE_MS);
-    });
     phoneMap = m;
     fitPhoneMap();
+    // built before the main map had its view (?tab=map): take it as soon as the main map settles
+    if (!phoneViewSet) map.once('moveend', () => { if (!phoneViewSet) fitPhoneMap(); });
     return m;
   }
-  // The presenter's heat code path, at the phone map's zoom (sigma, fine grid) and view; sigmaM, fine and the shared field
-  // are put back afterwards. The scale and clipping are the presenter's.
   const phoneZoomBusy = () => Boolean(phoneMap?._animatingZoom);
-  function paintPhoneHeat() {
-    if (!phoneMap?._loaded) return;
-    const z = phoneMap.getZoom(), area = phoneMap.getBounds().pad(0.5), keep = [sigmaM, fine, lastField];
-    try {
-      sigmaM = sigmaForZoom(z); fine = zoneHeat && z >= FINE_ZOOM;
-      const g = heatAt(now, current.values(), false, area), vm = demoScale();
-      if (g.zoneOut) phoneHeat.setZones(g, Z.zones, vm);
-      else { phoneHeat.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, phoneHeat.grid, vm, { strong: true }); phoneHeat.setGrid(); }
-      if (phoneOutdoor) {
-        const o = outdoorAt(now, current.values(), false, area);
-        phoneOutdoor.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
-        paint(o, phoneOutdoor.grid, vm * outdoorPeak(o), { soft: true });
-        phoneOutdoor.setGrid();
-      }
-    } finally { [sigmaM, fine, lastField] = keep; }
+  const phoneMapShown = () => Boolean(phoneMap) && phoneTab === 'map' && !$('phone').hidden;
+  // The main map's building shading, the same numbers (computed this frame by the main map when it shows them).
+  function paintPhoneMap() {
+    if (!phoneMap?._loaded || !phoneShade) return;
+    phoneShade.update(lastShadeSums || buildingDensity(current.values(), truthMode()), shadeMax);
     phoneDirty = false;
   }
 
@@ -1748,11 +1744,10 @@ async function main() {
       withHeat = true;
     }
     if (phoneMap && withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
-    const h = Number($('horizon').value);
     if (phoneMap) {
       const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`));
       $('ph-ctime').innerHTML = `<b>Now</b> · updated ${clock(now)}`;
-      $('ph-ramp').style.background = rampCss();
+      $('ph-ramp').style.background = $('ramp').style.background; // the main map's shading ramp
     }
   }
 
@@ -1962,7 +1957,8 @@ async function main() {
       const shade = shading && view === 'demo';
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' || shade ? 'none' : '';
       if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || shade ? 'none' : '';
-      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingDensity(current.values(), truthMode()), shadeMax); }
+      lastShadeSums = shade || phoneMapShown() ? buildingDensity(current.values(), truthMode()) : null; // also the phone map's
+      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(lastShadeSums, shadeMax); }
       else if (shadeLayer.map) shadeLayer.remove();
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
@@ -1995,7 +1991,7 @@ async function main() {
       heatInterval = cost <= HEAT_BUDGET_MS ? 0 : Math.min(250, cost * 3); // keep frames smooth on big runs
     }
 
-    if (phoneMap && phoneTab === 'map' && !$('phone').hidden && !phoneZoomBusy() && (heatDue || phoneDirty)) paintPhoneHeat();
+    if (phoneMapShown() && !phoneZoomBusy() && (heatDue || phoneDirty)) paintPhoneMap();
     const showDots = $('show-dots').checked && view !== 'public';
     // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
     // (sized on the ground, PERSON_M), so no fading is needed there.
@@ -2023,6 +2019,7 @@ async function main() {
       }
     }
     if (refaded && dotRenderer._map) { dotRenderer._redrawBounds = null; dotRenderer._redraw(); } // no bounds: the whole canvas
+    if (phoneMapShown() && !phoneViewSet && map._loaded && map.getSize().x > 0) setTimeout(() => { if (!phoneViewSet) fitPhoneMap(); }, 0);
     renderPhone(heatDue);
     refreshBuilding(realNow);
     updateViewCount(realNow);
@@ -2055,7 +2052,7 @@ async function main() {
     setPhoneTab(phoneTab);
   }
 
-  // The app's slim legend for "What users see": a gradient strip, with the counting rules behind (i).
+  // The user map's slim legend (?embed=app): a gradient strip, with the counting rules behind (i).
   function userLegend() {
     let el = $('ulegend');
     if (el) return el;
@@ -2113,7 +2110,7 @@ async function main() {
     const isPublic = v === 'public';
     const ul = userLegend();
     ul.hidden = !isPublic;
-    document.querySelector('.legend').hidden = isPublic;
+    document.querySelector('.legend').hidden = true; // the presenter's legend box is off (owner); the user map keeps its own
     ul.querySelector('.mid').textContent = (vmax.public / 4).toFixed(1);
     ul.querySelector('.max').textContent = `${vmax.public.toFixed(1)}+`;
     ul.querySelector('.fine').textContent = `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
@@ -2121,11 +2118,7 @@ async function main() {
     try { updateViewCount(performance.now(), true); } catch { /* the legend is drawn before the map exists */ }
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
-    // Forecasts are a user-map feature. Hidden but keeping its slot, so the header doesn't shift between views.
-    $('horizon').style.visibility = isPublic ? '' : 'hidden';
-    if (!EMBED) document.querySelector('.legend .fine').textContent = isPublic
-      ? 'Totals only: no people. May be incomplete because not everyone shares their status.'
-      : 'May be incomplete: not everyone shares their status. Click a person to see their app.';
+    if (!EMBED) document.querySelector('.legend .fine').textContent = 'May be incomplete: not everyone shares their status. Click a person to see their app.';
   }
 
   function setPlaying(on) {
@@ -2147,27 +2140,25 @@ async function main() {
   // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
-  // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.
-  const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
-  horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
-  document.querySelector('.options').append(horizon);
   const basePick = Object.assign(document.createElement('select'), { id: 'basemap', ariaLabel: 'Map style' });
   basePick.append(new Option('Sim map', 'sim'), new Option('Street map', 'streets'), new Option('Illustrated campus', 'drawn'));
   basePick.value = baseStyle;
   basePick.addEventListener('change', () => setBaseStyle(basePick.value).then(() => { basePick.value = baseStyle; }));
   document.querySelector('.options').append(basePick);
-  // ?view=public&horizon=60 open straight into the user-facing map / a forecast.
   const params = new URLSearchParams(location.search);
-  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=catch: the default)
-  if (params.get('horizon')) horizon.value = params.get('horizon');
+  if ([...$('view').options].some((o) => o.value === params.get('view'))) $('view').value = params.get('view'); // (an old ?view=public or ?view=catch: the default)
   if (params.get('color')) $('dot-mode').value = params.get('color'); // ?color=truth: heat + dots from sim truth
   const mapNote =
     `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each simulated person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
     + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
   if (EMBED) {
-    // User map only, slowest speed, playing; the time and forecast picker float over the map.
+    // User map only, slowest speed, playing; the time and forecast picker (?horizon=60) float over the map.
+    $('view').append(new Option('User map', 'public')); // the presenter has no such view; only the embed shows it
     $('view').value = 'public';
     $('speed').value = '0';
+    const horizon = Object.assign(document.createElement('select'), { id: 'horizon', ariaLabel: 'Forecast' });
+    horizon.append(...HORIZONS.map(([m, label]) => new Option(label, m)));
+    if (params.get('horizon')) horizon.value = params.get('horizon');
     const chip = Object.assign(document.createElement('div'), { className: 'embed-chip' });
     chip.append($('time'), horizon);
     document.querySelector('main').append(chip);
@@ -2176,7 +2167,7 @@ async function main() {
   }
 
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
-    $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
+    $(id)?.addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
   }
   if (model?.risk.explain) {
     const why = Object.assign(document.createElement('button'), { textContent: 'Why this %?' });
