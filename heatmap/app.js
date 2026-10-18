@@ -13,7 +13,8 @@ import { BuildingTotalsLayer } from './buildings.js';
 import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
-import { rampCss, fmt as fmtSick } from './userstyle.js';
+import { rampCss, fmt as fmtSick, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
+import { LabelLayer } from './maplabels.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import * as PV from './phone-views.js';
 import { makeSeats } from './seats.js';
@@ -1271,8 +1272,7 @@ async function main() {
     renderPhone(true);
     if (tab === 'map' && phoneMap) {
       phoneMap.invalidateSize();
-      const me = selected && current.get(selected);
-      if (me) phoneMap.setView([me.lat, me.lon], 15.5);
+      fitPhoneMap();
     }
   }
 
@@ -1305,6 +1305,34 @@ async function main() {
     noticeTimer = setTimeout(() => b.remove(), 7000);
   }
 
+  // The phone's Campus tab: FlUni's own user map look (usermap.js): paper, pale outlines, faint roads, soft green and water,
+  // anchor labels; no tiles. Heat comes from the same BuildingTotalsLayer as "What users see".
+  let phoneAnchors = null;
+  const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
+  function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
+  function buildPhoneMap() {
+    const map = L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 });
+    const pane = (name, z) => { const p = map.createPane(name); p.style.zIndex = z; p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
+    const PC = pane('pctx', 410), PN = pane('pneu', 420);
+    map.getContainer().style.background = '#f4ead6';
+    fetch('data/context.geojson').then((r) => (r.ok ? r.json() : null)).then((ctx) => {
+      if (!ctx) return;
+      for (const k of CONTEXT_ORDER) L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
+    }).catch(() => {});
+    if (outlines) L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
+    phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false }).addTo(map);
+    const labels = new LabelLayer(map, { pane: 'ph-labels', avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] });
+    fetch('out/app-bundle/data/labels.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (!j?.anchors) return;
+      phoneAnchors = j.anchors;
+      const z0 = map.getZoom();
+      labels.setItems(j.anchors.map((l) => ({ key: l.t, lat: l.lat, lon: l.lon, html: esc(l.t), cls: `lbl-${l.c}`, p: l.p, minZoom: z0 + (l.p - 1) * 0.75 - 0.01 })));
+    }).catch(() => {});
+    phoneMap = map;
+    fitPhoneMap();
+    return map;
+  }
+
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
     renderMath();
@@ -1331,10 +1359,7 @@ async function main() {
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''} · campus model ${liveText(me.p)} (everyone's contacts and reports)`;
 
     if (!phoneMap && phoneTab === 'map') {
-      phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
-      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines, { badges: false, avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] }).addTo(phoneMap);
-      phoneMap.getContainer().classList.add('muted-base');
-      phoneMap.setView([me.lat, me.lon], 15.5);
+      phoneMap = buildPhoneMap();
       withHeat = true;
     }
     if (phoneMap && withHeat && phoneBuildings) updateUserLayer(phoneBuildings);
