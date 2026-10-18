@@ -144,7 +144,9 @@ silently tuned away.
 3. **Structured outcomes and `llm_events.csv`**, including `shared_health` on talk turns.
 4. **Notice** (Claude agents observing rule-based agents).
 5. **Messages and group plans**, including the P(accept) rule for rule-based recipients.
-6. **Calibration scenario**: oversampled events, a cost estimate and a cap.
+6. **Calibration scenario**: oversampled events, a cost estimate and a cap. **Done**: `scripts/calibration_run.py`,
+   `configs/calibration.json`, `campussim/calibration.py`, `campussim/budget.py` (see the README's
+   "Calibration run"). Per-agent models for `--opus-subset` still need `LLMAgents.agent_models`.
 7. **Fit script** and `behavior_calibrated.json`. **Done** (`scripts/calibrate_agents.py`,
    `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; the validation
    report from step 8 is `scripts/validation_report.py`, waiting on `configs/published_rates.json`).

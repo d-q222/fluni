@@ -190,6 +190,43 @@ day. The rest of the population is unchanged.
   Change `llm_agents.model` / `llm_agents.effort` to trade cost for quality.
 - `scripts/smoke_llm_agents.py` checks the plumbing with a fake client (no key needed).
 
+## Calibration run
+
+The scenario that measures Claude agents' behavior for fitting (step 6 of
+[docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md)): 300 agents for 7 days, 50 of them Claude-driven
+(whole friend groups, Big Five, worry on, `claude-sonnet-5-5` at effort low). Settings, prices and the
+estimate's assumptions are in `configs/calibration.json`. That file isn't loaded into normal runs, so
+their run ids don't change.
+
+```bash
+.venv/bin/python scripts/calibration_run.py --dry-run          # cost estimate; fake client, no key, ~20 s
+.venv/bin/python scripts/calibration_run.py --budget 20        # real run (ANTHROPIC_API_KEY)
+.venv/bin/python scripts/calibration_run.py --budget 25 --opus-subset 10   # 10 agents on claude-opus-5-5
+```
+
+- **Oversampling.** Each run makes rare events happen and logs every one to `calibration_forced.csv`
+  (`t, agent_id, kind, detail`). `extra_seed` events are extra infections among members of Claude
+  agents' friend groups, spread over days 0–3 and made symptomatic. `alert` events are FlUni app alerts
+  sent to random Claude agents at random times, each with one advice kind (`isolate_until`,
+  `wear_mask`, `leave_location`, `go_to_vaden`). They are added to the intervention's actions, so
+  the agent gets them as notifications and re-plans, the same as with real alerts. `severity` events
+  record peak severities for infections in those friend groups, drawn from `severity_mix` (mild /
+  moderate / severe). All of it comes from its own RNG stream for the seed, so the rest of the sim is
+  unchanged and `--opus-subset` doesn't change the forced events.
+- **Dry run.** Runs the scenario with a fake client. It records each request's size (tokens ≈ chars/4)
+  and gets back minimal responses: plans keep the default plan, and talk turns end after one line.
+  It prints calls by type (plan, talk, reflect), input/output tokens and $. Talk calls are scaled
+  by `estimate.turns_per_conversation`. Output tokens per call are assumptions, so update them from
+  the first real `cost.json`. Today's system prompts (~300 tokens) are under Sonnet 5.5's
+  512-token minimum for prompt caching, so the estimate prices them as uncached input.
+  The default scenario comes to about $14 on Sonnet 5.5, or about $16 with `--opus-subset 10`.
+- **Cost cap.** A real run first prints the dry-run estimate (`--no-estimate` skips it). Then it
+  runs with `campussim/budget.py` `BudgetClient`, which prices each response's `usage`. Once the
+  spend reaches `--budget` it stops calling the API and prints one warning. Agents then keep their
+  default plans and talks end. `cost.json` in the run dir has calls, tokens and $ by model. Calls
+  already in flight still finish, so the spend can pass the cap by up to about `max_workers` calls.
+- `scripts/smoke_calibration.py` checks the dry run, the forced events and the cap with fake clients.
+
 ## Sample run
 
 `runs/influenza_none_n10_d14_s2_bc5cae7a/` is a real 10-agent, 14-day run (one dorm plus one

@@ -69,10 +69,11 @@ def _log(msg, t0):
     print(f"[{time.perf_counter() - t0:7.1f}s] {msg}", flush=True)
 
 
-def run(cfg, external_provider=None, quiet=False, llm_client=None):
+def run(cfg, external_provider=None, quiet=False, llm_client=None, scenario=None):
     """Run one simulation; returns the run directory. external_provider(t) -> dict is passed to
     the intervention through ObservableState.external (downstream closed-loop hook). llm_client
-    replaces the Anthropic client of Claude-driven agents (tests)."""
+    replaces the Anthropic client of Claude-driven agents (tests). scenario.setup(...) -> intervention
+    may seed infections and wrap the intervention before step 0 (scripts/calibration_run.py)."""
     t_start = time.perf_counter()
     log = (lambda m: None) if quiet else (lambda m: _log(m, t_start))
     rc = cfg["run"]
@@ -111,6 +112,8 @@ def run(cfg, external_provider=None, quiet=False, llm_client=None):
     intervention = REGISTRY[rc["intervention"]]()
     if hasattr(intervention, "reset"):
         intervention.reset({"cfg": cfg, "campus": campus, "pop": pop, "n_agents": pop.N, "step_min": step_min})
+    if scenario is not None:
+        intervention = scenario.setup(cfg=cfg, pop=pop, dis=dis, llm=llm, intervention=intervention)
     has_app = np.asarray(pop.has_app, dtype=bool)
     comp_scale = getattr(intervention, "compliance_scale", 1.0)
     n_events = 0
