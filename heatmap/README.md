@@ -74,7 +74,10 @@ Demo scenes on the sim's mock run:
 - **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
   buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
-  app's fonts (`assets/fonts/`, OFL). Campus is the user map. The risk number on Today (and its Low/Elevated/High
+  app's fonts (`assets/fonts/`, OFL). The Map tab mirrors the main map: the same base map and landmarks, the same building
+  shading (values and scale of "Expected infected") and the main map's own people dots, copied each frame and sized for
+  the phone's zoom; it opens at the main map's centre and zoom and then pans and zooms on its own (`?tab=map` opens on it).
+  Tapping a building there opens the user map's popup. The risk number on Today (and its Low/Elevated/High
   tier, the advice line, Lisa's mood and "How is this calculated?") is the campus model's P for that person, `model.risk.pAt(id, now)`
   (the mean-field, or infer.js with `?model=infer`): the same number as the dot's tooltip, the building card's list and the presenter
   bar. The on-device estimate (`phoneEstimate`, doseModel over the last 24 h, mirrored by `proximity/`) is no longer shown; it stays as

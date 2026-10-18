@@ -1679,46 +1679,67 @@ async function main() {
     noticeTimer = setTimeout(() => b.remove(), 7000);
   }
 
-  // The phone's Map tab: the presenter's own map (sim basemap, Lisa's landmarks, the same building heat at the same moment),
-  // without people or truth rings. It has its own view, so its heat is computed at its zoom, into its own canvases (the
-  // presenter's fade canvas belongs to the presenter's layer). Tapping a building still opens the user map's popup.
+  // The phone's Map tab: the main map, mirrored. The same base map and Lisa's landmarks, the same building shading (the
+  // values and fixed scale the main map's "Expected infected" view uses, at the same moment) and the main map's own
+  // people dots (position, colour, ring, see-through), copied each frame and sized for the phone's zoom. It keeps its own
+  // pan and zoom. Tapping a building still opens the user map's popup.
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
-  function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
-  let phoneHeat = null, phoneOutdoor = null, phoneDirty = true, phoneSettle = 0;
+  // Opened at the main map's centre and zoom (the same scale), or the campus before the main map has a view.
+  let phoneViewSet = false; // false until it has taken the main map's view (the main map may get its view later)
+  function fitPhoneMap() {
+    phoneViewSet = Boolean(map._loaded) && map.getSize().x > 0;
+    if (phoneViewSet) phoneMap.setView(map.getCenter(), map.getZoom(), { animate: false });
+    else phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false });
+  }
+  let phoneShade = null, phoneDotLayer = null, phoneDotRenderer = null, phoneDirty = true, lastShadeSums = null;
+  const phoneDots = new Map(); // agent id -> the phone map's copy of their main-map dot
   function buildPhoneMap() {
     const m = baseMap('ph-map', { zoomControl: false, attributionControl: false, maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
     addLandmarks(m);
-    phoneOutdoor = outlines ? new CanvasLayer([sw, ne]).addTo(m) : null;
-    phoneHeat = new CanvasLayer([sw, ne]).addTo(m);
-    // taps: the user map's building popup, drawn invisibly over the heat
+    phoneShade = shading ? new BuildingShadeLayer(shapeOutlines).addTo(m) : null;
+    phoneDotRenderer = L.canvas({ padding: 0.5 });
+    phoneDotLayer = L.layerGroup().addTo(m);
+    // taps: the user map's building popup, drawn invisibly over the shading
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false, invisible: true }).addTo(m);
-    m.on('moveend', () => { // like the presenter: the heat waits for the gesture to settle, the old heat fades under the new
-      clearTimeout(phoneSettle);
-      phoneSettle = setTimeout(() => { phoneDirty = true; phoneHeat.fadeOut(); phoneOutdoor?.fadeOut(); if (!playing) render(performance.now()); }, SETTLE_MS);
+    m.on('zoomend', () => { // dots are sized on the ground: redraw, after this event (it can fire inside render())
+      phoneDirty = true;
+      if (!playing) setTimeout(() => render(performance.now()), 0);
     });
     phoneMap = m;
     fitPhoneMap();
     return m;
   }
-  // The presenter's heat code path, at the phone map's zoom (sigma, fine grid) and view; sigmaM, fine and the shared field
-  // are put back afterwards. The scale and clipping are the presenter's.
   const phoneZoomBusy = () => Boolean(phoneMap?._animatingZoom);
-  function paintPhoneHeat() {
-    if (!phoneMap?._loaded) return;
-    const z = phoneMap.getZoom(), area = phoneMap.getBounds().pad(0.5), keep = [sigmaM, fine, lastField];
-    try {
-      sigmaM = sigmaForZoom(z); fine = zoneHeat && z >= FINE_ZOOM;
-      const g = heatAt(now, current.values(), false, area), vm = demoScale();
-      if (g.zoneOut) phoneHeat.setZones(g, Z.zones, vm);
-      else { phoneHeat.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, phoneHeat.grid, vm, { strong: true }); phoneHeat.setGrid(); }
-      if (phoneOutdoor) {
-        const o = outdoorAt(now, current.values(), false, area);
-        phoneOutdoor.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
-        paint(o, phoneOutdoor.grid, vm * outdoorPeak(o), { soft: true });
-        phoneOutdoor.setGrid();
-      }
-    } finally { [sigmaM, fine, lastField] = keep; }
+  const phoneMapShown = () => Boolean(phoneMap) && phoneTab === 'map' && !$('phone').hidden;
+  // The main map's building shading, the same numbers (computed this frame by the main map when it shows them).
+  function paintPhoneMap() {
+    if (!phoneMap?._loaded || !phoneShade) return;
+    phoneShade.update(lastShadeSums || buildingDensity(current.values(), truthMode()), shadeMax);
     phoneDirty = false;
+  }
+  // The main map's people, copied: every dot it shows, with its colour, ring and see-through, at the phone's size.
+  function syncPhoneDots() {
+    if (!phoneMap?._loaded || phoneZoomBusy()) return;
+    const r = personRadius(phoneMap.getZoom()), seen = new Set();
+    for (const [id, m] of dots) {
+      if (!dotLayer.hasLayer(m)) continue;
+      seen.add(id);
+      let pm = phoneDots.get(id);
+      const o = m.options, ll = m.getLatLng(), w = Math.max(0.5, (o.weight * r) / Math.max(1, m.getRadius()));
+      if (!pm) {
+        pm = new PersonMarker(ll, { renderer: phoneDotRenderer, interactive: false, radius: r, weight: w, color: o.color, fillColor: o.fillColor, fillOpacity: o.fillOpacity, opacity: o.opacity });
+        phoneDots.set(id, pm);
+      } else {
+        const p = pm.getLatLng();
+        if (p.lat !== ll.lat || p.lng !== ll.lng) pm.setLatLng(ll);
+        if (pm.getRadius() !== r) pm.setRadius(r);
+        const po = pm.options;
+        if (po.fillColor !== o.fillColor || po.color !== o.color || po.weight !== w || po.fillOpacity !== o.fillOpacity || po.opacity !== o.opacity)
+          pm.setStyle({ fillColor: o.fillColor, color: o.color, weight: w, fillOpacity: o.fillOpacity, opacity: o.opacity });
+      }
+      if (!phoneDotLayer.hasLayer(pm)) phoneDotLayer.addLayer(pm);
+    }
+    for (const [id, pm] of phoneDots) if (!seen.has(id) && phoneDotLayer.hasLayer(pm)) phoneDotLayer.removeLayer(pm);
   }
 
   function renderPhone(withHeat) {
@@ -1755,7 +1776,7 @@ async function main() {
     if (phoneMap) {
       const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`));
       $('ph-ctime').innerHTML = `<b>Now</b> · updated ${clock(now)}`;
-      $('ph-ramp').style.background = rampCss();
+      $('ph-ramp').style.background = $('ramp').style.background; // the main map's shading ramp
     }
   }
 
@@ -1965,7 +1986,8 @@ async function main() {
       const shade = shading && view === 'demo';
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' || shade ? 'none' : '';
       if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' || shade ? 'none' : '';
-      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(buildingDensity(current.values(), truthMode()), shadeMax); }
+      lastShadeSums = shade || phoneMapShown() ? buildingDensity(current.values(), truthMode()) : null; // also the phone map's
+      if (shade) { if (!shadeLayer.map) shadeLayer.addTo(map); shadeLayer.update(lastShadeSums, shadeMax); }
       else if (shadeLayer.map) shadeLayer.remove();
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
@@ -1998,7 +2020,7 @@ async function main() {
       heatInterval = cost <= HEAT_BUDGET_MS ? 0 : Math.min(250, cost * 3); // keep frames smooth on big runs
     }
 
-    if (phoneMap && phoneTab === 'map' && !$('phone').hidden && !phoneZoomBusy() && (heatDue || phoneDirty)) paintPhoneHeat();
+    if (phoneMapShown() && !phoneZoomBusy() && (heatDue || phoneDirty)) paintPhoneMap();
     const showDots = $('show-dots').checked && view !== 'public';
     // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
     // (sized on the ground, PERSON_M), so no fading is needed there.
@@ -2026,6 +2048,8 @@ async function main() {
       }
     }
     if (refaded && dotRenderer._map) { dotRenderer._redrawBounds = null; dotRenderer._redraw(); } // no bounds: the whole canvas
+    if (phoneMapShown() && !phoneViewSet && map._loaded && map.getSize().x > 0) setTimeout(() => { if (!phoneViewSet) fitPhoneMap(); }, 0);
+    if (phoneMapShown()) syncPhoneDots();
     renderPhone(heatDue);
     refreshBuilding(realNow);
     updateViewCount(realNow);
