@@ -616,14 +616,26 @@ function scaleMax(heatAt, times) {
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
 // The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
-// indoorOnly: heat lives inside building outlines only (people outdoors show by their dot's colour).
+// only: 'indoor' or 'outdoor' keeps just those people (outdoor heat is drawn on its own layer).
 // zoneOf(state): the heat zone the person's heat stays in (their room close up, else their building).
-function* asPoints(states, truth, indoorOnly = false, zoneOf = (s) => s.zone) {
+function* asPoints(states, truth, only = null, zoneOf = (s) => s.zone) {
   for (const s of states) {
-    if (indoorOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), zone: zoneOf(s) };
+    const indoor = Boolean(s.buildingId);
+    if ((only === 'indoor' && !indoor) || (only === 'outdoor' && indoor)) continue;
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor, zone: zoneOf(s) };
   }
 }
+
+// Outdoors there is no shared room air, only the near-field plume, which wind dilutes and which falls off
+// as 1/d² (model/infer.js doseModel: at 6 ft outdoors gets 16% of the indoor dose, at 6 m 5%). So outdoor
+// heat is tighter (half the indoor spread) and lighter: on the rooms' colour scale (expected sick count),
+// a person outdoors peaks at that 6 ft ratio of what they'd show as the only one in a room. No time decay:
+// the heat is a snapshot.
+const OUTDOOR_SIGMA = 0.5;
+const OUTDOOR_WEIGHT = (() => {
+  const dose = doseModel(), c = { distance_m: ADJACENT_M, duration_s: 3600 };
+  return dose({ ...c, indoor: false }) / dose({ ...c, indoor: true });
+})();
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
 // One set of risk tiers for everything the presenter and user see: the phone's advice, the risk card's
@@ -818,8 +830,31 @@ async function main() {
     const f = (lastField = fieldFor(sigmaM));
     f.clear();
     const states = nowStates || statesAt(t);
-    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, Boolean(outlines), zoneOf), 1);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, outlines ? 'indoor' : null, zoneOf), 1);
     return f.diffuse(sigmaM, { people: false });
+  };
+  // People outdoors (only when indoor heat is kept to outlines): a plain grid of their own, drawn unclipped.
+  const outFields = new Map();
+  const outdoorAt = (t, nowStates = null, truth = false, area = null) => {
+    const cell = fieldFor(sigmaM).cellM;
+    if (!outFields.has(cell)) outFields.set(cell, new DiffusionField(bounds, cell));
+    const f = outFields.get(cell);
+    f.clear();
+    const states = nowStates || statesAt(t);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, 'outdoor'), OUTDOOR_WEIGHT);
+    return f.diffuse(sigmaM * OUTDOOR_SIGMA, { people: false });
+  };
+  // Peak density of one person's outdoor heat (per grid and spread, measured once): dividing by it turns
+  // the field into expected sick at the brightest cell, the unit the rooms are coloured in.
+  const outPeaks = new Map();
+  const outdoorPeak = (f) => {
+    const key = `${f.cellM}:${f.sigmaM}`;
+    if (!outPeaks.has(key)) {
+      const probe = new DiffusionField(bounds, f.cellM), cx = Math.floor(probe.nx / 2), cy = Math.floor(probe.ny / 2);
+      probe.deposit([{ lat: bounds.north - ((cy + 0.5) * f.cellM) / 110574, lon: bounds.west + ((cx + 0.5) * f.cellM) / probe.mPerDegLon, p: 1, indoor: false }]);
+      outPeaks.set(key, probe.diffuse(f.sigmaM, { people: false }).max() || 1);
+    }
+    return outPeaks.get(key);
   };
   // Everything the user-facing map gets is computed here, from totals only.
   const scale = userScale(tracks.size);
@@ -948,6 +983,7 @@ async function main() {
     const me = selected && current.get(selected);
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
+  const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
@@ -1538,6 +1574,7 @@ async function main() {
     if (heatDue) {
       const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
+      if (outdoorLayer) outdoorLayer.canvas.style.display = view === 'public' || view === 'airborne' || view === 'airflow' ? 'none' : '';
       if (view === 'airborne') {
         if (!roomAir) loadRoomAir();
         else { if (!map.hasLayer(roomAir.layer)) roomAir.layer.addTo(map); showRoomAir(now); }
@@ -1556,6 +1593,12 @@ async function main() {
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
         if (g.zoneOut) heatLayer.setZones(g, (roomMode ? Z : ZB).zones, demoScale(), roomMode);
         else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
+        if (outdoorLayer) {
+          const o = outdoorAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null);
+          outdoorLayer.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
+          paint(o, outdoorLayer.grid, demoScale() * outdoorPeak(o));
+          outdoorLayer.setGrid();
+        }
       }
       lastHeat = realNow;
       heatDirty = false;
