@@ -16,7 +16,10 @@ cumulative infections at the end of the run match the sim's.
 It also prints the cruder check: lambda summed over every contact between a
 truly infected and a truly susceptible person, against the sim's count.
 
-    uv run exposure/network/calibrate.py sim/runs/<run_id>
+    uv run exposure/network/calibrate.py sim/runs/<run_id> [--movement]
+
+--movement fits the meetings movement.py finds from the agents' tracks
+(hourly steps) instead of contacts.csv.
 """
 
 import os
@@ -58,8 +61,15 @@ def seeded_run(m, seeds, scale):
 
 def main():
     run = sys.argv[1].rstrip("/")
-    params = dict(mf.PARAMS, prior=0.0)
-    m = mf.Model(run, params)
+    if "--movement" in sys.argv:
+        import movement
+        params = dict(movement.MOVE_PARAMS, prior=0.0)
+        m = movement.MovementModel(run, params)
+        script = "movement.py"
+    else:
+        params = dict(mf.PARAMS, prior=0.0)
+        m = mf.Model(run, params)
+        script = "mean_field.py"
     rows = list(mf.read_csv(os.path.join(run, "infections.csv")))
     seeds = [m.idx[r["infectee_id"]] for r in rows if r["route"] == "seed"]
     ti = np.full(m.N, 10**9, dtype=np.int64)
@@ -75,7 +85,7 @@ def main():
           f"(ratio {on_campus / naive:.3f})")
 
     lo, hi = 0.0, 1.0
-    for _ in range(20):
+    for _ in range(14):
         mid = (lo + hi) / 2
         if seeded_run(m, seeds, mid) < total:
             lo = mid
@@ -83,7 +93,7 @@ def main():
             hi = mid
     scale = (lo + hi) / 2
     print(f"mean-field from the true seeds matches {total} infections at lambda_scale = {scale:.4f}")
-    print(f"\n    uv run exposure/network/mean_field.py {run} --lambda-scale {scale:.3f}")
+    print(f"\n    uv run exposure/network/{script} {run} --lambda-scale {scale:.3f}")
 
 
 if __name__ == "__main__":
