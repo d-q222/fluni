@@ -11,6 +11,7 @@ import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
+import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
@@ -1384,18 +1385,35 @@ async function main() {
   // The phone's Campus tab: FlUni's own user map look (usermap.js): paper, pale outlines, faint roads, soft green and water,
   // anchor labels; no tiles. Heat comes from the same BuildingTotalsLayer as "What users see".
   let phoneAnchors = null;
+  const NIGHT_INK = '#f1e2c6';
+  const NIGHT_CONTEXT = { green: { fillColor: '#5f6e45', fillOpacity: 0.55 }, water: { fillColor: '#4d6a70', fillOpacity: 0.75 },
+    road: { color: NIGHT_INK, opacity: 0.22 }, street: { color: NIGHT_INK, opacity: 0.12 }, rail: { color: NIGHT_INK, opacity: 0.2 },
+    town: { color: NIGHT_INK, opacity: 0.15 }, shopping: { color: NIGHT_INK, fillColor: NIGHT_INK, opacity: 0.2 }, hospital: { color: NIGHT_INK, opacity: 0.2 } };
+  const NIGHT_NEUTRAL = { color: NIGHT_INK, opacity: 0.2, fillColor: '#33281f' };
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
   function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
   function buildPhoneMap() {
     const map = L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 });
     const pane = (name, z) => { const p = map.createPane(name); p.style.zIndex = z; p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
     const PC = pane('pctx', 410), PN = pane('pneu', 420);
-    map.getContainer().style.background = '#f4ead6';
+    // Night mode (theme.js): the same map in Lisa's night palette, cream lines on cocoa; heat keeps its colours.
+    const ctxLayers = {};
+    let neutral = null;
+    const styleMap = () => {
+      const night = $('phone').dataset.theme === 'night';
+      map.getContainer().style.background = night ? '#2a211c' : '#f4ead6';
+      for (const [k, l] of Object.entries(ctxLayers)) l.setStyle(night ? { ...CONTEXT_STYLE[k], ...NIGHT_CONTEXT[k] } : CONTEXT_STYLE[k]);
+      neutral?.setStyle(night ? { ...NEUTRAL_BUILDING, ...NIGHT_NEUTRAL } : NEUTRAL_BUILDING);
+    };
+    $('phone').addEventListener('fluni-theme', styleMap);
+    styleMap();
     fetch('data/context.geojson').then((r) => (r.ok ? r.json() : null)).then((ctx) => {
       if (!ctx) return;
-      for (const k of CONTEXT_ORDER) L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
+      for (const k of CONTEXT_ORDER) ctxLayers[k] = L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
+      styleMap();
     }).catch(() => {});
-    if (outlines) L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
+    if (outlines) neutral = L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
+    styleMap();
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false }).addTo(map);
     const labels = new LabelLayer(map, { pane: 'ph-labels', avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] });
     fetch('out/app-bundle/data/labels.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
@@ -1812,6 +1830,7 @@ async function main() {
   for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => setPhoneTab(b.dataset.tab));
   for (const x of document.querySelectorAll('#ph-hseg button')) x.addEventListener('click', () => { $('horizon').value = x.dataset.h; $('horizon').dispatchEvent(new Event('change')); });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
+  initNightMode($('phone'), $('ph-night')); // Lisa's night palette and drawings for the phone
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
   progress('Almost there…', 0.95);
