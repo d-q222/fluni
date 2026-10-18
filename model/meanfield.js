@@ -47,6 +47,8 @@ export const MF_DEFAULTS = {
   tauSymDays: 2.5,        // "might be sick": infected this long before the report (onset now)
   lrSym: 60,              // likelihood ratio of a symptom self-report (was 20; on 3 sim runs 60 beat 20 and the
   lrOther: 20,            // ... of a report by someone else (was 4)       measured per-day ratios, 270 and 90)
+  lrTest: 200,            // ... of taking a test (test_taken, app-visible as in sim/campussim/app_policy.py): in the sim only
+                          //   symptomatic people go; all 616 tests in twelve runs were taken by infected people. 0: ignore
   recoveredCertain: false, // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
   negFnr: 0.3,            // negative test: false-negative rate. > 0: a likelihood at the result (infected mass x this,
                           //   renormalised); the sim's test has 70% sensitivity and every negative in twelve runs was
@@ -322,6 +324,7 @@ export function meanFieldRisk(input, params = {}) {
     else if (ev === 'test_result' && val === 'negative') kind = 'neg';
     else if (ev === 'self_report' && val === 'might_be_sick') kind = 'sym';
     else if (ev === 'self_report' && val === 'recovered') kind = 'rec';
+    else if (ev === 'test_taken' && P.lrTest > 0) kind = 'test'; // went to get tested: seeking care with symptoms
     else if (ev === 'report_other' && val === 'might_be_sick') { kind = 'other'; who = r.target_agent_id; }
     if (kind && idx.has(who)) obs[n].push([kind, idx.get(who)]);
   }
@@ -334,6 +337,8 @@ export function meanFieldRisk(input, params = {}) {
   // the clamp already applied says nothing new (the paper's observations are about one infection).
   const episode = Math.round(P.illnessDays / dtDays);
   const lastPos = new Int32Array(N).fill(-1e9), lastSym = new Int32Array(N).fill(-1e9), lastOther = new Int32Array(N).fill(-1e9);
+  const maxBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays);
+  const lastTest = new Int32Array(N).fill(-1e9), datedAt = new Int32Array(N).fill(-1e9), dEff = new Int32Array(N), dK0 = new Int32Array(N);
   const fresh = () => {
     const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K), Rr = new Float64Array(N);
     if (P.priorAge === 'new') for (let i = 0; i < N; i++) A[i * K] = P.prior; else A.fill(P.prior / K);
@@ -390,15 +395,24 @@ export function meanFieldRisk(input, params = {}) {
     if (n - lastPos[i] < episode) return [];
     if (kind === 'sym' && n - lastSym[i] < episode) return [];
     if (kind === 'other' && n - Math.max(lastSym[i], lastOther[i]) < episode) return [];
-    (kind === 'pos' ? lastPos : kind === 'sym' ? lastSym : lastOther)[i] = n;
+    if (kind === 'test' && n - lastTest[i] < episode) return [];
+    (kind === 'pos' ? lastPos : kind === 'sym' ? lastSym : kind === 'test' ? lastTest : lastOther)[i] = n;
     const back = Math.round((kind === 'pos' ? P.tauPosDays : P.tauSymDays) / dtDays);
     let sEff = n - back, k0 = 0;
     if (sEff < 0) { k0 = -sEff; sEff = 0; }
+    // A different kind of evidence about the same illness (a test after a symptom report) updates the posterior but
+    // keeps the illness's dating.
+    if (kind !== 'pos' && n - datedAt[i] < episode) {
+      sEff = dEff[i]; k0 = dK0[i];
+      // the online pass can only rerun maxBack steps: apply it there instead, at the same infection time (older age)
+      const lo = Math.max(0, n - maxBack);
+      if (sEff < lo) { k0 += lo - sEff; sEff = lo; }
+    } else { datedAt[i] = n; dEff[i] = sEff; dK0[i] = k0; }
     if (kind === 'pos') // a positive outweighs an earlier negative: drop that negative's P_S = 1 from the dating on
       for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[0] === 'sus' && c[1] === i)));
     let wgt = 1;
     if (kind !== 'pos') { // Bayes: the posterior P(infected | report) from the model's current P_I
-      const lr = kind === 'sym' ? P.lrSym : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
+      const lr = kind === 'sym' ? P.lrSym : kind === 'test' ? P.lrTest : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
       wgt = (lr * p) / (lr * p + 1 - p);
     }
     return [[sEff, ['infect', i, k0, wgt]]];
@@ -481,6 +495,7 @@ export function meanFieldRisk(input, params = {}) {
     }
     if (earliest < n) { // rerun from the checkpoint at or before the earliest step touched
       const c0 = Math.floor(earliest / CK) * CK;
+      if (!ckpt.has(c0) && c0 > 0) throw new Error(`meanfield: rerun from step ${c0}, older than the checkpoints kept`);
       st = copy(ckpt.get(c0) || fresh());
       for (let s = c0; s < n; s++) {
         if (s % CK === 0 && s > c0) ckpt.set(s, copy(st));
