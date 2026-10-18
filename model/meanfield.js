@@ -75,8 +75,9 @@ export const MF_DEFAULTS = {
   priorAge: 'uniform',    // the starting cases' infection ages: 'uniform' over the illness, or 'new' (just infected)
   lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
-                          //   Per run: the 7,500-agent runs need their own (node model/meanfield-cli.mjs <run> --calibrate);
-                          //   0.901 with the 2% prior put mean P at ~0.40 on runs with 5-10% infected.
+                          //   Refit per run. The 7,500-agent runs: --calibrate (true seeds, no reports) gives 1.128 (fixed) and
+                          //   1.401 (frankenstein), but with reports those over-predict; fitted with reports: 0.569 and 0.760
+                          //   (ml/scripts/kl_mf_fit.mjs, ml/KL_RESULTS.md).
   // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
   // air, so outdoor passers-by and crowded lounges outweighed roommates (the sim's most common infections).
   // A two-zone model (Nicas, Am. Ind. Hyg. Assoc. J. 57:542, 1996) treats the air within d of the source as a
@@ -221,10 +222,16 @@ export function meanFieldRisk(input, params = {}) {
   const contacts = input.contacts || [], reports = input.reports || [];
   // input.columns: the same contacts as typed arrays (model/tools/contacts_cache.py: t, a, b agent indexes in agentIds
   // order, dist, tier, indoor, room index into roomIds or -1, dur), for big runs where an object per row won't fit.
+  // input.prep (optional, an object): the contact preprocessing below depends on the contacts, rooms and dose
+  // parameters but not on lambdaScale, prior or importPerDay, so a calibration loop can pass the same object to every
+  // call and skip it after the first. The caller must keep everything else fixed between those calls.
   const C = input.columns || null, nRows = C ? C.t.length : contacts.length;
+  const prep = input.prep && input.prep.pairs ? input.prep : null;
   let lastSimStep = 0;
-  if (C) { for (let k = 0; k < nRows; k++) if (C.t[k] > lastSimStep) lastSimStep = C.t[k]; }
-  else for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
+  if (!(prep && input.days)) {
+    if (C) { for (let k = 0; k < nRows; k++) if (C.t[k] > lastSimStep) lastSimStep = C.t[k]; }
+    else for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
+  }
   for (const r of reports) if (+r.t > lastSimStep) lastSimStep = +r.t;
   const nSteps = input.days ? Math.ceil((input.days * 24) / P.dtH) : Math.floor(lastSimStep / W) + 1;
 
@@ -258,22 +265,24 @@ export function meanFieldRisk(input, params = {}) {
     const rh = o.outdoor_rh_pct ?? w.outdoor_rh_pct ?? R.outdoorRH, tc = o.outdoor_temp_c ?? w.outdoor_temp_c ?? R.outdoorTempC;
     return virusDecay(indoorRH(rh, tc, w.indoor_temp_c ?? R.indoorTempC));
   };
+  if (prep) for (const [id, r] of prep.roomIx) { roomIx.set(id, r); rmV[r] = prep.rmV[r]; rmAch[r] = prep.rmAch[r]; rmF[r] = prep.rmF[r]; }
   const TIER_M = [0.5, 1.5, 3.5, 6];
   const nearQ = (d) => P.nearQ1 * (d < 1 ? d : Math.pow(d, P.nearPuffExp));
 
   // Contacts -> near-field dose per quantum D, summed per unordered pair and MF step (Poisson doses add up),
   // and who was in which room for how many sim steps of each MF step (room air below).
-  const agg = Array.from({ length: nSteps }, () => new Map());
-  const occ = Array.from({ length: nSteps }, () => new Map()); // room * N + agent -> sim steps present
+  const agg = prep ? [] : Array.from({ length: nSteps }, () => new Map());
+  const occ = prep ? [] : Array.from({ length: nSteps }, () => new Map()); // room * N + agent -> sim steps present
   const lastT = new Float64Array(N).fill(-1);
   const stepsPerDay = 1440 / stepMin, stepH = stepMin / 60;
-  // Row order by time (objects or columns); the room-occupancy count needs it.
+  // Row order by time (objects or columns); the room-occupancy count needs it. With prep, no rows are read.
+  const nLoop = prep ? 0 : nRows;
   const tOf = C ? (k) => C.t[k] : (k) => +contacts[k].t;
   let order = null;
-  for (let k = 1; k < nRows; k++) if (tOf(k) < tOf(k - 1)) { order = Uint32Array.from({ length: nRows }, (_, i) => i).sort((x, y) => tOf(x) - tOf(y)); break; }
+  for (let k = 1; k < nLoop; k++) if (tOf(k) < tOf(k - 1)) { order = Uint32Array.from({ length: nRows }, (_, i) => i).sort((x, y) => tOf(x) - tOf(y)); break; }
   const colRoom = C ? new Int32Array(C.roomIds.length).fill(-2) : null; // room index -> roomOf, cached
   const legacy = P.legacyDose, roomAir = P.roomAir && !legacy && P.roomVolume !== 'none';
-  for (let kk = 0; kk < nRows; kk++) {
+  for (let kk = 0; kk < nLoop; kk++) {
     const row = order ? order[kk] : kk, c = C ? null : contacts[row];
     const t = C ? C.t[row] : +c.t, n = Math.floor(t / W);
     if (n >= nSteps) continue;
@@ -305,7 +314,7 @@ export function meanFieldRisk(input, params = {}) {
     const k = a * N + b, m = agg[n];
     m.set(k, (m.get(k) || 0) + unit); // per quantum, so lambda = 1 - exp(-q * stage * D)
   }
-  const pairs = agg.map((m) => {
+  const pairs = prep ? prep.pairs : agg.map((m) => {
     if (!m.size) return null;
     const a = new Int32Array(m.size), b = new Int32Array(m.size), D = new Float64Array(m.size);
     let i = 0;
@@ -313,12 +322,13 @@ export function meanFieldRisk(input, params = {}) {
     return { a, b, D };
   });
   // Occupancy per MF step, grouped by room: room, agent, hours present.
-  const occs = occ.map((m) => {
+  const occs = prep ? prep.occs : occ.map((m) => {
     if (!m.size) return null;
     const keys = [...m.keys()].sort((x, y) => x - y), r = new Int32Array(keys.length), ag = new Int32Array(keys.length), h = new Float64Array(keys.length);
     keys.forEach((k, i) => { r[i] = Math.floor(k / N); ag[i] = k % N; h[i] = m.get(k) * stepH; });
     return { r, ag, h };
   });
+  if (input.prep && !prep) Object.assign(input.prep, { pairs, occs, roomIx: new Map(roomIx), rmV: rmV.slice(), rmAch: rmAch.slice(), rmF: rmF.slice() });
   const nRooms = rmV.length, dayOfStep = (s) => Math.floor((s * P.dtH) / 24);
 
   // Reports and tests -> observations, at the MF step the app learns them.
@@ -619,6 +629,7 @@ export function meanFieldRisk(input, params = {}) {
   return {
     expectedInfections: ever, // sum over agents of P(ever infected) by the end
     everByStep, dtMs,
+    sFinal: st.S, // each agent's P(never infected) at the end, indexed like agentIds; 1 - sFinal = P(ever infected)
     pAt, everAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
     params: { ...R, ...P, method: 'meanfield' },
     // for the heat map's risk field: hazard at 1 m for 1 h per unit shed = q * breathingRate / nearFieldQ

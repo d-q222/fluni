@@ -211,6 +211,14 @@
     .ta-note { position: absolute; left: 18%; right: 17%; top: 12%; bottom: 29%; display: flex; flex-direction: column; gap: 10px;
       pointer-events: auto; color: var(--ink); font: 14px/1.4 var(--font); animation: ta-in 220ms ease-out; }
     .ta-note[hidden] { display: none; }
+    /* Lisa's hand-drawn X in the sheet's top-right corner: closes the alert like "Got it" (44 px tap target) */
+    .ta-x { all: unset; position: absolute; right: 12%; top: 6.4%; width: 44px; height: 44px; display: grid; place-items: center;
+      cursor: pointer; pointer-events: auto; border-radius: 50%; animation: ta-in 220ms ease-out; }
+    .ta-x[hidden] { display: none; }
+    .ta-x img { width: 30px; height: 30px; transform: rotate(-4deg); transition: transform 140ms ease-out; }
+    .ta-x:hover img { transform: rotate(4deg) scale(1.08); }
+    .ta-x:focus-visible { outline: 2px solid var(--fire-ink); outline-offset: -2px; }
+
     @keyframes ta-in { from { opacity: 0; transform: translateY(6px); } }
     .ta-text { flex: 1; min-height: 0; overflow: auto; align-self: flex-start; padding: 6px 8px; margin: -6px -8px;
       background: rgba(248, 227, 170, 0.94); border-radius: 10px; } /* sheet colour: covers her fold lines under the words */
@@ -273,6 +281,29 @@
     #phone[data-theme="night"] .ta-kicker { color: #7a2e1e; }
     #phone[data-theme="night"] .ta-ok { background: #33241c; color: #faf4e8; }
     #phone[data-theme="night"] .ta-hint { color: #7a2e1e; background: #f1e2c6; box-shadow: 0 0 0 1.5px #7a2e1e; }
+    /* Lisa's hand-drawn speech bubble (assets/bubble/, 1987 x 434): the left cap and the right end with its tail keep
+       their shape, only the plain middle stretches with the text. The body is the top 91%; the tail points at the tissue. */
+    #phone .say { background: none; border: 0 solid transparent; border-radius: 0; box-sizing: border-box; height: 34px;
+      border-width: 0 80px 0 22px; border-image: url("assets/bubble/bubble.png") 0 1012 0 280 fill / 0 80px 0 22px stretch;
+      padding: 7px 0 10px 7px; line-height: 17px; margin-right: -4px; } /* 7px: the body runs on into the right end, so the text centres in it */
+    #phone .say::after { display: none; }
+    #phone[data-theme="night"] .say { border-image-source: url("assets/night/bubble/bubble.png"); }
+    /* Lisa's check-in faces on the sick-mode card: the face above the word, the picked one lifts and tilts like a sticker */
+    #phone #ph-today .choices button { flex-direction: column; gap: 4px; min-height: 0; padding: 8px 4px 7px; }
+    #phone #ph-today .choices button img { width: 40px; height: 44px; object-fit: contain; transition: transform 160ms cubic-bezier(.3, 1.6, .6, 1); }
+    #phone #ph-today .choices button[aria-pressed="true"] { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--ink), 0 2px 0 var(--ink); }
+    #phone #ph-today .choices button[aria-pressed="true"] img { transform: scale(1.15) rotate(-6deg); }
+    @media (prefers-reduced-motion: reduce) { #phone #ph-today .choices button img { transition: none; } }
+    /* Lisa's hand-drawn alert "!" (assets/icons/alert.png) in the heads-up / close-contact strip */
+    #phone #ph-today .strip .ico { width: 26px; height: 26px; margin-top: -1px; flex: none; }
+    /* Lisa's hand-drawn recovery markers (assets/track/): done sage, today ember with a double ring, still to come empty */
+    #phone #ph-today .track .d i { width: 22px; height: 22px; border: 0; border-radius: 0; box-shadow: none;
+      background: url("assets/track/upcoming.png") center / contain no-repeat; }
+    #phone #ph-today .track .d.done i { background-image: url("assets/track/done.png"); }
+    #phone #ph-today .track .d.today i { width: 28px; height: 28px; margin: -3px 0; background-image: url("assets/track/today.png"); }
+    #phone[data-theme="night"] #ph-today .track .d i { background-image: url("assets/night/track/upcoming.png"); }
+    #phone[data-theme="night"] #ph-today .track .d.done i { background-image: url("assets/night/track/done.png"); }
+    #phone[data-theme="night"] #ph-today .track .d.today i { background-image: url("assets/night/track/today.png"); }
     .presenter button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;

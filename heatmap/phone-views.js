@@ -96,7 +96,7 @@ const howLink = () => `<button class="howlink" data-act="calc"><i>f(x)</i>How yo
 
 function strip(d) {
   const close = d.level === 'close', a = close ? ADVICE.close : ADVICE.nearby;
-  return `<div class="strip ${close ? 'cc' : ''}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.500" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.800"/><path d="M12 6.800v6.200M12 16.800v.2" stroke="var(--ink)" stroke-width="2.600" stroke-linecap="round"/></svg>
+  return `<div class="strip ${close ? 'cc' : ''}"><img class="ico" src="${ASSET.replace('illustrations/', 'icons/')}alert.png" alt="">
     <div><p class="st">${esc(a.title)}</p><p class="sl">${esc(close ? a.body[1] : a.body[0])}</p></div></div>`;
 }
 
@@ -138,6 +138,9 @@ function dayHistory(d) {
     ${stays.length > 4 ? `<span class="more">See your whole day${ico('chevron')}</span>` : ''}`;
 }
 
+// Lisa's check-in faces (assets/checkin/): better green and smiling, the same sun and flat, worse fire and frowning.
+const FEELINGS = [['better', 'Better'], ['same', 'The same'], ['worse', 'Worse']];
+
 // sick mode: the card (no %), then "Your recovery"
 function sickHome(d, walk) {
   const s = d.stay, day = s ? Math.min(s.day, 5) : 0, over = s && s.over;
@@ -145,7 +148,7 @@ function sickHome(d, walk) {
   const card1 = card('hero sickcard', '', `<p class="status"><span class="dot sun"></span>You're staying home</p>
     <p class="daybig">${over ? 'Day 5 is done' : `Day ${day} of 5`}</p>
     <div class="checkin"><p>${over ? 'How are you feeling now?' : 'How are you feeling today?'}</p>
-    <div class="choices"><button>Better</button><button>The same</button><button>Worse</button></div></div>`);
+    <div class="choices">${FEELINGS.map(([k, t]) => `<button data-act="feel" data-k="${k}" aria-pressed="${d.feel === k}"><img src="${ASSET.replace('illustrations/', 'checkin/')}${k}.png" alt="">${t}</button>`).join('')}</div></div>`);
   const track = s ? `<div class="trackline"><div class="track">${s.days.map((x, i) => `<div class="d ${i < day ? 'done' : i === day ? 'today' : ''}"><i></i>${i === day ? 'Today' : wk(x.ms)}<br>${i === 0 ? 'day 0' : i}</div>`).join('')}</div></div>` : '';
   const started = s ? new Date(s.startMs).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : '';
   const hist = s ? stopRow(wk(s.startMs), d.status === 'contagious'

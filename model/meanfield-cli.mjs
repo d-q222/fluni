@@ -66,8 +66,12 @@ if (args.includes('--calibrate')) {
     target = (onCampus.filter((r) => !held.has(r.infectee_id)).length * nonSeed) / kept;
     console.log(`--holdout: ${held.size} agents kept out of the target; ${kept} of ${nonSeed} non-seed agents count`);
   }
-  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds }, { ...over, lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
+  const prep = {}; // the contact preprocessing is the same for every lambdaScale: done once
+  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds, prep }, { ...over, lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
+  // From the true seeds alone the model can need lambdaScale > 1 (the 7,500-agent runs: 1.13 and 1.40), so grow the
+  // top of the bracket until it overshoots the target before bisecting.
   let lo = 0.005, hi = 1;
+  for (let k = 0; k < 8 && total(hi) < target; k++) { lo = hi; hi *= 3; }
   for (let it = 0; it < 14; it++) { const mid = Math.sqrt(lo * hi); if (total(mid) < target) lo = mid; else hi = mid; }
   scale = Math.sqrt(lo * hi);
   console.log(`from ${seeds.length} true seeds, the model matches the sim's ${Math.round(target)} on-campus infections at lambdaScale = ${scale.toFixed(4)}`);

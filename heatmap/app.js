@@ -1550,7 +1550,7 @@ async function main() {
 
   // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
   // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
-  const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
+  const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, feel: null, stamped: false, html: { today: '', you: '', sheet: '' } };
   const DAYMS = 24 * 3600000;
   // Self-reports (reports_tests.csv): what this person told the app, up to now.
   function selfStatus(id) {
@@ -1603,6 +1603,7 @@ async function main() {
     else if (act === 'sheet-close') ph.sheet = null;
     else if (act === 'sticker') { ph.picked.has(b.dataset.k) ? ph.picked.delete(b.dataset.k) : ph.picked.add(b.dataset.k); }
     else if (act === 'when') ph.when = Number(b.dataset.i);
+    else if (act === 'feel') ph.feel = ph.feel === b.dataset.k ? null : b.dataset.k; // Lisa's check-in faces: one at a time
     else if (act === 'report-send') { ph.stamped = true; renderPhone(); setTimeout(() => { ph.sheet = null; ph.stamped = false; renderPhone(); }, 1500); return; }
     renderPhone();
   });
@@ -1736,7 +1737,7 @@ async function main() {
     tissueAlert.update({ level: taLevel, visible: phoneTab === 'today', msg: taAdvice && {
       kicker: taLevel === 'close' ? 'Close contact' : 'Heads-up',
       title: PV.esc(taAdvice.title), lines: taAdvice.body.map(PV.esc) } });
-    if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml(d));
+    if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml({ ...d, feel: ph.feel }));
     else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.meHtml(d));
     renderSheet(d);
     const where = me.walking ? 'walking' : me.building;
