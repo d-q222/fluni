@@ -151,6 +151,18 @@ Claim a row before you start. Update the status as you go. Agents should name th
       page use different humidity defaults.
   - **What the heat map does meanwhile:** `model/` applies the per-pair-per-day dose, a lower emission
     rate when not talking, and the illness-average stage. It does not edit `exposure/`.
+  - **Update, results for you to look at:** [`model/COMPARISON.md`](model/COMPARISON.md) runs the same
+    meetings through your `flu_risk.py`, our port in `model/infer.js`, and an independent alternative
+    (`model/alt/`). Rerun it with `node model/compare.mjs`.
+    - Our port matches your script on λ and day-0 P. For a 15-minute chat at 1 m in 30 m², λ is
+      0.0459 in both.
+    - The alternative is about 6× lower: λ is 0.0074 for the same chat.
+    - Your script and our port differ in two places: quiet emission in dorm rooms, and the prior
+      (yours decays, ours holds).
+    - The doc ends with three questions for you.
+  - **Spec tests:** [`model/TESTS.md`](model/TESTS.md) (`node model/test.mjs`, 13/13). It has one
+    test for each input in your spec, checking that the input moves P the right way, plus a check
+    that we match the paper's update.
 
 - **design pass → proximity app and probability model (proposal, please confirm):** the heat map
   demo now shows risk in three tiers everywhere: Low under 10%, Elevated 10–40%, High 40%+. These
