@@ -92,6 +92,28 @@ At 1.2 the per-encounter checks (`calibration_report`) are roommate 26.8% (targe
 .venv/bin/python scripts/calibrate.py --agents 7000 --days 14 --scales 1 1.2 1.4 --seeds 1 2 --jobs 2   # ~25 min
 ```
 
+## Class schedules
+
+By default (`schedule.sections.source = "explorecourses"`) every class is a real Winter 2025-26
+section, with its real days, times and room (`data/courses/`, see "Data"). Each agent takes 3–5
+courses:
+
+- **Seats** follow real enrollment × the undergrad share for the course level (92% for courses
+  under 100, down to 4% for 300+). They are scaled so all seats = `seat_slack` (1.25) × the courses
+  agents want, and a class never seats more than its room holds. CS 106A, MATH 51 and CS 106B are
+  the biggest classes, as on campus.
+- **Class year** sets course level (`year_level_weight`): freshmen mostly take courses under 100,
+  seniors 100–299. COLLEGE 1xx is freshmen only (90% take it), and PWR 1 is for years 1–2.
+- **Major**: each agent draws a major group from its archetype (`majors.archetype_mix`), and
+  courses in it get 1.5× (freshmen) to 5× (seniors) weight. The group isn't written to the output yet.
+- **Labs**: a course's real LAB/LBS section is added when it fits. Discussion sections (DIS) aren't
+  simulated.
+- GSB, Law, School of Medicine and overseas (OSP) courses are left out.
+
+The real rooms replace the procedural classrooms in their 45 buildings. Other rooms (labs,
+libraries, lobbies) are unchanged. `--set schedule.sections.source=synthetic` brings back the old
+invented catalog and time grid.
+
 ## Large runs in git
 
 `scripts/run_parts.py split runs/<run>` cuts each `.csv.gz` over 40 MB into
@@ -113,7 +135,7 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 |---|---|
 | `campussim/campus.py` | OSM buildings, typed locations, procedural rooms, walk/bike path graphs + routing, door connectors, entry points |
 | `campussim/population.py` | agents and archetypes (studious, social, athlete, stem, commuter, homebody) |
-| `campussim/schedule.py` | class sections, parties, hangouts, games/large events, study groups |
+| `campussim/schedule.py` | class sections (real ExploreCourses schedule by default), parties, hangouts, games/large events, study groups |
 | `campussim/plans.py` | each agent's intended day: sleep, meals, classes, practice, flex, events, travel |
 | `campussim/behavior.py` | actual movement along paths, in-room positions, masks, sickness overrides |
 | `campussim/contacts.py` | true contacts per step (KD-tree, distance tiers) |
@@ -138,11 +160,20 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
   Frost Amphitheater, White Plaza, Meyer Green, the Oval, Engineering Quad, Main Quad courtyard,
   Lake Lagunita). Their ids are `bld_m_<slug>`.
 - `data/location_overrides.json`: hand fixes to building types, capacities and floors.
+- `data/courses/`: real class schedules from [ExploreCourses](https://explorecourses.stanford.edu)'s
+  public XML feed. `fetch_explorecourses.py` snapshots one quarter (`20252026_winter.csv.gz`: 10,904
+  meetings, 254 departments). `build_rooms.py` maps location strings to buildings (numbered Quad
+  rooms like `160-322` → Main Quad, `Gates B1` → Gates, `NVIDIA Auditorium` → Huang, …) and writes
+  `rooms_20252026_winter.csv`: 338 named rooms in 45 buildings, covering 86% of real enrollment.
+  The rest (`Departmental Room`, `School of Medicine Room`, ANKO, Raikes) goes to a generic classroom.
+  Runs read only the snapshot, never the network. Refresh with
+  `python3 data/courses/fetch_explorecourses.py --year 20252026 --term Winter && python3 data/courses/build_rooms.py`.
 
 ## Known issues
 
 - **Calibration is tied to today's contact structure.** Changes to who meets whom (e.g. real class
-  schedules) or to the disease model shift R; rerun `scripts/calibrate.py` after them.
+  schedules) or to the disease model shift R; rerun `scripts/calibrate.py` after them. Real class
+  schedules (2026-10-17) came after the R ≈ 1.6 calibration, so it needs a rerun.
 - **Study rooms can still run up to 2× capacity.** Library and common-room flex picks now check
   capacity (`plans.flex.capacity_check`): each block books a place in a room with space for the whole
   block, weighted by free places, so Green Library's big reading rooms take most solo study. When

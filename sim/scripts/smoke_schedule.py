@@ -145,14 +145,20 @@ def check(cfg, campus, pop, sec, ev):
     over = (sizes.to_numpy() > rooms.capacity.to_numpy()[sec["r"]]).sum()
     print("  sections over room capacity:", over)
     # double booking: (r, weekday, minute) overlaps
-    dbl = 0
+    # real mode: two sections in the same real room at once come from ExploreCourses (cross-listed
+    # courses, shared rooms) and are allowed; rooms the sim picks itself must never overlap
+    real = (sec["room_name"] != "").to_numpy() if "room_name" in sec else np.zeros(len(sec), bool)
+    dbl = shared = 0
     for r, g in sec.groupby("r"):
-        iv = [(wd, s, e) for wd_l, s, e in zip(g.weekdays, g.start_min, g.end_min) for wd in wd_l]
+        iv = [(wd, s, e, real[j]) for j, wd_l, s, e in zip(g.index, g.weekdays, g.start_min, g.end_min) for wd in wd_l]
         for a in range(len(iv)):
             for b in range(a + 1, len(iv)):
                 if iv[a][0] == iv[b][0] and iv[a][1] < iv[b][2] and iv[b][1] < iv[a][2]:
-                    dbl += 1
-    print("  double-booked section pairs:", dbl)
+                    if iv[a][3] and iv[b][3]:
+                        shared += 1
+                    else:
+                        dbl += 1
+    print("  double-booked section pairs:", dbl, "| shared real-room pairs (cross-listings):", shared)
     assert dbl == 0
     # per-agent counts & conflicts
     lect = [[s for s in cs if sec.kind[s] != "lab"] for cs in pop.class_schedule]
@@ -165,7 +171,8 @@ def check(cfg, campus, pop, sec, ev):
         conf += sum(1 for a in range(len(iv)) for b in range(a + 1, len(iv))
                     if iv[a][0] == iv[b][0] and iv[a][1] < iv[b][2] and iv[b][1] < iv[a][2])
         courses = [sec.course[s] for s in cs if sec.kind[s] != "lab"]
-        assert len(courses) == len(set(courses))
+        if not real.any():  # real classes can meet several times a week as separate sections
+            assert len(courses) == len(set(courses))
     print("  agent time conflicts:", conf)
     assert conf == 0
     for i, cs in enumerate(pop.class_schedule):

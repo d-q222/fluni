@@ -1,4 +1,5 @@
-"""Class sections (MWF/TTh/lab on the Stanford grid) and social events (parties, dorm hangouts,
+"""Class sections (real Winter sections from ExploreCourses, or synthetic MWF/TTh/lab on the Stanford
+grid) and social events (parties, dorm hangouts,
 sports games / large events, study groups). Config: configs/schedule.json (cfg["schedule"]).
 
 build_sections(cfg, campus, pop, rng) -> DataFrame (and fills pop.class_schedule)
@@ -6,7 +7,9 @@ build_events(cfg, campus, pop, sections, rng) -> DataFrame (absolute minutes sin
 sections_frame_for_csv / events_frame_for_csv -> d2 schedule/*.csv frames
 """
 import math
+import re
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -19,7 +22,8 @@ PATTERN_DAYS = {"MWF": [0, 2, 4], "TTh": [1, 3]}
 PATTERN_PREFIX = {"MWF": "MWF", "TTh": "TTH", "LAB": "LAB"}
 PATTERN_ORDER = {"MWF": 0, "TTh": 1, "LAB": 2}
 SEC_COLUMNS = ["section_id", "course", "kind", "r", "room_id", "location_id", "days", "weekdays",
-               "start_min", "end_min", "enrolled"]
+               "start_min", "end_min", "enrolled", "component", "room_name", "title"]
+ROOT = Path(__file__).resolve().parent.parent
 EV_COLUMNS = ["event_id", "type", "name", "r", "room_id", "location_id", "day", "start_min",
               "end_min", "attendees"]
 EV_TYPE_ORDER = {"sports_game": 0, "large_event": 1, "party": 2, "dorm_hangout": 3, "study_group": 4}
@@ -115,6 +119,8 @@ def _n_courses(pop, scfg, rng):
 def build_sections(cfg, campus, pop, rng):
     """Generate the course catalog, place sections in rooms, enroll agents."""
     scfg = cfg["schedule"]["sections"]
+    if scfg.get("source", "synthetic") == "explorecourses":
+        return _build_sections_real(cfg, campus, pop, rng)
     N = pop.N
     ri = _RoomIndex(campus)
     k_target = _n_courses(pop, scfg, rng)
@@ -318,7 +324,242 @@ def build_sections(cfg, campus, pop, rng):
         rows.append(dict(section_id=f"SEC_{PATTERN_PREFIX[d['pattern']]}_{ctr[d['pattern']]:02d}", course=d["course"],
                          kind=d["kind"], r=r, room_id=ri.room_id[r], location_id=ri.loc_id[r], days=d["days"],
                          weekdays=list(d["weekdays"]), start_min=d["start_min"], end_min=d["end_min"],
-                         enrolled=sorted(enrolled[j])))
+                         enrolled=sorted(enrolled[j]), component="", room_name="", title=""))
+    pop.class_schedule = [sorted(new_idx[j] for j in schedule[i]) for i in range(N)]
+    df = pd.DataFrame(rows, columns=SEC_COLUMNS)
+    df.attrs["warnings"] = n_warn
+    df.attrs["agent_id"] = list(pop.agent_id)
+    return df
+
+
+# ----------------------------------------------------------------------------- real sections (ExploreCourses)
+def _load_catalog(rcfg, run):
+    """Meetings from the ExploreCourses snapshot that undergrads can take and that meet during the run."""
+    df = pd.read_csv(ROOT / rcfg["catalog"], dtype=str, keep_default_na=False)
+    df["num_enrolled"] = pd.to_numeric(df["num_enrolled"], errors="coerce").fillna(0).astype(int)
+    t0 = pd.Timestamp(run.get("start_date", "2026-01-05"))
+    t1 = t0 + pd.Timedelta(days=int(run["days"]))
+    sd = pd.to_datetime(df["start_date"], format="%b %d, %Y", errors="coerce").fillna(t0)
+    ed = pd.to_datetime(df["end_date"], format="%b %d, %Y", errors="coerce").fillna(t1)
+    excl = set(rcfg.get("exclude_subjects", []))
+    pre = tuple(rcfg.get("exclude_subject_prefixes", []))
+    keep = ((sd < t1) & (ed >= t0) & ~df["subject"].isin(excl) & ~df["subject"].str.startswith(pre)
+            & ~df["location"].isin(rcfg.get("skip_locations", [])) & (df["num_enrolled"] > 0))
+    df = df[keep].drop_duplicates(["class_id", "days", "start", "end", "location"])
+    # meetings with a room first, so a duplicate slot keeps the row that says where it is
+    df = df.assign(_noloc=df["location"] == "").sort_values("_noloc", kind="stable").drop(columns="_noloc")
+    return df.reset_index(drop=True)
+
+
+def _level_band(code, bands):
+    m = re.match(r"\d+", code)
+    return int(np.searchsorted(bands, int(m.group()), side="right")) if m else 0
+
+
+def _split_days(days):
+    return [DAY_CODES[d] for d in re.findall(r"Th|Sa|Su|M|T|W|F", days)]
+
+
+def _build_sections_real(cfg, campus, pop, rng):
+    """Real sections: ExploreCourses meeting times and rooms, seats scaled to the simulated share of
+    undergrads, course picks weighted by popularity, class year (course level) and major."""
+    scfg = cfg["schedule"]["sections"]
+    rcfg = scfg["explorecourses"]
+    N = pop.N
+    ri = _RoomIndex(campus)
+    k_target = _n_courses(pop, scfg, rng)
+    cat = _load_catalog(rcfg, cfg["run"])
+    bands = list(rcfg["level_bands"])
+    ug_share = np.asarray(rcfg["undergrad_share"], float)
+    lab_comp = set(rcfg["lab_components"])
+    not_primary = set(rcfg["not_primary"]) | lab_comp
+    kind_of = rcfg["kind_by_component"]
+
+    # --- rooms by name; unnamed or unmapped meetings go to a generic seated room
+    rname = campus.rooms["room_name"].to_numpy().astype(str) if "room_name" in campus.rooms else np.full(ri.R, "")
+    by_name = {n: r for r, n in enumerate(rname) if n}
+    loc_room = {loc: by_name[loc] for loc in cat["location"].unique() if loc in by_name}
+    excl = set(scfg["fallback_exclude_room_types"])
+    seated = np.flatnonzero((ri.layout == "seated") & ~np.isin(ri.type, list(excl)) & (rname == ""))
+    seated = seated[np.lexsort((seated, ri.cap[seated]))]
+    room_busy = {}
+    n_warn = {"fallback_room": 0, "no_room": 0, "unfilled_agents": 0}
+
+    # --- courses -> primary groups (one class_id each, possibly several meetings) and lab groups
+    cat["course"] = cat["subject"] + " " + cat["code"]
+    cat["band"] = [_level_band(c, bands) for c in cat["code"]]
+    groups = []  # dict(course, comp, class_id, meetings=[row idx], seats)
+    course_prim, course_labs = {}, {}
+    restrict = [(re.compile(q["courses"]), set(q["class_years"])) for q in rcfg.get("restricted", [])]
+    for course, cdf in cat.groupby("course", sort=True):
+        tot = cdf.groupby("component")["num_enrolled"].sum()
+        prim = [c for c in tot.index if c not in not_primary]
+        if not prim:
+            continue
+        pc = max(sorted(prim), key=lambda c: tot[c])
+        band = int(cdf["band"].iloc[0])
+        for comp, is_lab in ((pc, False),) + tuple((c, True) for c in sorted(set(cdf["component"]) & lab_comp)):
+            gdf = cdf[cdf["component"] == comp]
+            for cid, mdf in gdf.groupby("class_id", sort=True):
+                groups.append(dict(course=course, comp=comp, class_id=cid, meetings=list(mdf.index), is_lab=is_lab,
+                                   ug=int(mdf["num_enrolled"].max()) * ug_share[band], band=band,
+                                   subject=cdf["subject"].iloc[0], title=cdf["title"].iloc[0]))
+    # seats: real undergrad enrollment, scaled so primary seats = seat_slack x the courses agents want
+    ug_prim = sum(gr["ug"] for gr in groups if not gr["is_lab"])
+    scale = float(rcfg["seat_slack"]) * float(k_target.sum()) / max(ug_prim, 1e-9)
+    kept = []
+    for gr in groups:
+        x = gr["ug"] * scale
+        gr["seats"] = int(math.floor(x) + (rng.random() < x - math.floor(x)))
+        if gr["seats"] > 0:
+            kept.append(gr)
+    groups = kept
+    for g, gr in enumerate(groups):
+        (course_labs if gr["is_lab"] else course_prim).setdefault(gr["course"], []).append(g)
+    courses = sorted(course_prim)
+    G = len(groups)
+
+    # --- meetings -> sim sections (room, weekdays, minutes); one group's meetings share its enrollees
+    sec_rows, g_secs, g_mask = [], [[] for _ in range(G)], np.zeros(G, dtype=object)
+    for g, gr in enumerate(groups):
+        m_all = 0
+        for k, mi in enumerate(gr["meetings"]):
+            row = cat.loc[mi]
+            wds = _split_days(row["days"])
+            st, en = _hm(row["start"]), _hm(row["end"])
+            if not wds or en <= st:
+                continue
+            m = _mask(wds, st, en)
+            if m & m_all:  # same class listed twice for one slot (overflow room, duplicate row)
+                continue
+            r = loc_room.get(row["location"], -1)
+            if r < 0:
+                k0 = int(np.searchsorted(ri.cap[seated], gr["seats"], side="left"))
+                for kk in list(range(k0, len(seated))) + list(range(k0 - 1, -1, -1)):
+                    if not (room_busy.get(int(seated[kk]), 0) & m):
+                        r = int(seated[kk])
+                        break
+                n_warn["fallback_room" if r >= 0 else "no_room"] += 1
+                if r < 0:
+                    continue
+            room_busy[r] = room_busy.get(r, 0) | m
+            m_all |= m
+            sid = re.sub(r"[^A-Za-z0-9&]", "", gr["course"]) + f"_{gr['comp']}{cat.at[mi, 'section'] or gr['class_id']}"
+            g_secs[g].append(len(sec_rows))
+            sec_rows.append(dict(sid=sid, k=k, course=gr["course"], kind=kind_of.get(gr["comp"], "lecture"), r=r,
+                                 days=row["days"], weekdays=wds, start_min=st, end_min=en, component=gr["comp"],
+                                 room_name=rname[r], title=gr["title"], g=g))
+        g_mask[g] = m_all
+    # a class never seats more than its smallest room holds
+    rem = np.array([min(gr["seats"], min(int(ri.cap[sec_rows[j]["r"]]) for j in g_secs[g])) if g_secs[g] else 0
+                    for g, gr in enumerate(groups)], float)
+
+    # --- per-agent course weights: popularity x level fit x major
+    C = len(courses)
+    c_idx = {c: i for i, c in enumerate(courses)}
+    c_band = np.array([groups[course_prim[c][0]]["band"] for c in courses])
+    c_subj = [groups[course_prim[c][0]]["subject"] for c in courses]
+    year = np.clip(np.asarray(pop.class_year, int), 1, 4)
+    ylw = np.array([rcfg["year_level_weight"][str(y)] for y in range(1, 5)], float)  # (4, bands)
+    mj = rcfg["majors"]
+    mgroups = sorted(mj["groups"])
+    in_major = np.array([[s in mj["groups"][m] for s in c_subj] for m in mgroups], bool)  # (M, C)
+    mix = np.array([[mj["archetype_mix"][a].get(m, 0.0) for m in mgroups] for a in codes.ARCHETYPES], float)
+    mix /= mix.sum(1, keepdims=True)
+    arche = np.asarray(pop.archetype, dtype=int)
+    major = np.array([int(np.searchsorted(np.cumsum(mix[a]), u, side="right")) for a, u in
+                      zip(arche, rng.random(N))]).clip(0, len(mgroups) - 1)
+    pop.major = [mgroups[m] for m in major]
+    major_mult = np.asarray(mj["major_mult"], float)
+    required = [(re.compile(q["courses"]), set(q["class_years"]), float(q["p"])) for q in rcfg.get("required", [])]
+    req_courses = [np.array([bool(rx.match(c)) for c in courses]) for rx, _, _ in required]
+    allowed = np.ones((5, C), bool)  # [class_year, course]
+    for rx, yrs in restrict:
+        hit = np.array([bool(rx.match(c)) for c in courses])
+        for y in range(1, 5):
+            if y not in yrs:
+                allowed[y] &= ~hit
+
+    c_groups = [course_prim[c] for c in courses]
+    enrolled = [[] for _ in range(len(sec_rows))]
+    schedule = [[] for _ in range(N)]
+    max_att = int(scfg["max_pick_attempts"])
+
+    def course_rem():
+        return np.array([rem[gs].sum() for gs in c_groups])
+
+    crem = course_rem()
+
+    def take(i, ci, amask):
+        """Enroll agent i in a free primary group of course ci (+ a lab group). -> new mask or None."""
+        gs = [g for g in c_groups[ci] if rem[g] > 0 and not (amask & g_mask[g])]
+        if not gs:
+            return None
+        w = rem[gs]
+        g = gs[min(int(np.searchsorted(np.cumsum(w), rng.random() * w.sum(), side="right")), len(gs) - 1)]
+        mask = amask | g_mask[g]
+        pick = [g]
+        labs = course_labs.get(courses[ci], [])
+        if labs:
+            ok = [l for l in labs if rem[l] > 0 and g_secs[l] and not (mask & g_mask[l])]
+            if ok:
+                l = max(ok, key=lambda l: (rem[l], -l))
+                pick.append(l)
+                mask |= g_mask[l]
+        for gg in pick:
+            rem[gg] -= 1
+            crem[c_idx[groups[gg]["course"]]] = rem[c_groups[c_idx[groups[gg]["course"]]]].sum()
+            for s in g_secs[gg]:
+                enrolled[s].append(i)
+                schedule[i].append(s)
+        return mask
+
+    for i in rng.permutation(N):
+        i = int(i)
+        amask, got = 0, 0
+        taken = ~allowed[year[i]]
+        for (rx, yrs, p), rc in zip(required, req_courses):
+            if year[i] in yrs and rng.random() < p and got < k_target[i]:
+                w = crem * rc * ~taken
+                if w.sum() > 0:
+                    ci = int(np.searchsorted(np.cumsum(w), rng.random() * w.sum(), side="right"))
+                    ci = min(ci, C - 1)
+                    m = take(i, ci, amask)
+                    taken[ci] = True
+                    if m is not None:
+                        amask, got = m, got + 1
+        wi = ylw[year[i] - 1][c_band] * np.where(in_major[major[i]], major_mult[year[i] - 1], 1.0)
+        for _ in range(max_att):
+            if got >= k_target[i]:
+                break
+            w = crem * wi * ~taken
+            tot = w.sum()
+            if tot <= 0:
+                break
+            ci = min(int(np.searchsorted(np.cumsum(w), rng.random() * tot, side="right")), C - 1)
+            taken[ci] = True
+            m = take(i, ci, amask)
+            if m is not None:
+                amask, got = m, got + 1
+        if got < k_target[i]:
+            n_warn["unfilled_agents"] += 1
+
+    # --- final ordering / IDs (drop empty sections)
+    keep = [j for j in range(len(sec_rows)) if enrolled[j]]
+    keep.sort(key=lambda j: (sec_rows[j]["course"], sec_rows[j]["sid"], sec_rows[j]["k"], j))
+    new_idx = {j: n for n, j in enumerate(keep)}
+    seen, rows = {}, []
+    for j in keep:
+        d = sec_rows[j]
+        base = d["sid"] if d["k"] == 0 and d["sid"] not in seen else f"{d['sid']}_{d['k'] + 1}"
+        while base in seen:
+            base += "x"
+        seen[base] = True
+        r = d["r"]
+        rows.append(dict(section_id=base, course=d["course"], kind=d["kind"], r=r, room_id=ri.room_id[r],
+                         location_id=ri.loc_id[r], days=d["days"], weekdays=list(d["weekdays"]),
+                         start_min=d["start_min"], end_min=d["end_min"], enrolled=sorted(enrolled[j]),
+                         component=d["component"], room_name=d["room_name"], title=d["title"]))
     pop.class_schedule = [sorted(new_idx[j] for j in schedule[i]) for i in range(N)]
     df = pd.DataFrame(rows, columns=SEC_COLUMNS)
     df.attrs["warnings"] = n_warn
@@ -604,7 +845,7 @@ def _ids(pop, idx):
 
 
 def sections_frame_for_csv(sections, pop=None):
-    """d2 schedule/sections.csv frame (+ appended kind, location_id)."""
+    """d2 schedule/sections.csv frame (+ appended kind, location_id, component, room_name, title)."""
     aid = list(pop.agent_id) if pop is not None else sections.attrs.get("agent_id")
 
     def ids(lst):
@@ -619,6 +860,9 @@ def sections_frame_for_csv(sections, pop=None):
         "enrolled_agent_ids": [ids(l) for l in sections["enrolled"]],
         "kind": sections["kind"],
         "location_id": sections["location_id"],
+        "component": sections["component"],
+        "room_name": sections["room_name"],
+        "title": sections["title"],
     }).reset_index(drop=True)
 
 
