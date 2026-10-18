@@ -1,0 +1,123 @@
+{
+ "run": "influenza_none_n7500_d14_s42_9776284a",
+ "n_val": 750,
+ "n_val_pos": 32,
+ "val_attack_rate": 0.042666666666666665,
+ "train_attack_rate": 0.05396590009331703,
+ "eps_clip": 1e-06,
+ "units": "nats",
+ "models": {
+  "mlp_full": {
+   "per_agent_kl": 0.188232518876942,
+   "aggregate_kl": 0.0004342842745254571,
+   "calib_kl": 0.037067212801722024,
+   "auc": 0.5431754874651811,
+   "ap": 0.14367821040329298,
+   "mean_p": 0.04888933226763507,
+   "notes": "MLP+ReLU, 'full' features, mean of 3 seeds; fit on fit agents, early-stopped on stop agents"
+  },
+  "gat_daily": {
+   "per_agent_kl": 0.178405752217532,
+   "aggregate_kl": 0.0008531866322892007,
+   "calib_kl": 0.006302138472267948,
+   "auc": 0.5276375348189415,
+   "ap": 0.045655007281612765,
+   "mean_p": 0.05153958483466667,
+   "notes": "GATDaily (gatv2_sigmoid, d=32, 4 heads, daily steps); whole run in graph, survival loss on fit agents; checkpoint chosen by stop-agent logloss (not val)"
+  },
+  "meanfield_js": {
+   "per_agent_kl": 0.5654079797475801,
+   "aggregate_kl": 0.3488739286995292,
+   "calib_kl": 0.3869117570223478,
+   "auc": 0.6198424442896936,
+   "ap": 0.18356254421184653,
+   "mean_p": 0.3980328165109614,
+   "notes": "model/meanfield.js (Baker MF), default params (lambdaScale 0.901), phone inputs incl. reports; p = 1 - P_S at end of run (includes the 2% prior infected mass at t=0). Uncalibrated for this run: expected infections 2959/7500 (39%) vs ~5% observed"
+  },
+  "meanfield_js[p_final]": {
+   "per_agent_kl": 0.47078390068837217,
+   "aggregate_kl": 0.2816047258061688,
+   "calib_kl": 0.31096500919556214,
+   "auc": 0.6212569637883009,
+   "ap": 0.2508639958444306,
+   "mean_p": 0.350545818289121,
+   "notes": "meanfield_js scored with p_final instead (reference only)"
+  },
+  "meanfield_js[p_max]": {
+   "per_agent_kl": 0.4747251194526428,
+   "aggregate_kl": 0.28520458281009614,
+   "calib_kl": 0.3160888597658306,
+   "auc": 0.6209958217270195,
+   "ap": 0.24823359981436235,
+   "mean_p": 0.3532009259540068,
+   "notes": "meanfield_js scored with p_max instead (reference only)"
+  },
+  "meanfield_js_raw+isotonic": {
+   "per_agent_kl": 0.16329849705235708,
+   "aggregate_kl": 0.0004975871002874683,
+   "calib_kl": 0.000787120860091283,
+   "auc": 0.6579038997214485,
+   "ap": 0.14869759181966752,
+   "mean_p": 0.049347614243924226,
+   "notes": "reference: raw meanfield_js p_ever mapped by isotonic regression fitted on train agents (fit+stop)"
+  },
+  "meanfield_js_calibrated": {
+   "per_agent_kl": 0.3254407559077075,
+   "aggregate_kl": 0.13393380399749039,
+   "calib_kl": 0.15561465378667633,
+   "auc": 0.6255440459610029,
+   "ap": 0.20208421103096816,
+   "mean_p": 0.22748058898605047,
+   "notes": "model/meanfield.js with prior = n_seeds/N = 5/7500 and lambdaScale refitted as meanfield-cli --calibrate (true seeds, no reports, prior 0, no imports) to train-agent non-import infections scaled to all non-seeds (no val leakage); final pass with reports; p = 1 - P_S at end. fitted lambdaScale 1.12828 (bracket [1.12768, 1.12889], 10 iterations); final pass (reports, prior 0.0006666666666666666, lambdaScale 1.12828): 1255 s, expected infections 1710.6"
+  },
+  "meanfield_js_fit_reports": {
+   "per_agent_kl": 0.17819905693731972,
+   "aggregate_kl": 0.0004742669454564719,
+   "calib_kl": 0.008457869472083613,
+   "auc": 0.6318549791086352,
+   "ap": 0.24098097726315654,
+   "mean_p": 0.04918207283689111,
+   "notes": "model/meanfield.js with prior = 5/7500 and lambdaScale fitted on the full scored model (reports included) so mean P(ever infected) over train agents = their attack rate (ml/scripts/kl_mf_fit.mjs); p = 1 - P_S at end. fitted lambdaScale 0.56934: mean P(train) 0.0550 vs target 0.0540 after 4 passes"
+  },
+  "const_train_rate": {
+   "per_agent_kl": 0.17767085072572084,
+   "aggregate_kl": 0.0013425768169863812,
+   "calib_kl": 0.0013425768169863812,
+   "auc": null,
+   "ap": null,
+   "mean_p": 0.05396590009331703,
+   "notes": "constant p = train-agent attack rate 0.0540",
+   "baseline": true
+  },
+  "const_val_rate": {
+   "per_agent_kl": 0.1763282739087345,
+   "aggregate_kl": 0.0,
+   "calib_kl": 0.0,
+   "auc": null,
+   "ap": null,
+   "mean_p": 0.04266666666666668,
+   "notes": "constant p = val attack rate; cheats on prevalence (per-agent KL = entropy H(ybar), aggregate KL = 0)",
+   "baseline": true
+  },
+  "uniform_0.5": {
+   "per_agent_kl": 0.6931471805599454,
+   "aggregate_kl": 0.5168189066512109,
+   "calib_kl": 0.5168189066512109,
+   "auc": null,
+   "ap": null,
+   "mean_p": 0.5,
+   "notes": "constant p = 0.5 (per-agent KL = ln 2)",
+   "baseline": true
+  },
+  "perfect": {
+   "per_agent_kl": 0.0,
+   "aggregate_kl": 0.0,
+   "calib_kl": 0.0,
+   "auc": 1.0,
+   "ap": 1.0,
+   "mean_p": 0.042666666666666665,
+   "notes": "p = y: the floor (not computed)",
+   "baseline": true
+  }
+ }
+}
