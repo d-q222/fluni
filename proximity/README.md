@@ -91,6 +91,19 @@ contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risk
 within 6 ft, and a **close-contact alert with advice at 15 cumulative minutes** (the CDC rule).
 Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds. In Debug builds the speed is saved across launches.
 
+**Risk estimate** (`RiskEstimate.swift`, "This phone's estimate"): Rio's exposure formula (Baker et al. 2021) as
+`model/infer.js` computes it, with what a phone knows. Each tick, a risky peer with a fused distance d ≤ 10 m
+(Bluetooth range; no estimate or coarse GPS alone adds nothing) adds the unit dose
+q·B·(dt/3600)·(1/(30·max(d, 0.3)²) + 1/(V·loss)): q 10 quanta/h, B 0.5 m³/h, the default room V = 50 m² × 2.7 m,
+loss = 2 ach + 0.3 settling + virus decay at the January indoor humidity (Magnus). `ExposureTracker` sums it per
+rotating peer ID over the 24 h window, with the ID's highest status (tested positive s = 0.97, symptoms 0.6). Then
+p = 0.02, and per ID p ← p + (1 − p)·s·(1 − e^(−0.352·dose)), 0.352 being the illness-average stage. ContactGuard's
+rules limit the dose as they limit minutes. The constants come from infer.js `DEFAULTS` and are checked against it
+by `Tests/CrossCheckTests.swift` (golden vectors from the real infer.js: `node Tests/Fixtures/xcheck/make_golden.mjs`).
+What the phone can't do: real rooms and ventilation, indoor/outdoor, walls, the source's days since onset,
+second-hand risk, look-back after a report, recovery, negative tests. One person seen under two rotating IDs
+counts as two sources, a slight over-estimate.
+
 **Clock.** Students see live time only: the device's local weekday and time of day mapped onto the run
 (`Core/LiveClock.swift`, rule in `docs/building-heat-format.md`), recomputed every 15 s and on any system clock,
 time zone or date change. The Map tab says "Now · updated 4:30 PM". In Debug builds, Me > Developer tools > Demo
@@ -169,7 +182,8 @@ phones to wipe them between runs (`DRY_RUN=1` previews it).
 Conventions for anything user-facing in `FlUni/` (the Developer screen is exempt from the plain-English rule).
 
 - **Tone:** calm, specific, actionable; short sentences. No jargon outside Developer: say "precise distance
-  sensing", not UWB; "weighted minutes", not dose.
+  sensing", not UWB; "weighted minutes" for close-contact time; "exposure dose" only in "How is this calculated?", where it
+  is explained.
 - **Terms, used the same everywhere:** "close contact", "someone with symptoms" / "someone who tested
   positive", "detection" (on/off/paused), "FlUni" (exact capitalisation). The three shared statuses are always
   "healthy", "possibly sick", "contagious".

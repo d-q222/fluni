@@ -118,7 +118,7 @@ struct PreviewHookModifier: ViewModifier {
                 case "history": NavigationStack { ExposureHistoryView(store: model.exposureHistory) }
                 case "settings": NavigationStack { SettingsView(model: model) }
                 case "how": HowItWorksSheet()
-                default: CalculationSheet(minutes: (PreviewHook.exposure ?? model.exposure).minutes, dose: (PreviewHook.exposure ?? model.exposure).dose)
+                default: let e = PreviewHook.exposure ?? model.exposure; CalculationSheet(minutes: e.minutes, dose: e.dose, p: e.probability)
                 }
             }
     }

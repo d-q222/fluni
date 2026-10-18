@@ -2,7 +2,8 @@ import SwiftUI
 
 /// The Today risk card: the phone's own estimate, plus the official campus-model number when a demo persona is set.
 struct RiskCardView: View {
-    let dose: Double
+    /// This phone's estimate (ExposureTracker.probability).
+    let p: Double
     let onHow: () -> Void
     @ObservedObject private var store = PSickStore.shared
 
@@ -15,7 +16,6 @@ struct RiskCardView: View {
         }
     }
     var body: some View {
-        let p = RiskEstimate.probability(dose: dose)
         // The headline number sets the tier colour: the campus model's when there is one, else this phone's.
         let band = RiskEstimate.band(store.campusP ?? p)
         VStack(alignment: .leading, spacing: Space.xs) {
@@ -32,7 +32,7 @@ struct RiskCardView: View {
                 }
                 // Same number for colour and advice, so they can never disagree.
                 Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.note))
-                Text("From time near other phones with the app in the last 24 hours. An estimate, not a diagnosis.")
+                Text("Based on the last 24 hours: time near each person, how close (closer counts much more), shared room air, and whether they reported symptoms or a positive test. It's an estimate, not a diagnosis.")
                     .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
             }
             .accessibilityElement(children: .combine)
