@@ -216,7 +216,7 @@ async function loadModel(dataUrl, agentIds) {
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
-    return { risk, contacts: contacts.data, startMs, stepMs, traits };
+    return { risk, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
@@ -587,8 +587,8 @@ function noteFit(sentences) {
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
 // The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
 // per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
-// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); s = the peer's own
-// P(sick) above the prior (Rio's P_j; product owner 2026-10-17, was 0.97/0.6 tiers from 50%); p += (1 - p) * s * lambda.
+// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); s = max(the peer's status,
+// the peer's broadcast score above the prior) (product owner 2026-10-17; see phoneEstimate); p += (1 - p) * s * lambda.
 // No second-hand term, no recovery.
 const PHONE_DOSE = doseModel(), PHONE_STAGE = 0.352, BT_RANGE_M = 10;
 const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -974,16 +974,47 @@ async function main() {
     }
     return total;
   }
-  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h.
-  function phoneEstimate(id, t) {
+  // Each person's own status as their phone knows it (product owner, 2026-10-17): 0.97 after a positive
+  // test, 0.6 after reporting symptoms, for 7 days; a negative test or "recovered" clears it.
+  const statusLog = new Map();
+  for (const r of model?.reports || []) {
+    const v = r.event === 'test_result' ? ({ positive: 0.97, negative: 0 })[r.value]
+      : r.event === 'self_report' ? ({ tested_positive: 0.97, might_be_sick: 0.6, recovered: 0 })[r.value] : undefined;
+    if (v === undefined) continue;
+    if (!statusLog.has(r.agent_id)) statusLog.set(r.agent_id, []);
+    statusLog.get(r.agent_id).push([model.startMs + Number(r.t) * model.stepMs, v]);
+  }
+  for (const list of statusLog.values()) list.sort((a, b) => a[0] - b[0]);
+  const statusFloor = (id, t) => {
+    let v = 0, at = -Infinity;
+    for (const [tt, x] of statusLog.get(id) || []) { if (tt > t) break; v = x; at = tt; }
+    return t - at <= 7 * 86400000 ? v : 0;
+  };
+  // What a phone broadcasts: its own score, max(phone estimate, status floor), as of one step earlier (the
+  // lag breaks the self-loop), quantised to a byte as round(255·sqrt(p)). Other phones use it, never show it.
+  const quantScore = (p) => (Math.round(255 * Math.sqrt(Math.min(1, Math.max(0, p)))) / 255) ** 2;
+  const scoreMemo = new Map();
+  function broadcastScore(id, t, depth) {
+    const key = `${id}|${Math.floor(t / model.stepMs)}|${depth}`;
+    let v = scoreMemo.get(key);
+    if (v === undefined) {
+      const tb = t - model.stepMs;
+      v = quantScore(Math.max(phoneEstimate(id, tb, depth), statusFloor(id, tb)));
+      scoreMemo.set(key, v);
+    }
+    return v;
+  }
+  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h. Per peer
+  // s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
+  // getting closer to anyone who may be sick raises it. depth: how many hops of shared scores to follow
+  // (peers' own scores use their status only; the loop gain is small).
+  function phoneEstimate(id, t, depth = 1) {
     const dose = new Map();
     for (const e of exposureLog.get(id) || []) {
       if (e.tMs > t) break;
       if (e.tMs < t - EXPOSURE_WINDOW_MS) continue;
-      // Rio's P_j: the other person's own probability of having flu (not a 50%/90% tier), above the campus
-      // baseline the prior already counts. So getting closer to anyone who might be sick raises this phone's
-      // estimate, more for sicker people and shorter distances; ordinary classmates add nothing.
-      const s = Math.max(0, model.risk.pAt(e.other, e.tMs) - MODEL.prior);
+      const floor = statusFloor(e.other, e.tMs);
+      const s = depth > 0 ? Math.max(floor, broadcastScore(e.other, e.tMs, depth - 1) - MODEL.prior) : floor;
       if (!(s > 0)) continue;
       const durS = 60 * Math.min(e.min, (t - e.tMs) / 60000);
       const k = dose.get(e.other) || { s: 0, dose: 0 };
@@ -1066,7 +1097,7 @@ async function main() {
         ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
         ${lines.length ? `<div class="vstack">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`));
 
-    const p = me.p, tier = riskTier(p), phoneP = model ? phoneEstimate(me.id, now) : MODEL.prior;
+    const p = me.p, tier = riskTier(p), phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
     const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[tier];
     const note = tier === 'high' ? 'fireink' : 'ink2';
     out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
@@ -1572,7 +1603,7 @@ async function main() {
   });
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
-    publicLayer, now: () => now, current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
+    publicLayer, now: () => now, current: () => current, phoneScore: (id, t = now) => (model ? Math.max(phoneEstimate(id, t), statusFloor(id, t)) : null), heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
   };
 }
 
