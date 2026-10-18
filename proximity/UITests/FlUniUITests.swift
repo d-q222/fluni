@@ -152,7 +152,7 @@ final class FlUniUITests: FlUniUITestCase {
         reportSymptoms()
         XCTAssertTrue(el("report.symptoms").isSelected)
 
-        el("report.positive").tap()
+        scrollTo(el("report.positive")).tap()
         XCTAssertTrue(app.navigationBars["I tested positive"].waitForExistence(timeout: 5))
         app.buttons["report.submit"].tap()
         let share = dialogButton("Share that I tested positive")
