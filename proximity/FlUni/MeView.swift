@@ -24,7 +24,7 @@ struct MeView: View {
 
     private func option(_ c: Choice) -> Option {
         switch c {
-        case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", shares: .none)
+        case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", shares: Risk.none)
         case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Time near you counts half toward their close contact.", shares: .possible)
         case .positive: return Option(title: "I tested positive", detail: "Phones near you see: contagious, and may alert their owners.", shares: .contagious)
         case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative test isn't conclusive.", shares: nil)

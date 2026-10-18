@@ -15,9 +15,11 @@ struct StayingHomeView: View {
         let phase = store.reporter.phase(r, now: now)
         VStack(alignment: .leading, spacing: Space.l) {
             VStack(alignment: .leading, spacing: Space.m) {
-                // Lisa's "feeling sick" tissue (design pass).
-                Image("FeelingSick").resizable().scaledToFit().frame(maxHeight: 150)
-                    .frame(maxWidth: .infinity).accessibilityHidden(true)
+                // Lisa's "feeling sick" tissue (design pass), sitting in the corner like the all-clear tissue.
+                Image("FeelingSick").resizable().scaledToFit().frame(height: 112)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.bottom, -Space.l)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: Space.xs) {
                     Text(model.myRisk == .contagious ? "You tested positive" : "You've said you have symptoms")
                         .font(.fluni(.display)).accessibilityAddTraits(.isHeader)
