@@ -112,14 +112,32 @@ async function main() {
   if (paths) pathLayer = L.geoJSON(paths, { style: () => pathStyle(), interactive: false, ...PPATH }).addTo(map);
   L.geoJSON(geo, { style: () => NEUTRAL, interactive: false, ...PNEU }).addTo(map);
 
-  const items = [];
+  // One tap target per outline. Some sim places share their building's outline exactly (a dining hall
+  // inside its dorm: footprints.js gives a hand-placed box the real building's outline), so they're one
+  // shape on the map: their totals add up under the real building's name, and the hall is never hidden.
+  const items = [], byShape = new Map();
+  const shapeKey = (g) => JSON.stringify(g.coordinates, (k, v) => (typeof v === 'number' ? Math.round(v * 1e5) : v));
   for (const f of geo.features) {
     const idx = ids.get(f.properties.id);
     if (idx === undefined) continue;
+    const k = shapeKey(f.geometry);
+    const it = byShape.get(k);
+    if (it) { it.idxs.push(idx); continue; }
     const layer = L.geoJSON(f, { style: () => ({ stroke: false, fill: false }), ...PHEAT });
-    layer.on('click', (e) => { L.DomEvent.stopPropagation(e); popup(idx, e.latlng); });
-    items.push({ idx, layer, key: '' });
+    const item = { idxs: [idx], layer, key: '' };
+    layer.on('click', (e) => { L.DomEvent.stopPropagation(e); popup(item, e.latlng); });
+    byShape.set(k, item);
+    items.push(item);
     layer.addTo(map);
+  }
+  // Name a shared shape after its busiest place over the run (Florence Moore Hall, not its dining hall;
+  // Green Library, not "East Wing"), listing the rest.
+  const busy = new Float64Array(totals.buildings.length);
+  for (const st of totals.steps) for (const r of st) busy[r[0]] += r[1];
+  for (const it of items) {
+    it.idxs.sort((a, b) => busy[b] - busy[a]);
+    it.name = names[it.idxs[0]] || 'Building';
+    it.also = it.idxs.slice(1).map((i) => names[i]).filter((n) => n && n !== it.name);
   }
 
   // anchor labels, thinned by priority, zoom and collision with each other, the legend and the top chip
@@ -183,7 +201,7 @@ async function main() {
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { map.invalidateSize(); frame(); }, 150); });
 
   // ---- state ----
-  let step = -1, horizon = Number(P.get('horizon')) > 0 ? 60 : 0, cur = new Map(), shown = new Map(), openIdx = -1;
+  let step = -1, horizon = Number(P.get('horizon')) > 0 ? 60 : 0, cur = new Map(), shown = new Map(), openItem = null;
   const hasForecast = totals.forecast && totals.forecast.at.length && totals.forecast.horizons.includes(60);
   if (!hasForecast) horizon = 0;
   $('horizon').hidden = !hasForecast;
@@ -213,8 +231,15 @@ async function main() {
     const fc = horizon ? forecastAt(t) : null;
     shown = new Map();
     for (const it of items) {
-      const r = now.get(it.idx);
-      const style = r ? styleFor(r[1], fc ? fc.get(it.idx)?.[1] || 0 : hot(r), !!fc) : styleFor(0, 0, false);
+      let n = 0, sick = 0, heat = 0, any = false;
+      for (const idx of it.idxs) {
+        const r = now.get(idx);
+        if (!r) continue;
+        any = true; n += r[1];
+        sick += fc ? fc.get(idx)?.[0] || 0 : r[2];
+        heat += fc ? fc.get(idx)?.[1] || 0 : hot(r);
+      }
+      const style = any ? styleFor(n, heat, !!fc) : styleFor(0, 0, false);
       const key = JSON.stringify(style);
       if (key !== it.key) {
         it.layer.setStyle(style); it.key = key;
@@ -224,7 +249,7 @@ async function main() {
           it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
         } else if (it.halo) { it.halo.remove(); it.halo = null; }
       }
-      if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx)?.[0] || 0 : r[2] });
+      shown.set(it, { people: n, sick });
     }
     // "Now · updated 4:30 pm": the snapshot's time of day, today
     const d = new Date(), snap = new Date(startMs + s * stepMs);
@@ -232,24 +257,27 @@ async function main() {
     $('time').innerHTML = horizon
       ? `<b>In 1 hour</b> · around ${clock12(new Date(d.getTime() + 3600000))}`
       : `<b>Now</b> · updated ${clock12(d)}`;
-    if (openIdx >= 0) { if (shown.has(openIdx)) setPopupText(); else map.closePopup(); }
+    if (openItem) setPopupText();
   }
 
   const pop = L.popup({ closeButton: false, autoPanPadding: [20, 80] });
+  // Every tap answers: the totals, or that too few people are there to show (the privacy rule).
   function setPopupText() {
-    const d = shown.get(openIdx);
-    const name = names[openIdx] || 'Building';
-    pop.setContent(horizon
-      ? `<b>${esc(name)}</b>: about ${fmt(d.sick)} sick expected in 1 hour`
-      : `<b>${esc(name)}</b>: about ${fmt(d.sick)} sick of ${fmt(d.people)} people`);
+    const d = shown.get(openItem) || { people: 0, sick: 0 };
+    const name = `<b>${esc(openItem.name)}</b>`, also = openItem.also.length ? `<br><small>includes ${esc(openItem.also.join(', '))}</small>` : '';
+    pop.setContent(d.people < minPeople
+      ? `${name}: fewer than ${minPeople} people here right now${also}`
+      : horizon
+        ? `${name}: about ${fmt(d.sick)} sick expected in 1 hour${also}`
+        : `${name}: about ${fmt(d.sick)} sick of ${fmt(d.people)} people${also}`);
   }
-  function popup(idx, latlng) {
-    if (!shown.has(idx)) return; // hidden buildings show nothing
-    openIdx = idx;
+  function popup(item, latlng) {
+    openItem = item;
     setPopupText();
     pop.setLatLng(latlng).openOn(map);
   }
-  map.on('popupclose', () => { openIdx = -1; });
+  map.on('popupclose', () => { openItem = null; });
+  window.fluniUserMap = { items, popup, popupText: () => pop.getContent() }; // for tests: tap every building
 
   for (const b of $('horizon').querySelectorAll('button')) {
     b.setAttribute('aria-pressed', String(Number(b.dataset.h) === horizon));

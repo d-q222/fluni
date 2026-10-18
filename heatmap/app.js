@@ -653,6 +653,11 @@ const riskColor = (p) => {
   return mix(hi, hi, 0);
 };
 
+// Ground truth on top of the app's estimate: the sim's actually infected people (E or I) get a dark red
+// ring, thicker so it shows even on a 2 px dot. Presenter only; in truth colouring the fill says it already.
+const TRUTH_RING = '#6d1f16';
+const ringWeight = (r, infected) => (infected ? Math.max(1.75, personRing(r) + 1) : personRing(r));
+
 function dotColor(a, mode) {
   if (mode === 'truth') return a.sick ? COLORS.infected : COLORS.healthy;
   return riskColor(Math.min(1, a.p));
@@ -973,18 +978,21 @@ async function main() {
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
   addLandmarks(map); // Lisa's drawings under the heat (assets/landmarks/)
-  const sigmaForZoom = () => {
-    const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
+  const sigmaForZoom = (z = map.getZoom()) => {
+    const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** z;
     // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
     // Close up a softer glow: 8 m at zoom 18 up to 10 m at 20 (building heat only; whole metres, few scales).
-    if (zoneHeat && map.getZoom() >= FINE_ZOOM) return Math.min(10, 8 + Math.round(map.getZoom() - FINE_ZOOM));
+    if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom()), weight = personRing(r);
-    for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
+    const r = personRadius(map.getZoom());
+    for (const [id, m] of dots) if (m.getRadius() !== r) {
+      m.setRadius(r);
+      m.setStyle({ weight: ringWeight(r, $('dot-mode').value !== 'truth' && Boolean(current.get(id)?.sick)) });
+    }
     const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
     if (next === sigmaM && nextFine === fine) return;
     sigmaM = next;
@@ -993,6 +1001,27 @@ async function main() {
     renderLegend();
     render(performance.now());
   });
+  // Smooth zooming: the first zoom to a new spread or grid built that grid and its kernels on the spot
+  // (a visible stall at zoom 16 and 18). Build every zoom level's once, in idle time after the page loads.
+  const warmLevels = [];
+  const planWarm = () => { // once the map has a view (sigmaForZoom reads its centre)
+    for (let z = 13; z <= 20; z += 0.5) {
+      const lv = { sigma: sigmaForZoom(z), fine: zoneHeat && z >= FINE_ZOOM };
+      if (!warmLevels.some((w) => w.sigma === lv.sigma && w.fine === lv.fine)) warmLevels.push(lv);
+    }
+  };
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
+  const warmNext = () => {
+    const lv = warmLevels.shift();
+    if (!lv) return;
+    if (lv.sigma !== sigmaM || lv.fine !== fine) {
+      const keep = [sigmaM, fine, lastField];
+      [sigmaM, fine] = [lv.sigma, lv.fine];
+      try { heatAt(now, current.values()); } finally { [sigmaM, fine, lastField] = keep; }
+    }
+    idle(warmNext);
+  };
+  setTimeout(() => { if (!map._loaded) return; planWarm(); idle(warmNext); }, 1500); // after the first frames are on screen
   // Fit once the map actually has a size; a page opened in a background tab starts at 0×0.
   let fitted = false;
   new ResizeObserver(() => {
@@ -1662,6 +1691,8 @@ async function main() {
         const ll = m.getLatLng(), fill = dotColor(a, mode);
         if (ll.lat !== a.lat || ll.lng !== a.lon) m.setLatLng([a.lat, a.lon]);
         if (m.options.fillColor !== fill) m.setStyle({ fillColor: fill });
+        const infected = mode !== 'truth' && Boolean(a.sick), ring = infected ? TRUTH_RING : COLORS.ring, w = ringWeight(m.getRadius(), infected);
+        if (m.options.color !== ring || m.options.weight !== w) m.setStyle({ color: ring, weight: w });
         // Close up in the room-level view, see-through so the room's colour shows (not the selected or hovered person).
         const look = seeThrough && a.id !== selected && a.id !== hoverDot ? SEE_THROUGH : 1;
         if (m.options.fillOpacity !== look) m.setStyle({ fillOpacity: look, opacity: look === 1 ? 1 : 0.6 });
@@ -1747,7 +1778,7 @@ async function main() {
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
-      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>`;
+      : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>${data.hasTruth ? `<div class="key truth-key"><span class="truth-ring"></span>Dark ring: actually infected (simulation truth)</div>` : ''}`;
     const isPublic = v === 'public';
     const ul = userLegend();
     ul.hidden = !isPublic;
@@ -1782,8 +1813,7 @@ async function main() {
     if (!playing && now >= t1) now = t0;
     setPlaying(!playing);
   });
-  // Experimental airflow heat (aerosol.js); added here so the page markup stays the design pass's.
-  $('view').append(new Option('Infectious air by room (sim)', 'airborne'));
+  // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
   // Forecast picker for the user-facing map, built here so the page markup stays the design pass's.

@@ -125,6 +125,15 @@ and `WORKSTREAMS.md`.
   red as a busy one. An absolute scale (fixed expected-sick count), or a blend, would make runs
   comparable but leave quiet runs almost blank.
 
+## Known issues to fix later
+
+- ~~**Phone mock, tissue notification:** the back of the tissue box shook while the alert was showing.~~
+  Fixed (Lisa's design pass): the popped layer held the box rim too, and the wiggle rotated all of it.
+  Now `pull-0-tissue.png` wiggles about its base and `pull-0-rim.png` stays still.
+- **Presenter "What users see":** places sharing one outline (a dining hall inside its dorm) aren't
+  merged into one tap target there, as they are in usermap.js (f1d0e73). It never goes silent, but it
+  can show the dining hall's numbers alone.
+
 ## How to work in this repo
 
 - **Shared working tree.** Several sessions and agents edit `/Users/dqi26/fluni`.
