@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage(AppNotifications.detailsKey) private var lockScreenDetails = true
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
+    @State private var choosePause = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -53,14 +54,17 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.ink)
                 Button("Turn detection back on") { model.resume() }
             }
-            Menu {
-                Button("For 1 hour") { model.pause(.oneHour) }
-                Button("Until tomorrow") { model.pause(.untilTomorrow) }
-                Button("Until I turn it back on") { model.pause(.untilResumed) }
-            } label: {
+            // A button and a confirmation dialog rather than a Menu: the Menu in this Form never opened (phones and UI test).
+            Button { choosePause = true } label: {
                 Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
             }
             .accessibilityIdentifier("settings.pause")
+            .confirmationDialog("Pause detection", isPresented: $choosePause, titleVisibility: .visible) {
+                Button("For 1 hour") { model.pause(.oneHour) }
+                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until I turn it back on") { model.pause(.untilResumed) }
+                Button("Cancel", role: .cancel) {}
+            }
         } header: {
             Text("Detection").foregroundStyle(Theme.ink2)
         } footer: {
