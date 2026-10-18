@@ -25,6 +25,11 @@
   .leaflet-popup-tip { background: var(--surface); }
   .leaflet-container a.leaflet-popup-close-button { color: var(--ink-3); }
 
+  .lbl { pointer-events: none; }
+  .lbl span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 600 10.5px/1 var(--font); letter-spacing: .01em;
+    color: var(--ink-2); text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 5px var(--paper); }
+  .lbl-g span { font-style: italic; font-weight: 500; color: #5d6b3c; }
+  .lbl-x span { font-weight: 500; color: var(--ink-3); opacity: .8; }
   .chip { position: absolute; z-index: 500; top: calc(10px + env(safe-area-inset-top)); left: calc(10px + env(safe-area-inset-left));
     right: calc(10px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: space-between; gap: 8px;
     padding: 5px 5px 5px 12px; background: var(--surface); border-radius: 14px; font-size: 13px;
