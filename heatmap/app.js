@@ -458,12 +458,12 @@ const GL = {
 // colours (sun → ember → fire), so building fills stay on the cool side: sage washes, deeper for housing.
 // The palette's warm colours appear only in the thin inked outlines (study sun, food and social ember,
 // health fire), which never read as heat. Unlabelled kinds stay plain warm paper.
-const SIM_BUILDING = { fillColor: '#ebe7df', fillOpacity: 0.9, color: '#b5a898', weight: 0.8, opacity: 0.9 };
+const SIM_BUILDING = { fillColor: '#e6e0d3', fillOpacity: 0.95, color: '#ad9e8b', weight: 1, opacity: 0.95 };
 const TINT = {
-  housing: { fillColor: '#dce4cc', color: '#93a674' },  // --sage wash, sage ink
-  study: { fillColor: '#e6e9dc', color: '#c9ad62' },    // faint sage wash, --sun ink
-  social: { fillColor: '#e9e8de', color: '#d48a63' },   // faintest sage wash, --ember ink
-  care: { fillColor: '#e9e8de', color: '#cf6f5d' },     // faintest sage wash, --fire ink
+  housing: { fillColor: '#cfdcb6', color: '#869c63' },  // --sage wash, sage ink
+  study: { fillColor: '#dbe3c8', color: '#c4a552' },    // faint sage wash, --sun ink
+  social: { fillColor: '#e1e5d2', color: '#d27f55' },   // faintest sage wash, --ember ink
+  care: { fillColor: '#e1e5d2', color: '#c9604d' },     // faintest sage wash, --fire ink
 };
 const TINT_OF = { dorm: 'housing', classroom: 'study', lab: 'study', lecture_hall: 'study', library: 'study',
   dining: 'social', common_room: 'social', party_venue: 'social', event_venue: 'social', gym: 'social', health_center: 'care' };

@@ -1,15 +1,1 @@
-[
-  {"name": "Hoover Tower", "lat": 37.42762, "lon": -122.16699, "width_m": 60, "image": null},
-  {"name": "Memorial Church", "lat": 37.4268, "lon": -122.1702, "width_m": 70, "image": null},
-  {"name": "Main Quad", "lat": 37.42767, "lon": -122.1702, "width_m": 120, "image": null},
-  {"name": "Green Library", "lat": 37.4269, "lon": -122.1686, "width_m": 70, "image": null},
-  {"name": "The Oval", "lat": 37.4299, "lon": -122.1697, "width_m": 110, "image": null},
-  {"name": "The Claw (White Plaza)", "lat": 37.4246, "lon": -122.1696, "width_m": 40, "image": null},
-  {"name": "Tresidder Union", "lat": 37.42419, "lon": -122.17095, "width_m": 60, "image": null},
-  {"name": "Cantor Arts Center", "lat": 37.43296, "lon": -122.17087, "width_m": 80, "image": null},
-  {"name": "Rodin Sculpture Garden", "lat": 37.4323, "lon": -122.1702, "width_m": 50, "image": null},
-  {"name": "Bing Concert Hall", "lat": 37.43207, "lon": -122.16613, "width_m": 80, "image": null},
-  {"name": "Stanford Stadium", "lat": 37.43452, "lon": -122.16109, "width_m": 200, "image": null},
-  {"name": "Lake Lagunita", "lat": 37.4224, "lon": -122.1767, "width_m": 200, "image": null},
-  {"name": "Gates Computer Science", "lat": 37.43013, "lon": -122.17344, "width_m": 70, "image": null}
-]
+[]
