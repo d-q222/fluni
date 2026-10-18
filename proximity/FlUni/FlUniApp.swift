@@ -85,6 +85,15 @@ struct FlUniApp: App {
 }
 
 /// The app-level reaction to the model, in a view of its own so only this empty view redraws on a model change.
+/// Observes the model for the tissue alert only, so the scene body above stays unobserved (see `model`).
+private struct TissueAlertHost: View {
+    @ObservedObject var model: ProximityModel
+    let onToday: Bool
+    var body: some View {
+        TissueAlert(level: model.exposure.level, visible: onToday && model.myRisk == .none)
+    }
+}
+
 private struct ModelReactions: View {
     @ObservedObject var model: ProximityModel
     let onCloseContact: () -> Void
@@ -178,6 +187,8 @@ private struct AppRoot: View {
                     MeView(model: model).tag(AppRouter.Tab.me).toolbar(.hidden, for: .tabBar).tissueTabBarInset()
                 }
                 .overlay { TissueTabBar(selection: $router.tab) }
+                // Lisa's tissue alert: pops out of the tab-bar box on Today for a new alert (TissueAlert.swift).
+                .overlay { TissueAlertHost(model: model, onToday: router.tab == .today) }
                 .tint(Theme.ink)
                 .onAppear {
                     Signposts.poi.emitEvent("tabs on screen")
