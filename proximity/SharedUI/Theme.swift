@@ -52,10 +52,51 @@ extension Color {
 }
 
 extension Font {
-    /// System rounded, so it follows Dynamic Type. (Hanken Grotesk, the web font, is a variable TTF whose
-    /// weights SwiftUI can't be verified to select without running the app, so it isn't bundled.)
+    /// Lisa's type (design pass): Nunito for text, Fredoka for titles and big numbers, matching the web.
+    /// Static instances bundled in FlUni/Fonts (SIL OFL) and listed under UIAppFonts. `relativeTo:` keeps
+    /// Dynamic Type. Targets without the fonts (the test harness) fall back to SF Rounded.
     static func fluni(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-        .system(style, design: .rounded, weight: weight)
+        guard FluniType.available else { return .system(style, design: .rounded, weight: weight) }
+        let size = FluniType.baseSize(style)
+        switch style {
+        case .largeTitle, .title, .title2, .title3:
+            return .custom(weight == .regular ? "Fredoka-Medium" : "Fredoka-SemiBold", size: size, relativeTo: style)
+        default:
+            let w = (style == .headline && weight == .regular) ? .semibold : weight
+            let name = w == .bold || w == .heavy || w == .black ? "Nunito-Bold"
+                : (w == .semibold || w == .medium) ? "Nunito-SemiBold" : "Nunito-Regular"
+            return .custom(name, size: size, relativeTo: style)
+        }
+    }
+}
+
+enum FluniType {
+    static let available = UIFont(name: "Nunito-Regular", size: 12) != nil && UIFont(name: "Fredoka-SemiBold", size: 12) != nil
+
+    /// iOS's default (Large) Dynamic Type sizes, so custom fonts scale from the same base as the system ones.
+    static func baseSize(_ style: Font.TextStyle) -> CGFloat {
+        switch style {
+        case .largeTitle: return 34
+        case .title: return 28
+        case .title2: return 22
+        case .title3: return 20
+        case .headline, .body: return 17
+        case .callout: return 16
+        case .subheadline: return 15
+        case .footnote: return 13
+        case .caption: return 12
+        case .caption2: return 11
+        @unknown default: return 17
+        }
+    }
+
+    /// Navigation titles ("Today", "Map", "Me") in Fredoka, scaled for Dynamic Type.
+    static func styleNavigationBars() {
+        guard available, let large = UIFont(name: "Fredoka-SemiBold", size: 34),
+              let small = UIFont(name: "Fredoka-SemiBold", size: 17) else { return }
+        let a = UINavigationBar.appearance()
+        a.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
+        a.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: small)]
     }
 }
 
