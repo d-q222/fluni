@@ -50,7 +50,14 @@ export const MF_DEFAULTS = {
   lrTest: 200,            // ... of taking a test (test_taken, app-visible as in sim/campussim/app_policy.py): in the sim only
                           //   symptomatic people go; all 616 tests in twelve runs were taken by infected people. 0: ignore
   recoveredCertain: false,
-  reportCensoring: true,  // no report yet is evidence: infections that would have been reported by now lose weight // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
+  reportCensoring: true,
+  // Backward messages: a reporter dated to infection at tau was infected by someone near them then. Over the window
+  // [tau - backBeforeH, tau + backAfterH], with H the reporter's total hazard and, per contact j, L_j = their dose if
+  // infected and T_j = P_j L_j, j's infected mass x w (H - T_j + L_j) / H + 1 - w and the rest x w (H - T_j) / H + 1 - w
+  // (w: P that the reporter is infected). The paper's BP does this exactly; its simple mean-field doesn't.
+  backward: false,       // off: neutral on the twelve 1k runs (KL 0.2890 -> 0.2892, AUC 0.686 -> 0.687)
+  backBeforeH: 18,
+  backAfterH: 12,  // no report yet is evidence: infections that would have been reported by now lose weight // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
   negFnr: 0.3,            // negative test: false-negative rate. > 0: a likelihood at the result (infected mass x this,
                           //   renormalised); the sim's test has 70% sensitivity and every negative in twelve runs was
                           //   a false negative. 0: the SI's P_S = 1 over negDays (eq. 4).
@@ -351,6 +358,7 @@ export function meanFieldRisk(input, params = {}) {
   // the clamp already applied says nothing new (the paper's observations are about one infection).
   const episode = Math.round(P.illnessDays / dtDays);
   const lastPos = new Int32Array(N).fill(-1e9), lastSym = new Int32Array(N).fill(-1e9), lastOther = new Int32Array(N).fill(-1e9);
+  const backReqs = [], winAt = new Map(), lastReq = new Map(); // backward-message requests; step -> reporter -> request
   const maxBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays);
   const lastTest = new Int32Array(N).fill(-1e9), datedAt = new Int32Array(N).fill(-1e9), dEff = new Int32Array(N), dK0 = new Int32Array(N);
   const fresh = () => {
@@ -384,6 +392,8 @@ export function meanFieldRisk(input, params = {}) {
       if (k0 < K) A[o + k0] = wgt; else Rr[i] += wgt;
     } else if (c[0] === 'sus') { // negative test (SI eq. 4): P_S = 1 at this step, so nothing was caught or passed on
       S[i] = 1; Rr[i] = 0; A.fill(0, o, o + K);
+    } else if (c[0] === 'backstart') { // no change to the state: it only makes the rerun start at the window (step()
+      // restarts the reporter's tallies there)
     } else if (c[0] === 'negsoft') { // negative test as a likelihood: infected mass x the false-negative rate
       let z = S[i] + Rr[i];
       for (let k = 0; k < K; k++) { A[o + k] *= P.negFnr; z += A[o + k]; }
@@ -431,6 +441,18 @@ export function meanFieldRisk(input, params = {}) {
       const lr = kind === 'sym' ? P.lrSym : kind === 'test' ? P.lrTest : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
       wgt = (lr * p) / (lr * p + 1 - p);
     }
+    if (P.backward && reports.length) {
+      const tau = sEff - k0, s0 = Math.max(0, tau - Math.round(P.backBeforeH / P.dtH), n - maxBack), s1 = Math.min(n, tau + Math.round(P.backAfterH / P.dtH));
+      if (s1 >= s0) {
+        const req = { i, s0, s1, w: wgt, H: 0, src: new Map() };
+        const old = lastReq.get(i); // a newer report about the same person replaces its window
+        if (old) for (let x = old.s0; x <= old.s1; x++) if (winAt.get(x)?.get(i) === old) winAt.get(x).delete(i);
+        lastReq.set(i, req);
+        backReqs.push(req);
+        for (let x = s0; x <= s1; x++) { if (!winAt.has(x)) winAt.set(x, new Map()); winAt.get(x).set(i, req); }
+        return [[sEff, ['infect', i, k0, wgt]], [s0, ['backstart', i]]];
+      }
+    }
     return [[sEff, ['infect', i, k0, wgt]]];
   }
 
@@ -439,6 +461,8 @@ export function meanFieldRisk(input, params = {}) {
     for (const c of clamps.get(s) || []) applyClamp(c, st);
     const { S, A, R: Rr, C } = st;
     logq.fill(-hImp);
+    const win = winAt.get(s) || null;
+    if (win) for (const req of win.values()) if (req.s0 === s) { req.H = 0; req.src.clear(); }
     // Room air: C' = Css + (C - Css) e^(-loss dt), Css = sum_j shed_j (h_j / dt) / (V loss); occupant i breathes
     // the step's mean C, less its own share (a person does not infect themselves).
     if (roomAir) {
@@ -479,8 +503,20 @@ export function meanFieldRisk(input, params = {}) {
         }
         logq[b] += Math.log1p(-Math.min(tab, 1 - 1e-12));
         logq[a] += Math.log1p(-Math.min(tba, 1 - 1e-12));
+        if (win) { // tallies for a reporter's possible infectors: their dose if infected, and its expectation
+          for (const [tgt, src, T, o] of [[b, a, tab, oa], [a, b, tba, ob]]) {
+            const req = win.get(tgt);
+            if (!req) continue;
+            let pj = 0; for (let k = 0; k < K; k++) pj += A[o + k];
+            if (!(pj > 1e-12)) continue;
+            const e = req.src.get(src) || { L: 0, T: 0 };
+            e.L += -Math.log1p(-Math.min(T / pj, 1 - 1e-12)); e.T += -Math.log1p(-Math.min(T, 1 - 1e-12));
+            req.src.set(src, e);
+          }
+        }
       }
     }
+    if (win) for (const [i, req] of win) req.H += -logq[i]; // the reporter's whole hazard this step (imports, rooms, pairs)
     for (let i = 0; i < N; i++) {
       const o = i * K, nw = S[i] * -Math.expm1(logq[i]);
       Rr[i] += A[o + K - 1];
@@ -493,6 +529,16 @@ export function meanFieldRisk(input, params = {}) {
         let z = S[i] + Rr[i];
         for (let k = 0; k < K; k++) { const v = A[o + k] * (1 - repHaz[k]); A[o + k] = v; z += v; }
         if (z > 0 && z < 1) { S[i] /= z; Rr[i] /= z; for (let k = 0; k < K; k++) A[o + k] /= z; }
+      }
+    }
+    if (win) for (const req of win.values()) if (req.s1 === s && req.H > 0) { // the backward messages
+      for (const [j, e] of req.src) {
+        if (e.L <= 0) continue;
+        const lrInf = (req.w * Math.max(0, req.H - e.T + e.L)) / req.H + 1 - req.w, lrUn = (req.w * Math.max(0, req.H - e.T)) / req.H + 1 - req.w;
+        const o = j * K;
+        let z = (S[j] + Rr[j]) * lrUn;
+        for (let k = 0; k < K; k++) { A[o + k] *= lrInf; z += A[o + k]; }
+        if (z > 0) { S[j] = (S[j] * lrUn) / z; Rr[j] = (Rr[j] * lrUn) / z; for (let k = 0; k < K; k++) A[o + k] /= z; }
       }
     }
   }
