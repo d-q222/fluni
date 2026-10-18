@@ -52,3 +52,9 @@ the results as order-of-magnitude estimates.
 other.
 
 This is separate from `model/`, which infers P(sick) for every agent from the sim's contact graph.
+
+## Whole-campus version
+
+[`network/`](network/README.md) runs this λ over every contact in a sim run. It tracks P(flu) for every
+agent with the paper's mean-field update, including infection-age (stage) marginals and look-back
+on reports, and has a page for playing through the run.
