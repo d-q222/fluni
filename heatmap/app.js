@@ -350,8 +350,11 @@ async function loadBuildings(dataUrl) {
     const { data } = await loadCsv(new URL('map/buildings.csv', new URL(dataUrl, location.href)),
       ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt', 'floors']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
-    // The sim's floor count per building (OSM building:levels where mapped, else its type's default; sim/campussim/campus.py).
+    // The sim's floor count per building (OSM building:levels where mapped, else its type's default; sim/campussim/campus.py),
+    // overridden by the researched counts in data/building-floors.json (sources there) for the busiest buildings.
     const floors = new Map(data.filter((b) => Number(b.floors) > 0).map((b) => [b.location_id, Number(b.floors)]));
+    const researched = await fetch('data/building-floors.json').then((r) => (r.ok ? r.json() : []), () => []);
+    for (const f of researched) if (f.floors > 0) floors.set(f.id, f.floors);
     // No boxes for outdoor spaces; manual boxes on a real building take its outline (footprints.js).
     const features = cleanFootprints(data).map(({ row: b, geometry, box }) => ({
       type: 'Feature',

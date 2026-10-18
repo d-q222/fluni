@@ -124,8 +124,11 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
   everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
   with `?model=meanfield`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
-  floor space: footprint area (its outline) × floors (`floors` in the run's `map/buildings.csv`: OSM building:levels
-  where mapped, else the sim's default for the building type). So it's expected infected above baseline per 1,000 m²
+  floor space: footprint area (its outline) × floors. Floors come from `data/building-floors.json` for the 70 busiest
+  buildings (88% of indoor time), researched from Stanford's Campus Access Guide (maps.stanford.edu/ada), the 2018
+  General Use Permit historic-resources appendix, R&DE housing pages and OSM, each with its source, confidence and a
+  note; elsewhere from `floors` in the run's `map/buildings.csv` (OSM building:levels where mapped, else the sim's
+  default for the building type). So it's expected infected above baseline per 1,000 m²
   of floor: a crowded small building reads darker than the same count spread through a big or tall one, and healthy
   people at the baseline don't shade anything. Darkness is linear in that density (not √), along
   the campfire ramp (`HEAT_STOPS`), on a fixed scale for the whole run: the 95th percentile of the buildings'
