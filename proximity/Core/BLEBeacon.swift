@@ -134,6 +134,10 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         #endif
     }
 
+    /// Restarts both scans (flu-offdetect: called every BackgroundLocation.rescanInterval while FlUni is kept
+    /// alive off screen, so phones iOS already reported once in this background scan can be discovered again).
+    func refreshScan() { scanQueue.async { [weak self] in self?.restartScan() } }
+
     private func restartScan() {
         guard !paused else { return }
         if let central, central.state == .poweredOn {

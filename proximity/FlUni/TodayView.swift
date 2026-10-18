@@ -27,6 +27,7 @@ struct TodayView: View {
                     }
                     WalkInBanner(model: model)
                     UnusualSignalsBanner(model: model)
+                    AlwaysLocationCard()  // step two of the location ask (BackgroundLocation.offersAlways); flu-offdetect
                     if level == .nearby { NearbyBanner().transition(.opacity) }
                     statusCard
                     riskCard
