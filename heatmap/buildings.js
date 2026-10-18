@@ -37,7 +37,7 @@ export class BuildingTotalsLayer {
     }
     this.labels = new LabelLayer(map, { pane: 'ub-label', avoid: this.avoid });
     this._zoom = () => { const r = haloRadius(map.getZoom()); for (const it of this.items.values()) if (it.halo) it.halo.setRadius(r); };
-    map.on('zoomend', this._zoom);
+    map.on('zoomend zoomrefresh', this._zoom); // zoomrefresh: mid-gesture redraws (smoothzoom.js)
     map.on('popupclose', (e) => { if (e.popup === this.pop) this.openId = null; });
   }
 

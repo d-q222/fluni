@@ -21,6 +21,7 @@ import { LabelLayer } from './maplabels.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import * as PV from './phone-views.js';
 import { makeSeats } from './seats.js';
+import { smoothZoom } from './smoothzoom.js';
 import { buildZones, rasterZone } from './zones.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
@@ -369,13 +370,17 @@ const CanvasLayer = L.Layer.extend({
   onAdd(map) {
     map.getPane('overlayPane').appendChild(this.canvas);
     map.on('zoomanim', this.animate, this);
-    map.on('moveend viewreset resize', this.draw, this);
+    // Smooth zoom (smoothzoom.js, and touch pinch) moves the map by 'zoom' events with no zoomanim: follow
+    // them with the same cheap CSS transform; redraw mid-gesture on 'zoomrefresh', crisply on moveend.
+    map.on('zoom', this.follow, this);
+    map.on('moveend viewreset resize zoomrefresh', this.draw, this);
     this.draw();
   },
   onRemove(map) {
     this.canvas.remove();
     map.off('zoomanim', this.animate, this);
-    map.off('moveend viewreset resize', this.draw, this);
+    map.off('zoom', this.follow, this);
+    map.off('moveend viewreset resize zoomrefresh', this.draw, this);
   },
   setBounds(bounds) { this.bounds = L.latLngBounds(bounds); },
   setGrid() { this.mode = 'grid'; this.draw(); },
@@ -472,6 +477,11 @@ const CanvasLayer = L.Layer.extend({
     const offset = this._map._latLngBoundsToNewLayerBounds(this.view, e.zoom, e.center).min;
     L.DomUtil.setTransform(this.canvas, offset, scale);
   },
+  follow() {
+    const map = this._map;
+    if (map._animatingZoom) return; // a CSS zoom animation: animate() set its end transform
+    this.animate({ zoom: map.getZoom(), center: map.getCenter() });
+  },
 });
 
 // Base maps (?basemap=sim|streets|drawn):
@@ -514,9 +524,9 @@ let drawnBounds = null, glReady = null, simMap = null; // simMap: { buildings, p
 
 function baseMap(el, options) {
   // Zoom stops at room scale (20: ~15 cm a pixel, people at full size) and at the whole campus (13);
-  // the vector base would otherwise let you zoom in forever. Quarter-level wheel and trackpad steps (half
-  // the default speed per pixel) and half-level +/- clicks, so zooming glides instead of jumping.
-  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, minZoom: 13, maxZoom: 20, ...options });
+  // the vector base would otherwise let you zoom in forever.
+  // zoomSnap 0: zoom is continuous (smoothZoom's wheel / pinch / buttons end where they stop, as in Google Maps).
+  const map = smoothZoom(L.map(el, { preferCanvas: true, zoomSnap: 0, minZoom: 13, maxZoom: 20, ...options }));
   map.createPane('simPane').style.zIndex = 250; // above base tiles, below heat, fills and people
   bases.set(map, {});
   applyBase(map);
@@ -1054,16 +1064,18 @@ async function main() {
     if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
-  // People are sized on the ground: resize them at every zoom step. Set directly, not with setRadius and
-  // setStyle (each reprojects and queues a repaint per dot): the dots' renderer, whose zoomend handler runs
-  // after this one, reprojects and redraws them all once anyway.
-  map.on('zoomend', () => {
+  // People are sized on the ground: resize them at the end of every zoom and, during a long smooth zoom, when
+  // smoothzoom.js redraws (zoomrefresh). Set directly, not with setRadius and setStyle (each reprojects and
+  // queues a repaint per dot): the dots' renderer reprojects and redraws them all once anyway.
+  const resizeDots = () => {
     const r = personRadius(map.getZoom()), mode = $('dot-mode').value;
     for (const [id, m] of dots) if (m._radius !== r) {
       m.options.radius = m._radius = r;
       m.options.weight = ringWeight(r, mode !== 'truth' && Boolean(current.get(id)?.sick));
     }
-  });
+  };
+  map.on('zoomend', resizeDots);
+  map.on('zoomrefresh', resizeDots);
   // The heat covers only the visible map (plus a margin) at a spread set by the zoom, so a zoom or pan
   // redoes it, but once the gesture settles, not at every wheel step (a 50-100 ms stall each). Meanwhile
   // the heat canvases keep their last heat, scaled with the map and redrawn crisp at each step.
@@ -1084,7 +1096,7 @@ async function main() {
   // (a visible stall at zoom 16 and 18). Build every zoom level's once, in idle time after the page loads.
   const warmLevels = [];
   const planWarm = () => { // once the map has a view (sigmaForZoom reads its centre)
-    for (let z = 13; z <= 20; z += map.options.zoomSnap) {
+    for (let z = 13; z <= 20; z += 0.25) { // quarter steps: zoom is continuous now (smoothzoom.js)
       const lv = { sigma: sigmaForZoom(z), fine: zoneHeat && z >= FINE_ZOOM };
       if (!warmLevels.some((w) => w.sigma === lv.sigma && w.fine === lv.fine)) warmLevels.push(lv);
     }
@@ -1510,7 +1522,7 @@ async function main() {
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
   function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
   function buildPhoneMap() {
-    const map = L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 });
+    const map = smoothZoom(L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 }));
     const pane = (name, z) => { const p = map.createPane(name); p.style.zIndex = z; p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
     const PC = pane('pctx', 410), PN = pane('pneu', 420);
     // Night mode (theme.js): the same map in Lisa's night palette, cream lines on cocoa; heat keeps its colours.
