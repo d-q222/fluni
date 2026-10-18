@@ -111,8 +111,12 @@ export function meanFieldRisk(input, params = {}) {
   const K = Math.max(1, Math.round(P.illnessDays / dtDays));
   const stage = stageCurve(K, dtDays, P, R);
   const contacts = input.contacts || [], reports = input.reports || [];
+  // input.columns: the same contacts as typed arrays (model/tools/contacts_cache.py: t, a, b agent indexes in agentIds
+  // order, dist, tier, indoor, room index into roomIds or -1, dur), for big runs where an object per row won't fit.
+  const C = input.columns || null, nRows = C ? C.t.length : contacts.length;
   let lastSimStep = 0;
-  for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
+  if (C) { for (let k = 0; k < nRows; k++) if (C.t[k] > lastSimStep) lastSimStep = C.t[k]; }
+  else for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
   for (const r of reports) if (+r.t > lastSimStep) lastSimStep = +r.t;
   const nSteps = input.days ? Math.ceil((input.days * 24) / P.dtH) : Math.floor(lastSimStep / W) + 1;
 
@@ -155,30 +159,38 @@ export function meanFieldRisk(input, params = {}) {
   const occ = Array.from({ length: nSteps }, () => new Map()); // room * N + agent -> sim steps present
   const lastT = new Float64Array(N).fill(-1);
   const stepsPerDay = 1440 / stepMin, stepH = stepMin / 60;
-  const sorted = contacts.every((c, k) => k === 0 || +c.t >= +contacts[k - 1].t);
-  const rows = sorted ? contacts : contacts.slice().sort((x, y) => x.t - y.t);
+  // Row order by time (objects or columns); the room-occupancy count needs it.
+  const tOf = C ? (k) => C.t[k] : (k) => +contacts[k].t;
+  let order = null;
+  for (let k = 1; k < nRows; k++) if (tOf(k) < tOf(k - 1)) { order = Uint32Array.from({ length: nRows }, (_, i) => i).sort((x, y) => tOf(x) - tOf(y)); break; }
+  const colRoom = C ? new Int32Array(C.roomIds.length).fill(-2) : null; // room index -> roomOf, cached
   const legacy = P.legacyDose, roomAir = P.roomAir && !legacy && P.roomVolume !== 'none';
-  for (const c of rows) {
-    const t = +c.t, n = Math.floor(t / W);
+  for (let kk = 0; kk < nRows; kk++) {
+    const row = order ? order[kk] : kk, c = C ? null : contacts[row];
+    const t = C ? C.t[row] : +c.t, n = Math.floor(t / W);
     if (n >= nSteps) continue;
-    let a = idx.get(c.agent_a), b = idx.get(c.agent_b);
+    let a = C ? C.a[row] : idx.get(c.agent_a), b = C ? C.b[row] : idx.get(c.agent_b);
     if (a === undefined || b === undefined || a === b) continue;
-    const iv = c.indoor, indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1';
-    if (indoor && c.room_id === '') continue; // through a wall: no shared air (infer.js wallFactor 0)
+    let indoor, roomId, hasRoom;
+    if (C) { indoor = C.indoor[row] === 1; roomId = C.room[row]; hasRoom = roomId >= 0; }
+    else { const iv = c.indoor; indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1'; roomId = c.room_id; hasRoom = roomId !== ''; }
+    if (indoor && !hasRoom) continue; // through a wall: no shared air (infer.js wallFactor 0)
     let unit;
-    if (legacy) unit = doseForDay(Math.floor(t / stepsPerDay))(c) / R.quantaPeak;
+    if (legacy) unit = doseForDay(Math.floor(t / stepsPerDay))(c || { distance_m: C.dist[row], distance_tier: C.tier[row], duration_s: C.dur[row], indoor, room_id: hasRoom ? C.roomIds[roomId] : '' }) / R.quantaPeak;
     else {
-      const r = indoor ? roomOf(c.room_id ?? '') : -1, shared = roomAir && c.room_id != null; // no room id: per pair
+      const r = !indoor ? -1 : C ? (colRoom[roomId] === -2 ? (colRoom[roomId] = roomOf(C.roomIds[roomId])) : colRoom[roomId]) : roomOf(roomId ?? '');
+      const shared = roomAir && (C ? true : roomId != null); // no room id column: per pair
       if (shared && r >= 0) for (const x of [a, b]) if (lastT[x] !== t) { // one room per agent per sim step
         lastT[x] = t;
         const k = r * N + x;
         occ[n].set(k, (occ[n].get(k) || 0) + 1);
       }
-      const dm = c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
-      const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, Number(c.distance_tier) || 4)) - 1]);
-      const f = r >= 0 ? rmF[r] : 1;
-      unit = (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
-      if (!shared && r >= 0 && P.roomVolume !== 'none') unit += (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
+      const dm = C ? C.dist[row] : c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
+      const tier = C ? C.tier[row] : Number(c.distance_tier);
+      const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, tier || 4)) - 1]);
+      const f = r >= 0 ? rmF[r] : 1, hrs = (C ? C.dur[row] : Math.round(Number(c.duration_s)) || 0) / 3600;
+      unit = (f * R.breathingRate * hrs) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
+      if (!shared && r >= 0 && P.roomVolume !== 'none') unit += (f * R.breathingRate * hrs) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
     }
     if (!(unit > 0)) continue;
     if (a > b) [a, b] = [b, a];
@@ -343,7 +355,7 @@ export function meanFieldRisk(input, params = {}) {
 
   // Online pass: at each step add what was learned; if it reaches back, rerun from the nearest checkpoint.
   // Rows of pNow/shed are what the app would show at the end of each step.
-  const pNow = new Float32Array(nSteps * N), shed = new Float32Array(nSteps * N);
+  const pNow = new Float32Array(nSteps * N), shed = new Float32Array(nSteps * N), everNow = new Float32Array(nSteps * N);
   const clamps = new Map(), ckpt = new Map(), CK = P.checkpointSteps;
   const keepBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays) + CK;
   let st = fresh();
@@ -376,6 +388,7 @@ export function meanFieldRisk(input, params = {}) {
       for (let k = i * K, e = k + K, a = 0; k < e; k++, a++) { pa += st.A[k]; sh += st.A[k] * stage[a]; }
       pNow[row + i] = pa;
       shed[row + i] = sh;
+      everNow[row + i] = 1 - st.S[i]; // P(infected at some point up to now), for scoring "ever infected" labels
     }
   }
 
@@ -384,6 +397,10 @@ export function meanFieldRisk(input, params = {}) {
   const pAt = (id, tMs) => {
     const i = idx.get(id), n = stepOf(tMs);
     return i === undefined || n < 0 ? P.prior : pNow[n * N + i];
+  };
+  const everAt = (id, tMs) => {
+    const i = idx.get(id), n = stepOf(tMs);
+    return i === undefined || n < 0 ? P.prior : everNow[n * N + i];
   };
   const shedPrior = (P.prior / K) * stage.reduce((s, x) => s + x, 0);
   const shedAt = (id, tMs) => {
@@ -408,7 +425,7 @@ export function meanFieldRisk(input, params = {}) {
   for (let i = 0; i < N; i++) ever += 1 - st.S[i];
   return {
     expectedInfections: ever, // sum over agents of P(ever infected) by the end
-    pAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
+    pAt, everAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
     params: { ...R, ...P, method: 'meanfield' },
     // for the heat map's risk field: hazard at 1 m for 1 h per unit shed = q * breathingRate / nearFieldQ
     field: legacy ? { q, breathingRate: R.breathingRate, nearFieldQ: R.nearFieldQ, outdoorNearDilution: R.outdoorNearDilution, quietQuanta: R.quietQuanta / R.quantaPeak }
