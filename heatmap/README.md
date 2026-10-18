@@ -50,6 +50,11 @@ Demo scenes on the sim's mock run:
 ## Demo map vs. user map
 
 - **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **Phone mock** (click a person): drawn like the current FlUni app (flu-design2): `phone-views.js` builds Today (a "your day" timeline of
+  buildings, Lisa's tissue narrating, a close contact that opens in place, the 5-day stay-home track with the Self-reported stamp for
+  anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
+  app's fonts (`assets/fonts/`, OFL). Campus is the user map. Numbers are unchanged: this phone's estimate (doseModel) is the one number
+  on Today; the campus-model P is shown only in the presenter bar and in the calculation sheet "for comparison". Taps are visual only.
 - **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
   (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
   numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Room-level heat (demo)**:
