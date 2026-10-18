@@ -189,6 +189,6 @@ look-back recomputes the dose from the row. Pair doses live in two Maps of expos
 ## Use in the heat map
 
 `heatmap/app.js` calls `inferRisk` in the browser (contacts, reports and `map/rooms.csv` of the run)
-and reads `risk.pAt(agentId, tMs)`; big runs load the precomputed `model/out/<run>/p_sick.csv`. The heat
+and reads `risk.pAt(agentId, tMs)`. The heat
 is Σ P(sick) of the people near each point. The phone panel's own estimate uses `doseModel()` with
 FlUni's on-device rule, matched by `proximity/Tests/Fixtures/xcheck/golden.json`.
