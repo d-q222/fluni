@@ -1,6 +1,6 @@
 # FlUni (proximity/): handoff
 
-Updated 2026-10-18 ~01:30 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
+Updated 2026-10-18 ~02:00 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
 together with README.md (how things work), DEMO.md (the demo) and RISKS.md (known risks, kept out of the demo).
 
 ## State of main (origin/main 953dcd2 or later)
@@ -48,12 +48,25 @@ together with README.md (how things work), DEMO.md (the demo) and RISKS.md (know
   - Every map tap answers, and shared outlines (dining inside a dorm) are one target.
 
 ## In flight (subagents; the coordinator merges, pushes and installs)
+Updated 2026-10-18 ~02:00. Main is 3f30b91 (ZZExplore scratch test removed; 576 unit tests pass at 8bae016).
+
 | Work | Where | State |
 |---|---|---|
-| Tissue/scroll/info fixes | `/Users/dqi26/fluni-tissue` (flu-tissue) | Merged up to e8e2392. Finishing: Map legend (i), large text, close-contact sheet, full UI run. |
-| Phone bug hunt | phones, scratch `UITests/ZZExplore.swift` | Blocked on **unlocked phones**. Left: control run, tissue drag check (`-demoPeer contagious@0.5 -speed 60`), Pause on Aiden, a no-arg relaunch. **ZZExplore.swift was committed to main by mistake: `git rm` it when the agent is done.** |
-| Screenshots for the heat map team | sim → `/Users/dqi26/fluni-screens/phoneref2/` | Running. Message the file list to the heat map session when done. |
-| Home mockup v2 (risk-first) | `/Users/dqi26/fluni-screens/home-v2/` (`mock2-sheet.png`, `compare2.png`, `NOTES.md`, src) | **Done. Waiting for the owner's verdict**, then build. |
+| Bug fixes from the phone bug hunt | `/Users/dqi26/fluni-bugs` (flu-bugs), screenshots to `/Users/dqi26/fluni-screens/bugfix/` | **Running.** 9 items (see below). Then merge, push and install on Daniel + Aiden. |
+| Tissue/scroll/info fixes | `/Users/dqi26/fluni-tissue` (flu-tissue) | Merged through e8e2392. Its final report (Map legend (i), large text, close-contact sheet, full UI run) is still to come. |
+| Screenshots for the heat map team | sim → `/Users/dqi26/fluni-screens/phoneref2/` | Running. Message the file list and risk % per shot to the heat map session ("Campus disease tracking app") when it lands. |
+| Home mockup v2 (risk-first) | `/Users/dqi26/fluni-screens/home-v2/` (mock2-sheet.png, compare2.png, NOTES.md, src/build2.py) | Re-rendering with Lisa's logo (`/Users/dqi26/fluni-screens/lisa-assets/Logo asset.png`, owner-provided) and the tissue companion moved up. **Then wait for the owner's verdict before building SwiftUI.** |
+
+The bug hunt (done) found no crashes, and the control run is clean: no stray contagious peer now that Fluniversity is deleted from Aiden's phone. The bugs now with the flu-bugs agent:
+1. The Map legend and (i) are hidden under the tissue box (a tap hits the Me tab).
+2. On a close contact, the risk card says "Low. No action needed".
+3. "49 of 15 min": cap the display.
+4. Settings → Pause doesn't open (port flu-design2's dialog fix).
+5. The Delete-my-data dialog has no Cancel and points at the wrong row.
+6. The stale "Map address" field in Settings.
+7. Duplicate heads-up warnings on Today.
+8. The newest Recent contacts entry was lost after a reinstall.
+9. Verify that sick mode shows the stay-home card (Daniel's phone showed "All clear" + 97% on a pre-fix build).
 
 ## Design direction (owner)
 - **Old timeline redesign** (branch flu-design2, dc85913): ON HOLD, "too cluttered". Don't merge it wholesale. Parts
@@ -67,8 +80,8 @@ together with README.md (how things work), DEMO.md (the demo) and RISKS.md (know
 - **Lisa's work wins.** Use her type (Fredoka/Nunito, Fraunces only for "FlUni"), her tab bar, her intro and her
   tissue alert.
   - Merge her PRs fast (build check only) and send design feedback through GitHub issues.
-  - Open issues: **#21** (tab bar art: more room at the bottom/sides) and **#24** (logo asset: the top-left text
-    logo is ugly).
+  - Open issues: **#21** (tab bar art: more room at the bottom/sides) and **#24** (logo: the owner shared it at
+    `/Users/dqi26/fluni-screens/lisa-assets/Logo asset.png`; Lisa was asked to add a trimmed copy to the repo).
 
 ## Open decisions for the owner
 1. Should a negative PCR clear a positive? (Today: never. The heat map mock lets it.)
@@ -77,6 +90,7 @@ together with README.md (how things work), DEMO.md (the demo) and RISKS.md (know
 4. "Pause until tomorrow": midnight or 7 am?
 5. Aiden's phone has pretend exposure from two `-demoPeer` runs before the fix. Reset it (Settings → Reset exposure)
    or let it age out within 24 h.
+6. The home mockup v2 verdict: build it, or change it?
 
 ## Devices and how we work
 - **Phones:**
