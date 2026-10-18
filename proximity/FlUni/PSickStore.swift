@@ -2,8 +2,8 @@ import Foundation
 import SwiftUI
 import Combine
 
-/// Demo persona state: which sim agent this phone plays and at what sim time. Persisted.
-/// Only the demo uses it; with no persona the app shows just its own estimate.
+/// Demo persona state: which sim agent this phone plays. Persisted. The time it is read at is the live time
+/// (SimClock), or the Demo override while that is on. With no persona the app shows just its own estimate.
 @MainActor
 final class PSickStore: ObservableObject {
     static let shared = PSickStore()
@@ -12,16 +12,15 @@ final class PSickStore: ObservableObject {
     @Published private(set) var status = ""
     @Published private(set) var loading = false
     @Published var agent: String { didSet { d.set(agent, forKey: "psickAgent") } }
-    /// Sim time and "follow the map" live in the shared SimClock; these forward to it.
-    var simTime: Double { get { clock.simTime } set { clock.simTime = newValue } }
-    var follow: Bool { get { clock.follow } set { clock.follow = newValue } }
+    var simTime: Double { clock.simTime }
 
     private let d = UserDefaults.standard
     private let clock = SimClock.shared
     private var bag: [AnyCancellable] = []
 
     private init() {
-        agent = d.string(forKey: "psickAgent") ?? ""
+        // A persona is a demo tool: Release builds never use one.
+        agent = SimClock.demoAvailable ? (d.string(forKey: "psickAgent") ?? "") : ""
         // Views watching the store (the risk card) redraw when the clock moves.
         bag = [clock.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }]
     }
@@ -43,7 +42,7 @@ final class PSickStore: ObservableObject {
         } catch let e as PSickLoader.Failure { status = e.message } catch { status = error_(error) }
     }
 
-    func clearPersona() { agent = ""; follow = false }
+    func clearPersona() { agent = "" }
 
     private func error_(_ e: Error) -> String { PSickLoader.message(for: e) }
 }

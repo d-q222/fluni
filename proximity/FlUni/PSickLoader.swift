@@ -2,7 +2,7 @@ import Foundation
 
 /// Fetches the campus model's p_sick.csv from the laptop that serves the heat map.
 enum PSickLoader {
-    /// The run on main when this was written. Change it in the Demo sheet; stored under `psickRunID`.
+    /// The run on main when this was written. Change it in Developer > Demo override; stored under `psickRunID`.
     static let defaultRunID = "influenza_none_n10_d14_s2_bc5cae7a"  // same run the heat map defaults to
 
     static var runID: String {
