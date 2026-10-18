@@ -19,8 +19,8 @@ import UIKit
 final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDelegate, CBPeripheralDelegate {
     static let magic: [UInt8] = [0x46, 0x4C, 0x55, 0x31]
 
-    /// (ephemeral ID hex, risk, smoothed RSSI)
-    var onSighting: ((String, Risk, Double) -> Void)?
+    /// (ephemeral ID hex, risk, smoothed RSSI, samples in the median window)
+    var onSighting: ((String, Risk, Double, Int) -> Void)?
     var onState: ((String) -> Void)?
     /// One-line events for the "[fluni]" log, delivered on the main queue.
     var onLog: ((String) -> Void)?
@@ -43,8 +43,15 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     private var smoothed: [String: RSSIWindow] = [:]  // scanQueue only
     private var lastPrune = Date()
     private var limiter = ConnectLimiter()  // scanQueue only
-    private var reading: [UUID: (peripheral: CBPeripheral, rssi: Double)] = [:]  // scanQueue only
+    private var reading: [UUID: (peripheral: CBPeripheral, rssi: Double?)] = [:]  // scanQueue only; nil rssi: reconnect/restore
     private var restored: [CBPeripheral] = []  // scanQueue only
+    // flu-offdetect: links held open for off-screen ranging (Core/OffScreenRanging.swift). scanQueue only.
+    private var held = HeldLinks()
+    private var heldChars: [UUID: (peripheral: CBPeripheral, characteristic: CBCharacteristic)] = [:]
+    private var pollPending: Set<UUID> = []
+    private var reconnecting: [UUID: (peripheral: CBPeripheral, since: Date)] = [:]
+    private var advertAt: [String: Date] = [:]  // last advert-borne sample per ID
+    private var pollLog: [UUID: (at: Date, polls: Int)] = [:]
     private let pauseLock = NSLock()
     private var _paused = false
     private var paused: Bool {
@@ -68,6 +75,7 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
             reading.removeAll()
             limiter.reset()
             smoothed.removeAll()
+            releaseAllLinks()  // flu-offdetect
         }
     }
 
@@ -199,11 +207,18 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     func centralManagerDidUpdateState(_ c: CBCentralManager) {
         if c === gattCentral {
             if c.state == .poweredOn {
-                for p in restored { c.cancelPeripheralConnection(p) }  // half-done reads from before the relaunch
+                // flu-offdetect: a link iOS kept open across the relaunch is read again and held; anything else
+                // is a half-done read from before the relaunch.
+                for p in restored {
+                    if worksInBackground, p.state == .connected, !paused { adopt(p) } else { c.cancelPeripheralConnection(p) }
+                }
                 restored.removeAll()
             } else {
                 reading.removeAll()  // connections are gone with the radio
                 limiter.reset()
+                held.reset()  // flu-offdetect
+                heldChars.removeAll()
+                reconnecting.removeAll()
             }
             restartScan()
             return
@@ -220,18 +235,22 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         guard !paused, let hit = uuids.lazy.compactMap(Self.decode).first else { return }
         let raw = rssi.doubleValue
         guard raw < 0, raw > -110 else { return }  // 127 = unavailable
-        report(hit, raw)
+        report(hit, raw, fromAdvert: true)
     }
 
     /// scanQueue. Median over the last few seconds: single BLE samples swing by ±10 dB.
-    private func report(_ hit: (id: String, risk: Risk), _ raw: Double) {
+    /// `fromAdvert`: the sample came from an advert (not a GATT read or a held link's RSSI poll).
+    private func report(_ hit: (id: String, risk: Risk), _ raw: Double, fromAdvert: Bool) {
         let now = Date()
         let s = smoothed[hit.id, default: RSSIWindow()].add(raw, at: now)
+        let n = smoothed[hit.id]?.samples.count ?? 1
+        if fromAdvert { advertAt[hit.id] = now }
         if now.timeIntervalSince(lastPrune) > 30 {  // rotated IDs would otherwise pile up
             lastPrune = now
             smoothed = smoothed.filter { $0.value.lastAt.map { now.timeIntervalSince($0) < 30 } ?? false }
+            advertAt = advertAt.filter { now.timeIntervalSince($0.value) < 30 }
         }
-        DispatchQueue.main.async { self.onSighting?(hit.id, hit.risk, s) }
+        DispatchQueue.main.async { self.onSighting?(hit.id, hit.risk, s, n) }
     }
 
     // MARK: Reading a background advertiser over GATT (scanQueue)
@@ -241,14 +260,29 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         guard !paused, raw < 0, raw > -110 else { return }
         let uuids = (ad[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? [])
             + (ad[CBAdvertisementDataOverflowServiceUUIDsKey] as? [CBUUID] ?? [])
-        if let hit = uuids.lazy.compactMap(Self.decode).first {
-            // A foreground FlUni: the open scan reports it while we're in the foreground; in the background
-            // only this scan runs.
-            if inBackground { report(hit, raw) }
+        let hit = uuids.lazy.compactMap(Self.decode).first
+        // flu-offdetect: a phone we already hold a link to. Its advert RSSI is the best sample there is; a
+        // backgrounded one's advert has no payload, so it is filed under the ID last read over the link.
+        if let h = held.link(p.identifier) {
+            held.heard(p.identifier, rssi: raw)
+            if let hit {
+                if inBackground { report(hit, raw, fromAdvert: true) }
+            } else {
+                report((h.id, h.risk), raw, fromAdvert: true)
+            }
+            kickPoll(p)
             return
         }
+        if let hit {
+            // A foreground FlUni: the open scan reports it while we're in the foreground; in the background
+            // only this scan runs.
+            if inBackground { report(hit, raw, fromAdvert: true) }
+            // flu-offdetect: also open a link to it, so ranging carries on once either phone is locked.
+            guard admitLink(rssi: raw) else { return }
+        }
         // Fixed UUID but no payload: FlUni in the background (or a hash collision in another app's overflow
-        // area, which the read below rejects). Connect, read 16 bytes, disconnect.
+        // area, which the read below rejects). Connect and read 16 bytes; the link then stays open if there
+        // is room (HeldLinks), else it is closed.
         let now = Date()
         guard limiter.tryBegin(p.identifier, at: now) else { return }
         reading[p.identifier] = (p, raw)
@@ -263,14 +297,42 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     }
 
     func centralManager(_ c: CBCentralManager, didConnect p: CBPeripheral) {
+        if reconnecting.removeValue(forKey: p.identifier) != nil {  // flu-offdetect: a held link came back
+            log("hold reconnected")
+            adopt(p)
+            return
+        }
         guard reading[p.identifier] != nil else { c.cancelPeripheralConnection(p); return }
         p.delegate = self
         p.discoverServices([BeaconGATT.service])
     }
 
-    func centralManager(_ c: CBCentralManager, didFailToConnect p: CBPeripheral, error: Error?) { finish(p) }
+    func centralManager(_ c: CBCentralManager, didFailToConnect p: CBPeripheral, error: Error?) {
+        if reconnecting.removeValue(forKey: p.identifier) != nil { return }  // flu-offdetect
+        finish(p)
+    }
 
-    func centralManager(_ c: CBCentralManager, didDisconnectPeripheral p: CBPeripheral, error: Error?) { finish(p) }
+    func centralManager(_ c: CBCentralManager, didDisconnectPeripheral p: CBPeripheral, error: Error?) {
+        // flu-offdetect: a held link dropped (out of range, or the peer's Bluetooth went off). A pending connect
+        // has no timeout and completes, waking FlUni, when that phone is back in range, even with both locked.
+        if held.link(p.identifier) != nil {
+            held.drop(p.identifier)
+            heldChars[p.identifier] = nil
+            pollLog[p.identifier] = nil
+            guard !paused, c === gattCentral else { return }
+            let since = Date()
+            reconnecting[p.identifier] = (p, since)
+            c.connect(p, options: nil)
+            log("hold lost links=\(held.count) reconnecting")
+            scanQueue.asyncAfter(deadline: .now() + HeldLinks.reconnectFor) { [weak self] in
+                guard let self, let r = self.reconnecting[p.identifier], r.since == since else { return }
+                self.reconnecting[p.identifier] = nil
+                self.gattCentral?.cancelPeripheralConnection(p)
+            }
+            return
+        }
+        finish(p)
+    }
 
     func peripheral(_ p: CBPeripheral, didDiscoverServices error: Error?) {
         guard let s = p.services?.first(where: { $0.uuid == BeaconGATT.service }) else { finish(p); return }
@@ -283,11 +345,127 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     }
 
     func peripheral(_ p: CBPeripheral, didUpdateValueFor ch: CBCharacteristic, error: Error?) {
-        defer { finish(p) }
-        guard ch.uuid == BeaconGATT.characteristic, let r = reading[p.identifier], !paused,
-              let value = ch.value, let hit = BeaconGATT.decode(value) else { return }
-        log("bg gatt read peer=\(hit.id.prefix(6)) risk=\(hit.risk) rssi=\(Int(r.rssi))")
-        report(hit, r.rssi)
+        let r = reading[p.identifier]
+        let wasHeld = held.link(p.identifier)
+        guard ch.uuid == BeaconGATT.characteristic, r != nil || wasHeld != nil, !paused, error == nil,
+              let value = ch.value, let hit = BeaconGATT.decode(value) else {
+            if r != nil { finish(p) } else if wasHeld != nil { schedulePoll(p, after: HeldLinks.pollInterval) }
+            return
+        }
+        if let r {
+            log("bg gatt read peer=\(hit.id.prefix(6)) risk=\(hit.risk) rssi=\(r.rssi.map { "\(Int($0))" } ?? "-")")
+            if let rssi = r.rssi { report(hit, rssi, fromAdvert: false) }
+        } else if let w = wasHeld, w.id != hit.id || w.risk != hit.risk {
+            log("hold reread peer=\(hit.id.prefix(6)) risk=\(hit.risk)")
+        }
+        // flu-offdetect: keep the link open (re-read, or a new link with room) and poll its RSSI; else close it.
+        guard worksInBackground, held.read(p.identifier, id: hit.id, risk: hit.risk, rssi: r?.rssi, at: Date()) else {
+            finish(p)
+            return
+        }
+        heldChars[p.identifier] = (p, ch)
+        if r != nil {
+            reading.removeValue(forKey: p.identifier)
+            limiter.end(p.identifier)
+            log("hold open peer=\(hit.id.prefix(6)) links=\(held.count)")
+            schedulePoll(p, after: 0)  // first RSSI sample at once
+        } else {
+            schedulePoll(p, after: HeldLinks.pollInterval)
+        }
+    }
+
+    // MARK: Held links: RSSI polling while off screen (flu-offdetect; logic in Core/OffScreenRanging.swift)
+
+    /// Room for a link to a phone heard at `rssi`? A full table releases its weakest link for a much stronger one.
+    private func admitLink(rssi: Double) -> Bool {
+        guard worksInBackground else { return false }
+        switch held.admit(rssi: rssi) {
+        case .room: return true
+        case .full: return false
+        case .replace(let weak):
+            log("hold released for a nearer phone")
+            release(weak)
+            return true
+        }
+    }
+
+    private func release(_ id: UUID) {
+        let hc = heldChars.removeValue(forKey: id)
+        held.drop(id)
+        pollLog[id] = nil
+        if let hc { gattCentral?.cancelPeripheralConnection(hc.peripheral) }
+    }
+
+    private func releaseAllLinks() {
+        for id in Array(heldChars.keys) { release(id) }
+        held.reset()
+        for r in reconnecting.values { gattCentral?.cancelPeripheralConnection(r.peripheral) }
+        reconnecting.removeAll()
+        advertAt.removeAll()
+    }
+
+    /// A connected peripheral we have no read for (a held link that reconnected, or one iOS restored):
+    /// read its payload again; the link is then held as after any read.
+    private func adopt(_ p: CBPeripheral) {
+        reading[p.identifier] = (p, nil)
+        p.delegate = self
+        p.discoverServices([BeaconGATT.service])
+        scanQueue.asyncAfter(deadline: .now() + 15) { [weak self] in self?.finish(p) }
+    }
+
+    private func schedulePoll(_ p: CBPeripheral, after s: TimeInterval) {
+        guard pollPending.insert(p.identifier).inserted else { return }
+        scanQueue.asyncAfter(deadline: .now() + max(s, 0)) { [weak self] in
+            guard let self else { return }
+            self.pollPending.remove(p.identifier)
+            self.poll(p)
+        }
+    }
+
+    /// Something woke us (an advert from that phone): poll now if a poll is due and none is queued.
+    private func kickPoll(_ p: CBPeripheral) {
+        if !pollPending.contains(p.identifier) { poll(p) }
+    }
+
+    private func poll(_ p: CBPeripheral) {
+        guard !paused, p.state == .connected, let hc = heldChars[p.identifier] else { return }
+        let now = Date()
+        switch held.next(p.identifier, at: now) {
+        case .none: return
+        case .wait(let s): schedulePoll(p, after: s); return
+        case .readRSSI: p.readRSSI()
+        case .readPayload: p.readValue(for: hc.characteristic)
+        }
+        held.polled(p.identifier, at: now)
+        // Watchdog: a read that never answers must not end the chain. Normally the answer has queued the
+        // next poll by then and this does nothing.
+        scanQueue.asyncAfter(deadline: .now() + 3 * HeldLinks.pollInterval) { [weak self] in
+            guard let self, !self.pollPending.contains(p.identifier) else { return }
+            if case .wait = self.held.next(p.identifier, at: Date()) { return }
+            self.poll(p)
+        }
+    }
+
+    func peripheral(_ p: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        guard let h = held.link(p.identifier) else { return }
+        defer { schedulePoll(p, after: HeldLinks.pollInterval) }
+        guard error == nil, !paused else { return }
+        let raw = RSSI.doubleValue, now = Date()
+        if raw < 0, raw > -110 { held.heard(p.identifier, rssi: raw) }
+        let used = HeldLinks.reports(rssi: raw, lastAdvert: advertAt[h.id], now: now)
+        if used { report((h.id, h.risk), raw, fromAdvert: false) }
+        // One line per link per 10 s: polls since, this sample, and the current window median (in the
+        // foreground the advert's), so connection and advert RSSI can be compared.
+        var pl = pollLog[p.identifier] ?? (at: .distantPast, polls: 0)
+        pl.polls += 1
+        if now.timeIntervalSince(pl.at) >= 10 {
+            let win = smoothed[h.id]?.samples.map(\.rssi).sorted()
+            let med = win.flatMap { $0.isEmpty ? nil : $0[$0.count / 2] }
+            log("hold poll peer=\(h.id.prefix(6)) conn=\(Int(raw)) win=\(med.map { "\(Int($0))" } ?? "-") n=\(win?.count ?? 0) "
+                + "used=\(used ? "yes" : "no") polls=\(pl.polls) bg=\(inBackground ? "yes" : "no") links=\(held.count)")
+            pl = (now, 0)
+        }
+        pollLog[p.identifier] = pl
     }
 
     // MARK: State restoration (iOS relaunched FlUni for a Bluetooth event)

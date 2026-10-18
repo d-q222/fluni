@@ -93,7 +93,7 @@ final class ProximityModel: ObservableObject {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         ble.onState = { [weak self] in self?.setStatus("BLE", $0) }
-        ble.onSighting = { [weak self] id, risk, rssi in self?.bleSighting(id: id, risk: risk, rssi: rssi) }
+        ble.onSighting = { [weak self] id, risk, rssi, n in self?.bleSighting(id: id, risk: risk, rssi: rssi, samples: n) }
         ble.onLog = { [weak self] in self?.log($0) }
         ble.onRead = { [weak self] in self?.rotateIfDue(Date()) }  // a read may be our only wake-up for a while
         ble.worksInBackground = worksInBackground
@@ -316,14 +316,16 @@ final class ProximityModel: ObservableObject {
 
     // MARK: Channel inputs
 
-    private func bleSighting(id: String, risk: Risk, rssi: Double) {
+    /// `samples`: RSSI samples behind the median. Few samples (off screen: no adverts, a polled link every 2 s)
+    /// widen the reading's error so pClose stays honest (OffScreenRSSI; flu-offdetect).
+    private func bleSighting(id: String, risk: Risk, rssi: Double, samples: Int) {
         guard !isPaused else { return }  // a callback that was already queued when we paused
         if let old = byID[id]?.risk, old != risk { log("peer \(id.prefix(6)) risk=\(risk) via=ble") }
         if byID[id] == nil { log("ble seen \(id.prefix(6)) risk=\(risk)") }
         update(id) { p in
             p.risk = risk
             p.rssi = rssi
-            p.ble = p.calibrator.reading(rssi: rssi, at: Date())
+            p.ble = OffScreenRSSI.widened(p.calibrator.reading(rssi: rssi, at: Date()), samples: samples)
         }
         if worksInBackground, UIApplication.shared.applicationState != .active { scheduleBackgroundTick() }
     }
