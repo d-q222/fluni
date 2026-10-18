@@ -25,6 +25,14 @@ extension ProximityModel {
     }
 }
 
+/// The Today tab's one entry point. FlUniApp's tab shows this; another Today design (e.g. Lisa's) can be swapped
+/// in here behind a Debug toggle. Its data comes from ModelFeed and the stores (places, exposure history, alerts).
+struct TodayScreen: View {
+    let model: ProximityModel
+    @ObservedObject var store: SelfReportStore
+    var body: some View { TodayView(model: model, store: store) }
+}
+
 /// Today: Lisa's tissue says how things are, then your day as a line of places, newest first. "Now" at the
 /// top with the one action ("I don't feel well"); earlier places below, with heads-ups and close contacts as
 /// points on the side line. A close contact opens in place with what happened and the four steps.
@@ -36,6 +44,7 @@ struct TodayView: View {
     @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject private var history: ExposureHistoryStore
     @ObservedObject private var places = PlaceLogStore.shared
+    @ObservedObject private var inbox = AlertInboxStore.shared
     @ObservedObject private var router = AppRouter.shared
     @State private var showHow = false
     @State private var showCalc = false
@@ -148,11 +157,33 @@ struct TodayView: View {
         HStack(alignment: .firstTextBaseline) {
             Wordmark(size: 32)
             Spacer(minLength: Space.s)
+            if inbox.inbox.unreadCount > 0 { newChip }
             Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                 .font(.fluni(.note)).foregroundStyle(Theme.ink2)
                 .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
         .padding(.top, Space.xs)
+    }
+
+    /// "1 new": unread in-app alerts (AlertInbox, the same alerts as the notifications). Opens the newest one.
+    private var newChip: some View {
+        let n = inbox.inbox.unreadCount
+        return Button {
+            let newest = inbox.inbox.unread.first
+            inbox.markAllRead()
+            if newest?.kind == .closeContact { router.showCloseContact() }
+        } label: {
+            Text("\(n) new").font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk)
+                .padding(.horizontal, Space.s).frame(minHeight: 32)
+                .background(Capsule().fill(Theme.fire.opacity(0.16)))
+                .overlay(Capsule().stroke(Theme.fireInk, lineWidth: 1))
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityLabel(n == 1 ? "1 new alert" : "\(n) new alerts")
+        .accessibilityHint(inbox.inbox.unread.first.map { $0.body } ?? "")
+        .accessibilityIdentifier("today.newAlerts")
     }
 
     /// Things about the app, above the tissue. Each shows nothing when it doesn't apply.
@@ -199,7 +230,7 @@ struct TodayView: View {
                 RailRow(time: TimelineFormat.time(Date()), node: .moment(.closeContact), line: entries.isEmpty ? .none : .tone(.closeContact)) {
                     CloseContactMoment(moment: nil, model: model, isOpen: liveOpen,
                                        toggle: { openMoment = liveOpen ? nil : Self.liveID },
-                                       gotIt: { seenMoment = Self.liveID.timeIntervalSince1970; openMoment = nil },
+                                       gotIt: { seenMoment = Self.liveID.timeIntervalSince1970; openMoment = nil; inbox.markAllRead(.closeContact) },
                                        report: { report = .choose }, how: { showCalc = true })
                 }
                 .id("moment-live")
@@ -220,7 +251,7 @@ struct TodayView: View {
                         if m.kind == .closeContact {
                             CloseContactMoment(moment: m, model: model, isOpen: openMoment == m.id || autoOpen(m),
                                                toggle: { openMoment = (openMoment == m.id || autoOpen(m)) ? nil : m.id },
-                                               gotIt: { seenMoment = m.id.timeIntervalSince1970; openMoment = nil },
+                                               gotIt: { seenMoment = m.id.timeIntervalSince1970; openMoment = nil; inbox.markAllRead(.closeContact) },
                                                report: { report = .choose }, how: { showCalc = true })
                         } else {
                             HeadsUpRow(moment: m)

@@ -576,7 +576,12 @@ final class ProximityModel: ObservableObject {
     }
     #endif
 
+    /// Called with every alert level a notification is posted for (FlUni's in-app AlertInbox listens), so the
+    /// in-app unread alerts and the notifications always match.
+    var onAlert: ((AlertLevel) -> Void)?
+
     private func notify(_ level: AlertLevel) {
+        onAlert?(level)
         UINotificationFeedbackGenerator().notificationOccurred(level == .closeContact ? .error : .warning)
         let c = AppNotifications.content(kind: level == .closeContact ? .closeContact : .nearby)  // category + userInfo + neutral text
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil))

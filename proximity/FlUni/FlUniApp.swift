@@ -29,7 +29,9 @@ struct FlUniApp: App {
         #endif
         RouteInbox.handler = { AppRouter.shared.handle($0) }
         Self.styleNavigationBars()
-        ModelFeed.shared.attach(FlUniApp.sharedModel)  // what screens draw from, without the per-tick churn  // also delivers a tap that cold-launched the app
+        ModelFeed.shared.attach(FlUniApp.sharedModel)
+        // Every alert notification also lands in the in-app inbox (Today's "new" chip), so the two counts match.
+        FlUniApp.sharedModel.onAlert = { level in MainActor.assumeIsolated { AlertInboxStore.shared.alerted(level) } }  // what screens draw from, without the per-tick churn  // also delivers a tap that cold-launched the app
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
         // iOS can also relaunch FlUni in the background for a Bluetooth event after it ended it. No window
@@ -64,7 +66,7 @@ struct FlUniApp: App {
                     OnboardingView { hasOnboarded = true; startOnce(); if started { model.resume() } }  // resume: radios are off after "Delete my data"
                 } else {
                     TabView(selection: $router.tab) {
-                        TodayView(model: model, store: reportStore)
+                        TodayScreen(model: model, store: reportStore)
                             .tabItem { Label("Today", systemImage: "calendar.day.timeline.left") }
                             .tag(AppRouter.Tab.today)
                             .accessibilityIdentifier("tab.today")
