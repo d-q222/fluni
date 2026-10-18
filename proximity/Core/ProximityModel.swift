@@ -88,6 +88,9 @@ final class ProximityModel: ObservableObject {
         if keepsScreenOn { UIApplication.shared.isIdleTimerDisabled = true }  // harness only
         restoreSavedStatus()
         restorePause()
+        #if DEBUG
+        if acceptsLaunchArguments && LaunchMode.isTestLaunch { DebugFileLog.shared.start { [weak self] in self?.log($0) } }  // flu-offdetect
+        #endif
         applyLaunchArguments()  // first: link settings must be in place before the session exists
         rotateID()
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -284,6 +287,9 @@ final class ProximityModel: ObservableObject {
     private func log(_ s: String) {
         print("[fluni] \(s)")
         fflush(stdout)  // stdout is a pipe under devicectl --console, so it would otherwise buffer
+        #if DEBUG
+        DebugFileLog.shared.append(s)  // flu-offdetect: test launches only (no-op otherwise)
+        #endif
     }
 
     // MARK: Identity and status broadcast
