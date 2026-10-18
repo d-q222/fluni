@@ -3,7 +3,8 @@ import SwiftUI
 /// You: what nearby phones see about you, how to change it, your recent contacts, pause, settings and
 /// deleting your data. One page, in that order: the thing this tab exists for first.
 struct YouView: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     /// The app's one self-report store, shared with Today (two copies of the same file could disagree).
     @ObservedObject var store: SelfReportStore
     @State private var report: ReportStart?
@@ -35,7 +36,7 @@ struct YouView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     seen
-                    if model.myRisk != .none { StayHomeSummary(model: model, store: store) }
+                    if feed.myRisk != .none { StayHomeSummary(model: model, store: store) }
                     choices
                     VStack(alignment: .leading, spacing: Space.s) {
                         sectionTitle("Recent contacts")
@@ -80,7 +81,7 @@ struct YouView: View {
                 Text("This clears your saved status, recent contacts, today's places and setup. FlUni will start over as if it were just installed.")
             }
             .onAppear { store.reconcile(with: model) }
-            .onChange(of: model.myRisk) { _, _ in store.reconcile(with: model) }
+            .onChange(of: feed.myRisk) { _, _ in store.reconcile(with: model) }
         }
     }
 
@@ -94,15 +95,15 @@ struct YouView: View {
         VStack(alignment: .leading, spacing: Space.xs) {
             Text("What nearby phones see about you").font(.fluni(.note)).foregroundStyle(Theme.ink2)
             HStack(alignment: .firstTextBaseline, spacing: Space.s) {
-                StatusSwatch(risk: model.myRisk, size: 18)
-                Text(model.myRisk == .contagious ? "Contagious" : model.myRisk == .possible ? "Possibly sick" : "Healthy")
+                StatusSwatch(risk: feed.myRisk, size: 18)
+                Text(feed.myRisk == .contagious ? "Contagious" : feed.myRisk == .possible ? "Possibly sick" : "Healthy")
                     .font(.fluni(.display))
                     .accessibilityIdentifier("you.status")
             }
             Text("And a random ID that changes every 15 minutes. Nothing else: no name, no symptoms, no location.")
                 .font(.fluni(.note)).foregroundStyle(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
-            if let at = model.statusSetAt {
+            if let at = feed.statusSetAt {
                 Text("Since \(at.formatted(date: .abbreviated, time: .shortened))").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
             }
         }
@@ -138,9 +139,9 @@ struct YouView: View {
 
     private func selected(_ c: Choice) -> Bool {
         switch c {
-        case .fine: return model.myRisk == .none
-        case .symptoms: return model.myRisk == .possible
-        case .positive: return model.myRisk == .contagious
+        case .fine: return feed.myRisk == .none
+        case .symptoms: return feed.myRisk == .possible
+        case .positive: return feed.myRisk == .contagious
         case .negative: return false
         }
     }
@@ -148,7 +149,7 @@ struct YouView: View {
     private func tap(_ c: Choice) {
         switch c {
         case .fine:
-            guard model.myRisk != .none else { return }
+            guard feed.myRisk != .none else { return }
             do { try store.feelFine(model: model) } catch {
                 blocked = "You tested positive, so you stay marked contagious until your \(IsolationPolicy.days) days are up and you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours. Today will ask you then."
             }
@@ -201,7 +202,7 @@ struct YouView: View {
     private var detection: some View {
         VStack(alignment: .leading, spacing: Space.s) {
             sectionTitle("Detection")
-            if let p = model.pauseState {
+            if let p = feed.pauseState {
                 Text("Paused \(PauseSchedule.describe(p, calendar: .current, now: Date())).").font(.fluni(.reading)).foregroundStyle(Theme.ink)
                     .accessibilityIdentifier("you.pausedLine")
                 Button("Turn detection back on") { model.resume() }

@@ -70,9 +70,9 @@ struct TissueNarrator: View {
                     .opacity(mood == .paused ? 0.75 : 1)
                     .rotationEffect(.degrees(mood == .alert ? 6 : mood == .headsUp ? 3 : -4))
                     .offset(y: bob && mood == .calm ? -3 : 0)
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: bob)
+                    .animation(FlMotion.idle(reduceMotion), value: bob)
                     .scaleEffect(hop ? 1.08 : 1, anchor: .bottom)
-                    .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.45), value: hop)
+                    .animation(FlMotion.bouncy(reduceMotion), value: hop)
                 if mood == .alert || mood == .headsUp {
                     AlertMarks().stroke(mood == .alert ? Theme.fire : Theme.ember,
                                         style: StrokeStyle(lineWidth: 3.5, lineCap: .round))

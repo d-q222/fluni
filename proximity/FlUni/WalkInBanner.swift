@@ -3,7 +3,7 @@ import SwiftUI
 /// Today: a calm note while the user is inside a building with a lot of illness. Nothing otherwise.
 /// It's about a place, not about people near you, so Today shows it under the status rather than above it.
 struct WalkInBanner: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
     @ObservedObject private var monitor = WalkInMonitor.shared
     /// Dismissed for this building while the app is open. Only hides the note; the warning logic is untouched.
     @State private var dismissed: String?

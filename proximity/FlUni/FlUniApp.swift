@@ -25,7 +25,8 @@ struct FlUniApp: App {
         skipRadios = false
         #endif
         RouteInbox.handler = { AppRouter.shared.handle($0) }
-        Self.styleNavigationBars()  // also delivers a tap that cold-launched the app
+        Self.styleNavigationBars()
+        ModelFeed.shared.attach(FlUniApp.sharedModel)  // what screens draw from, without the per-tick churn  // also delivers a tap that cold-launched the app
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }
         // iOS can also relaunch FlUni in the background for a Bluetooth event after it ended it. No window

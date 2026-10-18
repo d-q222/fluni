@@ -5,7 +5,8 @@ import SwiftUI
 /// point holds the one-tap check-in. It only ever asks; it never changes the status by itself. The risk of
 /// catching something is hidden: it no longer applies.
 struct StayHomeView: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     let onReport: (ReportStart) -> Void
     @State private var blocked: String?
@@ -51,8 +52,8 @@ struct StayHomeView: View {
                     .accessibilityAddTraits(.isHeader)
             }
             HStack(alignment: .firstTextBaseline, spacing: Space.xs) {
-                StatusSwatch(risk: model.myRisk)
-                Text(model.myRisk == .contagious ? "Nearby phones see you as contagious" : "Nearby phones see you as possibly sick")
+                StatusSwatch(risk: feed.myRisk)
+                Text(feed.myRisk == .contagious ? "Nearby phones see you as contagious" : "Nearby phones see you as possibly sick")
                     .font(.fluni(.note)).foregroundStyle(Theme.ink)
             }
             .padding(.top, Space.xxs)
@@ -139,7 +140,8 @@ struct StayHomeView: View {
 private struct TodayCheckIn: View {
     let day: Int
     let record: SelfReportRecord
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     @State private var changing = false
     @State private var feverNoted = false
@@ -230,7 +232,8 @@ private struct PillStyle: ButtonStyle {
 /// The minimum period is over: ask, never assume.
 private struct PeriodOver: View {
     let feverFree: Bool
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     @Binding var blocked: String?
 
@@ -256,7 +259,8 @@ private struct PeriodOver: View {
 
 /// You, while sick: a short line about the plan. The check-in itself lives on Today.
 struct StayHomeSummary: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
 
     var body: some View {

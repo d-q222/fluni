@@ -13,7 +13,8 @@ enum ReportStart: String, Identifiable, Hashable {
 /// Nearby phones only ever see the 3-level status; symptoms, dates and test kinds stay on this phone.
 struct ReportFlow: View {
     let start: ReportStart
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -66,7 +67,7 @@ struct ReportFlow: View {
     private func pick(_ s: ReportStart) {
         guard s == .choose else { path = [s]; return }
         // "I feel fine": nothing to fill in.
-        if model.myRisk == .none { dismiss(); return }
+        if feed.myRisk == .none { dismiss(); return }
         do { try store.feelFine(model: model); dismiss() } catch {
             blocked = "You tested positive, so you stay marked contagious until your \(IsolationPolicy.days) days are up and you've had no fever for \(Int(IsolationPolicy.feverFreeHours)) hours. Today will ask you then."
         }
@@ -75,7 +76,7 @@ struct ReportFlow: View {
     /// Saved: show the stamp for a moment, then close (straight away with Reduce Motion).
     private func saved() {
         if reduceMotion { dismiss(); return }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { stamped = true }
+        withAnimation(FlMotion.stamp) { stamped = true }
     }
 
     /// Lisa's "Self-reported" stamp, thumped onto the sheet after a symptoms report is saved (her stamp moment,
@@ -100,7 +101,8 @@ struct ReportFlow: View {
 // MARK: Step 1
 
 private struct ChooseStep: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     let pick: (ReportStart) -> Void
 
@@ -113,13 +115,13 @@ private struct ChooseStep: View {
     }
 
     private var choices: [Choice] {
-        [Choice(id: .choose, title: "I feel fine", detail: model.myRisk == .none ? "Nothing changes. Nearby phones see \"healthy\"." : "Sets you back to \"healthy\".", art: "Tissue", shares: Risk.none),
+        [Choice(id: .choose, title: "I feel fine", detail: feed.myRisk == .none ? "Nothing changes. Nearby phones see \"healthy\"." : "Sets you back to \"healthy\".", art: "Tissue", shares: Risk.none),
          Choice(id: .symptoms, title: "I have symptoms", detail: "Nearby phones see \"possibly sick\"", art: "SymptomCough", shares: .possible),
          Choice(id: .positive, title: "I tested positive", detail: "Rapid or PCR, plus the date", art: "StampSelfReported", shares: .contagious),
          Choice(id: .negative, title: "I tested negative", detail: "Clears \"possibly sick\" if the test came after your symptoms", art: nil, shares: nil)]
     }
 
-    private func isCurrent(_ c: Choice) -> Bool { c.shares == model.myRisk }
+    private func isCurrent(_ c: Choice) -> Bool { c.shares == feed.myRisk }
 
     var body: some View {
         ScrollView {
@@ -181,7 +183,8 @@ private struct ChooseStep: View {
 // MARK: Step 2: symptoms
 
 private struct SymptomsStep: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     let saved: () -> Void
     @State private var picked: Set<Symptom> = []
@@ -274,7 +277,7 @@ private struct SymptomsStep: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressableStyle())
-        .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.6), value: on)
+        .animation(FlMotion.quick(reduceMotion), value: on)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(s.label)
         .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
@@ -299,7 +302,8 @@ private struct SymptomsStep: View {
 
 private struct TestStep: View {
     let positive: Bool
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     @ObservedObject var store: SelfReportStore
     let saved: () -> Void
     @State private var test = TestKind.rapid
@@ -365,7 +369,7 @@ private struct TestStep: View {
     }
 
     private var negativeNote: String {
-        switch model.myRisk {
+        switch feed.myRisk {
         case .possible: return "This sets you back to healthy. One rapid negative test isn't conclusive, especially early on. If you still feel sick, test again in 1 to 2 days or visit Vaden."
         case .contagious: return "You tested positive earlier, so a negative test won't clear your status. It changes once your 5 days are over."
         case .none: return "You're already shown as healthy, so nothing changes. Nothing about the test is shared."

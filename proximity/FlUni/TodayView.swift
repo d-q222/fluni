@@ -30,8 +30,11 @@ extension ProximityModel {
 /// points on the side line. A close contact opens in place with what happened and the four steps.
 /// While you're sick, Today becomes your stay-home track instead (StayHomeView).
 struct TodayView: View {
-    @ObservedObject var model: ProximityModel
+    /// Not observed: it republishes every tick. The slow parts come through `feed`; only the live risk views watch it.
+    let model: ProximityModel
     @ObservedObject var store: SelfReportStore
+    @ObservedObject private var feed = ModelFeed.shared
+    @ObservedObject private var history: ExposureHistoryStore
     @ObservedObject private var places = PlaceLogStore.shared
     @ObservedObject private var router = AppRouter.shared
     @State private var showHow = false
@@ -46,13 +49,18 @@ struct TodayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
-    private var exposure: ExposureTracker { model.shownExposure }
-    private var level: AlertLevel { exposure.level }
-    private var isSick: Bool { model.myRisk != .none }
+    init(model: ProximityModel, store: SelfReportStore) {
+        self.model = model
+        self.store = store
+        _history = ObservedObject(wrappedValue: model.exposureHistory)
+    }
+
+    private var level: AlertLevel { feed.level }
+    private var isSick: Bool { feed.myRisk != .none }
 
     private var mood: TissueMood {
         if isSick { return .sick }
-        if model.isPaused { return .paused }
+        if feed.isPaused { return .paused }
         switch level {
         case .none: return .calm
         case .nearby: return .headsUp
@@ -61,7 +69,7 @@ struct TodayView: View {
     }
 
     private var moments: [TimelineMoment] {
-        let h = model.exposureHistory
+        let h = history
         return DayTimeline.moments(h.episodes + (h.ongoing.map { [$0] } ?? []), visits: places.log.visits, now: Date())
     }
 
@@ -98,8 +106,8 @@ struct TodayView: View {
             .background(Theme.paper)
             .toolbar(.hidden, for: .navigationBar)
             .navigationTitle("Today")
-            .animation(reduceMotion ? nil : .snappy, value: level)
-            .animation(reduceMotion ? nil : .snappy, value: openMoment)
+            .animation(FlMotion.standard(reduceMotion), value: level)
+            .animation(FlMotion.standard(reduceMotion), value: openMoment)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .sheet(item: $report) { ReportFlow(start: $0, model: model, store: store) }
             .sheet(isPresented: $showCalc) { CalculationSheet(model: model) }
@@ -145,14 +153,20 @@ struct TodayView: View {
 
     /// Things about the app, above the tissue. Each shows nothing when it doesn't apply.
     @ViewBuilder private var notices: some View {
-        let any = backgroundHint != nil || model.unusualSignals || SimClock.shared.demoActive
+        let any = backgroundHint != nil || feed.unusualSignals || SimClock.shared.demoActive
         if any {
             VStack(alignment: .leading, spacing: Space.s) {
                 DemoTimeBadge()
                 if let backgroundHint {
                     Text(brand: backgroundHint, style: .footnote).font(.fluni(.fine)).foregroundStyle(Theme.ink).panel()
                 }
-                UnusualSignalsBanner(model: model)
+                if feed.unusualSignals {
+                    Text("Unusual Bluetooth signals nearby; alerts paused for a few minutes")
+                        .font(.fluni(.fine)).foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .panel()
+                        .accessibilityIdentifier("banner.unusualSignals")
+                }
             }
         }
     }
@@ -165,7 +179,7 @@ struct TodayView: View {
         let entries = DayTimeline.entries(visits: places.log.visits, current: current, moments: moments, now: Date())
         let ccOpen = level == .closeContact && moments.contains { $0.kind == .closeContact && (openMoment == $0.id || autoOpen($0)) }
         let nowTone: DayTimeline.Tone = level == .closeContact ? .closeContact : level == .nearby ? .headsUp
-            : current.map { DayTimeline.tone($0, moments: moments) } ?? (model.shownPeerCount > 0 ? .phones : .quiet)
+            : current.map { DayTimeline.tone($0, moments: moments) } ?? (feed.peerCount > 0 ? .phones : .quiet)
         return VStack(alignment: .leading, spacing: 0) {
             RailRow(label: "Now", time: TimelineFormat.time(Date()), node: .now,
                     line: entries.isEmpty ? .none : .tone(nowTone), nodeY: 22) {
@@ -187,7 +201,7 @@ struct TodayView: View {
                 case .moment(let m):
                     RailRow(time: TimelineFormat.time(m.episode.start), node: .moment(m.kind), line: below) {
                         if m.kind == .closeContact {
-                            CloseContactMoment(moment: m, risk: model.shownRisk, isOpen: openMoment == m.id || autoOpen(m),
+                            CloseContactMoment(moment: m, model: model, isOpen: openMoment == m.id || autoOpen(m),
                                                toggle: { openMoment = (openMoment == m.id || autoOpen(m)) ? nil : m.id },
                                                gotIt: { seenMoment = m.id.timeIntervalSince1970; openMoment = nil },
                                                report: { report = .choose }, how: { showCalc = true })
@@ -235,13 +249,14 @@ struct TodayView: View {
 
 /// The top of the line: where you are, the status in words, the numbers behind it, and the one action.
 private struct NowBlock: View {
-    @ObservedObject var model: ProximityModel
+    let model: ProximityModel
+    @ObservedObject private var feed = ModelFeed.shared
     let place: PlaceVisit?
     let onReport: () -> Void
     let onRisk: () -> Void
     var hidesReport = false
 
-    private var level: AlertLevel { model.shownExposure.level }
+    private var level: AlertLevel { feed.level }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Space.m) {
@@ -253,7 +268,7 @@ private struct NowBlock: View {
                     .accessibilityIdentifier("today.now")
                 status
             }
-            if model.isPaused {
+            if feed.isPaused {
                 paused
             } else {
                 if level == .nearby { headsUp }
@@ -262,15 +277,15 @@ private struct NowBlock: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 WalkInBanner(model: model)
-                MetricsStrip(exposure: model.shownExposure, risk: model.shownRisk, onRisk: onRisk)
+                MetricsStrip(minutes: feed.minutes, model: model, onRisk: onRisk)
             }
-            if !hidesReport || model.isPaused { reportButton }
+            if !hidesReport || feed.isPaused { reportButton }
         }
         .accessibilityElement(children: .contain)
     }
 
     private var statusWord: (String, Color, Color) {
-        if model.isPaused { return ("Paused", Theme.surface2, Theme.ink) }
+        if feed.isPaused { return ("Paused", Theme.surface2, Theme.ink) }
         switch level {
         case .none: return ("All clear", Theme.sage, Theme.ink)
         case .nearby: return ("Heads-up", Theme.sun, Theme.ink)
@@ -289,7 +304,7 @@ private struct NowBlock: View {
     }
 
     private var detail: String {
-        let n = model.shownPeerCount
+        let n = feed.peerCount
         let since = place.map { "Here since \(TimelineFormat.clock($0.start)), near " } ?? "Near "
         switch level {
         case .none:
@@ -325,7 +340,7 @@ private struct NowBlock: View {
 
     private var paused: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            if let p = model.pauseState {
+            if let p = feed.pauseState {
                 Text("Detection is paused \(PauseSchedule.describe(p, calendar: .current, now: Date())). Your status isn't shared and close-contact time isn't counted.")
                     .font(.fluni(.note)).foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
@@ -340,7 +355,7 @@ private struct NowBlock: View {
 
     @ViewBuilder private var reportButton: some View {
         VStack(alignment: .leading, spacing: Space.xs) {
-            if model.isPaused {
+            if feed.isPaused {
                 Button("I don't feel well", action: onReport).buttonStyle(SecondaryButtonStyle())
                     .accessibilityIdentifier("today.reportSymptoms")
             } else {
@@ -359,21 +374,21 @@ private struct NowBlock: View {
 /// "0 / 15 min close to someone sick" with fifteen ticks, and the live risk estimate beside it. Tapping the
 /// estimate opens how it's worked out. Side by side, or stacked when large text needs the width.
 private struct MetricsStrip: View {
-    let exposure: ExposureTracker
-    let risk: Double
+    /// Whole close-contact minutes (ModelFeed): changes once a minute at most.
+    let minutes: Int
+    let model: ProximityModel
     let onRisk: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
             if typeSize >= .xxxLarge {
-                VStack(alignment: .leading, spacing: Space.m) { minutes; riskBlock }
+                VStack(alignment: .leading, spacing: Space.m) { minutesBlock; LiveRiskBlock(model: model, onRisk: onRisk) }
             } else {
                 HStack(alignment: .top, spacing: Space.s) {
-                    minutes.frame(maxWidth: .infinity, alignment: .leading)
+                    minutesBlock.frame(maxWidth: .infinity, alignment: .leading)
                     Rectangle().fill(Theme.hairline).frame(width: 1).accessibilityHidden(true)
-                    riskBlock.frame(width: 124, alignment: .leading)
+                    LiveRiskBlock(model: model, onRisk: onRisk).frame(width: 124, alignment: .leading)
                 }
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -382,18 +397,17 @@ private struct MetricsStrip: View {
         .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
     }
 
-    private var minutes: some View {
-        let goal = ExposureTracker.closeContactMinutes
-        let m = min(exposure.minutes, goal)
-        let filled = Int(m.rounded(.down))
-        let reached = exposure.minutes >= goal - 1e-6
+    private var minutesBlock: some View {
+        let goal = Int(ExposureTracker.closeContactMinutes)
+        let filled = min(minutes, goal)
+        let reached = minutes >= goal
         return VStack(alignment: .leading, spacing: Space.xs) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(Int(min(exposure.minutes, 99)))").font(.fluni(.figure)).foregroundStyle(reached ? Theme.fireInk : Theme.ink)
-                Text("/ \(Int(goal)) min").font(.fluni(.time)).foregroundStyle(Theme.ink2)
+                Text("\(minutes)").font(.fluni(.figure)).foregroundStyle(reached ? Theme.fireInk : Theme.ink)
+                Text("/ \(goal) min").font(.fluni(.time)).foregroundStyle(Theme.ink2)
             }
             HStack(spacing: 3) {
-                ForEach(0..<Int(goal), id: \.self) { i in
+                ForEach(0..<goal, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 2)
                         .fill(i < filled ? (reached ? Theme.fireInk : Theme.ink2) : Theme.surface2)
                         .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.ink2.opacity(i < filled ? 0 : 0.35), lineWidth: 1))
@@ -406,18 +420,26 @@ private struct MetricsStrip: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Close-contact time")
-        .accessibilityValue("\(Int(exposure.minutes)) of \(Int(goal)) minutes")
+        .accessibilityValue("\(minutes) of \(goal) minutes")
     }
+}
 
-    private var riskBlock: some View {
+/// The live risk estimate: the only part of Today that redraws every tick. Tapping it opens how it's worked out.
+private struct LiveRiskBlock: View {
+    @ObservedObject var model: ProximityModel
+    let onRisk: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        let risk = model.shownRisk
         let band = RiskEstimate.band(risk)
         let word = band == .low ? "low" : band == .elevated ? "elevated" : "high"
-        return Button(action: onRisk) {
+        Button(action: onRisk) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(RiskEstimate.liveText(risk)).font(.fluni(.figure)).foregroundStyle(band == .low ? Theme.ink : Theme.fireInk)
                         .contentTransition(reduceMotion ? .identity : .numericText(value: risk))
-                        .animation(reduceMotion ? nil : .smooth, value: risk)
+                        .animation(FlMotion.number(reduceMotion), value: risk)
                     Text(word).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.ink)
                 }
                 Text("risk estimate,\nlast 24 h").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
@@ -434,6 +456,16 @@ private struct MetricsStrip: View {
         .accessibilityHint("Opens how this estimate is worked out")
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("risk.card")
+    }
+}
+
+/// The close-contact moment's risk line, live: "Your risk estimate went from 2.0% to 8.0%. That is still low."
+private struct LiveRiskLine: View {
+    @ObservedObject var model: ProximityModel
+    var body: some View {
+        Text(RiskEstimate.changeLine(to: model.shownRisk)).font(.fluni(.note)).foregroundStyle(Theme.ink)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("closeContact.risk")
     }
 }
 
@@ -489,7 +521,7 @@ private struct HeadsUpRow: View {
 /// reason, the four steps word for word, the risk in context, and "Got it" / "I don't feel well".
 private struct CloseContactMoment: View {
     let moment: TimelineMoment
-    let risk: Double
+    let model: ProximityModel
     let isOpen: Bool
     let toggle: () -> Void
     let gotIt: () -> Void
@@ -540,9 +572,7 @@ private struct CloseContactMoment: View {
                     Step(number: i + 1, text: line, strong: i == 0)
                 }
             }
-            Text(RiskEstimate.changeLine(to: risk)).font(.fluni(.note)).foregroundStyle(Theme.ink)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("closeContact.risk")
+            LiveRiskLine(model: model)
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: Space.s) { got; feel }
                 VStack(spacing: Space.s) { got; feel }
