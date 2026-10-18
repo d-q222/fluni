@@ -39,10 +39,16 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
         guard status == .authorizedAlways, !isPaused, let heat = BuildingHeatStore.shared.heat else {
             pendingEntries = [:]
             manager.stopMonitoringSignificantLocationChanges()
+            manager.stopMonitoringVisits()  // flu-offdetect
             for r in manager.monitoredRegions { manager.stopMonitoring(for: r) }
             return
         }
         manager.startMonitoringSignificantLocationChanges()
+        // flu-offdetect: visits (arriving at or leaving a place) relaunch FlUni after it was terminated, like
+        // significant changes, and FlUniApp restarts Bluetooth detection on any launch. That is the only way
+        // detection comes back after a swipe-away without the student opening FlUni: iOS does not relaunch a
+        // force-quit app for Bluetooth (TN3115). Visit data is not stored or used; it only wakes the app.
+        manager.startMonitoringVisits()
         if let here = manager.location { pick(heat, near: here) } else { manager.requestLocation() }
     }
 
