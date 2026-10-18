@@ -6,8 +6,8 @@ self-reports/tests. No sensors are simulated; GPS/Bluetooth/ultrasound are deriv
 Owner: @aidenyj (see [WORKSTREAMS.md](../WORKSTREAMS.md)). Output format:
 [docs/sim-output-format.md](../docs/sim-output-format.md). Full spec: [docs/SPEC.md](docs/SPEC.md).
 
-> **Status:** the full simulator runs end to end at 10 and 7,500 agents. Transmission is **not yet
-> calibrated** to the target campus R of 1.3–2.0 (see "Known issues"). `runs/mock_boring10/` (the
+> **Status:** the full simulator runs end to end at 10 and 7,500 agents. Influenza is calibrated
+> to campus R ≈ 1.6 (target 1.3–2.0; see "Calibration"). `runs/mock_boring10/` (the
 > hand-made mock) is kept because the heat map loads it by default.
 
 ## Run it
@@ -80,6 +80,18 @@ cases, one import), made after the path and biking changes. `view.py` on it show
 default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
 are committed in parts; rebuild them after cloning (see "Large runs in git").
 
+## Calibration
+
+`scripts/calibrate.py` sweeps `disease.transmission_scale` over full-size runs and reports
+`measured_R` (mean secondary cases of those infected before day 14 − 7.5). Influenza uses **1.2**:
+7,000 agents × 14 days, 40 seeded cases, seeds 1–2 gave R = 1.70 and 1.55 (1.0 → 1.35, 1.4 → 1.92).
+At 1.2 the per-encounter checks (`calibration_report`) are roommate 26.8% (target 20–30%), seminar
+1.24% (~1%) and party 10.1% (~8%). COVID-19 and norovirus are not calibrated yet.
+
+```bash
+.venv/bin/python scripts/calibrate.py --agents 7000 --days 14 --scales 1 1.2 1.4 --seeds 1 2 --jobs 2   # ~25 min
+```
+
 ## Large runs in git
 
 `scripts/run_parts.py split runs/<run>` cuts each `.csv.gz` over 40 MB into
@@ -129,8 +141,8 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 
 ## Known issues
 
-- **Not calibrated.** At 7,500 agents × 7 days: 50 infections (27 imports); spread rate by day
-  infected was about 1.5–1.8 for days 2–4, but `measured_R` needs a 14-day run.
+- **Calibration is tied to today's contact structure.** Changes to who meets whom (e.g. real class
+  schedules) or to the disease model shift R; rerun `scripts/calibrate.py` after them.
 - **Study rooms can still run up to 2× capacity.** Library and common-room flex picks now check
   capacity (`plans.flex.capacity_check`): each block books a place in a room with space for the whole
   block, weighted by free places, so Green Library's big reading rooms take most solo study. When

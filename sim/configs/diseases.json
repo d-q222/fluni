@@ -27,7 +27,7 @@
                                            "_note": "source vocalization/exertion factor"},
       "ledger_prune_level": 1e-10
     },
-    "transmission_scale": 1.0,
+    "transmission_scale": 1.2,
     "import_scale": 1.0,
     "initial_immune_fraction": 0.0,
     "concentration_report_threshold": 1e-6
