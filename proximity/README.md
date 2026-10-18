@@ -104,6 +104,15 @@ What the phone can't do: real rooms and ventilation, indoor/outdoor, walls, the 
 second-hand risk, look-back after a report, recovery, negative tests. One person seen under two rotating IDs
 counts as two sources, a slight over-estimate.
 
+**Live on screen.** `ProximityModel.liveRisk` (@Published) is p, recomputed on every 1 s tick while a risky
+peer's dose accrues (per second, not per minute), on return to the foreground (the background gap is credited
+at once) and when the 24 h window drops old dose. Today's risk card leads with it, always, as
+`RiskEstimate.liveText` (one decimal below 10%, e.g. 2.0% → 2.3%; whole percent above), animated with
+`.numericText` unless Reduce Motion is on. In Debug builds with a "Play as" persona, the campus model's
+number is an extra line under it, never in its place. `percentText` (whole percent) stays the text shared
+with the heat map. Debug only: `-demoPeer contagious@0.5` (or `possible@2`) puts a pretend peer that far away,
+no radios needed, so the simulator shows p climbing (add `-speed 60` to see it move every second).
+
 **Clock.** Students see live time only: the device's local weekday and time of day mapped onto the run
 (`Core/LiveClock.swift`, rule in `docs/building-heat-format.md`), recomputed every 15 s and on any system clock,
 time zone or date change. The Map tab says "Now · updated 4:30 PM". In Debug builds, Me > Developer tools > Demo
@@ -157,7 +166,7 @@ With phones side by side at 60×, B should log `ALERT nearby` within seconds, th
 run `fused` with the phones in different rooms.
 
 Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagious`, `-speed 60`,
-`-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`.
+`-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`; FlUni Debug also takes `-demoPeer contagious@0.5`.
 
 **Link and UWB uptime.** One MPC handshake at a time per phone (field logs: concurrent handshakes
 mostly hung), 6 s invite timeout, discovery restarts only when nothing is connecting. The app logs
