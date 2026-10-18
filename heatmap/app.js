@@ -31,7 +31,7 @@ const BIG_RUN = 2000;
 // Long runs too: 1,000 agents x 14 days is 11 M contacts (21 s and 3.6 GB in the page); 4 days loads in 6 s.
 const BIG_AGENT_DAYS = 8000;
 let bigRun = false; // set by loadModel: this run uses the precomputed files
-const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
+const MAX_DOTS = 2000;      // above this, draw a fixed sample of dots (heat and totals still use everyone). Every agent of a 1,000-agent run is drawn, so no heat without a dot       // buildings with only 1–3 people are hidden; 4 or more are always shown
 let viewCountText = ''; // the demo legend's "≈ N expected sick", kept across legend re-renders
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
