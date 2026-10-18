@@ -5,6 +5,7 @@ import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
 import { inferRisk, doseModel, DEFAULTS as MODEL } from '../model/infer.js';
 import { renderMathPanel } from './mathpanel.js';
+import { mountTissueAlert } from './tissue-alert.js';
 import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
@@ -916,6 +917,7 @@ async function main() {
   // Otherwise open on the first day's busiest walking moment (a class change), not a sleeping campus.
   const at = Number(new URLSearchParams(location.search).get('at'));
   let now = at ? Math.min(t1, t0 + at * 60000) : busiestMoment(), playing = false, selected = null, lastHeat = -Infinity, heatDirty = true, heatInterval = 0;
+  let tissueAlert = null; // design pass: the tissue-box alert on the phone mock
   let phoneMap = null, phoneBuildings = null, phoneTab = new URLSearchParams(location.search).get('tab') || 'today', airflowTruth = false;
 
   function busiestMoment() {
@@ -1291,6 +1293,13 @@ async function main() {
     const st = phoneState(me);
     phoneNotice(me, st);
     const d = phoneData(me, st);
+    // Lisa's tissue alert: a tissue pops out of the tab-bar box for a new alert on Today (tissue-alert.js).
+    tissueAlert ??= mountTissueAlert(document.querySelector('#phone .phone-frame'));
+    const taLevel = d.status !== 'none' ? 'none' : d.level === 'close' ? 'close' : d.level === 'nearby' ? 'nearby' : 'none';
+    const taAdvice = taLevel === 'none' ? null : PV.ADVICE[taLevel];
+    tissueAlert.update({ level: taLevel, visible: phoneTab === 'today', msg: taAdvice && {
+      kicker: taLevel === 'close' ? 'Close contact' : 'Heads-up',
+      title: PV.esc(taAdvice.title), lines: taAdvice.body.map(PV.esc) } });
     if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml(d));
     else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.youHtml(d));
     renderSheet(d);
