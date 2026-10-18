@@ -500,6 +500,23 @@ function formatTime(ms, numeric) {
 
 const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
+// FlUni's RiskEstimate.liveText: the live on-screen number, one decimal below 10% so it visibly moves, whole percent from 10%.
+const liveText = (p) => {
+  if (!(p > 0)) return '0%';
+  const tenths = Math.round(p * 1000) / 10;
+  return tenths < 10 ? `${tenths.toFixed(1)}%` : `${Math.min(100, Math.round(p * 100))}%`;
+};
+// FlUni's NotificationRoute.fit: whole sentences in order while they fit in 180 characters, "Tap for more details." if any are left out.
+const NOTE_BUDGET = 180, NOTE_MORE = 'Tap for more details.';
+function noteFit(sentences) {
+  if (sentences.join(' ').length <= NOTE_BUDGET) return sentences.join(' ');
+  const kept = [];
+  for (const s of sentences) {
+    if (kept.length && [...kept, s, NOTE_MORE].join(' ').length > NOTE_BUDGET) break;
+    kept.push(s);
+  }
+  return [...kept, NOTE_MORE].join(' ');
+}
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
 // The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
 // per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
@@ -960,7 +977,7 @@ async function main() {
     const note = tier === 'high' ? 'fireink' : 'ink2';
     out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
       <p class="t-title2" style="font-variant-numeric:tabular-nums">Campus model: ${percentText(p)}</p>
-      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${percentText(phoneP)}</p>
+      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${liveText(phoneP)}</p>
       <p class="t-sub">${advice(p)}</p>
       <p class="t-foot ${note}">Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.</p>
       ${model ? `<button class="link ${note}" data-act="why">${ico('fn')}See how this is worked out</button>` : ''}</div>`));
@@ -1023,6 +1040,29 @@ async function main() {
     }
   }
 
+  // A lock-screen style banner, with FlUni's own notification text, when this person newly crosses into a
+  // heads-up, a close contact, or a busy building (not for the state they were already in when opened).
+  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null;
+  function phoneNotice(me, st) {
+    if (noticeFor !== me.id) { noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; return; }
+    const rank = { none: 0, nearby: 1, close: 2 };
+    let text = null;
+    if (rank[st.level] > rank[noticeSeen.level]) {
+      text = st.level === 'close' ? noteFit(ADVICE.close.body) : noteFit([`${ADVICE.nearby.title}.`, ...ADVICE.nearby.body]);
+    } else if (st.walkIn && st.walkIn !== noticeSeen.walkIn) {
+      text = noteFit([`${st.walkIn} has a lot of illness right now. Consider a mask, or a different spot.`]);
+    }
+    noticeSeen = { level: st.level, walkIn: st.walkIn };
+    if (!text) return;
+    const frame = document.querySelector('#phone .phone-frame');
+    frame.querySelector('.ph-banner')?.remove();
+    const b = Object.assign(document.createElement('div'), { className: 'ph-banner', role: 'alert' });
+    b.innerHTML = `<div class="ph-banner-head"><span class="ph-banner-app">FlUni</span><span>now</span></div><p>${esc(text)}</p>`;
+    frame.append(b);
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => b.remove(), 7000);
+  }
+
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
     renderMath();
@@ -1032,6 +1072,7 @@ async function main() {
       ? formatTime(now, true).split(', ')[1]
       : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
     const st = phoneState(me);
+    phoneNotice(me, st);
     if (phoneTab === 'today') $('ph-today').innerHTML = todayHtml(me, st);
     const where = me.walking ? 'walking' : me.building;
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
