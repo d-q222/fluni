@@ -6,16 +6,11 @@ struct UnusualSignalsBanner: View {
 
     var body: some View {
         if model.unusualSignals {
-            HStack(spacing: 10) {
-                Image(systemName: "dot.radiowaves.left.and.right").font(.title3).accessibilityHidden(true)
-                Text("Unusual Bluetooth signals nearby; alerts paused for a few minutes")
-                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                Spacer(minLength: 0)
-            }
-            .foregroundStyle(Theme.ink)
-            .card(fill: Theme.sun.opacity(0.5))
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("banner.unusualSignals")
+            Text("Unusual Bluetooth signals nearby; alerts paused for a few minutes")
+                .font(.fluni(.fine)).foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .panel()
+                .accessibilityIdentifier("banner.unusualSignals")
         }
     }
 }

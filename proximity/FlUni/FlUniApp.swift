@@ -48,7 +48,7 @@ struct FlUniApp: App {
                     OnboardingView { hasOnboarded = true; startOnce(); if started { model.resume() } }  // resume: radios are off after "Delete my data"
                 } else {
                     TabView(selection: $router.tab) {
-                        TodayView(model: model)
+                        TodayView(model: model, store: reportStore)
                             .tabItem { Label("Today", systemImage: "sun.max") }
                             .tag(AppRouter.Tab.today)
                             .accessibilityIdentifier("tab.today")
@@ -56,7 +56,7 @@ struct FlUniApp: App {
                             .tabItem { Label("Map", systemImage: "map") }
                             .tag(AppRouter.Tab.map)
                             .accessibilityIdentifier("tab.map")
-                        MeView(model: model)
+                        MeView(model: model, store: reportStore)
                             .tabItem { Label("Me", systemImage: "person.crop.circle") }
                             .tag(AppRouter.Tab.me)
                             .accessibilityIdentifier("tab.me")

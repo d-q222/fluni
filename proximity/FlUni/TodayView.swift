@@ -1,16 +1,20 @@
 import CoreBluetooth
 import SwiftUI
 
-/// The student's home screen: one calm status card, a gentle progress bar, a count. No IDs, no
-/// per-person distances (those live in the Developer screen).
+/// The student's home screen. One status at the top that answers "am I OK?" in two seconds, then the last
+/// 24 hours as a short ledger, then recent contacts. No IDs, no per-person distances (those live in Developer).
+/// While the user is possibly sick or contagious, Today becomes their stay-home plan instead (StayingHomeView).
 struct TodayView: View {
     @ObservedObject var model: ProximityModel
+    @ObservedObject var store: SelfReportStore
     @State private var showHow = false
     @State private var showCalc = false
+    @State private var report: ReportKind?
     /// One line when iOS settings would stop alerts while FlUni is closed.
     @State private var backgroundHint: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var level: AlertLevel { exposure.level }
     private var exposure: ExposureTracker {
@@ -25,44 +29,44 @@ struct TodayView: View {
         #endif
         return model.peers.count
     }
+    private var isSick: Bool { model.myRisk != .none }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    DemoTimeBadge()
-                    PausedBanner(model: model)
-                    if let backgroundHint {
-                        Label(backgroundHint, systemImage: "info.circle")
-                            .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading, spacing: Space.l) {
+                    notices
+                    if isSick {
+                        StayingHomeView(model: model, store: store)
+                        DisclosureGroup {
+                            ExposureHistorySection(store: model.exposureHistory, showsTitle: false).padding(.top, Space.xs)
+                        } label: {
+                            Text("Recent contacts").font(.fluni(.heading)).foregroundStyle(Theme.ink)
+                        }
+                        .tint(Theme.ink2)
+                        .accessibilityHint("Shows your recent contacts, which can help when you tell people")
+                    } else {
+                        // Paused: the paused notice above is the status; "All clear" wouldn't be true.
+                        if !model.isPaused { statusHero }
+                        ledger
+                        ExposureHistorySection(store: model.exposureHistory)
                     }
-                    WalkInBanner(model: model)
-                    UnusualSignalsBanner(model: model)
-                    if level == .nearby { NearbyBanner().transition(.opacity) }
-                    statusCard
-                    riskCard
-                    minutesCard
-                    nearbyCard
-                    ExposureHistorySection(store: model.exposureHistory)
-                    Button { showHow = true } label: {
-                        Label("How FlUni works and what it shares", systemImage: "info.circle")
-                            .font(.fluni(.subheadline, weight: .semibold))
-                            .foregroundStyle(Theme.ink2)
-                            .frame(minHeight: 44)
-                    }
-                    .accessibilityHint("Opens a short explanation")
+                    Button { showHow = true } label: { Text("How FlUni works and what it shares") }
+                        .buttonStyle(QuietLinkStyle())
+                        .accessibilityHint("Opens a short explanation")
                 }
-                .padding(16)
+                .padding(.horizontal, Space.m)
+                .padding(.bottom, Space.l)
             }
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
+            .sheet(item: $report) { ReportSheet(kind: $0, model: model, store: store) }
             .onAppear(perform: checkBackground)
             .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: exposure.minutes, dose: exposure.dose) }
-            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
+            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false; report = nil }
         }
     }
 
@@ -77,96 +81,157 @@ struct TodayView: View {
         }
     }
 
+    // MARK: Notices
+
+    /// Things about the app or the place, above the status. Each shows nothing when it doesn't apply.
+    private var notices: some View {
+        VStack(alignment: .leading, spacing: Space.s) {
+            DemoTimeBadge()
+            PausedBanner(model: model)
+            if let backgroundHint {
+                Text(backgroundHint).font(.fluni(.fine)).foregroundStyle(Theme.ink)
+                    .panel()
+            }
+            WalkInBanner(model: model)
+            UnusualSignalsBanner(model: model)
+        }
+    }
+
     // MARK: Status
 
-    private var statusCard: some View {
+    /// The one thing that matters most, in Lisa's drawn box: paper with a sage tint when all is clear,
+    /// her peach box (heads-up, ink text only) when someone nearby may be sick or it's a close contact.
+    private var statusHero: some View {
         let s = Self.style(level)
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(s.title).font(.fluni(.title2, weight: .bold))
-                    Text(s.subtitle).font(.fluni(.subheadline))
+        let steps = level == .closeContact ? Array(Advice.body(level).dropFirst()) : Advice.body(level)
+        return VStack(alignment: .leading, spacing: Space.m) {
+            HStack(alignment: .top, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    Text(s.title).font(.fluni(.display)).accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier("today.status")
+                    Text(s.subtitle).font(.fluni(.note)).fixedSize(horizontal: false, vertical: true)
                 }
+                .accessibilityElement(children: .combine)
                 Spacer(minLength: 0)
-                if level == .none {
-                    Image("Tissue").resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
-                } else {
-                    Image(systemName: level == .closeContact ? "exclamationmark.circle.fill" : "info.circle.fill")
-                        .font(.title).accessibilityHidden(true)
+                if level == .none && !typeSize.isAccessibilitySize {
+                    // Lisa's tissue, big enough to be an illustration rather than a badge; tucked into the corner.
+                    Image("Tissue").resizable().scaledToFit().frame(width: 92, height: 92)
+                        .rotationEffect(.degrees(-8)).offset(x: 6, y: -10)
+                        .accessibilityHidden(true)
                 }
             }
-            if level != .none {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Advice.body(level), id: \.self) { line in
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Image(systemName: "arrow.right").font(.caption.bold()).accessibilityHidden(true)
-                            Text(line).font(.fluni(.subheadline))
-                        }
+            if !steps.isEmpty {
+                VStack(alignment: .leading, spacing: Space.s) {
+                    ForEach(Array(steps.enumerated()), id: \.offset) { i, line in
+                        Step(number: i + 1, text: line)
                     }
                 }
             }
+            Button(level == .closeContact ? "I've started feeling sick" : "I don't feel well") { report = .symptoms }
+                .buttonStyle(SecondaryButtonStyle())
+                .accessibilityHint("Opens a short form to report symptoms")
+                .accessibilityIdentifier("today.reportSymptoms")
         }
-        .foregroundStyle(s.text)
-        // All clear: paper box with a sage tint. Alerts: Lisa's peach box (ink text; fire-ink fails on peach).
+        .foregroundStyle(Theme.ink)
         .modifier(StatusBox(level: level, fill: s.fill))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
-    private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color, text: Color) {
+    private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color) {
         switch level {
         case .none:
-            return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45), Theme.ink)
+            return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45))
         case .nearby:
-            return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
+            return ("Someone nearby may be sick", "They're probably within 6 ft of you right now.", Theme.sun.opacity(0.5))
         case .closeContact:
-            return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.ink)
+            return ("Close contact", "You've spent about 15 minutes within 6 ft of someone who may be sick.", Theme.fire.opacity(0.22))
         }
     }
 
-    // MARK: Risk
+    // MARK: Ledger
 
-    private var riskCard: some View {
-        RiskCardView(dose: exposure.dose) { showCalc = true }
+    /// The last 24 hours as three plain lines on paper, split by Lisa's pencil rule. Not cards: it's a record.
+    private var ledger: some View {
+        VStack(alignment: .leading, spacing: Space.s) {
+            Text("Your last 24 hours").font(.fluni(.section)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+            minutesLine
+            HandRule()
+            RiskCardView(dose: exposure.dose) { showCalc = true }
+            HandRule()
+            nearbyLine
+        }
     }
 
-    // MARK: Minutes
-
-    private var minutesCard: some View {
+    private var minutesLine: some View {
         let mins = exposure.minutes
         let goal = ExposureTracker.closeContactMinutes
-        let tint = mins >= goal ? Theme.fireInk : Theme.ink2
         let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
             : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would make this a close contact."
             : "No time near someone with symptoms or a positive test."
-        return VStack(alignment: .leading, spacing: 10) {
-            Text("Close-contact time").font(.fluni(.headline))
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int(min(mins, 99)))").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
-                Text("of \(Int(goal)) min").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
+        return VStack(alignment: .leading, spacing: Space.xs) {
+            LedgerLine(label: "Close-contact time") {
+                (Text("\(Int(min(mins, 99)))").font(.fluni(.section)) + Text(" of \(Int(goal)) min").font(.fluni(.note)))
+                    .monospacedDigit()
             }
-            ProgressView(value: min(mins, goal), total: goal).tint(tint).accessibilityHidden(true)
-            Text(caption).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            // ink-2 on paper for the bar (7:1); fire-ink once it's a close contact. Never sage or ember: under 3:1.
+            ProgressView(value: min(mins, goal), total: goal).tint(mins >= goal ? Theme.fireInk : Theme.ink2)
+                .accessibilityHidden(true)
+            Text(caption).font(.fluni(.fine)).foregroundStyle(Theme.ink2)
         }
         .foregroundStyle(Theme.ink)
-        .card()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Close-contact time")
         .accessibilityValue("\(Int(mins)) of \(Int(goal)) minutes. \(caption)")
     }
 
-    // MARK: Nearby
-
-    private var nearbyCard: some View {
+    private var nearbyLine: some View {
         let n = peerCount
-        let text = n == 0 ? "No other FlUni phones nearby" : n == 1 ? "1 other FlUni phone nearby" : "\(n) other FlUni phones nearby"
-        return HStack(spacing: 12) {
-            Image(systemName: "person.2.wave.2").font(.title3).foregroundStyle(Theme.ink2).accessibilityHidden(true)
-            Text(text).font(.fluni(.body, weight: .semibold))
-            Spacer(minLength: 0)
+        return LedgerLine(label: "Other FlUni phones nearby") {
+            Text(n == 0 ? "None" : "\(n)").font(.fluni(.section)).monospacedDigit()
         }
         .foregroundStyle(Theme.ink)
-        .card()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(n == 0 ? "No other FlUni phones nearby" : n == 1 ? "1 other FlUni phone nearby" : "\(n) other FlUni phones nearby")
+    }
+}
+
+/// "Label ............ value": side by side, or stacked when large text would squeeze it.
+struct LedgerLine<Value: View>: View {
+    let label: String
+    @ViewBuilder var value: Value
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+                Text(label).font(.fluni(.heading)).lineLimit(1)
+                Spacer(minLength: Space.xs)
+                value
+            }
+            VStack(alignment: .leading, spacing: Space.xxs) {
+                Text(label).font(.fluni(.heading))
+                value
+            }
+        }
+    }
+}
+
+/// A numbered step. The number is set in a small drawn-feeling ring: order matters here (leave first, then wash).
+struct Step: View {
+    let number: Int
+    let text: String
+    @ScaledMetric(relativeTo: .body) private var ring: CGFloat = 26
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+            Text("\(number)")
+                .font(.fluni(.fine).weight(.bold)).monospacedDigit()
+                .frame(width: ring, height: ring)
+                .overlay(Circle().stroke(Theme.ink, lineWidth: Theme.stroke))
+                .accessibilityHidden(true)
+            Text(text).font(.fluni(.reading)).fixedSize(horizontal: false, vertical: true)
+        }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("Step \(number): \(text)")
     }
 }
 

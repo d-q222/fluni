@@ -6,7 +6,7 @@ struct RiskCardView: View {
     let onHow: () -> Void
     @ObservedObject private var store = PSickStore.shared
 
-    /// Same tiers as the map: low = sage, elevated = sun, high = fire. Text is ink, or fire-ink on fire.
+    /// Same tiers as the map: low = sage, elevated = sun, high = fire, as the tint behind the number.
     private static func fill(_ b: RiskEstimate.Band) -> Color {
         switch b {
         case .low: return Theme.sage.opacity(0.45)
@@ -14,42 +14,35 @@ struct RiskCardView: View {
         case .high: return Theme.fire.opacity(0.22)
         }
     }
-    private static func textColor(_ b: RiskEstimate.Band) -> Color { b == .high ? Theme.fireInk : Theme.ink }
-    /// Secondary text: ink-2 passes on sage and sun tints (5.1 and 5.6), fire-ink is safer on the fire tint.
-    private static func noteColor(_ b: RiskEstimate.Band) -> Color { b == .high ? Theme.fireInk : Theme.ink2 }
-
     var body: some View {
         let p = RiskEstimate.probability(dose: dose)
         // The headline number sets the tier colour: the campus model's when there is one, else this phone's.
         let band = RiskEstimate.band(store.campusP ?? p)
-        let text = Self.textColor(band)
-        VStack(alignment: .leading, spacing: 8) {
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Space.xs) {
+            VStack(alignment: .leading, spacing: Space.xs) {
+                LedgerLine(label: "Your risk estimate") {
+                    // The number sits on its tier tint (ink: 10.5 / 11.6 / 10.8:1); the summary below says the tier in words.
+                    Text(RiskEstimate.percentText(store.campusP ?? p)).font(.fluni(.section)).monospacedDigit()
+                        .padding(.horizontal, Space.s).padding(.vertical, 2)
+                        .background(Self.fill(band), in: Capsule())
+                }
                 if let official = store.campusP {
-                    Text("Campus model: \(RiskEstimate.percentText(official))")
-                        .font(.fluni(.title2, weight: .bold)).monospacedDigit()
-                    Text("This phone's estimate: \(RiskEstimate.percentText(p))")
-                        .font(.fluni(.headline)).monospacedDigit()
-                } else {
-                    Text("Your risk estimate").font(.fluni(.headline))
-                    Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                    Text("Campus model: \(RiskEstimate.percentText(official)) \u{00B7} This phone: \(RiskEstimate.percentText(p))")
+                        .font(.fluni(.fine)).foregroundStyle(Theme.ink2).monospacedDigit()
                 }
                 // Same number for colour and advice, so they can never disagree.
-                Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.subheadline))
-                Text("Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.")
-                    .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
+                Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.note))
+                Text("From time near other FlUni phones in the last 24 hours. An estimate, not a diagnosis.")
+                    .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("risk.card")
-            Button(action: onHow) {
-                Label("See how this is worked out", systemImage: "function")
-                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Self.noteColor(band)).frame(minHeight: 44)
-            }
-            .accessibilityHint("Opens the numbers behind this estimate")
-            .accessibilityIdentifier("risk.how")
+            Button(action: onHow) { Text("See how this is worked out") }
+                .buttonStyle(QuietLinkStyle())
+                .accessibilityHint("Opens the numbers behind this estimate")
+                .accessibilityIdentifier("risk.how")
         }
-        .foregroundStyle(text)
-        .card(fill: Self.fill(band))
+        .foregroundStyle(Theme.ink)
         .task { if store.feed == nil, !store.agent.isEmpty { await store.reload() } }
     }
 }

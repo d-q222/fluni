@@ -3,30 +3,31 @@ import SwiftUI
 /// Report how I feel, stay-home guidance while sick, plus the way into the Developer screen.
 struct MeView: View {
     @ObservedObject var model: ProximityModel
-    @StateObject private var store = SelfReportStore()
+    /// The app's one self-report store, shared with Today (two copies of the same file could disagree).
+    @ObservedObject var store: SelfReportStore
     @State private var sheet: ReportKind?
     @State private var blocked: String?
     #if DEBUG
     @State private var showDeveloper = false
     #endif
 
-    @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = 36
+    @ScaledMetric(relativeTo: .body) private var markSize: CGFloat = 22
 
     private enum Choice: CaseIterable { case fine, symptoms, positive, negative }
 
     private struct Option {
         let title: String
         let detail: String
-        let icon: String
-        let tint: Color
+        /// The status this choice shares, drawn as its swatch; nil for "tested negative" (not a status of its own).
+        let shares: Risk?
     }
 
     private func option(_ c: Choice) -> Option {
         switch c {
-        case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", icon: "face.smiling", tint: Theme.sage)
-        case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Time near you counts half toward their close contact.", icon: "thermometer.medium", tint: Theme.sun)
-        case .positive: return Option(title: "I tested positive", detail: "Phones near you see: contagious, and may alert their owners.", icon: "cross.case", tint: Theme.fire)
-        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative test isn't conclusive.", icon: "checkmark.shield", tint: Theme.sage)
+        case .fine: return Option(title: "I feel fine", detail: "Phones near you see: healthy.", shares: .none)
+        case .symptoms: return Option(title: "I have symptoms", detail: "Phones near you see: possibly sick. Time near you counts half toward their close contact.", shares: .possible)
+        case .positive: return Option(title: "I tested positive", detail: "Phones near you see: contagious, and may alert their owners.", shares: .contagious)
+        case .negative: return Option(title: "I tested negative", detail: "Sets you back to healthy if you were possibly sick. One rapid negative test isn't conclusive.", shares: nil)
         }
     }
 
@@ -42,32 +43,55 @@ struct MeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: Space.l) {
                     if let n = store.notice {
-                        Text(n).font(.fluni(.footnote)).foregroundStyle(Theme.ink).card(fill: Theme.surface2)
+                        Text(n).font(.fluni(.fine)).foregroundStyle(Theme.ink).panel()
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    statusHeader
                     if model.myRisk != .none { AtHomeCard(model: model, store: store) }
-                    Text("How are you doing?").font(.fluni(.title3, weight: .bold)).foregroundStyle(Theme.ink)
-                        .accessibilityAddTraits(.isHeader)
-                    ForEach(Choice.allCases, id: \.self) { row($0) }
-                    since
+                    VStack(alignment: .leading, spacing: Space.s) {
+                        Text("How are you doing?").font(.fluni(.section)).foregroundStyle(Theme.ink)
+                            .accessibilityAddTraits(.isHeader)
+                        // One drawn box holding the four choices as rows, rather than four boxes.
+                        VStack(spacing: 0) {
+                            ForEach(Array(Choice.allCases.enumerated()), id: \.offset) { i, c in
+                                if i > 0 { Rectangle().fill(Theme.hairline).frame(height: 1) }
+                                row(c)
+                            }
+                        }
+                        .card()
+                    }
                     Text("Only your status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes are shared with phones nearby. Symptoms, test details and dates stay on this phone. No name, no location.")
-                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                        .padding(.top, 4)
-                    NavigationLink { SettingsView(model: model) } label: {
-                        Label("Settings", systemImage: "gearshape").font(.fluni(.body, weight: .semibold)).foregroundStyle(Theme.ink).frame(minHeight: 44)
+                        .font(.fluni(.fine)).foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .panel()
+                    VStack(spacing: 0) {
+                        NavigationLink { SettingsView(model: model) } label: {
+                            HStack {
+                                Text("Settings").font(.fluni(.strong))
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.ink2)
+                                    .accessibilityHidden(true)
+                            }
+                            .foregroundStyle(Theme.ink)
+                            .frame(minHeight: 48)
+                            .contentShape(Rectangle())
+                        }
+                        .accessibilityIdentifier("settings.row")
+                        HandRule()
+                        #if DEBUG
+                        Button { showDeveloper = true } label: {
+                            Text("Developer tools").font(.fluni(.fine)).foregroundStyle(Theme.ink3)
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        }
+                        .accessibilityHint("For testing. Not needed day to day.")
+                        .accessibilityIdentifier("developer.row")
+                        #endif
                     }
-                    .accessibilityIdentifier("settings.row")
-                    #if DEBUG
-                    Button { showDeveloper = true } label: {
-                        Text("Developer tools").font(.fluni(.footnote)).foregroundStyle(Theme.ink3).frame(minHeight: 44)
-                    }
-                    .accessibilityHint("For testing. Not needed day to day.")
-                    .accessibilityIdentifier("developer.row")
-                    .frame(maxWidth: .infinity)
-                    #endif
                 }
-                .padding(16)
+                .padding(.horizontal, Space.m)
+                .padding(.bottom, Space.l)
             }
             .background(Theme.paper)
             .navigationTitle("Me")
@@ -102,24 +126,44 @@ struct MeView: View {
         }
     }
 
+    /// What nearby phones see right now: the fact this tab exists for, set large.
+    private var statusHeader: some View {
+        VStack(alignment: .leading, spacing: Space.xs) {
+            Text("Phones near you see").font(.fluni(.note)).foregroundStyle(Theme.ink2)
+            HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+                StatusSwatch(risk: model.myRisk).scaleEffect(1.6)
+                Text(model.myRisk == .contagious ? "contagious" : model.myRisk == .possible ? "possibly sick" : "healthy")
+                    .font(.fluni(.display))
+            }
+            since
+        }
+        .foregroundStyle(Theme.ink)
+        .accessibilityElement(children: .combine)
+    }
+
     private func row(_ c: Choice) -> some View {
         let o = option(c)
         let selected = selected(c)
         return Button { tap(c) } label: {
-            HStack(spacing: 12) {
-                Image(systemName: o.icon).font(.title3).frame(width: iconSize, height: iconSize)
-                    .background(o.tint.opacity(0.45), in: Circle()).accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(o.title).font(.fluni(.body, weight: .semibold))
-                    Text(o.detail).font(.fluni(.footnote)).foregroundStyle(Theme.ink2).multilineTextAlignment(.leading)
+            HStack(alignment: .top, spacing: Space.s) {
+                Group {
+                    if let r = o.shares { StatusSwatch(risk: r) } else {
+                        Circle().stroke(Theme.ink2, style: StrokeStyle(lineWidth: 1, dash: [2, 2])).frame(width: 12, height: 12)
+                    }
+                }
+                .frame(height: 22)   // centres the mark on the title's first line
+                VStack(alignment: .leading, spacing: Space.xxs) {
+                    Text(o.title).font(.fluni(.strong))
+                    Text(o.detail).font(.fluni(.fine)).foregroundStyle(Theme.ink2).multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: selected ? "checkmark.circle.fill" : (c == .fine ? "circle" : "chevron.right"))
-                    .foregroundStyle(selected ? Theme.ink : Theme.ink3).accessibilityHidden(true)
+                trailing(c, selected: selected).frame(height: 22)
             }
             .foregroundStyle(Theme.ink)
-            .card(fill: selected ? Theme.surface2 : Theme.surface)
-            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(selected ? Theme.ink : .clear, lineWidth: 2))
+            .padding(.vertical, Space.s)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
@@ -128,13 +172,27 @@ struct MeView: View {
         .accessibilityHint(c == .fine ? "Sets your status to healthy" : "Opens a short form")
     }
 
+    /// A drawn-style radio: an ink ring, filled with an ink dot when this is your status. Choices that open
+    /// a form show a chevron instead until chosen.
+    @ViewBuilder private func trailing(_ c: Choice, selected: Bool) -> some View {
+        if selected || c == .fine {
+            Circle().stroke(Theme.ink, lineWidth: Theme.stroke)
+                .overlay { if selected { Circle().fill(Theme.ink).padding(5) } }
+                .frame(width: markSize, height: markSize)
+                .accessibilityHidden(true)
+        } else {
+            Image(systemName: "chevron.right").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.ink2)
+                .accessibilityHidden(true)
+        }
+    }
+
     @ViewBuilder private var since: some View {
         if let at = model.statusSetAt {
-            Text("Status set \(at.formatted(date: .abbreviated, time: .shortened))")
-                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            Text("Since \(at.formatted(date: .abbreviated, time: .shortened))")
+                .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
         } else {
-            Text("You haven't set a status yet. Phones near you see \"healthy\".")
-                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            Text("You haven't set a status yet, so it's \"healthy\".")
+                .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
         }
     }
 }

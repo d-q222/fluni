@@ -8,15 +8,12 @@ struct WalkInBanner: View {
     var body: some View {
         Group {
             if let b = monitor.banner {
-                // Ink is the only text colour that passes on the peach box (8.6; ink-2 is 4.2, fire-ink 4.4).
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "building.2.crop.circle").font(.title3).accessibilityHidden(true)
-                    Text(WalkInWarning.message(for: b.name)).font(.fluni(.subheadline, weight: .semibold))
-                    Spacer(minLength: 0)
-                }
-                .foregroundStyle(Theme.ink)
-                .card(.peach)
-                .accessibilityElement(children: .combine)
+                // A heads-up that isn't the main status: Lisa's peach as a flat strip.
+                // Ink is the only text colour that passes on peach (8.6; ink-2 is 4.2, fire-ink 4.4).
+                Text(WalkInWarning.message(for: b.name)).font(.fluni(.note).weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(Theme.ink)
+                    .panel(.peach)
             }
         }
         .task { monitor.attach(model) }

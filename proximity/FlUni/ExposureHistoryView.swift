@@ -21,43 +21,109 @@ extension ExposureEpisode {
 
     /// The same sentence without the middle dots, which VoiceOver reads as a pause at best.
     var spoken: String { summary.replacingOccurrences(of: " · ", with: ", ") }
+
+    /// "Sat 2:10 pm", the left column of a contact row.
+    var when: String { Self.dayTime.string(from: start) }
+
+    /// "About 18 min near someone who tested positive", the right column.
+    var what: String {
+        let who = maxRisk == .contagious ? "someone who tested positive" : "someone with symptoms"
+        return "About \(max(1, Int(durationMinutes.rounded()))) min near \(who)"
+    }
+}
+
+/// One contact as a line in a log: when on the left in a fixed column, what on the right, and a fire-ink
+/// "Close contact" mark when it reached 15 minutes. Stacks at large text sizes.
+struct ContactRow: View {
+    let episode: ExposureEpisode
+    @ScaledMetric(relativeTo: .footnote) private var whenWidth: CGFloat = 84
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+                Text(episode.when).font(.fluni(.fine)).monospacedDigit().foregroundStyle(Theme.ink2)
+                    .frame(width: whenWidth, alignment: .leading)
+                detail
+            }
+            VStack(alignment: .leading, spacing: Space.xxs) {
+                Text(episode.when).font(.fluni(.fine)).monospacedDigit().foregroundStyle(Theme.ink2)
+                detail
+            }
+        }
+        .foregroundStyle(Theme.ink)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(episode.spoken)
+    }
+
+    private var detail: some View {
+        VStack(alignment: .leading, spacing: Space.xxs) {
+            Text(episode.what).font(.fluni(.note)).fixedSize(horizontal: false, vertical: true)
+            if episode.isCloseContact {
+                // fire-ink on fire 18% over paper: 6.0:1.
+                Text("Close contact").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.fireInk)
+                    .padding(.horizontal, Space.xs).padding(.vertical, 2)
+                    .background(Theme.fire.opacity(0.18), in: Capsule())
+            }
+        }
+    }
 }
 
 /// "Recent contacts" on Today: the latest few, and a link to the full 14 days. Local only.
 struct ExposureHistorySection: View {
     @ObservedObject var store: ExposureHistoryStore
+    var showsTitle = true
 
     private var items: [ExposureEpisode] {
         (store.episodes + (store.ongoing.map { [$0] } ?? [])).sorted { $0.start > $1.start }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Recent contacts").font(.fluni(.headline)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: Space.s) {
+            if showsTitle {
+                Text("Recent contacts").font(.fluni(.section)).accessibilityAddTraits(.isHeader)
+            }
             if items.isEmpty {
-                Text("No time near someone sick in the last 14 days.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
+                EmptyContacts(compact: true)
             } else {
-                ForEach(items.prefix(3)) { Text($0.summary).font(.fluni(.subheadline)).foregroundStyle(Theme.ink2).accessibilityLabel($0.spoken) }
+                ForEach(Array(items.prefix(3).enumerated()), id: \.element.id) { i, e in
+                    if i > 0 { Rectangle().fill(Theme.hairline).frame(height: 1) }
+                    ContactRow(episode: e)
+                }
                 NavigationLink {
                     ExposureHistoryView(store: store)
                 } label: {
-                    HStack {
-                        Text("See the last 14 days")
-                        Spacer(minLength: 8)
-                        Image(systemName: "chevron.right").accessibilityHidden(true)
-                    }
-                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
+                    Text("See the last 14 days")
                 }
+                .buttonStyle(QuietLinkStyle())
                 .accessibilityHint("Shows every close contact from the last 14 days")
             }
         }
         .foregroundStyle(Theme.ink)
-        .card()
         .accessibilityElement(children: .contain)
     }
 }
 
-/// The last 14 days of exposure episodes, newest first.
+/// Nothing to show: Lisa's tissue, resting, and one calm sentence.
+private struct EmptyContacts: View {
+    var compact = false
+
+    var body: some View {
+        HStack(alignment: .center, spacing: Space.m) {
+            Image("Tissue").resizable().scaledToFit().frame(width: compact ? 48 : 72).opacity(0.9)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Space.xxs) {
+                Text("No one sick nearby lately").font(.fluni(.heading))
+                Text("No time near someone with symptoms or a positive test in the last 14 days.")
+                    .font(.fluni(.fine)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .foregroundStyle(Theme.ink)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The last 14 days of exposure episodes, newest first, as a log grouped by day.
 struct ExposureHistoryView: View {
     @ObservedObject var store: ExposureHistoryStore
 
@@ -67,20 +133,20 @@ struct ExposureHistoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Space.s) {
                 if items.isEmpty {
-                    Text("No time near someone sick in the last 14 days.").font(.fluni(.body)).foregroundStyle(Theme.ink2)
+                    EmptyContacts().padding(.vertical, Space.l)
                 }
-                ForEach(items) { e in
-                    Text(e.summary).font(.fluni(.subheadline))
-                        .foregroundStyle(e.isCloseContact ? Theme.fireInk : Theme.ink)
-                        .accessibilityLabel(e.spoken)
-                        .card(fill: e.isCloseContact ? Theme.fire.opacity(0.18) : Theme.surface)
+                ForEach(Array(items.enumerated()), id: \.element.id) { i, e in
+                    if i > 0 { HandRule() }
+                    ContactRow(episode: e)
                 }
                 Text("Kept on this phone only, and removed after 14 days. It never leaves your phone.")
-                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                    .font(.fluni(.fine)).foregroundStyle(Theme.ink)
+                    .panel()
+                    .padding(.top, Space.m)
             }
-            .padding(16)
+            .padding(Space.m)
         }
         .background(Theme.paper)
         .navigationTitle("Recent contacts")
@@ -88,56 +154,49 @@ struct ExposureHistoryView: View {
     }
 }
 
-/// Gentle heads-up on Today while someone who may be sick is probably within 6 ft.
-struct NearbyBanner: View {
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "figure.walk").font(.title3).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(Advice.title(.nearby)).font(.fluni(.subheadline, weight: .semibold))
-                Text(Advice.body(.nearby).joined(separator: " ")).font(.fluni(.footnote))
-            }
-        }
-        .foregroundStyle(Theme.ink)
-        .card(.peach)  // Lisa's peach box means "heads-up", as in the phone mock-up; ink text for contrast
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// Full-screen, dismissible moment when the 15-minute close-contact mark is reached.
+/// Full-screen, dismissible moment when the 15-minute close-contact mark is reached. Lisa's peach box (heads-up)
+/// holds what happened; the steps follow on paper, numbered because the order matters.
 struct CloseContactSheet: View {
     var onDone: () -> Void
-    @ScaledMetric(relativeTo: .title) private var iconSize: CGFloat = 44
 
     var body: some View {
         let lines = Advice.body(.closeContact)
         // Scrolls at large text sizes instead of clipping; "Got it" stays pinned at the bottom.
         ScrollView {
-        VStack(alignment: .leading, spacing: 20) {
-            Image(systemName: "heart.text.square").font(.system(size: iconSize)).foregroundStyle(Theme.fireInk)
-                .accessibilityHidden(true)
-            Text("You were close to someone who may be sick")
-                .accessibilityAddTraits(.isHeader)
-                .font(.fluni(.title, weight: .bold)).foregroundStyle(Theme.ink)
-            if let first = lines.first { Text(first).font(.fluni(.body)).foregroundStyle(Theme.ink2) }
-            VStack(alignment: .leading, spacing: 14) {
-                ForEach(Array(lines.dropFirst()), id: \.self) { line in
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Image(systemName: "checkmark.circle").foregroundStyle(Theme.fireInk).accessibilityHidden(true)
-                        Text(line).font(.fluni(.body)).foregroundStyle(Theme.ink)
+            VStack(alignment: .leading, spacing: Space.l) {
+                VStack(alignment: .leading, spacing: Space.s) {
+                    HStack(alignment: .top, spacing: Space.s) {
+                        Text("You were close to someone who may be sick")
+                            .font(.fluni(.display)).fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: 0)
+                        Image("Tissue").resizable().scaledToFit().frame(width: 64).rotationEffect(.degrees(10))
+                            .offset(x: 4, y: -6).accessibilityHidden(true)
+                    }
+                    if let first = lines.first { Text(first).font(.fluni(.reading)) }
+                }
+                .foregroundStyle(Theme.ink)
+                .card(.peach)
+                .accessibilityElement(children: .combine)
+
+                VStack(alignment: .leading, spacing: Space.m) {
+                    Text("What to do now").font(.fluni(.section)).accessibilityAddTraits(.isHeader)
+                    ForEach(Array(lines.dropFirst().enumerated()), id: \.offset) { i, line in
+                        Step(number: i + 1, text: line)
                     }
                 }
+                .foregroundStyle(Theme.ink)
+                Text("This is a nudge, not a diagnosis. It's saved under Recent contacts on Today.")
+                    .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
             }
-            .card()
-        }
-        .padding(24)
-        .frame(maxWidth: .infinity)
+            .padding(.horizontal, Space.m).padding(.top, Space.l)
+            .frame(maxWidth: .infinity)
         }
         .scrollBounceBehavior(.basedOnSize)
         .safeAreaInset(edge: .bottom) {
             Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
                 .accessibilityHint("Closes this message")
-                .padding(.horizontal, 24).padding(.vertical, 12)
+                .padding(.horizontal, Space.m).padding(.vertical, Space.s)
                 .background(Theme.paper)
         }
         .background(Theme.paper.ignoresSafeArea())
