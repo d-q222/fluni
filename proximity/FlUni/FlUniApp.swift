@@ -184,9 +184,9 @@ private struct AppRoot: View {
                 // stack on screen after switching). Its own bar is hidden (here and via UITabBar appearance, which
                 // also takes it out of VoiceOver); Lisa's tissue box is drawn over it.
                 TabView(selection: $router.tab) {
-                    TodayView(model: model).tag(AppRouter.Tab.today).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
+                    TodayView(model: model, store: reportStore).tag(AppRouter.Tab.today).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
                     BundledMapView().tag(AppRouter.Tab.map).toolbar(.hidden, for: .tabBar).tissueTabBarInset()
-                    MeView(model: model).tag(AppRouter.Tab.me).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
+                    MeView(model: model, store: reportStore).tag(AppRouter.Tab.me).toolbar(.hidden, for: .tabBar)  // scroll room: tissueTabBarScrollRoom
                 }
                 .overlay { TissueTabBar(selection: $router.tab) }
                 // Lisa's tissue alert: pops out of the tab-bar box on Today for a new alert (TissueAlert.swift).
