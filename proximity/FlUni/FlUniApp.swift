@@ -6,7 +6,10 @@ import UserNotifications
 struct FlUniApp: App {
     @UIApplicationDelegateAdaptor private var delegate: AppDelegate
     private static let sharedModel = ProximityModel()
-    @StateObject private var model = FlUniApp.sharedModel
+    /// Deliberately not observed here: the scene body holds the TabView, and observing the model redrew it (and
+    /// rebuilt UIKit's tab bar) on every model change, i.e. every 1 s tick near someone sick. The views that show
+    /// model state observe it themselves; ModelReactions below handles the app-level reactions.
+    private var model: ProximityModel { Self.sharedModel }
     @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var started = false
     @StateObject private var router = AppRouter.shared
@@ -87,9 +90,7 @@ struct FlUniApp: App {
                         #endif
                     }
                     // At the tab level so the close-contact moment shows whichever tab is open.
-                    .onChange(of: model.exposure.level) { old, new in
-                        if new == .closeContact && old < .closeContact { router.showCloseContact() }
-                    }
+                    .background { ModelReactions(model: model, onCloseContact: { router.showCloseContact() }) }
                     .fullScreenCover(isPresented: Binding(get: { router.sheet == .closeContact }, set: { if !$0 { router.sheet = nil } })) {
                         CloseContactSheet { router.sheet = nil }
                     }
@@ -110,12 +111,6 @@ struct FlUniApp: App {
             .onChange(of: phase) { _, p in
                 if p == .background { model.exposureHistory.saveOngoing() }
                 introPhase(p)
-            }
-            // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
-            .onChange(of: model.speed) { _, s in
-                #if DEBUG
-                UserDefaults.standard.set(s, forKey: "demoSpeed")
-                #endif
             }
         }
     }
@@ -142,6 +137,27 @@ struct FlUniApp: App {
         #endif
         model.worksInBackground = true  // Bluetooth background modes + state restoration (project.yml)
         model.start()
+    }
+}
+
+/// The app-level reaction to the model, in a view of its own so only this empty view redraws on a model change.
+private struct ModelReactions: View {
+    @ObservedObject var model: ProximityModel
+    let onCloseContact: () -> Void
+
+    var body: some View {
+        Color.clear
+            .onChange(of: model.exposure.level) { old, new in
+                if new == .closeContact && old < .closeContact { onCloseContact() }
+            }
+            // Debug builds only: the demo time speed survives relaunch. Release builds always run at 1x.
+            .onChange(of: model.speed) { _, s in
+                #if DEBUG
+                UserDefaults.standard.set(s, forKey: "demoSpeed")
+                #endif
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 }
 
