@@ -191,7 +191,7 @@
        the screen width from the top of the sheet down to the bottom of the tab bar. */
     .phone-frame { position: relative; }
     #ph-tab-today { padding-bottom: 64px; } /* room to scroll the last lines clear of a popped tissue */
-    .tissue-alert { position: absolute; left: 6px; right: 6px; bottom: 6px; aspect-ratio: 650 / 1123; z-index: 5; pointer-events: none; }
+    .tissue-alert { position: absolute; left: 6px; right: 6px; bottom: 6px; aspect-ratio: 650 / 1123; z-index: 7; /* above the tab bar (phone.css gives it 6) */ pointer-events: none; }
     .tissue-alert[hidden] { display: none; }
     .tissue-alert[data-state="open"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 19.2%; top: -40%;
       background: rgba(250, 244, 232, 0.72); }
@@ -204,7 +204,7 @@
     .ta-hint { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-3deg); white-space: nowrap;
       font: 600 13px/1 var(--font-display); color: var(--fire-ink); background: var(--surface); padding: 5px 10px; border-radius: 999px;
       box-shadow: 0 0 0 1.5px var(--fire-ink); }
-    .ta-note { position: absolute; left: 11%; right: 11%; top: 7%; bottom: 26%; display: flex; flex-direction: column; gap: 10px;
+    .ta-note { position: absolute; left: 18%; right: 17%; top: 12%; bottom: 29%; display: flex; flex-direction: column; gap: 10px;
       pointer-events: auto; color: var(--ink); font: 14px/1.4 var(--font); animation: ta-in 220ms ease-out; }
     .ta-note[hidden] { display: none; }
     @keyframes ta-in { from { opacity: 0; transform: translateY(6px); } }
