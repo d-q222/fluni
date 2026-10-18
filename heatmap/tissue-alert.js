@@ -11,7 +11,7 @@
 
 const ART = 'assets/tissue-alert/';
 const PULL = [1, 2, 3, 4, 5, 6].map((i) => `${ART}pull-${i}.png`);
-const FRAME_MS = 65;
+const FRAME_MS = 120; // per frame of the pull (Lisa: a little slower)
 
 export function mountTissueAlert(frame) {
   const root = document.createElement('div');
