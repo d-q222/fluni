@@ -1,0 +1,82 @@
+{
+  "attack_rate": 0.503,
+  "peak_day": 10,
+  "measured_R": 1.3178,
+  "daily_incidence": [
+    52,
+    14,
+    17,
+    25,
+    24,
+    41,
+    41,
+    27,
+    35,
+    36,
+    58,
+    28,
+    57,
+    48
+  ],
+  "infections_by_location_type": {
+    "classroom": 3,
+    "common_room": 96,
+    "dining": 23,
+    "dorm": 161,
+    "event_venue": 2,
+    "gym": 7,
+    "lab": 1,
+    "lecture_hall": 1,
+    "library": 82,
+    "off_campus": 5,
+    "party_venue": 64,
+    "seed": 50,
+    "unknown": 8
+  },
+  "infections_by_archetype": {
+    "athlete": 57,
+    "commuter": 24,
+    "homebody": 86,
+    "social": 120,
+    "stem": 108,
+    "studious": 108
+  },
+  "infections_by_route": {
+    "aerosol": 281,
+    "close": 167,
+    "import": 5,
+    "seed": 50
+  },
+  "n_imports": 5,
+  "n_infected": 503,
+  "n_seed": 50,
+  "n_agents": 1000,
+  "R_window_days": 7.5,
+  "R_n_cases": 214,
+  "R_by_infection_day": {
+    "0": 1.4615,
+    "1": 1.1429,
+    "2": 1.8235,
+    "3": 1.44,
+    "4": 1.25,
+    "5": 1.2683,
+    "6": 1.0,
+    "7": 1.4815,
+    "8": 1.2,
+    "9": 0.8333,
+    "10": 0.6552,
+    "11": 0.3571,
+    "12": 0.1053,
+    "13": 0.0
+  },
+  "R_generation_based": 1.4,
+  "cases_by_generation": [
+    55,
+    77,
+    94,
+    130,
+    105,
+    35,
+    7
+  ]
+}
