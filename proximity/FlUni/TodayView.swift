@@ -33,7 +33,6 @@ struct TodayView: View {
                         // Someone who reported being sick never sees "All clear" or a risk percentage.
                         stayHome
                     } else {
-                        if level == .nearby { NearbyBanner().transition(.opacity) }
                         statusCard
                         riskCard
                         minutesCard
@@ -131,7 +130,8 @@ struct TodayView: View {
         case .none:
             return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45), Theme.ink)
         case .nearby:
-            return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
+            // One heads-up on Today: the status card, in Advice's words (the separate banner above it is gone).
+            return (Advice.title(.nearby), "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
         case .closeContact:
             return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.ink)
         }
@@ -140,7 +140,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(p: model.ownScore) { showCalc = true }  // never low for someone who reported being sick
+        RiskCardView(p: model.ownScore, alert: level) { showCalc = true }  // never low for someone who reported being sick
     }
 
     // MARK: Minutes
@@ -148,6 +148,8 @@ struct TodayView: View {
     private var minutesCard: some View {
         let mins = model.exposure.minutes
         let goal = ExposureTracker.closeContactMinutes
+        // Shown capped at the goal ("15 of 15 min", not "49 of 15"); the real count stays in the model.
+        let shown = Int(min(mins, goal))
         let tint = mins >= goal ? Theme.fireInk : Theme.ink2
         let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
             : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would make this a close contact."
@@ -155,7 +157,7 @@ struct TodayView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text("Close-contact time").font(.fluni(.headline))
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int(min(mins, 99)))").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                Text("\(shown)").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
                 Text("of \(Int(goal)) min").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
             }
             ProgressView(value: min(mins, goal), total: goal).tint(tint).accessibilityHidden(true)
@@ -165,7 +167,7 @@ struct TodayView: View {
         .card()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Close-contact time")
-        .accessibilityValue("\(Int(mins)) of \(Int(goal)) minutes. \(caption)")
+        .accessibilityValue("\(shown) of \(Int(goal)) minutes. \(caption)")
     }
 
     // MARK: Nearby

@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 import WebKit
 
-/// Detection on/off, what is shared, notifications, the map address, deleting local data, and About.
+/// Detection on/off, what is shared, notifications, the laptop address (Debug), deleting local data, and About.
 struct SettingsView: View {
     @ObservedObject var model: ProximityModel
     @AppStorage("heatmapURL") private var heatmapURL = ""
@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage(AppNotifications.detailsKey) private var lockScreenDetails = true
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
+    @State private var choosePause = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -20,7 +21,9 @@ struct SettingsView: View {
             notificationsSection
             closedSection
             BackgroundWarningsSection()
-            mapSection
+            #if DEBUG
+            mapSection  // Debug only: the laptop feed; the Map tab itself is built into the app
+            #endif
             dataSection
             aboutSection
         }
@@ -33,7 +36,9 @@ struct SettingsView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await refreshNotifications() } }
         }
-        .confirmationDialog("Delete all data on this phone?", isPresented: $confirmDelete, titleVisibility: .visible) {
+        // An alert, not a confirmation dialog: on the Form the dialog became a popover with no Cancel, its arrow
+        // pointing at whatever row sat in the middle of the screen.
+        .alert("Delete all data on this phone?", isPresented: $confirmDelete) {
             Button("Delete my data", role: .destructive) { deleteEverything() }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -53,14 +58,17 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.ink)
                 Button("Turn detection back on") { model.resume() }
             }
-            Menu {
-                Button("For 1 hour") { model.pause(.oneHour) }
-                Button("Until tomorrow") { model.pause(.untilTomorrow) }
-                Button("Until I turn it back on") { model.pause(.untilResumed) }
-            } label: {
+            // A button and a confirmation dialog rather than a Menu: the Menu in this Form never opened (phones and UI test).
+            Button { choosePause = true } label: {
                 Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
             }
             .accessibilityIdentifier("settings.pause")
+            .confirmationDialog("Pause detection", isPresented: $choosePause, titleVisibility: .visible) {
+                Button("For 1 hour") { model.pause(.oneHour) }
+                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until I turn it back on") { model.pause(.untilResumed) }
+                Button("Cancel", role: .cancel) {}
+            }
         } header: {
             Text("Detection").foregroundStyle(Theme.ink2)
         } footer: {
@@ -143,7 +151,7 @@ struct SettingsView: View {
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
 
-    // MARK: Map
+    // MARK: Map (Debug)
 
     private var mapSection: some View {
         Section {
@@ -155,7 +163,7 @@ struct SettingsView: View {
         } header: {
             Text("Map address").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("Where the Map tab loads the campus heat map from.").foregroundStyle(Theme.ink2)
+            Text("Debug builds: the laptop that serves the model output (Developer > Demo override) and live building heat. The Map tab is built into the app.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -177,6 +185,7 @@ struct SettingsView: View {
 
     private func deleteEverything() {
         hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
+        AppRouter.shared.tab = .today  // a fresh start opens on Today, like a new install (not on Me, where this began)
         heatmapURL = ""
         model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
         BuildingWatcher.shared.sync(paused: true)

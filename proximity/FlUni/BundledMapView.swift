@@ -11,7 +11,14 @@ struct BundledMapView: View {
     var body: some View {
         Group {
             if BundledMap.indexExists {
-                BundledMapWebView().ignoresSafeArea(edges: .bottom)
+                // Laid out above Lisa's tab bar (the tab's tissueTabBarInset), not under it: the page's bottom
+                // legend and its (i) button sit at the web view's bottom edge, and under the box they were hidden
+                // and a tap on (i) went to the Me tissue.
+                // Full bleed at the top, under the status bar and Dynamic Island: the page keeps its own top chip
+                // clear of them with env(safe-area-inset-top) (viewport-fit=cover).
+                BundledMapWebView()
+                    .ignoresSafeArea(edges: .top)
+                    .background(Theme.paper.ignoresSafeArea())  // paper, not white, around the box's tissues
             } else {
                 VStack(spacing: 10) {
                     Image(systemName: "map").font(.largeTitle).foregroundStyle(Theme.ink2).accessibilityHidden(true)
@@ -94,6 +101,7 @@ private struct BundledMapWebView: UIViewRepresentable {
         web.isOpaque = false
         web.backgroundColor = UIColor(Theme.paper)
         web.scrollView.backgroundColor = UIColor(Theme.paper)
+        web.scrollView.contentInsetAdjustmentBehavior = .never  // the page lays itself out under the bars; no extra inset
         web.allowsLinkPreview = false
         web.accessibilityLabel = "Campus heat map"
         #if DEBUG

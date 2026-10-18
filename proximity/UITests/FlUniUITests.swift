@@ -140,7 +140,8 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(el("report.fine").isSelected)
         XCTAssertTrue(el("athome.card").waitForExistence(timeout: 5), "At home card appears")
         XCTAssertTrue(app.staticTexts["What to do"].exists)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 1 of'")).firstMatch.exists)
+        // Day 0 is the day symptoms started (the card says so); reported today, so Day 0.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 0 of'")).firstMatch.exists)
     }
 
     func testPositiveNeedsConfirmationAndCancelKeepsOldStatus() {
@@ -214,8 +215,10 @@ final class FlUniUITests: FlUniUITestCase {
         scrollTo(el("settings.row")).tap()
         let delete = app.buttons["settings.delete"]
         scrollTo(delete).tap()
-        XCTAssertTrue(app.staticTexts["Delete all data on this phone?"].waitForExistence(timeout: 5))
-        dialogButton("Delete my data").tap()
+        let alert = app.alerts["Delete all data on this phone?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Cancel"].exists, "a way out")
+        alert.buttons["Delete my data"].tap()
 
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].exists)

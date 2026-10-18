@@ -5,6 +5,8 @@ import SwiftUI
 struct RiskCardView: View {
     /// This phone's live estimate (ProximityModel.liveRisk); it changes every tick near someone sick.
     let p: Double
+    /// Today's alert level: during a heads-up or close contact a low number doesn't say "No action needed".
+    var alert: AlertLevel = .none
     let onHow: () -> Void
     @ObservedObject private var store = PSickStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -35,7 +37,7 @@ struct RiskCardView: View {
                     Text("Campus model: \(RiskEstimate.percentText(official))")
                         .font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
                 }
-                Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
+                Text(RiskEstimate.summary(p, alert: alert)).font(.fluni(.subheadline))
                 Text("Based on the last 24 hours: time near each person, how close (closer counts much more), shared room air, and whether they reported symptoms or a positive test. It's an estimate, not a diagnosis.")
                     .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
             }

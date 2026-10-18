@@ -89,22 +89,6 @@ struct ExposureHistoryView: View {
     }
 }
 
-/// Gentle heads-up on Today while someone who may be sick is probably within 6 ft.
-struct NearbyBanner: View {
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "figure.walk").font(.title3).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(Advice.title(.nearby)).font(.fluni(.subheadline, weight: .semibold))
-                Text(Advice.body(.nearby).joined(separator: " ")).font(.fluni(.footnote))
-            }
-        }
-        .foregroundStyle(Theme.ink)
-        .card(.peach)  // Lisa's peach box means "heads-up", as in the phone mock-up; ink text for contrast
-        .accessibilityElement(children: .combine)
-    }
-}
-
 /// Full-screen, dismissible moment when the 15-minute close-contact mark is reached.
 struct CloseContactSheet: View {
     var onDone: () -> Void
