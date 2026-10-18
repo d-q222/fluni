@@ -145,7 +145,9 @@ silently tuned away.
 4. **Notice** (Claude agents observing rule-based agents).
 5. **Messages and group plans**, including the P(accept) rule for rule-based recipients.
 6. **Calibration scenario**: oversampled events, a cost estimate and a cap.
-7. **Fit script** and `behavior_calibrated.json`.
+7. **Fit script** and `behavior_calibrated.json`. **Done** (`scripts/calibrate_agents.py`,
+   `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; the validation
+   report from step 8 is `scripts/validation_report.py`, waiting on `configs/published_rates.json`).
 8. **Published-rate table** with citations, and the validation report.
 
 ## Open questions

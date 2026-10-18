@@ -104,6 +104,47 @@ reported value, and hourly rows while worry is fading. The jump sizes and weight
 until the calibration loop fits them. Off by default, so run ids are unchanged. Check it with
 `scripts/smoke_worry.py`.
 
+## Calibrating rule-based agents
+
+The Big Five weights above are placeholders. `scripts/calibrate_agents.py` replaces them with ones
+fitted to what Claude-driven agents actually do in calibration runs
+([docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md), section 4):
+
+```bash
+.venv/bin/python scripts/calibrate_agents.py runs/<calib_run> [runs/<calib_run2> ...] \
+    --out configs/behavior_calibrated.json            # --min-rows 50, --l2 0.1
+.venv/bin/python simulate.py --agents 7500 --set personality.mode=big_five \
+    --set personality.weights_source=calibrated
+.venv/bin/python scripts/validation_report.py runs/<run> --published configs/published_rates.json
+```
+
+It reads each run's `llm_events.csv` (one row per measured decision) and `calibration_forced.csv`
+(events the calibration scenario forced). It fits:
+
+- sick response: a multinomial over stay home / Vaden / carry on;
+- app compliance: a logit per advice kind, with a forced-alert flag;
+- disclosure: a logit with relationship effects;
+- influence: P(accept) by message kind and relationship;
+- worry: jump size per event and the decay half-life;
+- notice reactions: rate per cue.
+
+The fits use Big Five centered at archetype means, worry and severity as covariates, a small L2
+penalty, and standard errors clustered by agent. A behavior with fewer than `--min-rows` rows keeps
+its placeholder and is marked `"fitted": false`. The JSON holds:
+
+- `weights`, in the same shape as `personality.json`, with `weights_se` and `weights_fitted`;
+- `influence` (`b[kind]`, `w_A`, `w_E`, `w_worry`, `w_rel[relationship]`), `worry` and `notice`;
+- per-archetype checks of fitted rates against the `population.json` targets;
+- row counts, source run ids, model names, and the full coefficient tables.
+
+`personality.weights_source=calibrated` uses the fitted weight for each trait marked fitted, and
+`personality.json` for the rest. Intercepts are still solved so archetype means match today's.
+With the default (`config`), the file is ignored and run ids don't change.
+`validation_report.py` writes `validation.md`, which compares each fitted rate with
+`configs/published_rates.json` and flags gaps outside tolerance. It lists rates with no published
+match as unvalidated. Check all of this with `scripts/smoke_calibrate_agents.py`, which recovers
+known coefficients from synthetic events.
+
 ## Claude-driven agents
 
 By default every agent follows the scheduler's plan (`plans.py`) and a scripted sick response.
