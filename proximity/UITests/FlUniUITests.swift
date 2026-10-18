@@ -49,12 +49,12 @@ final class FlUniUITests: FlUniUITestCase {
 
         scrollTo(app.buttons["risk.how"]).tap()
         XCTAssertTrue(app.navigationBars["How is this calculated?"].waitForExistence(timeout: 5))
-        // With no nearby phones: "You: 0.0 of 15", "You: 0.0 weighted minutes", "x = 0%, so P = ..%".
+        // With no nearby phones: "You: 0.0 of 15", "Your exposure dose: 0.000", "This phone's estimate: 2%".
         XCTAssertTrue(app.staticTexts["You: 0.0 of 15"].exists)
-        XCTAssertTrue(app.staticTexts["You: 0.0 weighted minutes"].exists)
-        let estimate = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'x = ' AND label CONTAINS 'so P = '")).firstMatch
-        XCTAssertTrue(estimate.exists, "the estimate line with x and P")
-        XCTAssertNotNil(estimate.label.range(of: #"P = (<1|\d{1,3})%"#, options: .regularExpression), estimate.label)
+        XCTAssertTrue(app.staticTexts["Your exposure dose: 0.000"].exists)
+        let estimate = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "This phone's estimate: ")).firstMatch
+        XCTAssertTrue(estimate.exists, "the estimate line with p")
+        XCTAssertNotNil(estimate.label.range(of: #"estimate: (<1|\d{1,3})%"#, options: .regularExpression), estimate.label)
 
         app.buttons["Done"].tap()
         XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))

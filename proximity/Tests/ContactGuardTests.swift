@@ -6,7 +6,7 @@ final class ContactGuardTests: XCTestCase {
 
     private func peer(_ id: String, risk: Risk = .contagious, p: Double = 1, rssi: Double? = -55,
                       sources: [Source] = [.ble], uwbAt: Date? = nil) -> ContactGuard.Input {
-        .init(id: id, risk: risk, pClose: p, tier: p, rssi: rssi, sources: sources, uwbAt: uwbAt)
+        .init(id: id, risk: risk, pClose: p, distance: 0.5, rssi: rssi, sources: sources, uwbAt: uwbAt)
     }
 
     /// Runs one tick per real second at `speed`, feeding the guard output to the tracker.
@@ -14,7 +14,8 @@ final class ContactGuardTests: XCTestCase {
                      start: Double = 0, peers: (Int) -> [ContactGuard.Input]) {
         for s in 0..<seconds {
             let out = g.apply(now: t0.addingTimeInterval(start + Double(s)), peers(s))
-            t.advance(simSeconds: speed, contacts: out.map { ($0.pClose, $0.risk) }, tiers: out.map(\.tier))
+            t.advance(simSeconds: speed, contacts: out.map { ($0.pClose, $0.risk) },
+                      doses: out.map { o in o.distance.map { DosePeer(id: o.id, distance: $0) } })
         }
     }
 
@@ -141,11 +142,11 @@ final class ContactGuardTests: XCTestCase {
         var g = ContactGuard()
         XCTAssertEqual(g.apply(now: t0, []), [])
         let out = g.apply(now: t0.addingTimeInterval(1), [
-            ContactGuard.Input(id: "n", risk: .contagious, pClose: .nan, tier: .infinity, rssi: .nan),
+            ContactGuard.Input(id: "n", risk: .contagious, pClose: .nan, distance: .infinity, rssi: .nan),
             peer("ok", rssi: .nan),
         ])
         XCTAssertEqual(out.map(\.pClose), [0, 1])
-        XCTAssertEqual(out.map(\.tier), [0, 1])
+        XCTAssertEqual(out.map(\.distance), [nil, 0.5])
     }
 
     func testHealthyPeersAreNeverCountedButKeptInOutput() {
