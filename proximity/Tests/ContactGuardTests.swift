@@ -157,6 +157,33 @@ final class ContactGuardTests: XCTestCase {
         XCTAssertEqual(g.apply(now: t0.addingTimeInterval(5), [peer("a", risk: .contagious)])[0].pClose, 1)
     }
 
+    /// flu-expo (owner, two phones): possibly sick, "reset to healthy", then a report. Under one ID that's a
+    /// reversal, so the observer ignored a UWB-ranged peer at 0.15 m for 15 min: no minutes, no heads-up.
+    func testResetThenReportUnderOneIDWasIgnoredButCountsWithANewIDPerStatus() {
+        let close = { (id: String, r: Risk, s: Int) in
+            self.peer(id, risk: r, rssi: nil, sources: [.uwb, .ble], uwbAt: self.t0.addingTimeInterval(Double(s)))
+        }
+        var g = ContactGuard(), t = ExposureTracker()
+        run(&g, &t, seconds: 120, speed: 1, peers: { s in [close("a", s < 30 ? .possible : s < 60 ? .none : .possible, s)] })
+        XCTAssertEqual(t.minutes, 0.25, accuracy: 1e-6, "only the first 30 s; after the reversal the ID is ignored")
+        // The sender now starts a new ID per status: the same sequence counts in full once it's sick again.
+        var g2 = ContactGuard(), t2 = ExposureTracker()
+        run(&g2, &t2, seconds: 120, speed: 1, peers: { s in
+            [s < 30 ? close("a1", .possible, s) : s < 60 ? close("a2", .none, s) : close("a3", .possible, s)]
+        })
+        XCTAssertEqual(t2.minutes, 0.75, accuracy: 1e-6)
+    }
+
+    func testOwnStatusChangeRotatesTheIDAndSameStatusDoesNot() {
+        let m = ProximityModel(riskStore: RiskStateStore(url: nil))
+        m.rotateID()
+        var ids = [m.myID]
+        for r in [Risk.possible, .none, .possible, .contagious] { m.myRisk = r; ids.append(m.myID) }
+        XCTAssertEqual(Set(ids).count, 5, "each status change broadcasts under a new ID")
+        m.myRisk = .contagious
+        XCTAssertEqual(m.myID, ids.last, "setting the same status again keeps the ID")
+    }
+
     func testClockGoingBackwardsDoesNotRewindOrCrash() {
         var g = ContactGuard()
         _ = g.apply(now: t0, (0..<5).map { peer("b\($0)") })

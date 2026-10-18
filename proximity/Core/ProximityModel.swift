@@ -34,7 +34,10 @@ final class ProximityModel: ObservableObject {
         didSet {
             own.statusChanged(liveRisk: liveRisk, status: myRisk)
             if ownScore != own.current { ownScore = own.current }
-            announce()
+            // flu-expo: a status change starts a new ID (which announces it). Other phones' ContactGuard ignores an
+            // ID whose status reverses for 15 min (rule 4), so "reset to healthy, then report" under one ID hid
+            // the sick phone completely; and a held link's status cached before the change can't land on the new ID.
+            if myRisk != oldValue, myID.count == BLEBeacon.idBytes, !isPaused { rotateID() } else { announce() }
         }
     }
     @Published var speed = 1.0  // real time; demo/test launches pass -speed
@@ -427,7 +430,7 @@ final class ProximityModel: ObservableObject {
         if !isPaused, now.timeIntervalSince(lastRotation) >= rotationInterval { rotateID() }
     }
 
-    private func rotateID() {
+    func rotateID() {  // internal for tests
         var bytes = [UInt8](repeating: 0, count: BLEBeacon.idBytes)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         myID = Data(bytes)
