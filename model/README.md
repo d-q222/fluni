@@ -199,8 +199,9 @@ hour by hour, with every agent carrying a distribution over infection age. It is
 |---|---|
 | P(j has flu) | transmission = Σ over j's infection ages a of P_j(a) · (1 − exp(−q · stage(a) · D)) |
 | P(i has flu) | only i's healthy mass P_S^i can be infected |
-| Duration, distance | `doseModel` (above): dose adds up over the meeting's 5-min rows; plume 1/(Q·d²) |
-| Room size, ventilation | Wells–Riley room term 1/(V · (ACH + deposition + virus decay)), from `map/rooms.csv` |
+| Duration, distance | near-field plume f·B·h / Q(d), Q = 600·d m³/h below 1 m, 600·d² beyond (two-zone near field); adds up over the meeting's 5-min rows |
+| Room size, ventilation | room air, not a pair term: each room is a well-mixed box dC/dt = Σ shed/V − (ACH + deposition + virus decay)·C, filled by everyone the contacts put in the room that hour and carried over between hours; V and ACH from `map/rooms.csv` |
+| Room type | f = typical activity there (emission × breathing, `data/room-activity.js`): dorm 0.7, party 2.7, gym 5.4, class 1, … |
 | Indoors / outdoors | outdoors: no room term, plume diluted 5×; through a wall: no shared air |
 | Stage of flu | `stageProfile` around symptom onset, 2.5 days after infection |
 | Time since the meeting | infections age one bin per hour: latent → infectious → over (R) after 10 days |
@@ -216,9 +217,48 @@ node model/meanfield-test.mjs                          # each λ input moves the
 node model/meanfield-cli.mjs sim/runs/<run> [--calibrate]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
 ```
 
-`lambdaScale` (0.135) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
+`lambdaScale` (0.836) is fitted by `--calibrate` on `influenza_none_n1000_d14_s42_25fe957a`: started from the
 sim's true seeds, the model's expected on-campus infections match the sim's 167. On that run the top 50
-by P hold 35–43 truly infected people from day 6 on (random 50: 6–8), AUC 0.6–0.67, 15 s in Node.
+by P hold 35–42 truly infected people from day 7 on (random 50: 6–8), AUC 0.61–0.75, 40 s in Node.
+`--set key=value` overrides any parameter (`--set legacyDose=true --scale 0.135` is the dose before the audit below).
+
+### Accuracy audit (October 2026)
+
+What the dose got wrong, measured on run 25fe957a (5.35 M contact rows, 167 on-campus infections):
+
+- **Room sizes were not the problem.** Every same-room contact row has a room in `map/rooms.csv` (0.00% fall back to
+  the default room); 4.5% are through-wall pairs, 4.9% outdoors. The sim infects with the same volumes and ACH, so
+  they are right for scoring. Against the real campus they are procedural: bedrooms 9 m² per bed (a double 18 m²,
+  ~190 ft², plausible), dorm buildings 22–30 m² gross per bed vs 30 m² at Manzanita (40,000 ft², 125 students) and
+  Lagunita Court (2 × 33,000 ft², 200) ([McCarthy](https://www.mccarthy.com/projects/stanford-university)); sim bed
+  counts are ~2× the real halls (Branner 384 vs 167, [Wikipedia](https://en.wikipedia.org/wiki/Stanford_University_student_housing)).
+  Stanford publishes no room-level sizes or ventilation that I could find (R&DE pages show floor plans as images only,
+  no EH&S/LBRE ACH data), so ACH stays one documented value per room type (dorm 2, classroom 4, lab 6, … in
+  `sim/configs/map.json`), not made-up per-room values.
+- **Near field outweighed room air ~10–40×** (biggest error). The old plume 1/(30·d²) made a 0.5 m contact 20× a dorm
+  room's air: first 6 days, true seeds, the model put 3 expected infections in dorm rooms (truth 25) and 9.7 outdoors
+  (truth 1). Now Q(1 m) = 600 m³/h (two-zone near field, Nicas 1996; face-to-face jet would be 68,
+  [Jia et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9085449/)): dorm 21.9, outdoor 0.8. Party rooms are still
+  low (3.6 vs 10).
+- **Big rooms.** Rooms with capacity > 150 log only pairs < 5 m; 9 of 167 infections (7 at parties) had no logged
+  contact with their infector. Room air now comes from occupancy, so far-apart occupants and later arrivals share it.
+- **Activity.** Dorm rooms used quiet quanta 0.15× everywhere; now f per room type from the sim's activity tables
+  ([EPA EFH ch. 6](https://www.epa.gov/expobox/exposure-factors-handbook-chapter-6) breathing,
+  [Buonanno et al. 2020](https://doi.org/10.1016/j.envint.2020.105794) emission), dorm 0.7.
+- Not fixed: the 2% prior < the runs' 5% seeding (Σ P lags truth on days 1–5); the mean field's echo (calibrated
+  on 14 days it under-predicts the first generation, over-predicts by day 14: Σ P 175 vs 136); `stageProfile` runs to
+  day 7 after onset where the sim's viral load is ~0 after day 4; masks (unknown to a phone); `illnessDays` 10 vs the
+  sim's ~7.5-day illness.
+
+| Run (lambdaScale refit per run) | mean AUC, days 3–14, old → new | dose-only AUC (true seeds, no reports) |
+|---|---|---|
+| 25fe957a (calibration) | 0.619 → 0.664 | 0.570 → 0.690 |
+| 183f262b (validation, 395 infected) | 0.690 → 0.726 | 0.622 → 0.693 |
+| f12e71fa (validation) | 0.664 → 0.712 | 0.619 → 0.758 |
+
+Sweep on 25fe957a (dose-only AUC): Q(1 m) = 68 / 200 / 600 / 2000 m³/h (∝ d, dorm f 0.36) gave 0.654 / 0.668 /
+0.678 / 0.684 — 2000 is past the physical estimate (~570) for little gain, so 600; at 600 (∝ d), dorm f 0.36 / 0.7 / 1
+gave 0.678 / 0.687 / 0.691, and ∝ d² beyond 1 m with f 0.7 (the default) 0.690.
 The heat map runs it in the page for small runs and reads `meanfield.csv` for big ones. `?model=meanfield`
 colours people by it; otherwise `infer.js` stays the app's estimate. No `explain()` yet.
 

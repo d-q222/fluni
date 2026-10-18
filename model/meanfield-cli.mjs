@@ -1,6 +1,7 @@
 // Run the mean-field model (meanfield.js, Baker et al. PNAS 2021) on a sim run folder, score it against
 // the sim's truth, and write what the heat map reads for big runs.
-// Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate]
+// Usage: node model/meanfield-cli.mjs <run_dir> [--scale 0.12] [--calibrate] [--set key=value ...]
+//   --set overrides an MF_DEFAULTS / infer.js DEFAULTS parameter (numbers and true/false), e.g. --set legacyDose=true
 //   writes model/out/<run>/meanfield.csv: agent_id,t_iso,p_sick,shed change points (P as in
 //   docs/p-sick-format.md, plus shed = expected infectiousness, sum over ages of P(age) * stage(age)).
 //   --calibrate fits lambdaScale: started from the sim's true seeds, with no reports, the model's expected
@@ -12,9 +13,12 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { meanFieldRisk, MF_DEFAULTS } from './meanfield.js';
 
-const args = process.argv.slice(2), dir = args.find((a) => !a.startsWith('--') && !/^\d/.test(a));
+const args = process.argv.slice(2), dir = args.find((a) => !a.startsWith('--') && !/^\d/.test(a) && !a.includes('='));
 if (!dir) { console.error('usage: node model/meanfield-cli.mjs <run_dir> [--scale x] [--calibrate]'); process.exit(1); }
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
+const over = {};
+args.forEach((a, i) => { if (a === '--set') { const [k, v] = args[i + 1].split('='); over[k] = v === 'true' ? true : v === 'false' ? false : Number(v); } });
+if (Object.keys(over).length) console.log('params', over);
 const run = basename(dir.replace(/\/$/, ''));
 const out = join(dirname(fileURLToPath(import.meta.url)), 'out', run, 'meanfield.csv');
 
@@ -52,7 +56,7 @@ let scale = Number(opt('--scale')) || MF_DEFAULTS.lambdaScale;
 if (args.includes('--calibrate')) {
   const seeds = infections.filter((r) => r.route === 'seed').map((r) => r.infectee_id);
   const target = infections.filter((r) => r.infector_id !== 'IMPORT').length;
-  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds }, { lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
+  const total = (s) => meanFieldRisk({ ...input, reports: [], seeds }, { ...over, lambdaScale: s, prior: 0, importPerDay: 0 }).expectedInfections - seeds.length;
   let lo = 0.005, hi = 1;
   for (let it = 0; it < 14; it++) { const mid = Math.sqrt(lo * hi); if (total(mid) < target) lo = mid; else hi = mid; }
   scale = Math.sqrt(lo * hi);
@@ -60,7 +64,7 @@ if (args.includes('--calibrate')) {
 }
 
 const t0 = Date.now();
-const risk = meanFieldRisk(input, { lambdaScale: scale });
+const risk = meanFieldRisk(input, { ...over, lambdaScale: scale });
 console.log(`mean-field (lambdaScale ${scale}) in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 
 // Score: AUC of P(flu) against "infected in the last illnessDays" (sim truth), at the end of each day.

@@ -10,8 +10,14 @@
 // single I state, so lambda_{j->i} depends on:
 //   - P(j has flu) and j's stage: transmission = sum over ages a of P_j(a) * (1 - exp(-q * stage(a) * D))
 //   - P(i has flu): only i's healthy mass P_S^i can be infected
-//   - duration, distance, room size, ventilation, indoors/outdoors: D, Rio's dose per quantum
-//     (infer.js doseModel: exhaled plume 1/(Q d^2) + Wells-Riley room term 1/(V * loss))
+//   - duration, distance, indoors/outdoors, room type: D, the near-field dose per quantum of a logged pair,
+//     f * B * h / Q(d): the exhaled plume, diluted Q(d) = nearQ1 * d (d < 1 m) or nearQ1 * d^2 (d >= 1 m) m^3/h
+//     (two-zone near field, see nearQ1), 5x more outdoors; f = activity in that room type (data/room-activity.js)
+//   - room size, ventilation: the room's air, not a pair term. Each room is a well-mixed box
+//     dC/dt = sum_j shed_j / V - loss * C, loss = ACH + deposition + virus decay, filled by everyone the contacts
+//     put in the room this hour (one 5-min row with anyone is enough) and carried over between hours, so
+//     people more than 5 m apart in a big room (capacity > 150: the sim logs no such pair) and someone who
+//     arrives after a sick person left still share air. Occupant i breathes q * f * B * h_i * C.
 //   - outdoor humidity: that day's weather (config.json) -> indoor RH -> virus decay, part of the room's loss
 //   - time since the meeting: infections age one bin per step (latent -> infectious -> over, R)
 // Observations constrain the marginals as in the paper: a positive test sets P(infected) = 1 from
@@ -24,7 +30,8 @@
 // Besides P, it keeps each agent's expected infectiousness shed_j = sum_a P_j(a) * stage(a), which the
 // heat map's risk field uses (heatmap/riskfield.js).
 
-import { doseModel, DEFAULTS as RIO } from './infer.js';
+import { doseModel, indoorRH, virusDecay, DEFAULTS as RIO } from './infer.js';
+import { activityOf } from './data/room-activity.js';
 
 export const MF_DEFAULTS = {
   dtH: 1,                 // MF step, hours
@@ -40,7 +47,22 @@ export const MF_DEFAULTS = {
   lrOther: 4,             // ... of a report by someone else
   fnr: 0.3,               // negative test: infected mass x false-negative rate
   detectDays: 1,          // a test only sees infections at least this old
-  lambdaScale: 0.135,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
+  lambdaScale: 0.836,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
+                          //   (0.135 with legacyDose)
+  // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
+  // air, so outdoor passers-by and crowded lounges outweighed roommates (the sim's most common infections).
+  // A two-zone model (Nicas, Am. Ind. Hyg. Assoc. J. 57:542, 1996) treats the air within d of the source as a
+  // near-field box exchanging beta = 1/2 * area * s with the room: a 1 m hemisphere (6.3 m^2) at typical indoor
+  // air speeds s ~ 0.05 m/s (Baldwin & Maynard, Ann. Occup. Hyg. 42:303, 1998) gives ~570 m^3/h, growing ~d^2.
+  // Facing the speaker, in the jet, dilutes less (Jia et al., Build. Environ. 219:109166, 2022: 94x at 1 m for
+  // 0.72 m^3/h exhaled -> 68 m^3/h; https://pmc.ncbi.nlm.nih.gov/articles/PMC9085449/), but phones don't know
+  // who faces whom. Q(1 m) = 600, ~d^2 beyond (two-zone shell), ~d inside (jet stage). On run 25fe957a,
+  // 600 beat 68 / 200 (AUC, dose-only AUC); see model/README.md.
+  nearQ1: 600,            // m^3/h at 1 m
+  nearPuffExp: 2,         // Q ~ d^this beyond 1 m
+  roomAir: true,          // room term from each room's occupancy (false: per logged pair, as infer.js)
+  legacyDose: false,      // true: infer.js doseModel per pair (plume 1/(30 d^2) + room term), the old dose
+  activity: true,         // f by room type (data/room-activity.js; roomActivity: {type: f} overrides); false: 1
   checkpointSteps: 6,     // state is saved every this many steps, to rerun from when a report reaches back
 };
 
@@ -84,19 +106,61 @@ export function meanFieldRisk(input, params = {}) {
     return doseByKey.get(key);
   };
 
-  // Contacts -> dose per quantum D, summed per unordered pair and MF step (Poisson doses add up).
+  // Rooms: volume, ventilation and activity from map/rooms.csv; an id it lacks gets infer.js's default room.
+  const roomRows = input.rooms || null, roomIx = new Map(), rmV = [], rmAch = [], rmF = [];
+  const roomOf = (id) => {
+    let r = roomIx.get(id);
+    if (r === undefined) {
+      const s = roomRows && roomRows.get(id), v = Number(s?.volume_m3), a = Number(s?.ventilation_ach);
+      r = rmV.length; roomIx.set(id, r);
+      rmV.push(v > 0 ? v : R.defaultRoomM2 * R.ceilingM); rmAch.push(a > 0 ? a : R.defaultAch); rmF.push(P.activity ? (P.roomActivity?.[s?.room_type] ?? activityOf(s?.room_type)) : 1);
+    }
+    return r;
+  };
+  // Virus decay by sim day (outdoor humidity -> indoor RH), for each room's loss rate.
+  const decayOfDay = (day) => {
+    const o = daily.length ? daily[Math.min(day, daily.length - 1)] : {};
+    const rh = o.outdoor_rh_pct ?? w.outdoor_rh_pct ?? R.outdoorRH, tc = o.outdoor_temp_c ?? w.outdoor_temp_c ?? R.outdoorTempC;
+    return virusDecay(indoorRH(rh, tc, w.indoor_temp_c ?? R.indoorTempC));
+  };
+  const TIER_M = [0.5, 1.5, 3.5, 6];
+  const nearQ = (d) => P.nearQ1 * (d < 1 ? d : Math.pow(d, P.nearPuffExp));
+
+  // Contacts -> near-field dose per quantum D, summed per unordered pair and MF step (Poisson doses add up),
+  // and who was in which room for how many sim steps of each MF step (room air below).
   const agg = Array.from({ length: nSteps }, () => new Map());
-  const stepsPerDay = 1440 / stepMin;
-  for (const c of contacts) {
+  const occ = Array.from({ length: nSteps }, () => new Map()); // room * N + agent -> sim steps present
+  const lastT = new Float64Array(N).fill(-1);
+  const stepsPerDay = 1440 / stepMin, stepH = stepMin / 60;
+  const sorted = contacts.every((c, k) => k === 0 || +c.t >= +contacts[k - 1].t);
+  const rows = sorted ? contacts : contacts.slice().sort((x, y) => x.t - y.t);
+  const legacy = P.legacyDose, roomAir = P.roomAir && !legacy;
+  for (const c of rows) {
     const t = +c.t, n = Math.floor(t / W);
     if (n >= nSteps) continue;
     let a = idx.get(c.agent_a), b = idx.get(c.agent_b);
     if (a === undefined || b === undefined || a === b) continue;
-    const unit = doseForDay(Math.floor(t / stepsPerDay))(c); // quanta * B * h * (plume + room); 0 through a wall
+    const iv = c.indoor, indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1';
+    if (indoor && c.room_id === '') continue; // through a wall: no shared air (infer.js wallFactor 0)
+    let unit;
+    if (legacy) unit = doseForDay(Math.floor(t / stepsPerDay))(c) / R.quantaPeak;
+    else {
+      const r = indoor ? roomOf(c.room_id ?? '') : -1, shared = roomAir && c.room_id != null; // no room id: per pair
+      if (shared && r >= 0) for (const x of [a, b]) if (lastT[x] !== t) { // one room per agent per sim step
+        lastT[x] = t;
+        const k = r * N + x;
+        occ[n].set(k, (occ[n].get(k) || 0) + 1);
+      }
+      const dm = c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
+      const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, Number(c.distance_tier) || 4)) - 1]);
+      const f = r >= 0 ? rmF[r] : 1;
+      unit = (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
+      if (!shared && r >= 0) unit += (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
+    }
     if (!(unit > 0)) continue;
     if (a > b) [a, b] = [b, a];
     const k = a * N + b, m = agg[n];
-    m.set(k, (m.get(k) || 0) + unit / R.quantaPeak); // per quantum, so lambda = 1 - exp(-q * stage * D)
+    m.set(k, (m.get(k) || 0) + unit); // per quantum, so lambda = 1 - exp(-q * stage * D)
   }
   const pairs = agg.map((m) => {
     if (!m.size) return null;
@@ -105,6 +169,14 @@ export function meanFieldRisk(input, params = {}) {
     for (const [k, d] of m) { a[i] = Math.floor(k / N); b[i] = k % N; D[i] = d; i++; }
     return { a, b, D };
   });
+  // Occupancy per MF step, grouped by room: room, agent, hours present.
+  const occs = occ.map((m) => {
+    if (!m.size) return null;
+    const keys = [...m.keys()].sort((x, y) => x - y), r = new Int32Array(keys.length), ag = new Int32Array(keys.length), h = new Float64Array(keys.length);
+    keys.forEach((k, i) => { r[i] = Math.floor(k / N); ag[i] = k % N; h[i] = m.get(k) * stepH; });
+    return { r, ag, h };
+  });
+  const nRooms = rmV.length, dayOfStep = (s) => Math.floor((s * P.dtH) / 24);
 
   // Reports and tests -> observations, at the MF step the app learns them.
   const obs = Array.from({ length: nSteps }, () => []);
@@ -132,9 +204,18 @@ export function meanFieldRisk(input, params = {}) {
       if (i === undefined) continue;
       S[i] = 0; A.fill(0, i * K, i * K + K); A[i * K] = 1;
     }
-    return { S, A, R: Rr };
+    return { S, A, R: Rr, C: new Float64Array(nRooms) }; // C: each room's airborne shed, per m^3
   };
-  const copy = (s) => ({ S: s.S.slice(), A: s.A.slice(), R: s.R.slice() });
+  const copy = (s) => ({ S: s.S.slice(), A: s.A.slice(), R: s.R.slice(), C: s.C.slice() });
+  const shedNow = new Float64Array(N), shedStamp = new Int32Array(N).fill(-1);
+  const shedOf = (st, j, s) => { // sum over ages of P_j(age) * stage(age), at the start of step s
+    if (shedStamp[j] === s) return shedNow[j];
+    let x = 0;
+    for (let k = 0, o = j * K; k < K; k++) if (stage[k]) x += st.A[o + k] * stage[k];
+    shedStamp[j] = s; shedNow[j] = x;
+    return x;
+  };
+  const decayDay = Array.from({ length: dayOfStep(nSteps) + 1 }, (_, d) => decayOfDay(d));
   const logq = new Float64Array(N);
 
   function applyClamp(c, st) {
@@ -172,8 +253,34 @@ export function meanFieldRisk(input, params = {}) {
   // One MF step, in place: clamps, then P_S <- P_S * prod_j (1 - T_{j->i}) * exp(-import), then ageing.
   function step(s, st, clamps) {
     for (const c of clamps.get(s) || []) applyClamp(c, st);
-    const { S, A, R: Rr } = st;
+    const { S, A, R: Rr, C } = st;
     logq.fill(-hImp);
+    // Room air: C' = Css + (C - Css) e^(-loss dt), Css = sum_j shed_j (h_j / dt) / (V loss); occupant i breathes
+    // the step's mean C, less its own share (a person does not infect themselves).
+    if (roomAir) {
+      shedStamp.fill(-1);
+      const dec = decayDay[Math.min(dayOfStep(s), decayDay.length - 1)], dt = P.dtH, o = occs[s];
+      const touched = o ? new Set() : null;
+      for (let p = 0, n = o ? o.r.length : 0; p < n;) {
+        const r = o.r[p];
+        let e = p, E = 0;
+        for (; e < n && o.r[e] === r; e++) E += shedOf(st, o.ag[e], s) * o.h[e];
+        const loss = rmAch[r] + R.deposition + dec, VL = rmV[r] * loss, a = Math.exp(-loss * dt), avgf = (1 - a) / (loss * dt);
+        const css = E / dt / VL, cavg = css + (C[r] - css) * avgf, g = q * rmF[r] * R.breathingRate;
+        for (let k = p; k < e; k++) {
+          const own = (shedOf(st, o.ag[k], s) * o.h[k]) / dt / VL;
+          const x = g * o.h[k] * Math.max(0, cavg - own);
+          if (x > 0) logq[o.ag[k]] -= x;
+        }
+        C[r] = css + (C[r] - css) * a;
+        touched.add(r);
+        p = e;
+      }
+      for (let r = 0; r < nRooms; r++) if (C[r] > 0 && !(touched && touched.has(r))) {
+        C[r] *= Math.exp(-(rmAch[r] + R.deposition + dec) * dt);
+        if (C[r] < 1e-12) C[r] = 0;
+      }
+    }
     const pr = pairs[s];
     if (pr) {
       for (let p = 0; p < pr.D.length; p++) {
@@ -265,6 +372,8 @@ export function meanFieldRisk(input, params = {}) {
     expectedInfections: ever, // sum over agents of P(ever infected) by the end
     pAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
     params: { ...R, ...P, method: 'meanfield' },
-    field: { q, breathingRate: R.breathingRate, nearFieldQ: R.nearFieldQ, outdoorNearDilution: R.outdoorNearDilution, quietQuanta: R.quietQuanta / R.quantaPeak },
+    // for the heat map's risk field: hazard at 1 m for 1 h per unit shed = q * breathingRate / nearFieldQ
+    field: legacy ? { q, breathingRate: R.breathingRate, nearFieldQ: R.nearFieldQ, outdoorNearDilution: R.outdoorNearDilution, quietQuanta: R.quietQuanta / R.quantaPeak }
+      : { q, breathingRate: R.breathingRate, nearFieldQ: P.nearQ1, outdoorNearDilution: R.outdoorNearDilution, quietQuanta: activityOf('dorm_double') },
   };
 }
