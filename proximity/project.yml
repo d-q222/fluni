@@ -47,9 +47,10 @@ targets:
       properties:
         <<: *radioInfo
         CFBundleDisplayName: FlUni
-        # OFL fonts from Google Fonts (licences next to them in FlUni/Resources/Fonts/). Fraunces 28pt optical size,
-        # SemiBold + SemiBold Italic: the wordmark, headings and numbers. Shantell Sans Medium: the tissue's voice.
-        UIAppFonts: [Fraunces-SemiBold.ttf, Fraunces-SemiBoldItalic.ttf, ShantellSans-Medium.ttf]
+        # OFL fonts from Google Fonts. Lisa's type (design pass): Nunito for text, Fredoka for titles and numbers,
+        # static instances in FlUni/Fonts. Fraunces SemiBold (+ Italic), in FlUni/Resources/Fonts, only for the name
+        # "FlUni": its serifed "l" never reads as a capital I, which Nunito and Fredoka can't promise.
+        UIAppFonts: [Nunito-Regular.ttf, Nunito-SemiBold.ttf, Nunito-Bold.ttf, Fredoka-Medium.ttf, Fredoka-SemiBold.ttf, Fraunces-SemiBold.ttf, Fraunces-SemiBoldItalic.ttf]
         NSLocationWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         NSLocationAlwaysAndWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         # Bluetooth modes: detection keeps running in the background and iOS can relaunch FlUni for

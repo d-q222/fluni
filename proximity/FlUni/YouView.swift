@@ -100,7 +100,7 @@ struct YouView: View {
                     .font(.fluni(.display))
                     .accessibilityIdentifier("you.status")
             }
-            Text("And a random ID that changes every 15 minutes. Nothing else: no name, no symptoms, no location.")
+            Text("Also how many days ago it began (after a report), this phone's risk estimate and a random ID that changes every 15 minutes. Never your name, symptoms or location.")
                 .font(.fluni(.note)).foregroundStyle(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
             if let at = feed.statusSetAt {

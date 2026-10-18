@@ -1,8 +1,9 @@
 import Foundation
 
 // Self-reported health: what the user said, how long to stay home, and how the status may change.
-// Pure logic (no SwiftUI, no storage). Everything here stays on the phone; only `Record.risk` is
-// ever broadcast (via ProximityModel.setMyStatus). Symptoms, dates and test kinds are never sent.
+// Pure logic (no SwiftUI, no storage). Everything here stays on the phone; only `Record.risk` and the
+// whole days since `dayZero` are ever broadcast (via ProximityModel.setMyStatus / setMyDayZero, so other
+// phones can weight their dose by the illness stage). Symptoms, dates and test kinds are never sent.
 
 enum Symptom: String, Codable, CaseIterable {
     case fever, cough, soreThroat, aches, fatigue, runnyNose

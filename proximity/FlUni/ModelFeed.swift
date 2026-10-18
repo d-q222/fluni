@@ -31,7 +31,12 @@ final class ModelFeed: ObservableObject {
             #if DEBUG
             if let e = PreviewHook.exposure { return Just(e).eraseToAnyPublisher() }
             #endif
-            return m.$exposure.eraseToAnyPublisher()
+            // `exposure` isn't @Published; the model announces visible changes through objectWillChange (setExposure).
+            // Read it once the change has landed (next main-queue turn).
+            return m.objectWillChange.receive(on: DispatchQueue.main)
+                .compactMap { [weak m] _ in m?.exposure }
+                .prepend(m.exposure)
+                .eraseToAnyPublisher()
         }()
         let peers: AnyPublisher<Int, Never> = {
             #if DEBUG

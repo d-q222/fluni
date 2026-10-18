@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import os
 
 /// FlUni's Map tab: the heat map team's offline user map, bundled in the app (Resources/app-bundle/) and served
 /// to a locked-down web view over fluni://app/. It never touches the network, location or the sim.
@@ -79,6 +80,7 @@ private struct BundledMapWebView: UIViewRepresentable {
     func makeCoordinator() -> Guard { Guard() }
 
     func makeUIView(context: Context) -> WKWebView {
+        context.coordinator.loading = Signposts.poi.beginInterval("map load")
         let cfg = WKWebViewConfiguration()
         cfg.websiteDataStore = .nonPersistent()
         cfg.preferences.javaScriptCanOpenWindowsAutomatically = false
@@ -105,6 +107,25 @@ private struct BundledMapWebView: UIViewRepresentable {
 
     /// Denies everything except fluni://app, and all geolocation, media capture and new windows.
     final class Guard: NSObject, WKNavigationDelegate, WKUIDelegate {
+        /// From creating the web view to the page's load event (Points of Interest "map load").
+        var loading: OSSignpostIntervalState?
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            if let s = loading { Signposts.poi.endInterval("map load", s); loading = nil }
+            #if DEBUG
+            pollDrawn(webView, tries: 0)
+            #endif
+        }
+        #if DEBUG
+        /// Debug only, for Instruments: usermap.js hides #status once the data is loaded and drawn ("map drawn").
+        private func pollDrawn(_ web: WKWebView, tries: Int) {
+            guard tries < 300 else { return }
+            web.evaluateJavaScript("document.getElementById('status')?.hidden === true") { [weak self, weak web] r, _ in
+                guard let self, let web else { return }
+                if (r as? Bool) == true { Signposts.poi.emitEvent("map drawn"); return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { self.pollDrawn(web, tries: tries + 1) }
+            }
+        }
+        #endif
         func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             let u = action.request.url

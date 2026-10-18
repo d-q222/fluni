@@ -8,7 +8,7 @@ final class FlUniUITests: FlUniUITestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["onboarding.next"].exists)
-        XCTAssertFalse(app.tabBars.firstMatch.exists, "no tabs during onboarding")
+        XCTAssertFalse(tab("Today").exists, "no tabs during onboarding")
         completeOnboarding()
         XCTAssertEqual(el("today.status").label, "All clear", "fresh install is all clear")
         XCTAssertTrue(el("tissue.says").exists, "the tissue says how things are")
@@ -27,7 +27,10 @@ final class FlUniUITests: FlUniUITestCase {
     func testTabsSwitchAndShowTheirScreens() {
         launchPastOnboarding()
         XCTAssertTrue(tab("Today").isSelected)
-        XCTAssertEqual(app.tabBars.buttons.count, 3, "Today, Map, Me")
+        // Lisa's tissue-box bar: three buttons by id, labelled Today / Map / Me; no system tab bar.
+        XCTAssertEqual(tab("Map").label, "Map")
+        XCTAssertEqual(tab("Me").label, "Me")
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
         openTab("Map")
         XCTAssertFalse(el("today.now").isHittable, "Today is behind")
         openTab("Me")
@@ -314,7 +317,7 @@ final class FlUniUITests: FlUniUITestCase {
 
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].exists)
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        XCTAssertFalse(tab("Today").exists)
         // And the saved status is gone once onboarding is done again.
         completeOnboarding()
         openTab("Me")

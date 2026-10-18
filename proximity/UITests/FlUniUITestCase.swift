@@ -36,7 +36,8 @@ class FlUniUITestCase: XCTestCase {
         completeOnboarding()
     }
 
-    func tab(_ name: String) -> XCUIElement { app.tabBars.buttons[name] }
+    /// Lisa's tissue tab bar: buttons with ids tab.today / tab.map / tab.me (the system tab bar is hidden).
+    func tab(_ name: String) -> XCUIElement { app.buttons["tab.\(name.lowercased())"] }
 
     /// The element each tab shows once it's open.
     func marker(_ tabName: String) -> XCUIElement {

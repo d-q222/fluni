@@ -14,9 +14,11 @@ enum LinkGuard {
     /// A hello's ID is used (UWB and GPS readings attributed to it) only if Bluetooth heard it this recently.
     static let bluetoothWindow: TimeInterval = 30
 
-    /// The ephemeral ID as the beacon carries it: 11 bytes as exactly 22 lowercase hex digits.
+    /// The ephemeral ID as the beacon carries it, as lowercase hex: 10 bytes (20 digits, FLU2) or, from an
+    /// older build, 11 bytes (22 digits, FLU1).
     static func isEphemeralID(_ s: String) -> Bool {
-        s.utf8.count == 22 && s.utf8.allSatisfy { (0x30 ... 0x39).contains($0) || (0x61 ... 0x66).contains($0) }
+        (s.utf8.count == 20 || s.utf8.count == 22)
+            && s.utf8.allSatisfy { (0x30 ... 0x39).contains($0) || (0x61 ... 0x66).contains($0) }
     }
 
     /// Size cap, then decode, then per-kind validation. nil = drop the message.

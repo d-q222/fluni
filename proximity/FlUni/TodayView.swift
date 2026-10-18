@@ -716,7 +716,7 @@ struct HowItWorksSheet: View {
                           "Your phone and other phones running FlUni notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
                     HandRule()
                     block("What your phone shares",
-                          "Only a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
+                          "A 3-level status (healthy, possibly sick or contagious), how many days ago your symptoms or positive test began, this phone's risk estimate and a random ID that changes every 15 minutes. Other FlUni phones use them for their own estimate and never show them, but a Bluetooth scanner can read them. No name, no phone number, no account.")
                     HandRule()
                     block("What stays on your phone",
                           "Your precise location never leaves this phone and is never seen by anyone. Today's timeline keeps building names and times on this phone for 24 hours, then forgets them. Matching happens on your phone, and the map shows building totals, not people.")

@@ -4,10 +4,18 @@ import Foundation
 import UIKit
 #endif
 
-/// Broadcasts and hears anonymous beacons. The whole payload rides in one 128-bit service UUID:
-///   bytes 0-3  "FLU1" magic
-///   byte  4    risk level
-///   bytes 5-15 ephemeral ID (rotates)
+/// Broadcasts and hears anonymous beacons. The whole payload rides in one 128-bit service UUID.
+/// [sharerisk] Version 2, what this build sends (`payload(id:risk:score:days:)`):
+///   bytes 0-3  "FLU2" magic
+///   byte  4    status: bits 0-1 risk level (0...2), bits 2-5 days since symptom onset or positive test
+///              (0...14, 15 = unknown), bits 6-7 zero
+///   byte  5    own score p as round(255 · sqrt(p)), decoded (b/255)²: finest near the 2% baseline
+///   bytes 6-15 ephemeral ID (10 bytes, rotates)
+/// Version 1, still accepted from older builds (score and days unknown):
+///   bytes 0-3  "FLU1" magic, byte 4 risk level, bytes 5-15 ephemeral ID (11 bytes)
+/// 80 random bits are still collision-safe: with n IDs alive the chance any two match is about n²/2^81, so
+/// a campus of 20,000 phones rotating every 15 min (~1.9 M IDs a day, 7·10^8 a year) collides with
+/// probability ~2·10^-7 over a whole year, and two IDs must also be heard in the same place to matter.
 /// No connection is needed, so risk status gets through even if the peer link is down.
 ///
 /// iOS hides that UUID from scanners while the advertising app is in the background. With
@@ -15,12 +23,20 @@ import UIKit
 /// the same 16 bytes from a GATT characteristic; a second scanner looks for that UUID (iOS requires a
 /// named service to scan in the background, and to match another phone's background advert at all) and
 /// reads the payload over a short connection when the advert doesn't carry it. Privacy is unchanged:
-/// the same rotating ID and 3-level status, read over GATT instead of from the advert.
+/// the same rotating ID, status, days and score, read over GATT instead of from the advert.
 final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDelegate, CBPeripheralDelegate {
     static let magic: [UInt8] = [0x46, 0x4C, 0x55, 0x31]
+    // [sharerisk] begin: beacon v2 constants
+    /// "FLU2": status + days, score, 10-byte ID.
+    static let magic2: [UInt8] = [0x46, 0x4C, 0x55, 0x32]
+    /// Ephemeral ID length in a v2 beacon (v1: 11).
+    static let idBytes = 10
+    static let maxDays = 14
+    static let unknownDays: UInt8 = 15
+    // [sharerisk] end
 
-    /// (ephemeral ID hex, risk, smoothed RSSI)
-    var onSighting: ((String, Risk, Double) -> Void)?
+    /// (beacon contents, smoothed RSSI)
+    var onSighting: ((Hit, Double) -> Void)?
     var onState: ((String) -> Void)?
     /// One-line events for the "[fluni]" log, delivered on the main queue.
     var onLog: ((String) -> Void)?
@@ -133,28 +149,78 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.restartAdvertising() }
     }
 
-    func advertise(id: Data, risk: Risk) {
-        guard let p = Self.payload(id: id, risk: risk) else { return }
+    // [sharerisk] begin: advertise v2; encode/decode v1 + v2
+    /// Advertises a v2 beacon. A call with the same contents as now is a no-op, so the 1 s tick can call
+    /// this every time without restarting the radio.
+    func advertise(id: Data, risk: Risk, score: Double, days: Int?) {
+        guard let p = Self.payload(id: id, risk: risk, score: score, days: days) else { return }
+        guard p != payload else { return }
         payload = p
         gattValue = BeaconGATT.bytes(p)  // what the GATT characteristic serves from now on
         restartAdvertising()
     }
 
-    /// The 16 payload bytes as a UUID: "FLU1", risk, 11-byte ID.
+    /// What a beacon says. `score` and `daysSinceOnset` are nil from a v1 beacon (older builds) and when
+    /// days are unknown. Other people's score and days are used for the estimate only: never shown in FlUni.
+    struct Hit: Equatable {
+        let id: String
+        let risk: Risk
+        let score: Double?
+        let daysSinceOnset: Int?
+    }
+
+    /// One byte for a probability: round(255 · sqrt(p)). sqrt spends the resolution near 0 (steps of ~0.1
+    /// percentage point at 2%). nil for NaN, infinities and values outside [0, 1].
+    static func scoreByte(_ p: Double) -> UInt8? {
+        guard p.isFinite, p >= 0, p <= 1 else { return nil }
+        return UInt8((255 * p.squareRoot()).rounded())
+    }
+
+    static func score(fromByte b: UInt8) -> Double {
+        let x = Double(b) / 255
+        return x * x
+    }
+
+    /// Status byte: risk in bits 0-1, days in bits 2-5 (clamped to 0...14; nil = 15, unknown), bits 6-7 zero.
+    static func statusByte(risk: Risk, days: Int?) -> UInt8 {
+        let d = days.map { UInt8(min(max($0, 0), maxDays)) } ?? unknownDays
+        return UInt8(risk.rawValue) | d << 2
+    }
+
+    /// nil for a risk level outside 0...2 or non-zero spare bits.
+    static func status(fromByte b: UInt8) -> (risk: Risk, days: Int?)? {
+        guard b & 0xC0 == 0, let r = Risk(rawValue: Int(b & 0x03)) else { return nil }
+        let d = (b >> 2) & 0x0F
+        return (r, d == unknownDays ? nil : Int(d))
+    }
+
+    /// The 16 payload bytes of a v2 beacon as a UUID: "FLU2", status, score, 10-byte ID.
+    /// nil for a wrong-length ID or a score that isn't a probability.
+    static func payload(id: Data, risk: Risk, score: Double, days: Int?) -> CBUUID? {
+        guard id.count == idBytes, let sb = scoreByte(score) else { return nil }
+        return CBUUID(data: Data(magic2 + [statusByte(risk: risk, days: days), sb]) + id)
+    }
+
+    /// A v1 beacon ("FLU1", risk, 11-byte ID), as older builds send. Kept for compatibility tests.
     static func payload(id: Data, risk: Risk) -> CBUUID? {
         guard id.count == 11 else { return nil }
         return CBUUID(data: Data(magic + [UInt8(risk.rawValue)]) + id.prefix(11))
     }
 
-    static func decode(_ uuid: CBUUID) -> (id: String, risk: Risk)? {
+    static func decode(_ uuid: CBUUID) -> Hit? {
         let d = uuid.data
         guard d.count == 16 else { return nil }
         // Check the magic in place; most adverts on a busy campus aren't ours.
         let b = d.startIndex
-        guard d[b] == magic[0], d[b + 1] == magic[1], d[b + 2] == magic[2], d[b + 3] == magic[3],
-              let risk = Risk(rawValue: Int(d[b + 4])) else { return nil }
-        return (d[(b + 5)...].hex, risk)
+        guard d[b] == magic[0], d[b + 1] == magic[1], d[b + 2] == magic[2] else { return nil }
+        if d[b + 3] == magic[3] {
+            guard let risk = Risk(rawValue: Int(d[b + 4])) else { return nil }
+            return Hit(id: d[(b + 5)...].hex, risk: risk, score: nil, daysSinceOnset: nil)
+        }
+        guard d[b + 3] == magic2[3], let st = status(fromByte: d[b + 4]) else { return nil }
+        return Hit(id: d[(b + 6)...].hex, risk: st.risk, score: score(fromByte: d[b + 5]), daysSinceOnset: st.days)
     }
+    // [sharerisk] end
 
     private func restartAdvertising() {
         guard !paused, let peripheral, peripheral.state == .poweredOn, let payload else { return }
@@ -224,14 +290,14 @@ final class BLEBeacon: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDe
     }
 
     /// scanQueue. Median over the last few seconds: single BLE samples swing by ±10 dB.
-    private func report(_ hit: (id: String, risk: Risk), _ raw: Double) {
+    private func report(_ hit: Hit, _ raw: Double) {  // [sharerisk] Hit instead of (id, risk)
         let now = Date()
         let s = smoothed[hit.id, default: RSSIWindow()].add(raw, at: now)
         if now.timeIntervalSince(lastPrune) > 30 {  // rotated IDs would otherwise pile up
             lastPrune = now
             smoothed = smoothed.filter { $0.value.lastAt.map { now.timeIntervalSince($0) < 30 } ?? false }
         }
-        DispatchQueue.main.async { self.onSighting?(hit.id, hit.risk, s) }
+        DispatchQueue.main.async { self.onSighting?(hit, s) }
     }
 
     // MARK: Reading a background advertiser over GATT (scanQueue)

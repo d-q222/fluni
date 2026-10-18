@@ -80,13 +80,13 @@ enum Surface {}
 
 /// Type roles: pick a role, never a raw size. Every role follows Dynamic Type (custom faces through `relativeTo:`).
 ///
-/// Three voices, no more:
-///   Fraunces SemiBold (OFL, bundled in FlUni)  the wordmark, places, headlines and the numbers that are the point.
-///                                             Its serifed "l" is why "FlUni" can't read as "FIUni".
-///   SF Pro (system)                           everything you read or tap: body, labels, buttons.
-///   Shantell Sans Medium (OFL, bundled)       only the tissue's speech bubble.
-/// Timeline times use SF Mono digits (system, nothing bundled). The harness has no bundled fonts, so the serif
-/// roles fall back to New York (the system serif) and the voice to SF Rounded.
+/// Lisa's type (design pass), plus one serif for the name:
+///   Fredoka (OFL, bundled)    places, headlines, the numbers that are the point, and the tissue's voice.
+///   Nunito (OFL, bundled)     everything you read or tap: body, labels, buttons.
+///   Fraunces (OFL, bundled)   only "FlUni" (the wordmark and the name inside sentences): its serifed "l" can't
+///                             read as a capital I.
+/// Timeline times use SF Mono digits (system, nothing bundled). Without the bundled fonts (the harness) the roles
+/// fall back to SF Rounded and the name to New York.
 enum TextRole {
     /// The one big headline of a screen (the place you're at now, "Day 2 of 5"). Fraunces 34, largeTitle.
     case display
@@ -108,7 +108,7 @@ enum TextRole {
     case figure
     /// Timeline times ("12:10"). SF Mono footnote.
     case time
-    /// The tissue speaking. Shantell Sans 17, body.
+    /// The tissue speaking. Fredoka Medium 18, body.
     case voice
 }
 
@@ -116,7 +116,6 @@ enum TextRole {
 enum Face {
     static let serif = "Fraunces28pt-SemiBold"
     static let serifItalic = "Fraunces28pt-SemiBoldItalic"
-    static let hand = "ShantellSans-Medium"
     private static var cache: [String: Bool] = [:]
     static func available(_ name: String) -> Bool {
         if let v = cache[name] { return v }
@@ -154,18 +153,18 @@ enum Face {
 extension Font {
     static func fluni(_ role: TextRole) -> Font {
         switch role {
-        case .display: return Face.serif(34, .largeTitle)
-        case .lead: return Face.serif(24, .title2)
-        case .section: return Face.serif(21, .title3)
-        case .heading: return .system(.headline, weight: .semibold)
-        case .reading: return .system(.body)
-        case .strong: return .system(.body, weight: .semibold)
-        case .note: return .system(.subheadline)
-        case .fine: return .system(.footnote)
-        case .figure: return Face.serif(34, .largeTitle).monospacedDigit()
+        case .display: return .fluni(.largeTitle, weight: .semibold)
+        case .lead: return .fluni(.title2, weight: .semibold)
+        case .section: return .fluni(.title3, weight: .semibold)
+        case .heading: return .fluni(.headline, weight: .semibold)
+        case .reading: return .fluni(.body)
+        case .strong: return .fluni(.body, weight: .semibold)
+        case .note: return .fluni(.subheadline)
+        case .fine: return .fluni(.footnote)
+        case .figure: return .fluni(.largeTitle, weight: .semibold).monospacedDigit()
         case .time: return .system(.footnote, design: .monospaced).weight(.medium)
         case .voice:
-            return Face.available(Face.hand) ? .custom(Face.hand, size: 17, relativeTo: .body) : .system(.body, design: .rounded, weight: .medium)
+            return FluniType.available ? .custom("Fredoka-Medium", size: 18, relativeTo: .body) : .system(.body, design: .rounded, weight: .medium)
         }
     }
 
@@ -238,9 +237,51 @@ extension Color {
 }
 
 extension Font {
-    /// SF Pro at a text style, for places that pick a style directly (Settings rows, banners).
+    /// Lisa's type (design pass): Nunito for text, Fredoka for titles and big numbers, matching the web.
+    /// Static instances bundled in FlUni/Fonts (SIL OFL) and listed under UIAppFonts. `relativeTo:` keeps
+    /// Dynamic Type. Targets without the fonts (the test harness) fall back to SF Rounded.
     static func fluni(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-        .system(style, weight: weight)
+        guard FluniType.available else { return .system(style, design: .rounded, weight: weight) }
+        let size = FluniType.baseSize(style)
+        switch style {
+        case .largeTitle, .title, .title2, .title3:
+            return .custom(weight == .regular ? "Fredoka-Medium" : "Fredoka-SemiBold", size: size, relativeTo: style)
+        default:
+            let w = (style == .headline && weight == .regular) ? .semibold : weight
+            let name = w == .bold || w == .heavy || w == .black ? "Nunito-Bold"
+                : (w == .semibold || w == .medium) ? "Nunito-SemiBold" : "Nunito-Regular"
+            return .custom(name, size: size, relativeTo: style)
+        }
+    }
+}
+
+enum FluniType {
+    static let available = UIFont(name: "Nunito-Regular", size: 12) != nil && UIFont(name: "Fredoka-SemiBold", size: 12) != nil
+
+    /// iOS's default (Large) Dynamic Type sizes, so custom fonts scale from the same base as the system ones.
+    static func baseSize(_ style: Font.TextStyle) -> CGFloat {
+        switch style {
+        case .largeTitle: return 34
+        case .title: return 28
+        case .title2: return 22
+        case .title3: return 20
+        case .headline, .body: return 17
+        case .callout: return 16
+        case .subheadline: return 15
+        case .footnote: return 13
+        case .caption: return 12
+        case .caption2: return 11
+        @unknown default: return 17
+        }
+    }
+
+    /// Navigation titles ("Today", "Map", "Me") in Fredoka, scaled for Dynamic Type.
+    static func styleNavigationBars() {
+        guard available, let large = UIFont(name: "Fredoka-SemiBold", size: 34),
+              let small = UIFont(name: "Fredoka-SemiBold", size: 17) else { return }
+        let a = UINavigationBar.appearance()
+        a.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
+        a.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: small)]
     }
 }
 

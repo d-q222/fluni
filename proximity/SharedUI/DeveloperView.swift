@@ -31,7 +31,7 @@ struct DeveloperView: View {
             .navigationTitle("Developer")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { if showsDone { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } } }
-            .animation(.default, value: model.exposure.level)
+            .animation(Motion.gentle, value: model.exposure.level)  // follows Reduce Motion
         }
     }
 
@@ -64,7 +64,7 @@ struct DeveloperView: View {
         } header: {
             Text("My status")
         } footer: {
-            Text("Shared anonymously with phones nearby: only this status and a random ID (\(model.myID.hex.prefix(4))) that changes every 15 minutes. No name, no location.")
+            Text("Shared anonymously with phones nearby: this status, days since onset, this phone's own score and a random ID (\(model.myID.hex.prefix(4))) that changes every 15 minutes. No name, no location.")
         }
     }
 

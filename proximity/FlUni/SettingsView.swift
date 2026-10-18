@@ -82,9 +82,13 @@ struct SettingsView: View {
     private var sharedSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Phones within Bluetooth range see exactly two things:").font(.fluni(.subheadline))
+                Text("Phones within Bluetooth range receive four things:").font(.fluni(.subheadline))
                 Label("A random ID that changes every 15 minutes", systemImage: "arrow.triangle.2.circlepath")
                 Label("A status with 3 levels: healthy, possibly sick, or contagious", systemImage: "circle.lefthalf.filled")
+                Label("How many days ago your symptoms or positive test began", systemImage: "calendar")
+                Label("This phone's risk estimate", systemImage: "percent")
+                Text(brand: "Other FlUni phones use them for their own estimate and never show them, but a Bluetooth scanner can read them.", style: .footnote)
+                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
             .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: 6) {

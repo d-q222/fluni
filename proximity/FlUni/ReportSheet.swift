@@ -137,7 +137,7 @@ private struct ChooseStep: View {
             .padding(.horizontal, Space.m).padding(.bottom, Space.l)
         }
         .safeAreaInset(edge: .bottom) {
-            PrivacyNote(text: "Nearby phones only ever see one of three words: healthy, possibly sick or contagious. Never your symptoms or dates.")
+            PrivacyNote(text: "Nearby phones see one of three words (healthy, possibly sick or contagious) and how many days ago it began. Never your symptoms or which test.")
                 .padding(.horizontal, Space.m).padding(.vertical, Space.s)
                 .background(Theme.paper)
         }
@@ -227,7 +227,7 @@ private struct SymptomsStep: View {
         }
         .footer {
             VStack(alignment: .leading, spacing: Space.s) {
-                PrivacyNote(text: "Nearby phones will only see \"possibly sick\". Never which stickers you picked.")
+                PrivacyNote(text: "Nearby phones will see \"possibly sick\" and the day count. Never which stickers you picked.")
                 Button("Report and start staying home") { submit() }
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(picked.isEmpty)
@@ -350,7 +350,7 @@ private struct TestStep: View {
         .footer {
             VStack(alignment: .leading, spacing: Space.s) {
                 PrivacyNote(text: positive
-                    ? "Nearby phones will see \"contagious\" and may warn their owners. The test and its date stay on this phone."
+                    ? "Nearby phones will see \"contagious\" and how many days ago, and may warn their owners. Which test you took stays on this phone."
                     : negativeNote)
                 Button(positive ? "Review and share" : "Save negative result") { positive ? (confirm = true) : submit() }
                     .buttonStyle(PrimaryButtonStyle(fill: positive ? Theme.fireInk : Theme.ink))

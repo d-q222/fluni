@@ -53,10 +53,16 @@ struct OnboardingView: View {
             EmptyView()
         } more: {
             VStack(alignment: .leading, spacing: Space.s) {
-                Text("Phones nearby see only").font(.fluni(.heading))
+                Text("Shared with phones nearby").font(.fluni(.heading))
                 shared("A status with 3 levels: healthy, possibly sick or contagious")
                 HandRule()
+                shared("How many days ago your symptoms or positive test began")
+                HandRule()
+                shared("Your risk estimate")
+                HandRule()
                 shared("A random ID that changes every 15 minutes")
+                Text(brand: "FlUni never shows them to anyone, but they travel over plain Bluetooth.", style: .footnote)
+                    .font(.fluni(.fine)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(Theme.ink)
             .card()

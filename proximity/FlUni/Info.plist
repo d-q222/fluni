@@ -42,9 +42,13 @@
 	<string>Measures precise distance to nearby FlUni phones with ultra wideband.</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Nunito-Regular.ttf</string>
+		<string>Nunito-SemiBold.ttf</string>
+		<string>Nunito-Bold.ttf</string>
+		<string>Fredoka-Medium.ttf</string>
+		<string>Fredoka-SemiBold.ttf</string>
 		<string>Fraunces-SemiBold.ttf</string>
 		<string>Fraunces-SemiBoldItalic.ttf</string>
-		<string>ShantellSans-Medium.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

@@ -127,7 +127,7 @@ struct AlertMarks: Shape {
     }
 }
 
-/// A hand-feeling speech bubble: surface fill, ink outline, a tail toward the speaker. Shantell Sans, ink (14.3:1).
+/// A hand-feeling speech bubble: surface fill, ink outline, a tail toward the speaker. Fredoka, ink (14.3:1).
 struct SpeechBubble: View {
     enum Tail { case leading, top }
     let text: String

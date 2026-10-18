@@ -4,14 +4,16 @@
 
 const M_PER_DEG_LAT = 110574;
 
-// Returns { inside: Uint8Array (1 = in a building), building: Int32Array (index into ids, -1 outside), ids }
+// Returns { inside: Uint8Array (1 = in a building), building: Int32Array (index into ids, -1 outside), ids,
+// byFeature: Int32Array (feature index -> index into ids, -1 when it isn't on the grid) }
 export function rasterizeBuildings(geojson, grid) {
   const { south, west, north, east } = grid.bounds, { nx, ny, cellM } = grid;
   const mPerDegLon = 111320 * Math.cos(((south + north) / 2) * Math.PI / 180);
   const inside = new Uint8Array(nx * ny), building = new Int32Array(nx * ny).fill(-1), ids = [];
+  const byFeature = new Int32Array(geojson.features.length).fill(-1);
   const sx = mPerDegLon / cellM, sy = M_PER_DEG_LAT / cellM;
 
-  for (const f of geojson.features) {
+  for (const [fi, f] of geojson.features.entries()) {
     const g = f.geometry;
     if (!g) continue;
     const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
@@ -28,6 +30,7 @@ export function rasterizeBuildings(geojson, grid) {
       if (idx < 0) {
         idx = ids.length;
         ids.push('bld_' + String(f.properties.id).split('/').pop());
+        byFeature[fi] = idx;
       }
       const y0 = Math.max(0, Math.ceil(minY - 0.5)), y1 = Math.min(ny - 1, Math.ceil(maxY - 0.5) - 1);
       for (let y = y0; y <= y1; y++) {
@@ -47,5 +50,5 @@ export function rasterizeBuildings(geojson, grid) {
       }
     }
   }
-  return { inside, building, ids };
+  return { inside, building, ids, byFeature };
 }
