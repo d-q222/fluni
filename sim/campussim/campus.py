@@ -33,7 +33,8 @@ BUILDING_COLS = ["location_id", "osm_id", "name", "type", "lat", "lon", "floors"
 BUILDING_EXTRA = ["x_local_m", "y_local_m", "n_rooms", "source", "footprint_wkt"]
 ROOM_COLS = ["room_id", "location_id", "floor", "room_type", "capacity", "area_m2", "volume_m3",
              "ventilation_ach", "source", "polygon_wkt"]
-ROOM_EXTRA = ["x0", "y0", "x1", "y1", "layout", "indoor"]
+ROOM_EXTRA = ["x0", "y0", "x1", "y1", "layout", "indoor", "room_name"]
+TEACHING_TYPES = ("seminar", "classroom", "lecture_hall")
 ENT_COLS = ["entrance_id", "building_id", "lat", "lon", "source"]
 ENT_EXTRA = ["x_local_m", "y_local_m"]
 
@@ -156,8 +157,11 @@ class Campus:
         files = {n: data_dir / f"{n}.geojson" for n in ("buildings", "entrances", "paths", "building_holes")}
         man_path = ROOT / cfg_map.get("manual_places", "data/manual_places.json")
         ovr_path = ROOT / cfg_map.get("location_overrides", "data/location_overrides.json")
+        tr = cfg_map.get("teaching_rooms")
+        tr_path = ROOT / tr if tr else None
         h = hashlib.sha256()
         for p in [files["buildings"], files["entrances"], files["paths"], man_path, ovr_path] + \
+                ([tr_path] if tr_path else []) + \
                 ([files["building_holes"]] if files["building_holes"].exists() else []):
             h.update(p.read_bytes() if p.exists() else b"")
         h.update(json.dumps(cfg_map, sort_keys=True).encode())
@@ -169,6 +173,12 @@ class Campus:
         manual = json.loads(man_path.read_text()) if man_path.exists() else []
         overrides = json.loads(ovr_path.read_text()) if ovr_path.exists() else {}
         hgj = json.loads(files["building_holes"].read_text())["features"] if files["building_holes"].exists() else []
+        self._teaching = {}  # location_id -> [(floor, capacity, room_name)] from ExploreCourses (data/courses/)
+        if tr_path:
+            with open(tr_path, newline="") as f:
+                for r in csv.DictReader(f):
+                    self._teaching.setdefault(r["location_id"], []).append(
+                        (int(r["floor"]), int(r["capacity"]), r["room_name"]))
 
         self._build_paths(pgj)
         self._build_buildings(bgj, manual, overrides)
@@ -339,7 +349,7 @@ class Campus:
 
     # ------------------------------------------------------------------ rooms
     def _program(self, b, rng):
-        """List of (floor, room_type, area_m2 | None, capacity | None) desired rooms for building b."""
+        """List of (floor, room_type, area_m2 | None, capacity | None[, room_name]) desired rooms for building b."""
         bt = self.buildings.iloc[b]
         ltype, fp, name = bt["type"], float(bt["footprint_m2"]), bt["name"]
         tc, rt = self.cfg["types"][ltype], self.cfg["room_types"]
@@ -440,6 +450,12 @@ class Campus:
             prog.append((1, "outdoor_area", fp, None))
         else:
             prog.append((1, "generic", min(tc["generic_max_m2"], max(10.0, fp * tc["generic_frac"])), None))
+        real = self._teaching.get(bt["location_id"])
+        if real:  # real teaching rooms replace the procedural ones; other rooms (labs, lobbies...) stay
+            prog = [q for q in prog if q[1] not in TEACHING_TYPES]
+            for fl, cap, rname in real:
+                rtype = "seminar" if cap <= 20 else "classroom" if cap <= 80 else "lecture_hall"
+                prog.append((min(max(fl, 1), max(floors, 1)), rtype, cap * rt[rtype]["m2_per_person"], cap, rname))
         return prog
 
     def _build_rooms(self):
@@ -462,7 +478,7 @@ class Campus:
             prog = self._program(b, rng)
             # dims (rounded to 0.1 m), clipped to the bbox
             dims = []
-            for fl, rtype, area, cap in prog:
+            for fl, rtype, area, cap, *_ in prog:
                 asp = float(rt[rtype].get("aspect", 1.25))
                 if rtype == "outdoor_area" or (rtype == "arena" and not indoor):
                     w, h = bw * fill, bh * fill
@@ -494,7 +510,8 @@ class Campus:
             placed_rows.sort(key=lambda t: (prog[t[0]][0], t[1][1], t[1][0]))  # floor, then row-major
             k_per_floor = {}
             for i, (x0, y0) in placed_rows:
-                fl, rtype, area, cap = prog[i]
+                fl, rtype, area, cap = prog[i][:4]
+                rname = prog[i][4] if len(prog[i]) > 4 else ""
                 w, h = dims[i]
                 a = round(w * h, 2)
                 spec = rt[rtype]
@@ -511,7 +528,7 @@ class Campus:
                                  volume_m3=round(a * ceil, 2) if room_indoor else float("nan"),
                                  x0=round(x0, 2), y0=round(y0, 2), x1=round(x0 + w, 2), y1=round(y0 + h, 2),
                                  layout=spec["layout"], indoor=room_indoor,
-                                 ventilation_ach=float(bt["ventilation_ach"])))
+                                 ventilation_ach=float(bt["ventilation_ach"]), room_name=rname))
             # capacity override: adjust the biggest room so the building total matches
             n_new = len(placed_rows)
             if pd.notna(bt["cap_override"]) and n_new:
@@ -531,7 +548,7 @@ class Campus:
                                 for r in rooms[["x0", "y0", "x1", "y1"]].itertuples(index=False)]
         self.rooms = rooms[["room_id", "location_id", "b", "room_type", "floor", "capacity", "area_m2", "ceiling_m",
                             "volume_m3", "x0", "y0", "x1", "y1", "cx", "cy", "lat", "lon", "polygon_wkt", "layout",
-                            "indoor", "ventilation_ach"]]
+                            "indoor", "ventilation_ach", "room_name"]]
         self.R = len(rooms)
         self.buildings["n_rooms"] = n_rooms
         self.buildings["capacity"] = caps
@@ -1041,11 +1058,13 @@ class Campus:
         recs, feats = [], []
         cols = list(zip(*[rm[c].tolist() for c in ["room_id", "location_id", "floor", "room_type", "capacity", "area_m2",
                                                      "volume_m3", "ventilation_ach", "polygon_wkt", "x0", "y0", "x1",
-                                                     "y1", "layout", "indoor"]]))
-        for (rid, loc, fl, rtype, cap, area, vol, ach, wkt, x0, y0, x1, y1, lay, ind) in cols:
+                                                     "y1", "layout", "indoor", "room_name"]]))
+        for (rid, loc, fl, rtype, cap, area, vol, ach, wkt, x0, y0, x1, y1, lay, ind, rname) in cols:
             props = dict(room_id=rid, location_id=loc, floor=int(fl), room_type=rtype, capacity=int(cap),
-                         area_m2=float(area), volume_m3=nz(float(vol)), ventilation_ach=float(ach), source="procedural")
-            extra = dict(x0=float(x0), y0=float(y0), x1=float(x1), y1=float(y1), layout=lay, indoor=bool(ind))
+                         area_m2=float(area), volume_m3=nz(float(vol)), ventilation_ach=float(ach),
+                         source="explorecourses" if rname else "procedural")
+            extra = dict(x0=float(x0), y0=float(y0), x1=float(x1), y1=float(y1), layout=lay, indoor=bool(ind),
+                         room_name=rname)
             recs.append(props | {"polygon_wkt": wkt} | extra)
             gp = props | extra
             if gp["volume_m3"] == "":

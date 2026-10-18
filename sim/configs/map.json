@@ -2,6 +2,7 @@
   "map_seed": 0,
   "data_dir": "data/osm",
   "manual_places": "data/manual_places.json",
+  "teaching_rooms": "data/courses/rooms_20252026_winter.csv",
   "location_overrides": "data/location_overrides.json",
   "exclude_highways": ["motorway", "motorway_link", "trunk", "trunk_link", "construction", "proposed", "abandoned",
                        "raceway", "bus_guideway", "elevator", "platform"],
