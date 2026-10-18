@@ -10,6 +10,8 @@ Viral-load curve (relative to the peak at symptom onset = 1.0):
   x asym_rel_infectiousness (asymptomatic) x individual multiplier (gamma, mean 1).
 
 Aerosol: each indoor room is a well-mixed box, dC/dt = E/V - (ACH + decay) C (quanta/m^3).
+decay is either aerosol.decay_per_hour, or (aerosol.inactivation = "humidity") deposition_per_hour +
+humidity-dependent inactivation, recomputed each sim day from configs/weather.json.
 A per-room per-source ledger (lazily decayed, sorted int64 keys r*N+s) attributes aerosol
 infections to sources, including sources that already left the room.
 """
@@ -41,6 +43,43 @@ def _gamma(rng, spec, n):
         return np.full(n, m)
     k = (m / sd) ** 2
     return rng.gamma(k, sd * sd / m, n)
+
+
+def indoor_rh(outdoor_rh, outdoor_temp_c=None, indoor_temp_c=21.0):
+    """Heated outdoor air keeps its water content, so indoor RH is lower than outdoor in cold weather."""
+    if outdoor_temp_c is None or outdoor_temp_c >= indoor_temp_c:
+        return float(outdoor_rh)
+
+    def sat(t):  # saturation vapour pressure, hPa (Magnus)
+        return 6.112 * math.exp(17.62 * t / (243.12 + t))
+    return min(100.0, outdoor_rh * sat(outdoor_temp_c) / sat(indoor_temp_c))
+
+
+def flu_inactivation(rh):
+    """1/h airborne influenza inactivation vs RH (Noti et al. 2013: ~75% infectious after 1 h at
+    RH < 25%, ~20% at RH > 43%), linear in between."""
+    low, high = math.log(1 / 0.75), math.log(1 / 0.20)
+    return low + (high - low) * min(max((rh - 25.0) / 20.0, 0.0), 1.0)
+
+
+def weather_on_day(cfg, day):
+    """(outdoor_rh_pct, outdoor_temp_c, indoor_temp_c) for sim day `day`."""
+    w = cfg.get("weather") or {}
+    rh, temp = float(w.get("outdoor_rh_pct", 60.0)), w.get("outdoor_temp_c", 10.0)
+    daily = w.get("daily") or []
+    if daily:
+        d = daily[min(day, len(daily) - 1)]
+        rh, temp = float(d.get("outdoor_rh_pct", rh)), d.get("outdoor_temp_c", temp)
+    return rh, (None if temp is None else float(temp)), float(w.get("indoor_temp_c", 21.0))
+
+
+def aerosol_decay(cfg, day=0):
+    """(decay 1/h, indoor RH % or None) for sim day `day` under the preset's aerosol settings."""
+    ae = cfg["disease"]["aerosol"]
+    if ae.get("inactivation") != "humidity":
+        return float(ae["decay_per_hour"]), None
+    rh = indoor_rh(*weather_on_day(cfg, day))
+    return float(ae["deposition_per_hour"]) + flu_inactivation(rh), rh
 
 
 class Disease:
@@ -87,7 +126,6 @@ class Disease:
         self.wear_eff = float(dc["masks"]["wearer_eff"])
         ae = dc["aerosol"]
         self.q_peak = float(ae["quanta_per_hour_peak"])
-        self.decay = float(ae["decay_per_hour"])
         self.breath = _act_table(ae["breathing_m3_per_h"])
         self.emis_act = _act_table(ae.get("emission_multiplier_by_activity", {"default": 1.0}))
         self.scale = float(dc["transmission_scale"])
@@ -102,9 +140,9 @@ class Disease:
         self.R = R_ = len(campus.room_vol)
         self.room_vol = np.maximum(np.asarray(campus.room_vol, float), 1.0)
         self.room_indoor = np.asarray(campus.room_indoor, bool)
-        self.lam = np.maximum(np.asarray(campus.room_ach, float) + self.decay, 1e-6)  # 1/h
-        self.room_a = np.exp(-self.lam * self.dt_h)
-        self.room_avgf = (1.0 - self.room_a) / (self.lam * self.dt_h)  # mean of decay over a step
+        self.room_ach = np.asarray(campus.room_ach, float)
+        self.decay, self.indoor_rh, self._decay_day = None, None, -1
+        self._set_decay(0)
         self.room_conc = np.zeros(R_)
         self._cavg = np.zeros(R_)
         self._led_key = np.zeros(0, np.int64)
@@ -118,6 +156,19 @@ class Disease:
             self.state[rng.random(N) < f_imm] = R
 
     # ------------------------------------------------------------------ helpers
+    def _set_decay(self, day):
+        """Room loss rates for sim day `day` (weather may change daily)."""
+        self._decay_day = day
+        decay, self.indoor_rh = aerosol_decay(self.cfg, day)
+        if decay == self.decay:
+            return
+        # Ledger entries decay lazily with the current lam, so a gap spanning a weather change uses
+        # the new day's rate for the whole gap (exact while the weather is constant).
+        self.decay = decay
+        self.lam = np.maximum(self.room_ach + decay, 1e-6)  # 1/h
+        self.room_a = np.exp(-self.lam * self.dt_h)
+        self.room_avgf = (1.0 - self.room_a) / (self.lam * self.dt_h)  # mean of decay over a step
+
     @property
     def symptomatic(self):
         return self.state == I_SYM
@@ -326,6 +377,8 @@ class Disease:
 
     # ------------------------------------------------------------------ main step
     def step(self, t, beh, contacts):
+        if t // self.spd != self._decay_day:
+            self._set_decay(t // self.spd)
         onset, recovered = self._progress(t)
         new = []
         # imports (all susceptibles, on or off map)
@@ -466,7 +519,8 @@ def calibration_report(cfg, verbose=True):
     dt_h = step_min / 60
     ae = dc["aerosol"]
     br, em = _act_table(ae["breathing_m3_per_h"]), _act_table(ae.get("emission_multiplier_by_activity", {"default": 1}))
-    q, dec, sc = ae["quanta_per_hour_peak"], ae["decay_per_hour"], dc["transmission_scale"]
+    q, sc = ae["quanta_per_hour_peak"], dc["transmission_scale"]
+    dec, rh = aerosol_decay(cfg, 0)
     ch = dc["close_hazard_per_min"]
     w = {1: ch["tier1"], 2: ch["tier2"], 3: ch["tier3"]}
     k = dc["individual_infectiousness_gamma_shape"]
@@ -511,6 +565,7 @@ def calibration_report(cfg, verbose=True):
         out[f"{name}_p"] = 1 - math.exp(-(Ha + Hc))
     if verbose:
         print(f"[{dc.get('preset', '?')}] peak-equivalent infectious days (sym, mean curve): {peak_days:.2f}")
+        print(f"  aerosol decay {dec:.3f}/h" + ("" if rh is None else f" (day-0 indoor RH {rh:.1f}%)"))
         print(f"  roommate SAR/episode: {sar:.3f} (no overdispersion {sar_nohet:.3f}); "
               f"sym H_aero={res['sym'][0]:.3f} H_close={res['sym'][1]:.3f}")
         for name in ("seminar", "party"):

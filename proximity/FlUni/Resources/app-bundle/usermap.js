@@ -10,7 +10,7 @@ import { HEAT_STOPS } from './heat.js';
 const P = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const DAY = 86400000;
-const MAX_FILL = 0.75, FORECAST_FILL = 0.5, INK = '#33241c';
+const INK = '#33241c';
 
 async function fetchTotals() {
   if (typeof DecompressionStream === 'function') {
@@ -47,6 +47,7 @@ function makeClock(totals) {
 
 // ---------- colour (same scale as the presenter page's "What users see") ----------
 
+const darker = (rgb) => rgb.replace(/\d+/g, (v) => Math.round(v * 0.72));
 function heatColor(t) {
   let j = 1;
   while (j < HEAT_STOPS.length - 1 && HEAT_STOPS[j][0] < t) j++;
@@ -55,11 +56,12 @@ function heatColor(t) {
   const c = c0.map((v, i) => v + f * (c1[i] - v));
   return { color: `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`, alpha: c[3] / 255 };
 }
+const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x * 10) / 10));
 const clock12 = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`);
 
 async function main() {
-  const getJson = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const getJson = (u) => fetch(u).then((r) => { if (r.ok) return r.json(); console.warn(`usermap: ${u} failed: HTTP ${r.status}`); return null; }).catch((e) => { console.warn(`usermap: ${u} failed:`, e); return null; });
   const [totals, geo, bounds, ctx, paths, labels] = await Promise.all([
     fetchTotals(),
     fetch('data/buildings.geojson').then((r) => r.json()),
@@ -76,29 +78,38 @@ async function main() {
   const vmax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
 
   // ---- legend ----
-  $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
+  $('ramp').style.background = `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map((q) => {
+    const m = heatColor(0.18 + 0.82 * q).color.match(/\d+/g); return `rgb(${m[0]},${m[1]},${m[2]})`; }).join(', ')})`;
   $('vmid').textContent = (vmax / 4).toFixed(1);
   $('vmax').textContent = `${vmax.toFixed(1)}+`;
   $('fine').textContent = `Buildings with fewer than ${minPeople} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`;
+  $('info').addEventListener('click', () => {
+    const open = $('more').hidden;
+    $('more').hidden = !open;
+    $('info').setAttribute('aria-expanded', String(open));
+    if (typeof placeLabels === 'function') placeLabels();
+  });
 
   // ---- map ----
   // Bounded to the campus extent + 250 m. Beyond that the user never goes, but a few roads, the Shopping
   // Center and downtown are drawn faintly in the margin (data/context.geojson, from OSM).
   const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
-    preferCanvas: true, maxBoundsViscosity: 1.0, worldCopyJump: false, inertia: true });
+    preferCanvas: true, worldCopyJump: false, inertia: true });
   const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
-  const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440);
+  const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440), PHALO = pane('halo', 425);
+  map.getPane('halo').style.filter = 'blur(2.5px)';
+  map.getPane('heat').style.filter = 'drop-shadow(0 0 4px rgba(233,149,105,.85))'; // hot buildings glow so they read zoomed out
   const lblPane = map.createPane('labels'); lblPane.style.zIndex = 450; lblPane.style.pointerEvents = 'none';
-  const NEUTRAL = { stroke: true, color: INK, weight: 0.8, opacity: 0.32, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
+  const NEUTRAL = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
   const CTX = {
     green: { stroke: false, fill: true, fillColor: '#c3cf9c', fillOpacity: 0.5 },
     water: { stroke: false, fill: true, fillColor: '#adc9cc', fillOpacity: 0.7 },
-    road: { color: INK, weight: 1.4, opacity: 0.3, fill: false },
-    street: { color: INK, weight: 0.7, opacity: 0.16, fill: false },
-    rail: { color: INK, weight: 1.2, opacity: 0.3, dashArray: '5 4', fill: false },
-    town: { color: INK, weight: 0.7, opacity: 0.22, fill: false },
-    shopping: { color: INK, weight: 0.8, opacity: 0.3, fill: true, fillColor: INK, fillOpacity: 0.05 },
-    hospital: { color: INK, weight: 0.8, opacity: 0.3, fill: false },
+    road: { color: INK, weight: 1.2, opacity: 0.2, fill: false },
+    street: { color: INK, weight: 0.6, opacity: 0.11, fill: false },
+    rail: { color: INK, weight: 1.1, opacity: 0.2, dashArray: '5 4', fill: false },
+    town: { color: INK, weight: 0.6, opacity: 0.15, fill: false },
+    shopping: { color: INK, weight: 0.7, opacity: 0.2, fill: true, fillColor: INK, fillOpacity: 0.05 },
+    hospital: { color: INK, weight: 0.7, opacity: 0.2, fill: false },
   };
   const B = bounds || { south: 37.417142, west: -122.183335, north: 37.437912, east: -122.156460 };
   const campus = L.latLngBounds([B.south, B.west], [B.north, B.east]);
@@ -106,7 +117,9 @@ async function main() {
     L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) },
       { style: () => CTX[k], interactive: false, ...PCTX }).addTo(map);
   }
-  if (paths) L.geoJSON(paths, { style: () => ({ color: INK, weight: 0.8, opacity: 0.2, fill: false }), interactive: false, ...PPATH }).addTo(map);
+  const pathStyle = () => ({ color: INK, weight: 0.7 + Math.max(0, map.getZoom() - 15) * 0.3, opacity: 0.12, fill: false });
+  let pathLayer = null;
+  if (paths) pathLayer = L.geoJSON(paths, { style: () => pathStyle(), interactive: false, ...PPATH }).addTo(map);
   L.geoJSON(geo, { style: () => NEUTRAL, interactive: false, ...PNEU }).addTo(map);
 
   const items = [];
@@ -120,15 +133,22 @@ async function main() {
   }
 
   // anchor labels, thinned by priority, zoom and collision with each other, the legend and the top chip
-  const lbls = (labels || []).map((l) => {
-    const m = L.marker([l.lat, l.lon], { interactive: false, keyboard: false, pane: 'labels',
-      icon: L.divIcon({ className: `lbl lbl-${l.c}`, html: `<span>${l.t}</span>`, iconSize: null }) }).addTo(map);
-    return { ...l, m, w: 0, h: 0 };
-  });
+  const mkLabel = (l) => ({ ...l, w: 0, h: 0, m: L.marker([l.lat, l.lon], { interactive: false, keyboard: false, pane: 'labels',
+    icon: L.divIcon({ className: `lbl lbl-${l.c}`, html: `<span>${esc(l.t)}</span>`, iconSize: null }) }).addTo(map) });
+  const lbls = [];
+  const anchors = (labels && labels.anchors) || [];
+  for (const l of anchors) lbls.push(mkLabel(l));
+  // every named building: a marker is only made once it scrolls into view at street zoom (z >= 16.5)
+  const fine = ((labels && labels.fine) || []).map(([t, lat, lon]) => ({ t, lat, lon, p: 4, c: 'f' }));
   const rectOf = (el) => el.getBoundingClientRect();
   function placeLabels() {
-    const mapBox = rectOf($('map')), avoid = [rectOf(document.querySelector('.legend')), rectOf(document.querySelector('.chip'))];
-    const mb = map.options.maxBounds, z = map.getZoom(), z0 = map.getMinZoom();
+    const mapBox = rectOf($('map')), z = map.getZoom(), z0 = map.getMinZoom();
+    const avoid = [rectOf(document.querySelector('.legend')), rectOf(document.querySelector('.chip')),
+      { left: mapBox.left, right: mapBox.right, top: mapBox.bottom - map.getSize().y * 0.09, bottom: mapBox.bottom }]; // FlUni's sheet
+    if (z >= 16.5) {
+      const view = map.getBounds(), have = new Set(lbls.map((l) => l.t + l.lat));
+      for (const f of fine) if (view.contains([f.lat, f.lon]) && !have.has(f.t + f.lat) && !anchors.some((a) => a.t === f.t)) lbls.push(mkLabel(f));
+    }
     const placed = [];
     for (const l of lbls.slice().sort((a, b) => a.p - b.p)) {
       const el = l.m.getElement();
@@ -138,7 +158,7 @@ async function main() {
       const pt = map.latLngToContainerPoint([l.lat, l.lon]);
       const r = { l: mapBox.left + pt.x - l.w / 2, t: mapBox.top + pt.y - l.h / 2, r: mapBox.left + pt.x + l.w / 2, b: mapBox.top + pt.y + l.h / 2 };
       const hit = (o) => r.l < o.right && r.r > o.left && r.t < o.bottom && r.b > o.top;
-      const ok = z >= z0 + (l.p - 1) * 0.75 && (!mb || mb.contains([l.lat, l.lon]))
+      const ok = (l.p === 4 ? z >= 16.5 : z >= z0 + (l.p - 1) * 0.75)
         && r.l >= mapBox.left + 4 && r.r <= mapBox.right - 4 && r.t >= mapBox.top && r.b <= mapBox.bottom
         && !avoid.some(hit) && !placed.some((o) => hit({ left: o.l, right: o.r, top: o.t, bottom: o.b }));
       el.style.visibility = ok ? 'visible' : 'hidden';
@@ -146,45 +166,29 @@ async function main() {
     }
   }
 
-  // the bounded view: on load the whole campus fits between the top chip and the legend; that zoom is
-  // also the furthest out the user can go, and the pan limit is campus + 250 m (grown only as much as the
-  // screen needs to stay filled, never leaving a void)
-  const vig = L.layerGroup().addTo(map);
+  // the view: on load the whole campus fits between the top chip and the legend strip, that zoom is also
+  // the furthest out, and panning is held to campus + 10% by Leaflet's default (soft, rubber-band) limit
+  const vig = L.layerGroup().addTo(map); // (filled below)
   const pad = (b, dLat, dLon) => L.latLngBounds([b.getSouth() - dLat, b.getWest() - dLon], [b.getNorth() + dLat, b.getEast() + dLon]);
-  const padded = pad(campus, 0.00225, 0.0028);
-  let shiftY = 0;
-  // Pan limit at the current zoom: campus + 250 m, grown only where the screen itself is bigger (zoomed all
-  // the way out on a tall phone), so zoomed in the user can never reach the margin.
-  function limits() {
-    const z = map.getZoom(), size = map.getSize();
-    const c = map.project(campus.getCenter(), z).add([0, shiftY]);
-    const box = L.bounds(map.project(padded.getSouthWest(), z), map.project(padded.getNorthEast(), z))
-      .extend(c.subtract(size.divideBy(2).add([1, 1]))).extend(c.add(size.divideBy(2).add([1, 1])));
-    map.setMaxBounds(L.latLngBounds(map.unproject(box.min, z), map.unproject(box.max, z)));
-    vignette();
-  }
-  function vignette() { // soft paper vignette over the last ~250 m before the edge
-    const mb = map.options.maxBounds;
-    vig.clearLayers();
-    const ring = (b) => [b.getNorthWest(), b.getNorthEast(), b.getSouthEast(), b.getSouthWest()];
-    for (const m of [30, 70, 120, 190]) {
-      const d = m * 0.000009, h = pad(mb, -d, -d * 1.26);
-      L.polygon([ring(mb), ring(h)], { stroke: false, fillColor: '#faf4e8', fillOpacity: 0.16, interactive: false, ...PVIG }).addTo(vig);
-    }
+  // Everything outside the campus extent fades toward paper: six translucent masks, each with a hole that
+  // starts a little further out, so the margin gets paler the further it is from campus.
+  const outer = pad(campus, 0.05, 0.06);
+  const ringOf = (b) => [b.getNorthWest(), b.getNorthEast(), b.getSouthEast(), b.getSouthWest()];
+  for (const m of [0, 60, 130, 230, 380, 600]) {
+    L.polygon([ringOf(outer), ringOf(pad(campus, m * 0.000009, m * 0.0000113))],
+      { stroke: false, fillColor: '#faf4e8', fillOpacity: 0.14, interactive: false, ...PVIG }).addTo(vig);
   }
   function frame() {
-    const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.2);
+    const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.09); // the slim legend strip + tab bar
     const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));
-    shiftY = (bottom - top) / 2;
     map.setMinZoom(z);
-    map.setMaxBounds(null);
-    map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, shiftY]), z), z, { animate: false });
-    limits();
+    map.setMaxBounds(campus.pad(0.1));
+    map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, (bottom - top) / 2]), z), z, { animate: false });
     placeLabels();
   }
   frame();
   if (P.get('debug') !== null) window.__map = map; // for the bounds test
-  map.on('zoomend', () => { limits(); map.panInsideBounds(map.options.maxBounds, { animate: false }); });
+  map.on('zoomend', () => { if (pathLayer) pathLayer.setStyle(pathStyle()); });
   map.on('moveend zoomend', placeLabels);
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { map.invalidateSize(); frame(); }, 150); });
 
@@ -209,11 +213,15 @@ async function main() {
 
   function styleFor(n, sick, forecast) {
     if (n < minPeople) return { stroke: false, fill: false };
-    const { color, alpha } = heatColor(Math.sqrt(Math.min(1, sick / vmax)));
-    const op = alpha * MAX_FILL * (forecast ? FORECAST_FILL : 1);
-    return { stroke: true, weight: 1.5, color: INK, opacity: 0.6, dashArray: forecast ? '4 3' : null, fill: true, fillColor: color, fillOpacity: op };
+    // saturated sun -> fire fill (never pale: even the lowest shown building reads), stroke in its own darker hue
+    const t = 0.18 + 0.82 * Math.sqrt(Math.min(1, sick / vmax));
+    const { color } = heatColor(t);
+    return { stroke: true, weight: 1, color: darker(color), opacity: forecast ? 0.6 : 0.9, dashArray: forecast ? '4 3' : null,
+      fill: true, fillColor: color, fillOpacity: forecast ? 0.45 : 0.82 };
   }
 
+  const haloR = () => Math.max(0, Math.min(9, (17.5 - map.getZoom()) * 4)); // px; gone by street zoom
+  map.on('zoomend', () => { const r = haloR(); for (const it of items) if (it.halo) it.halo.setRadius(r); });
   function render(force) {
     const { s, t } = snapshot();
     if (!force && s === step) return;
@@ -225,7 +233,14 @@ async function main() {
       const r = now.get(it.idx);
       const style = r ? styleFor(r[1], fc ? fc.get(it.idx) || 0 : r[2], !!fc) : styleFor(0, 0, false);
       const key = JSON.stringify(style);
-      if (key !== it.key) { it.layer.setStyle(style); it.key = key; }
+      if (key !== it.key) {
+        it.layer.setStyle(style); it.key = key;
+        // a halo with a floor on its on-screen size, so a small hot building still registers when zoomed out
+        if (style.fill) {
+          if (!it.halo) it.halo = L.circleMarker(it.layer.getBounds().getCenter(), { interactive: false, stroke: false, radius: haloR(), ...PHALO }).addTo(map);
+          it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
+        } else if (it.halo) { it.halo.remove(); it.halo = null; }
+      }
       if (r && r[1] >= minPeople) shown.set(it.idx, { people: r[1], sick: fc ? fc.get(it.idx) || 0 : r[2] });
     }
     // "Now · updated 4:30 pm": the snapshot's time of day, today
@@ -251,7 +266,6 @@ async function main() {
     setPopupText();
     pop.setLatLng(latlng).openOn(map);
   }
-  const esc = (x) => x.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   map.on('popupclose', () => { openIdx = -1; });
 
   for (const b of $('horizon').querySelectorAll('button')) {

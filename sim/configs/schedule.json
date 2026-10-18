@@ -1,5 +1,59 @@
 {
   "sections": {
+    "source": "explorecourses",
+    "_source_doc": "explorecourses = real sections from data/courses/ (fetch_explorecourses.py + build_rooms.py); synthetic = the invented catalog below (size_mix, slots, courses, labs).",
+    "explorecourses": {
+      "catalog": "data/courses/20252026_winter.csv.gz",
+      "seat_slack": 1.25,
+      "_seat_doc": "Seats per section = real enrollment x undergrad_share[level], scaled so all primary seats = seat_slack x the courses agents want.",
+      "not_primary": ["DIS", "INS", "T/D", "ISF", "ISS", "ITR", "RSC", "IDS", "CAS", "RES"],
+      "lab_components": ["LAB", "LBS"],
+      "kind_by_component": {"LAB": "lab", "LBS": "lab", "SEM": "seminar", "COL": "seminar", "WKS": "seminar", "LNG": "seminar"},
+      "skip_locations": ["Remote"],
+      "exclude_subjects": ["ACCT", "ALP", "BUSGEN", "MGTECON", "FINANCE", "GSBGEN", "GSBGID", "HRMGT", "MKTG", "OIT", "OB",
+                           "POLECON", "STRAMGT", "LAW", "LAWGEN", "ANES", "BIOC", "BMDS", "BMP", "BIOS", "CBIO", "CTS", "CSB",
+                           "CHPR", "COMPMED", "DERM", "DBIO", "EMED", "EPI", "FAMMED", "GENE", "HRP", "IMMUNOL", "LEAD",
+                           "LIFE", "MED", "INDE", "MI", "MCP", "NBIO", "NENS", "NEPR", "NSUR", "OBGYN", "OPHT", "ORTHO",
+                           "OTOHNS", "PATH", "PEDS", "PAS", "PSYC", "RADO", "RAD", "SOMGEN", "STEMREM", "SBIO", "SURG", "UROL"],
+      "exclude_subject_prefixes": ["OSP", "ROTC"],
+      "_levels_doc": "Course number bands: <100, 100-199, 200-299, 300+. undergrad_share = fraction of a section's real enrollment that is undergrads; year_level_weight[class_year] = pick weight per band.",
+      "level_bands": [100, 200, 300],
+      "undergrad_share": [0.92, 0.75, 0.3, 0.04],
+      "year_level_weight": {"1": [1.0, 0.35, 0.05, 0.005], "2": [0.75, 0.7, 0.12, 0.01],
+                            "3": [0.3, 1.0, 0.3, 0.03], "4": [0.2, 1.0, 0.45, 0.06]},
+      "required": [
+        {"courses": "^COLLEGE 1", "class_years": [1], "p": 0.9},
+        {"courses": "^PWR 1", "class_years": [1], "p": 0.35},
+        {"courses": "^PWR 2", "class_years": [2], "p": 0.4}
+      ],
+      "restricted": [
+        {"courses": "^COLLEGE 1", "class_years": [1]},
+        {"courses": "^PWR 1", "class_years": [1, 2]}
+      ],
+      "majors": {
+        "_doc": "Each agent draws one major group from archetype_mix; its subjects get major_mult[class_year - 1] extra weight.",
+        "groups": {
+          "cs": ["CS", "SYMSYS", "DATASCI", "CME"],
+          "engineering": ["EE", "ME", "AA", "CEE", "CHEMENG", "MATSCI", "ENGR", "BIOE", "DESIGN", "MS&E"],
+          "math_physics": ["MATH", "STATS", "PHYSICS", "APPPHYS"],
+          "bio_health": ["BIO", "HUMBIO", "CHEM", "BIOE", "PSYCH"],
+          "econ_policy": ["ECON", "PUBLPOL", "MS&E", "POLISCI", "INTNLREL"],
+          "social": ["POLISCI", "SOC", "INTNLREL", "COMM", "PSYCH", "ANTHRO", "URBANST", "CSRE", "EDUC"],
+          "humanities": ["ENGLISH", "HISTORY", "PHIL", "CLASSICS", "ARTHIST", "COMPLIT", "MUSIC", "TAPS", "ARTSTUDI",
+                         "FILMEDIA", "RELIGST", "LINGUIST", "AMSTUD"],
+          "earth": ["EARTHSYS", "EPS", "ESS", "OCEANS", "SUSTAIN", "ENERGY", "GEOPHYS"]
+        },
+        "archetype_mix": {
+          "stem": {"cs": 0.35, "engineering": 0.3, "math_physics": 0.15, "bio_health": 0.2},
+          "studious": {"cs": 0.15, "math_physics": 0.15, "humanities": 0.2, "social": 0.1, "econ_policy": 0.1, "bio_health": 0.2, "earth": 0.1},
+          "social": {"econ_policy": 0.3, "social": 0.3, "humanities": 0.15, "cs": 0.2, "bio_health": 0.05},
+          "athlete": {"social": 0.3, "econ_policy": 0.25, "humanities": 0.1, "bio_health": 0.15, "engineering": 0.1, "earth": 0.1},
+          "commuter": {"cs": 0.25, "engineering": 0.2, "econ_policy": 0.2, "social": 0.2, "bio_health": 0.15},
+          "homebody": {"cs": 0.2, "humanities": 0.25, "social": 0.15, "bio_health": 0.15, "math_physics": 0.1, "earth": 0.15}
+        },
+        "major_mult": [1.5, 2.5, 4.0, 5.0]
+      }
+    },
     "mean_courses_default": 4.0,
     "min_courses": 3,
     "max_courses": 5,

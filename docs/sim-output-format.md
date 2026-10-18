@@ -66,9 +66,20 @@ mirror with the same columns. Booleans are `True`/`False`; missing values are em
 
 ## Extras (simulator only; consumers may ignore)
 
+- **Real class schedules (default).** Sections come from ExploreCourses (Winter 2025-26), so
+  `section_id` looks like `CS106B_LEC01` (course without spaces, component, section number; a class
+  that meets in two patterns gets `_2`). `course` is the real course (`CS 106B`), `days` are real
+  day codes (`MWF`, `TTh`, `MTWThF`, …) and `start`/`end` are real times. Cross-listed courses
+  (e.g. `HISTORY 102` and `INTNLREL 102`) are separate sections in the same room at the same time.
+  `room_name` is the registrar's room (`Hewlett Teaching Center 200`, `160-322`); it is empty when
+  the class had no mappable room and the sim put it in a generic classroom. In `map/rooms.csv`,
+  rooms with a `room_name` have `source = explorecourses`; the rest stay `procedural`.
+  `--set schedule.sections.source=synthetic` brings back the old invented catalog (`SEC_MWF_01`).
+
 - Extra columns, always **after** the columns above: `map/buildings.csv` + `x_local_m, y_local_m,
-  n_rooms, source, footprint_wkt`; `map/rooms.csv` + `x0, y0, x1, y1, layout, indoor`;
-  `map/entrances.csv` + `x_local_m, y_local_m`; `schedule/sections.csv` + `kind, location_id`;
+  n_rooms, source, footprint_wkt`; `map/rooms.csv` + `x0, y0, x1, y1, layout, indoor, room_name`;
+  `map/entrances.csv` + `x_local_m, y_local_m`; `schedule/sections.csv` + `kind, location_id,
+  component, room_name, title`;
   `schedule/events.csv` + `name`; `summary.json` has extra keys after the listed ones.
 - Extra files: `timeline_changes.csv.gz` (compact timeline, [timeline-changes-format.md](timeline-changes-format.md)),
   `timeline.parquet`, `contacts.parquet`, `room_exposure.parquet` (same columns),

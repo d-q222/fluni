@@ -39,7 +39,7 @@ struct ReportFlow: View {
         // Closes a moment after the stamp lands. A task, so it's cancelled if the sheet goes away first.
         .task(id: stamped) {
             guard stamped else { return }
-            try? await Task.sleep(for: .milliseconds(1100))
+            try? await Task.sleep(for: .milliseconds(800))
             if !Task.isCancelled { dismiss() }
         }
         .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
@@ -68,26 +68,25 @@ struct ReportFlow: View {
         }
     }
 
+    /// Saved: show the stamp for a moment, then close (straight away with Reduce Motion).
     private func saved() {
-        if reduceMotion { stamped = true } else { withAnimation(.spring(response: 0.32, dampingFraction: 0.5)) { stamped = true } }
+        if reduceMotion { dismiss(); return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { stamped = true }
     }
 
-    /// Lisa's stamp, pressed onto the sheet after a symptoms report is saved, large enough to read.
+    /// Lisa's "Self-reported" stamp, thumped onto the sheet after a symptoms report is saved (her stamp moment,
+    /// as she made it). Always in the hierarchy so the `if` inside the ZStack can animate its insertion.
     private var stampOverlay: some View {
         ZStack {
             if stamped {
-                Theme.paper.opacity(0.82).ignoresSafeArea().transition(.opacity)
-                VStack(spacing: Space.m) {
-                    Image("StampSelfReported").resizable().scaledToFit().frame(width: 230)
-                        .rotationEffect(.degrees(reduceMotion ? 0 : -12))
-                        .accessibilityHidden(true)
-                    Text("Saved. Phones near you now see \"possibly sick\".").font(.fluni(.heading)).foregroundStyle(Theme.ink)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(Space.l)
-                .transition(reduceMotion ? .opacity : .scale(scale: 2.2).combined(with: .opacity))
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("report.stamp")
+                Theme.paper.opacity(0.6).ignoresSafeArea()
+                    .transition(.opacity)
+                Image("StampSelfReported").resizable().scaledToFit()
+                    .frame(width: 220)
+                    .rotationEffect(.degrees(-12))
+                    .transition(reduceMotion ? .opacity : .scale(scale: 2.2).combined(with: .opacity))
+                    .accessibilityLabel("Self-reported")
+                    .accessibilityIdentifier("report.stamp")
             }
         }
         .allowsHitTesting(false)

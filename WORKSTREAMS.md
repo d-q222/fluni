@@ -7,13 +7,18 @@ Claim a row before you start. Update the status as you go. Agents should name th
 | Repo setup | `/` | @d-q222 (Claude agent) | Done | README, AGENTS.md, PRD, this file |
 | Heat map | `heatmap/` | @d-q222 (Claude agent) | **In progress**: v1 runs on placeholder data; map stack tentative | Demo view: agents walk smoothly along real campus footpaths, heat = P(sick) × concentration, click a dot to see that agent's phone. Waiting on the real CSV (~10 agents). Next up: the user-facing map + predictive mode, see `heatmap/ROADMAP.md`. |
 | Design pass | `heatmap/` (styling, layout, assets); look of `sim/campussim/viewer_template.html` | @lisaazheng (+ Claude agent) | **In progress**: campfire palette, hand-drawn people, shared risk tiers done; hand-drawn map, loading screen and phone illustrations next | Hand-drawn visual style. Works on branch `design-pass`, merged by PR. Doesn't change data parsing, heat maths, or the CSV contract. Palette lives in `heatmap/index.html` `:root`; see `heatmap/README.md` → `assets/`. |
-| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents); transmission not yet calibrated | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. See `sim/README.md`. |
+| Synthetic agent data | `sim/` | @aidenyj (Claude agent) | **In progress**: full simulator runs (10 and 7,500 agents). Done: study-room capacity check, `report_other` rate fix, influenza calibrated to campus R ≈ 1.6 (`transmission_scale` 1.2; rerun `sim/scripts/calibrate.py` after contact changes). Also: real class schedules from ExploreCourses (Winter 2025-26 sections, times, sizes, rooms mapped to buildings; class-year/major-aware course picks). Also: humidity (outdoor RH/temperature → indoor RH → flu aerosol decay, same formula as `model/` and `exposure/`) | Ground-truth agent simulation (positions, rooms, disease state, contacts, self-reports/tests). The heat map consumes this. Real 10-agent, 14-day sample: `sim/runs/influenza_none_n10_d14_s2_bc5cae7a/`. Full-size 7,000-agent, 2-day run: `sim/runs/influenza_none_n7000_d2_s42_5423d1a4/` (big files in parts; `scripts/run_parts.py join` rebuilds them). See `sim/README.md`. |
+| Intervention comparison | `sim/` (`campussim/app_policy.py`, `campussim/psick.py`, `configs/scenarios.json`, `scripts/compare.py`) | @aidenyj (Claude agent) | **In progress**: step 1, FlUni app policy inside the sim | Runs the sim under different app settings and actions and compares outcomes. The `fluni` intervention reproduces the app in the loop: who has the app, close-contact alerts (6 ft, 15 weighted min / 24 h), a streaming Python port of `model/infer.js` P(sick), and configurable advice (isolate / mask / leave / Vaden) followed w.p. compliance. Next: reporting knobs, named scenario presets, `--summary-only` output, a 7,000-agent × 14-day × 3–5-seed comparison report (infections, app performance, who's affected). Reads `model/` but doesn't edit it. |
 | Proximity alerts (phone) | `proximity/` | @d-q222 (Claude agent, proximity; separate from the heat map agent) | **In progress**: live alerts work on 3 iPhones. One project, two apps: **FlUni** (student app) + **FluniProx** (test harness), sharing `Core/`; building out FlUni | Native iOS app (SwiftUI). Detection by Bluetooth LE beacon + UWB (Nearby Interaction) + GPS, fused by inverse-variance weighting, with UWB calibrating Bluetooth. Close-contact alert with advice after 15 min within 6 ft of a contagious phone (demo speed 60×). Heat map tab embeds the **user** heat map (`heatmap/?view=public`). See `proximity/README.md`. |
 | Infection probability model | `model/` | @d-q222 (Claude agent; the heat map agent, until a teammate wants it) | **In progress**: v1 runs in the heat map | PRD Functionality 3: sim contacts + self-reports/tests → P(sick) per agent over time, plus advice and lie-detection flags. `model/infer.js` runs in the browser (and Node: `node model/cli.mjs sim/runs/mock_boring10`). A shared output file for other workstreams would be a new data contract, so that is pending a decision. |
 | Exposure calculator | `exposure/` | @rioschillmoeller (Claude agent) | **In progress**: slider page + Python script | Standalone "what did this meeting do to my odds?" tool: duration, distance, room, indoor/outdoor, the other person's stage and P, humidity, days since → updated P(flu). Uses the Baker et al. (PNAS 2021) per-contact update with a Wells–Riley airborne dose for λ. Separate from `model/`; touches no other directory. |
 
 ## Decisions
 
+- **2026-10-17: heat shows risk above the baseline (product owner).** Heat colour and the
+  building `heat`/`high` flags use Σ max(0, P − prior) instead of Σ P, so a run with few reports
+  doesn't look like a crowd map. `expected_sick` and the popup counts stay Σ P. The
+  `building_heat.csv` columns are unchanged; see docs/building-heat-format.md.
 - **2026-10-17 — Agent timeline format.** The synthetic data workstream owns the format: one large
   CSV with one row per agent per timestamp (agent id, position, properties, sick status, …). The
   heat map adapts to it and keeps all parsing in one adapter.
@@ -93,6 +98,18 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → synthetic data (@aidenyj), 2026-10-17: false reports in the 7,000-agent run.**
+  - **What we see:** `influenza_none_n7000_d2_s42_5423d1a4` has 6 infections (all off-campus imports)
+    but 308 reports, 307 of them false: 303 false `report_other`s (294 different targets) and 4 false
+    self-reports. That is about 4% of campus falsely reported in 2 days.
+  - **Effect:** the model trusts reports, so the map shows 1,202 expected sick after one day and 2,436
+    after two (35% of campus), with up to 293 in one building. In the busy n400 run, 15 of 21
+    `report_other`s are true and the model tracks the truth (76 expected vs 77 by day 3).
+  - **Question:** is that false-report rate intended? If not, could the full-size run use the n400
+    run's report behaviour, or some transmission so the reports have something to find?
+  - **Not a blocker for you:** I reproduced this run locally byte-for-byte (seed 42; `contacts` and
+    `timeline` sha256 match your manifest), so the parts can follow at your pace.
+
 - **heat map + FlUni → synthetic data (@aidenyj), 2026-10-17: a busier default run for the demo.**
   - **Why:** the live map looks sparse. On `..._bc5cae7a` (10 agents, 3 infections), the live moment
     has data for only 4 buildings.
@@ -106,6 +123,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
     and the compact timeline.
   - **When it lands:** the heat map and FlUni switch the default run together, and the model,
     building heat and app bundle are regenerated.
+  - **Checked locally (heat map, 2026-10-17):** that command on current main writes exactly
+    `influenza_none_n400_d3_s5_1513ab3f` in about 5 s: 78 infections, 40 infectious by day 3. The model
+    and precompute handle it in 1.3 s, and the expected count matches the truth by day 3
+    (`model/calibrate.py`). Publishing just needs that folder committed, with an `!runs/...` line in
+    `sim/.gitignore`.
   - **Possible blocker:** if `transmission_scale=4` is unrealistic for the sim, suggest the closest
     realistic busy config.
 
@@ -160,6 +182,8 @@ Claim a row before you start. Update the status as you go. Agents should name th
     - Your script and our port differ in two places: quiet emission in dorm rooms, and the prior
       (yours decays, ours holds).
     - The doc ends with three questions for you.
+  - **2026-10-17 follow-up, GitHub issue #5 (assigned to Rio):** calibration against the sim and the
+    4 open questions (λ vs the sim's R ≈ 1.6, corroborated reports, second-hand stage, COMPARISON.md).
   - **Spec tests:** [`model/TESTS.md`](model/TESTS.md) (`node model/test.mjs`, 13/13). It has one
     test for each input in your spec, checking that the input moves P the right way, plus a check
     that we match the paper's update.

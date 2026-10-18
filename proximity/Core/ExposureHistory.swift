@@ -154,8 +154,10 @@ final class ExposureHistoryStore: ObservableObject {
 
     private struct SavedOpen: Codable { var open: ExposureHistory.Open; var savedAt: Date }
 
+    /// None on a test launch, so a test run neither reads nor writes the owner's history.
     static var defaultURL: URL? {
-        try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
+        guard !LaunchMode.isTestLaunch else { return nil }
+        return try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                                      appropriateFor: nil, create: true).appendingPathComponent("exposure-history.json")
     }
 

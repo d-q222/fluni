@@ -18,8 +18,10 @@ final class PlaceLogStore: ObservableObject {
     private var timer: Timer?
     private let url: URL?
 
+    /// None on a test launch, so a test run neither reads nor writes the owner's places.
     nonisolated static var defaultURL: URL? {
-        try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        guard !LaunchMode.isTestLaunch else { return nil }
+        return try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent("place-log.json")
     }
 

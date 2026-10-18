@@ -12,6 +12,8 @@ struct FlUniApp: App {
     @StateObject private var router = AppRouter.shared
     @StateObject private var reportStore = SelfReportStore()
     @Environment(\.scenePhase) private var phase
+    /// Lisa's opening animation; off for UI tests and unit-test hosts so they never wait on it.
+    @State private var showIntro = true
 
     init() {
         #if DEBUG
@@ -37,6 +39,7 @@ struct FlUniApp: App {
                 }
             }
         }
+        _showIntro = State(initialValue: !skipRadios && !LaunchMode.isUnitTestHost)
     }
     private let skipRadios: Bool  // test-only: UI tests never broadcast
 
@@ -74,6 +77,8 @@ struct FlUniApp: App {
             #if DEBUG
             .modifier(PreviewHookModifier(model: model, store: reportStore))
             #endif
+            // Lisa's opening animation over whatever the first screen is (design pass).
+            .overlay { if showIntro { LaunchIntro { showIntro = false } } }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
@@ -120,7 +125,13 @@ struct FlUniApp: App {
     /// Idempotent (model.start() only runs once).
     private static func startDetection() {
         let model = sharedModel
+        #if DEBUG
+        // Debug builds obey the Mac tools' test arguments (-risk, -speed, ...) so phone tests need no taps. A test
+        // launch keeps nothing: saved status, pause, self-report and history are neither read nor written.
+        model.acceptsLaunchArguments = LaunchMode.isTestLaunch
+        #else
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
+        #endif
         #if DEBUG
         let saved = UserDefaults.standard.double(forKey: "demoSpeed")
         if saved > 1 { model.speed = saved }

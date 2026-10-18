@@ -1,0 +1,339 @@
+location,location_id,building,room_name,floor,capacity
+Beckman Center B060,bld_109151789,Beckman Center for Molecular and Genetic Medicine,Beckman Center B060,1,36
+Beckman Center B100,bld_109151789,Beckman Center for Molecular and Genetic Medicine,Beckman Center B100,1,14
+"Li Ka Shing Center, room 101",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 101",1,16
+"Li Ka Shing Center, room 102",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 102",1,35
+"Li Ka Shing Center, room 120",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 120",1,59
+"Li Ka Shing Center, room 130",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 130",1,50
+"Li Ka Shing Center, room 208",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 208",2,19
+"Li Ka Shing Center, room 209",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 209",2,13
+"Li Ka Shing Center, room 306",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 306",3,20
+"Li Ka Shing Center, room 308",bld_116855068,Li Ka Shing Center,"Li Ka Shing Center, room 308",3,16
+Braun 102,bld_12460152,Braun Music Center,Braun 102,1,12
+Braun 103,bld_12460152,Braun Music Center,Braun 103,1,15
+Braun 105,bld_12460152,Braun Music Center,Braun 105,1,18
+Braun 106,bld_12460152,Braun Music Center,Braun 106,1,11
+Braun 111,bld_12460152,Braun Music Center,Braun 111,1,13
+Braun 131,bld_12460152,Braun Music Center,Braun 131,1,9
+Braun 211,bld_12460152,Braun Music Center,Braun 211,2,15
+Braun 226,bld_12460152,Braun Music Center,Braun 226,2,8
+Braun Rehearsal Hall,bld_12460152,Braun Music Center,Braun Rehearsal Hall,1,28
+Campbell Recital Hall,bld_12460152,Braun Music Center,Campbell Recital Hall,1,20
+GSB McClelland 101D,bld_131641542,W. Carter McClelland Building,GSB McClelland 101D,1,44
+GSB McClelland 104,bld_131641542,W. Carter McClelland Building,GSB McClelland 104,1,82
+GSB McClelland 105,bld_131641542,W. Carter McClelland Building,GSB McClelland 105,1,77
+GSB McClelland 109,bld_131641542,W. Carter McClelland Building,GSB McClelland 109,1,75
+Cemex Auditorium,bld_131641543,Lorenzo H. Zambrano Hall,Cemex Auditorium,1,302
+GSB Botha-Chan 104,bld_131641543,Lorenzo H. Zambrano Hall,GSB Botha-Chan 104,1,44
+GSB Botha-Chan 130,bld_131641543,Lorenzo H. Zambrano Hall,GSB Botha-Chan 130,1,52
+GSB Botha-Chan 332,bld_131641543,Lorenzo H. Zambrano Hall,GSB Botha-Chan 332,3,14
+GSB Zambrano 301,bld_131641543,Lorenzo H. Zambrano Hall,GSB Zambrano 301,3,42
+GSB Gunn 101,bld_131641545,John A. & Cynthia Fry Gunn Building,GSB Gunn 101,1,76
+GSB Gunn 102,bld_131641545,John A. & Cynthia Fry Gunn Building,GSB Gunn 102,1,89
+GSB Faculty East 101,bld_131641547,Faculty Building East,GSB Faculty East 101,1,40
+GSB Faculty East 102,bld_131641547,Faculty Building East,GSB Faculty East 102,1,38
+GSB Faculty East 103,bld_131641547,Faculty Building East,GSB Faculty East 103,1,44
+GSB Faculty East 104,bld_131641547,Faculty Building East,GSB Faculty East 104,1,28
+GSB Faculty East 233,bld_131641547,Faculty Building East,GSB Faculty East 233,2,8
+GSB Faculty East 247,bld_131641547,Faculty Building East,GSB Faculty East 247,2,10
+GSB Faculty East 259,bld_131641547,Faculty Building East,GSB Faculty East 259,2,12
+GSB Class of 1968 102,bld_131641548,MBA Class of 1968 Building,GSB Class of 1968 102,1,66
+GSB Class of 1968 105,bld_131641548,MBA Class of 1968 Building,GSB Class of 1968 105,1,66
+GSB Class of 1968 106,bld_131641548,MBA Class of 1968 Building,GSB Class of 1968 106,1,80
+CODAB60,bld_1434557267,Computing & Data Science,CODAB60,1,147
+CODAB80,bld_1434557267,Computing & Data Science,CODAB80,1,118
+CODAB90,bld_1434557267,Computing & Data Science,CODAB90,1,179
+Clark Center S361,bld_158630340,James H. Clark Center,Clark Center S361,3,34
+LAW 14,bld_166892958,William H. Neukom Building,LAW 14,1,37
+LAW 180,bld_166892958,William H. Neukom Building,LAW 180,1,68
+LAW 185,bld_166892958,William H. Neukom Building,LAW 185,1,35
+LAW 190,bld_166892958,William H. Neukom Building,LAW 190,1,86
+LAW 21,bld_166892958,William H. Neukom Building,LAW 21,1,21
+LAW 230,bld_166892958,William H. Neukom Building,LAW 230,2,21
+LAW 26,bld_166892958,William H. Neukom Building,LAW 26,1,22
+LAW 27,bld_166892958,William H. Neukom Building,LAW 27,1,22
+LAW 272,bld_166892958,William H. Neukom Building,LAW 272,2,31
+LAW 280A,bld_166892958,William H. Neukom Building,LAW 280A,2,72
+LAW 280B,bld_166892958,William H. Neukom Building,LAW 280B,2,70
+LAW 285,bld_166892958,William H. Neukom Building,LAW 285,2,35
+LAW 29,bld_166892958,William H. Neukom Building,LAW 29,1,23
+LAW 290,bld_166892958,William H. Neukom Building,LAW 290,2,69
+LAW 301B,bld_166892958,William H. Neukom Building,LAW 301B,3,13
+LAW 320D,bld_166892958,William H. Neukom Building,LAW 320D,3,15
+LAW 320F,bld_166892958,William H. Neukom Building,LAW 320F,3,8
+LAW 85,bld_166892958,William H. Neukom Building,LAW 85,1,22
+LAW 90,bld_166892958,William H. Neukom Building,LAW 90,1,26
+LAW 95,bld_166892958,William H. Neukom Building,LAW 95,1,62
+William H. Neukom 102,bld_166892958,William H. Neukom Building,William H. Neukom 102,1,20
+William H. Neukom 104,bld_166892958,William H. Neukom Building,William H. Neukom 104,1,12
+Bing Concert Hall Stage,bld_205182889,Bing Concert Hall,Bing Concert Hall Stage,1,67
+Bing Concert Hall Studio,bld_205182889,Bing Concert Hall,Bing Concert Hall Studio,1,25
+Knoll 103,bld_232805659,The Knoll,Knoll 103,1,8
+Knoll 315,bld_232805659,The Knoll,Knoll 315,3,8
+Knoll 317,bld_232805659,The Knoll,Knoll 317,3,21
+Knoll217,bld_232805659,The Knoll,Knoll217,2,18
+DINKG10,bld_232805665,Dinkelspiel Memorial Music Auditorium,DINKG10,1,36
+Dinkelspiel Auditorium,bld_232805665,Dinkelspiel Memorial Music Auditorium,Dinkelspiel Auditorium,1,23
+BARNUM 002A,bld_232805684,Barnum Center,BARNUM 002A,1,43
+Bishop Auditorium,bld_232805685,Lathrop Library,Bishop Auditorium,1,220
+LATHROP199,bld_232805685,Lathrop Library,LATHROP199,1,14
+Lathrop 014,bld_232805685,Lathrop Library,Lathrop 014,1,38
+Lathrop 015,bld_232805685,Lathrop Library,Lathrop 015,1,19
+Lathrop 016,bld_232805685,Lathrop Library,Lathrop 016,1,59
+Lathrop 017,bld_232805685,Lathrop Library,Lathrop 017,1,20
+Lathrop 018,bld_232805685,Lathrop Library,Lathrop 018,1,75
+Lathrop 180,bld_232805685,Lathrop Library,Lathrop 180,1,40
+Lathrop 190,bld_232805685,Lathrop Library,Lathrop 190,1,36
+Lathrop 191,bld_232805685,Lathrop Library,Lathrop 191,1,13
+Lathrop 197,bld_232805685,Lathrop Library,Lathrop 197,1,15
+Lathrop 198,bld_232805685,Lathrop Library,Lathrop 198,1,13
+Lathrop 282,bld_232805685,Lathrop Library,Lathrop 282,2,142
+Lathrop 290,bld_232805685,Lathrop Library,Lathrop 290,2,20
+Lathrop 292,bld_232805685,Lathrop Library,Lathrop 292,2,19
+Lathrop 294,bld_232805685,Lathrop Library,Lathrop 294,2,21
+Lathrop 296,bld_232805685,Lathrop Library,Lathrop 296,2,23
+Lathrop 298,bld_232805685,Lathrop Library,Lathrop 298,2,14
+Lathrop 299,bld_232805685,Lathrop Library,Lathrop 299,2,26
+GSB Patterson 101,bld_232805699,William J. Patterson Building,GSB Patterson 101,1,21
+GSB Patterson 107,bld_232805699,William J. Patterson Building,GSB Patterson 107,1,55
+Econ 106,bld_232805716,Landau Economics Building,Econ 106,1,11
+Econ 139,bld_232805716,Landau Economics Building,Econ 139,1,23
+Econ 140,bld_232805716,Landau Economics Building,Econ 140,1,62
+Econ 206,bld_232805716,Landau Economics Building,Econ 206,2,15
+Econ 218,bld_232805716,Landau Economics Building,Econ 218,2,8
+Littlefield 103,bld_232805717,Littlefield Center,Littlefield 103,1,30
+Littlefield 104,bld_232805717,Littlefield Center,Littlefield 104,1,19
+Littlefield 107,bld_232805717,Littlefield Center,Littlefield 107,1,44
+Sweet303,bld_232805743,Sweet Hall,Sweet303,3,19
+Sweet403,bld_232805743,Sweet Hall,Sweet403,4,16
+Thornton 102,bld_232805748,Thornton Center,Thornton 102,1,72
+Thornton 110,bld_232805748,Thornton Center,Thornton 110,1,70
+Thornton 207,bld_232805748,Thornton Center,Thornton 207,2,16
+Thornton 208,bld_232805748,Thornton Center,Thornton 208,2,11
+Thornton 209,bld_232805748,Thornton Center,Thornton 209,2,16
+Thornton 210,bld_232805748,Thornton Center,Thornton 210,2,23
+Thornton 211,bld_232805748,Thornton Center,Thornton 211,2,21
+Gates B1,bld_232841885,Gates Computer Science,Gates B1,1,331
+Gates B12,bld_232841885,Gates Computer Science,Gates B12,1,41
+Gates B3,bld_232841885,Gates Computer Science,Gates B3,1,47
+Gates100,bld_232841885,Gates Computer Science,Gates100,1,16
+Gilbert Biological Science 117,bld_232841887,Gilbert Hall,Gilbert Biological Science 117,1,21
+Hewlett Teaching Center 102,bld_232841892,Hewlett Teaching Center,Hewlett Teaching Center 102,1,57
+Hewlett Teaching Center 103,bld_232841892,Hewlett Teaching Center,Hewlett Teaching Center 103,1,33
+Hewlett Teaching Center 200,bld_232841892,Hewlett Teaching Center,Hewlett Teaching Center 200,2,500
+Hewlett Teaching Center 201,bld_232841892,Hewlett Teaching Center,Hewlett Teaching Center 201,2,105
+Hewlett Teaching Center Rm 101,bld_232841892,Hewlett Teaching Center,Hewlett Teaching Center Rm 101,1,31
+Turing Auditorium,bld_232841893,Polya Hall,Turing Auditorium,1,58
+Encina West 101,bld_232841906,Encina Hall West,Encina West 101,1,20
+Encina West 108,bld_232841906,Encina Hall West,Encina West 108,1,19
+Encina West 202,bld_232841906,Encina Hall West,Encina West 202,2,21
+Encina West 208,bld_232841906,Encina Hall West,Encina West 208,2,8
+Encina West 219,bld_232841906,Encina Hall West,Encina West 219,2,18
+Encina West 400,bld_232841906,Encina Hall West,Encina West 400,4,12
+Encina West 417,bld_232841906,Encina Hall West,Encina West 417,4,8
+Encina Center 464,bld_232841915,Encina Hall Center,Encina Center 464,4,20
+McCullough 115,bld_232841918,McCullough,McCullough 115,1,112
+McCullough 122,bld_232841918,McCullough,McCullough 122,1,28
+McCullough 126,bld_232841918,McCullough,McCullough 126,1,23
+Mitchell Earth Sciences 452,bld_232841921,Mitchell Earth Sciences Building,Mitchell Earth Sciences 452,4,8
+Mitchell Earth Sciences A25,bld_232841921,Mitchell Earth Sciences Building,Mitchell Earth Sciences A25,1,8
+Mitchell Earth Sciences B4,bld_232841921,Mitchell Earth Sciences Building,Mitchell Earth Sciences B4,1,14
+Mitchell Earth Sciences B67,bld_232841921,Mitchell Earth Sciences Building,Mitchell Earth Sciences B67,1,23
+Mitchell Earth Sciences350/372,bld_232841921,Mitchell Earth Sciences Building,Mitchell Earth Sciences350/372,3,19
+500-106,bld_232841924,Peterson Laboratory,500-106,1,10
+530-127,bld_232841924,Peterson Laboratory,530-127,1,59
+540-103,bld_232841924,Peterson Laboratory,540-103,1,19
+540-108,bld_232841924,Peterson Laboratory,540-108,1,28
+Sequoia Hall 200,bld_232841930,Sequoia Hall,Sequoia Hall 200,2,36
+Skilling Auditorium,bld_232841931,Skilling Building,Skilling Auditorium,1,58
+Packrd101,bld_232841933,Packard,Packrd101,1,69
+Green Earth Sciences104,bld_232841956,Green Earth Sciences Building,Green Earth Sciences104,1,36
+Green Earth Sciences131,bld_232841956,Green Earth Sciences Building,Green Earth Sciences131,1,20
+Green Earth Sciences134,bld_232841956,Green Earth Sciences Building,Green Earth Sciences134,1,23
+Green Earth Sciences150,bld_232841956,Green Earth Sciences Building,Green Earth Sciences150,1,19
+AOERC 103B,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC 103B,1,23
+AOERC Avery Recreational Pool,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Avery Recreational Pool,1,15
+AOERC Basketball Court 1,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Basketball Court 1,1,12
+AOERC Basketball Court 2,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Basketball Court 2,1,26
+AOERC Basketball Court 3,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Basketball Court 3,1,26
+AOERC Climbing Wall 1,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Climbing Wall 1,1,15
+AOERC Cycling Room,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Cycling Room,1,19
+AOERC Fitness Center,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Fitness Center,1,14
+AOERC Studio 111,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Studio 111,1,16
+AOERC Studio 203,bld_255490604,Arrillaga Outdoor Education and Recreation Center,AOERC Studio 203,1,35
+Shriram 052,bld_307364465,Shriram Center for Bioengineering & Chemical Engineering,Shriram 052,1,8
+Shriram 104,bld_307364465,Shriram Center for Bioengineering & Chemical Engineering,Shriram 104,1,132
+Shriram 108,bld_307364465,Shriram Center for Bioengineering & Chemical Engineering,Shriram 108,1,37
+Shriram 366,bld_307364465,Shriram Center for Bioengineering & Chemical Engineering,Shriram 366,3,32
+Shriram 368,bld_307364465,Shriram Center for Bioengineering & Chemical Engineering,Shriram 368,3,14
+100-101K,bld_35820,Main Quad,100-101K,1,20
+110-101,bld_35820,Main Quad,110-101,1,12
+110-112,bld_35820,Main Quad,110-112,1,19
+110-114,bld_35820,Main Quad,110-114,1,11
+120-101,bld_35820,Main Quad,120-101,1,26
+120-215,bld_35820,Main Quad,120-215,2,12
+120-314,bld_35820,Main Quad,120-314,3,18
+120-410,bld_35820,Main Quad,120-410,4,18
+120-414,bld_35820,Main Quad,120-414,4,8
+120-452,bld_35820,Main Quad,120-452,4,10
+120-59,bld_35820,Main Quad,120-59,1,12
+120-S40,bld_35820,Main Quad,120-S40,1,26
+160-120,bld_35820,Main Quad,160-120,1,26
+160-123,bld_35820,Main Quad,160-123,1,19
+160-124,bld_35820,Main Quad,160-124,1,14
+160-125,bld_35820,Main Quad,160-125,1,19
+160-127,bld_35820,Main Quad,160-127,1,22
+160-129,bld_35820,Main Quad,160-129,1,19
+160-314,bld_35820,Main Quad,160-314,3,22
+160-315,bld_35820,Main Quad,160-315,3,25
+160-317,bld_35820,Main Quad,160-317,3,19
+160-318,bld_35820,Main Quad,160-318,3,26
+160-319,bld_35820,Main Quad,160-319,3,22
+160-321,bld_35820,Main Quad,160-321,3,20
+160-322,bld_35820,Main Quad,160-322,3,22
+160-323,bld_35820,Main Quad,160-323,3,19
+160-325,bld_35820,Main Quad,160-325,3,19
+160-326,bld_35820,Main Quad,160-326,3,26
+160-328,bld_35820,Main Quad,160-328,3,19
+160-329,bld_35820,Main Quad,160-329,3,21
+160-330,bld_35820,Main Quad,160-330,3,19
+160-331,bld_35820,Main Quad,160-331,3,19
+160-332,bld_35820,Main Quad,160-332,3,19
+160-B35,bld_35820,Main Quad,160-B35,1,11
+160-B37,bld_35820,Main Quad,160-B37,1,9
+160-B40,bld_35820,Main Quad,160-B40,1,35
+20-21B,bld_35820,Main Quad,20-21B,1,14
+20-21G,bld_35820,Main Quad,20-21G,1,12
+20-22K,bld_35820,Main Quad,20-22K,1,13
+200-002,bld_35820,Main Quad,200-002,1,110
+200-013,bld_35820,Main Quad,200-013,1,20
+200-015,bld_35820,Main Quad,200-015,1,16
+200-030,bld_35820,Main Quad,200-030,1,52
+200-032,bld_35820,Main Quad,200-032,1,10
+200-034,bld_35820,Main Quad,200-034,1,38
+200-105,bld_35820,Main Quad,200-105,1,22
+200-107,bld_35820,Main Quad,200-107,1,18
+200-124,bld_35820,Main Quad,200-124,1,12
+200-201,bld_35820,Main Quad,200-201,2,11
+200-202,bld_35820,Main Quad,200-202,2,20
+200-203,bld_35820,Main Quad,200-203,2,37
+200-205,bld_35820,Main Quad,200-205,2,62
+200-217,bld_35820,Main Quad,200-217,2,22
+200-219,bld_35820,Main Quad,200-219,2,16
+200-230,bld_35820,Main Quad,200-230,2,11
+200-303,bld_35820,Main Quad,200-303,3,53
+200-305,bld_35820,Main Quad,200-305,3,56
+240-101,bld_35820,Main Quad,240-101,1,8
+240-110,bld_35820,Main Quad,240-110,1,12
+240-201,bld_35820,Main Quad,240-201,2,18
+240-202,bld_35820,Main Quad,240-202,2,8
+240-207,bld_35820,Main Quad,240-207,2,9
+240-210,bld_35820,Main Quad,240-210,2,8
+250-108,bld_35820,Main Quad,250-108,1,18
+250-201,bld_35820,Main Quad,250-201,2,19
+260-001,bld_35820,Main Quad,260-001,1,13
+260-002,bld_35820,Main Quad,260-002,1,15
+260-003,bld_35820,Main Quad,260-003,1,19
+260-004,bld_35820,Main Quad,260-004,1,12
+260-007,bld_35820,Main Quad,260-007,1,12
+260-008,bld_35820,Main Quad,260-008,1,15
+260-011,bld_35820,Main Quad,260-011,1,13
+260-012,bld_35820,Main Quad,260-012,1,23
+260-113,bld_35820,Main Quad,260-113,1,82
+260-241,bld_35820,Main Quad,260-241,2,8
+260-244,bld_35820,Main Quad,260-244,2,9
+260-301,bld_35820,Main Quad,260-301,3,8
+30-101,bld_35820,Main Quad,30-101,1,19
+30-102,bld_35820,Main Quad,30-102,1,18
+300-300,bld_35820,Main Quad,300-300,3,73
+300-303,bld_35820,Main Quad,300-303,3,18
+320-105,bld_35820,Main Quad,320-105,1,150
+320-109,bld_35820,Main Quad,320-109,1,37
+320-220,bld_35820,Main Quad,320-220,2,40
+320-227,bld_35820,Main Quad,320-227,2,10
+320-241,bld_35820,Main Quad,320-241,2,8
+360-361A,bld_35820,Main Quad,360-361A,3,19
+370-370,bld_35820,Main Quad,370-370,3,151
+380-380C,bld_35820,Main Quad,380-380C,3,87
+380-380D,bld_35820,Main Quad,380-380D,3,32
+380-380F,bld_35820,Main Quad,380-380F,3,21
+380-380W,bld_35820,Main Quad,380-380W,3,30
+380-380X,bld_35820,Main Quad,380-380X,3,57
+380-380Y,bld_35820,Main Quad,380-380Y,3,86
+380-381T,bld_35820,Main Quad,380-381T,3,11
+380-381U,bld_35820,Main Quad,380-381U,3,19
+40-41J,bld_35820,Main Quad,40-41J,1,13
+40-42A,bld_35820,Main Quad,40-42A,1,18
+420-040,bld_35820,Main Quad,420-040,1,183
+420-041,bld_35820,Main Quad,420-041,1,122
+460-020,bld_35820,Main Quad,460-020,1,8
+460-126,bld_35820,Main Quad,460-126,1,11
+460-301,bld_35820,Main Quad,460-301,3,19
+460-334,bld_35820,Main Quad,460-334,3,16
+460-429,bld_35820,Main Quad,460-429,4,16
+50-51A,bld_35820,Main Quad,50-51A,1,19
+50-51B,bld_35820,Main Quad,50-51B,1,9
+50-51P,bld_35820,Main Quad,50-51P,1,12
+50-52E,bld_35820,Main Quad,50-52E,1,10
+50-52H,bld_35820,Main Quad,50-52H,1,19
+50-52T,bld_35820,Main Quad,50-52T,1,9
+60-108,bld_35820,Main Quad,60-108,1,28
+60-109,bld_35820,Main Quad,60-109,1,41
+70-71D,bld_35820,Main Quad,70-71D,1,10
+90-92Q,bld_35820,Main Quad,90-92Q,1,14
+SAPP 201,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 201,2,23
+SAPP 208,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 208,2,23
+SAPP 215,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 215,2,18
+SAPP 304,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 304,3,13
+SAPP 306,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 306,3,13
+SAPP 312,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 312,3,13
+SAPP 318,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 318,3,8
+SAPP 320,bld_469393555,Sapp Center for Science Teaching and Learning,SAPP 320,3,12
+STLC 104,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 104,1,23
+STLC 105,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 105,1,25
+STLC 111,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 111,1,238
+STLC 114,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 114,1,174
+STLC 118,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 118,1,24
+STLC 119,bld_469393555,Sapp Center for Science Teaching and Learning,STLC 119,1,31
+STLC115,bld_469393555,Sapp Center for Science Teaching and Learning,STLC115,1,63
+"Alway Building, Room M015A",bld_4720978,Alway Building,"Alway Building, Room M015A",1,15
+"Alway Building, Room M106",bld_4720978,Alway Building,"Alway Building, Room M106",1,116
+"Alway Building, Room M108",bld_4720978,Alway Building,"Alway Building, Room M108",1,20
+"Alway Building, Room M112",bld_4720978,Alway Building,"Alway Building, Room M112",1,59
+"Alway Building, Room M114",bld_4720978,Alway Building,"Alway Building, Room M114",1,38
+EDWRDSR166,bld_4721018,Edwards Building,EDWRDSR166,1,21
+Roble Gymnasium 113,bld_6593510,Roble Gymnasium,Roble Gymnasium 113,1,132
+Roble Gymnasium 115,bld_6593510,Roble Gymnasium,Roble Gymnasium 115,1,38
+Roble Gymnasium 117,bld_6593510,Roble Gymnasium,Roble Gymnasium 117,1,8
+Roble Gymnasium 136,bld_6593510,Roble Gymnasium,Roble Gymnasium 136,1,28
+Roble Gymnasium 137,bld_6593510,Roble Gymnasium,Roble Gymnasium 137,1,25
+Roble Gymnasium 139,bld_6593510,Roble Gymnasium,Roble Gymnasium 139,1,13
+Huang Engineering Center 18,bld_81794792,Huang Engineering Center,Huang Engineering Center 18,1,44
+Huang Engineering Center 203,bld_81794792,Huang Engineering Center,Huang Engineering Center 203,2,8
+NVIDIA Auditorium,bld_81794792,Huang Engineering Center,NVIDIA Auditorium,1,500
+Y2E2 101,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 101,1,28
+Y2E2 111,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 111,1,102
+Y2E2 184,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 184,1,15
+Y2E2 266,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 266,2,8
+Y2E2 292A,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 292A,2,25
+Y2E2 335,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 335,3,8
+Y2E2 362,bld_81794793,Yang & Yamazaki Environment & Energy Building,Y2E2 362,3,8
+SpilkerEngAppliedSci143,bld_81794794,Spilker Engineering and Applied Sciences,SpilkerEngAppliedSci143,1,9
+SpilkerEngAppliedSci317,bld_81794794,Spilker Engineering and Applied Sciences,SpilkerEngAppliedSci317,3,14
+McMurtry Art Building 007,bld_8530450,McMurtry Art,McMurtry Art Building 007,1,12
+McMurtry Art Building 011B,bld_8530450,McMurtry Art,McMurtry Art Building 011B,1,15
+McMurtry Art Building 011C,bld_8530450,McMurtry Art,McMurtry Art Building 011C,1,8
+McMurtry Art Building 016,bld_8530450,McMurtry Art,McMurtry Art Building 016,1,10
+McMurtry Art Building 115,bld_8530450,McMurtry Art,McMurtry Art Building 115,1,11
+McMurtry Art Building 120,bld_8530450,McMurtry Art,McMurtry Art Building 120,1,13
+McMurtry Art Building 130,bld_8530450,McMurtry Art,McMurtry Art Building 130,1,12
+McMurtry Art Building 220,bld_8530450,McMurtry Art,McMurtry Art Building 220,2,11
+McMurtry Art Building 301,bld_8530450,McMurtry Art,McMurtry Art Building 301,3,13
+McMurtry Art Building 303,bld_8530450,McMurtry Art,McMurtry Art Building 303,3,20
+McMurtry Art Building 305,bld_8530450,McMurtry Art,McMurtry Art Building 305,3,16
+McMurtry Art Building 307,bld_8530450,McMurtry Art,McMurtry Art Building 307,3,13
+McMurtry Art Building 350,bld_8530450,McMurtry Art,McMurtry Art Building 350,3,20
+McMurtry Art Building 360,bld_8530450,McMurtry Art,McMurtry Art Building 360,3,19
+McMurtry Art Building 370,bld_8530450,McMurtry Art,McMurtry Art Building 370,3,11
+McMurtry Art Building M120,bld_8530450,McMurtry Art,McMurtry Art Building M120,1,8
+McMurtry Art Building Oshman,bld_8530450,McMurtry Art,McMurtry Art Building Oshman,1,117

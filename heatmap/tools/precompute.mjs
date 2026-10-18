@@ -1,9 +1,10 @@
 // Precompute for large sim runs (~7,000 agents x 14 days x 5 min = 28 M rows, too big for the browser).
-// One streaming pass over timeline.csv.gz writes two small files that the map reads instead:
+// One streaming pass over timeline.csv.gz writes small files that the map reads instead:
 //   timeline_changes.csv.gz  the timeline with repeated rows dropped: per agent, a row is kept when
 //                            something tracked changed, plus the row just before each change (motion.js
 //                            stateAt needs it: that is when the stay ended and the walk starts), plus
 //                            each agent's first and last rows. Same header and columns as the input.
+//   p_sick.csv               the probability model's P(sick) change points (docs/p-sick-format.md)
 //   totals.json.gz           everything the user-facing map shows, no agent data: per step and
 //                            building the people and expected sick, an hourly forecast at +1/+2/+3 h
 //                            and its backtest hit rate.
@@ -21,10 +22,14 @@ import { pipeline } from 'node:stream';
 import { once } from 'node:events';
 import { basename, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { inferRisk } from '../../model/infer.js';
+import { inferRisk, DEFAULTS as MODEL } from '../../model/infer.js';
 
 // Same constants as app.js and forecast.js.
-const SMALL_RUN_SCALE = 50, SMALL_RUN_AGENTS = 500, MIN_PEOPLE = 4;
+// Runs are scaled to a ~7,000-person campus: under 500 agents each counts as 50; up to FULL_RUN_AGENTS
+// as CAMPUS_PEOPLE / n (x7 at 1,000), so buildings clear MIN_PEOPLE; full runs count as themselves.
+const SMALL_RUN_SCALE = 50, SMALL_RUN_AGENTS = 500, FULL_RUN_AGENTS = 5000, CAMPUS_PEOPLE = 7000, MIN_PEOPLE = 4;
+// Colour is risk above the baseline: a person adds max(0, P - prior), so a crowd at the prior is blank.
+const excessOf = (p) => Math.max(0, p - MODEL.prior);
 const HORIZONS = [60, 120, 180], EVERY_MIN = 60, SLOT_MIN = 30;
 const Z80 = 1.2816, HOUR_MS = 3_600_000;
 // A kept row is a change when any of these differ from the agent's previous row.
@@ -174,6 +179,17 @@ if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   const rooms = existsSync(roomsFile) ? new Map(parseCsv(readFileSync(roomsFile, 'utf8')).map((r) => [r.room_id, r])) : null;
   risk = inferRisk({ contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start) });
   console.log(`model: ${contacts.length} contacts, ${reports.length} reports (${lap()} ms)`);
+  // The model's change points as p_sick.csv (docs/p-sick-format.md; same as model/cli.mjs, which can't
+  // read a full run's contacts: 1.8 GB unzipped is past V8's string limit). The map reads it from
+  // model/out/<run>/ on big runs instead of running the model in the browser.
+  const pad = (x) => String(x).padStart(2, '0');
+  const iso = (ms) => {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  const lines = ['agent_id,t_iso,p_sick'];
+  for (const [id, cs] of risk.changes) for (const c of cs) lines.push(`${id},${iso(c.tMs)},${c.p.toFixed(4)}`);
+  writeFileSync(join(outDir, 'p_sick.csv'), lines.join('\n') + '\n');
 } else {
   console.warn(`Missing ${modelFiles.filter((f) => !existsSync(join(runDir, f))).join(', ')}: using the appBelief fallback for P(sick).`);
 }
@@ -210,11 +226,11 @@ const agents = new Map();       // id -> state
 const agentList = [];
 let rowsIn = 0, rowsKept = 0, usable = 0;
 
-// Per step: raw building tallies { b, n, sp } (building, people, Σp), times, hourly snapshots.
+// Per step: raw building tallies { b, n, sp, ex } (building, people, Σp, Σ excess), times, hourly snapshots.
 const steps = [], times = [];
 let t0 = null, t0ms = 0, cur = null, prevBuf = null, curBuf = null, nextHour = null;
 const stepMs = (config.step_min || 5) * 60000;
-const cnt = [], sp = [], touched = [];
+const cnt = [], sp = [], ex = [], touched = [];
 const hourly = [];              // { tMs, bid: Int16Array (-2 never seen, -1 no building), p: Float64Array }
 const dayIdx = new Map();       // dayKey -> index in order of appearance
 const prior = risk ? risk.params.prior : 0;
@@ -262,12 +278,12 @@ function closeCell(a) {
 }
 
 function endStep() {
-  const b = [], n = [], s = [];
-  for (const k of touched.sort((x, y) => x - y)) { b.push(k); n.push(cnt[k]); s.push(sp[k]); cnt[k] = 0; sp[k] = 0; }
+  const b = [], n = [], s = [], e = [];
+  for (const k of touched.sort((x, y) => x - y)) { b.push(k); n.push(cnt[k]); s.push(sp[k]); e.push(ex[k]); cnt[k] = 0; sp[k] = 0; ex[k] = 0; }
   touched.length = 0;
   const i = cur.step;
-  while (steps.length < i) { steps.push({ b: [], n: [], sp: [] }); times.push(t0ms + steps.length * stepMs); }
-  steps[i] = { b, n, sp: s };
+  while (steps.length < i) { steps.push({ b: [], n: [], sp: [], ex: [] }); times.push(t0ms + steps.length * stepMs); }
+  steps[i] = { b, n, sp: s, ex: e };
   times[i] = cur.ms;
   if (nextHour === null || cur.ms >= nextHour) {
     nextHour = cur.ms + HOUR_MS;
@@ -342,9 +358,10 @@ for await (const batch of lineBatches(tlFile)) {
     a.lastB = bid;
     a.lastP = p;
     if (bid >= 0) {
-      if (!cnt[bid]) { touched.push(bid); cnt[bid] = 0; sp[bid] = 0; }
+      if (!cnt[bid]) { touched.push(bid); cnt[bid] = 0; sp[bid] = 0; ex[bid] = 0; }
       cnt[bid]++;
       sp[bid] += p;
+      ex[bid] += excessOf(p);
     }
     if (a.cellKey !== cur.cell) { closeCell(a); a.cellKey = cur.cell; }
     a.cell.push(bid);
@@ -362,21 +379,24 @@ const tPass = lap();
 
 // ---------- 3. forecast (forecast.js on streamed counts) ----------
 
-const scale = usable < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
+const scale = usable < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : usable < FULL_RUN_AGENTS ? Math.round(CAMPUS_PEOPLE / usable) : 1;
 const nSteps = steps.length;
 const nB = buildings.length;
 
-// Expected sick people per building at hourly snapshot h + horizonMin. Returns Map b -> [expected, lo, hi].
+// Expected sick people per building at hourly snapshot h + horizonMin.
+// Returns Map b -> [expected, lo, hi, expected excess over the prior (the colour)].
 function forecast(h, horizonMin) {
   const snap = hourly[h];
   const T = new Date(snap.tMs + horizonMin * 60000);
   const slot = slotOf(T), dT = dayIdx.get(dayKey(T)); // undefined: a day beyond the data
-  const q = new Float64Array(nB), v = new Float64Array(nB), has = new Uint8Array(nB);
-  const add = (b, x) => {
+  const q = new Float64Array(nB), v = new Float64Array(nB), qx = new Float64Array(nB), has = new Uint8Array(nB);
+  const add = (b, w, p) => { // w: chance of being in b, p: P(sick)
+    const x = w * p;
     if (!(x > 0)) return;
     has[b] = 1;
     q[b] += x;
     v[b] += x * (1 - x);
+    qx[b] += w * excessOf(p);
   };
   const cb = [], cc = []; // distinct buildings in this slot over the days, and how many days each
   for (let i = 0; i < snap.bid.length; i++) {
@@ -396,15 +416,15 @@ function forecast(h, horizonMin) {
     if (days > 0) {
       for (let k = 0; k < cb.length; k++) {
         const c = cc[k] - (own !== -2 && own === cb[k] ? 1 : 0);
-        if (cb[k] >= 0 && c > 0) add(cb[k], (c / days) * p);
+        if (cb[k] >= 0 && c > 0) add(cb[k], c / days, p);
       }
-    } else if (sb >= 0) add(sb, p); // no history: assume they stay where they are
+    } else if (sb >= 0) add(sb, 1, p); // no history: assume they stay where they are
   }
   const res = new Map();
   for (let b = 0; b < nB; b++) {
     if (!has[b]) continue;
     const e = scale * q[b], sd = Math.sqrt(scale * v[b]);
-    res.set(b, [e, Math.max(0, e - Z80 * sd), e + Z80 * sd]);
+    res.set(b, [e, Math.max(0, e - Z80 * sd), e + Z80 * sd, scale * qx[b]]);
   }
   return res;
 }
@@ -429,7 +449,7 @@ hourly.forEach((snap, h) => {
   const byHorizon = {};
   for (const hz of HORIZONS) {
     const fc = forecast(h, hz);
-    byHorizon[hz] = [...fc].map(([b, [e, lo, hi]]) => [b, round6(e), round6(lo), round6(hi)]);
+    byHorizon[hz] = [...fc].map(([b, [e, lo, hi, x]]) => [b, round6(e), round6(lo), round6(hi), round6(x)]);
     // backtest: does the actual count at t + horizon fall inside the 80% range? (as forecast.js backtest)
     if (snap.tMs + hz * 60000 > last) continue;
     const s = steps[nearestIdx(snap.tMs + hz * 60000)];
@@ -449,8 +469,9 @@ const backtest = Object.fromEntries(HORIZONS.map((h) => [h, hit[h][1] ? hit[h][0
 const totals = {
   version: 1, run: runName, scale, minPeople: MIN_PEOPLE, stepMs, startMs: times[0], nSteps,
   buildings,
-  // per step: [buildingIndex, people, expected sick], both scaled by `scale`; occupied buildings only
-  steps: steps.map((s) => s.b.map((b, k) => [b, s.n[k] * scale, round6(scale * s.sp[k])])),
+  // per step: [buildingIndex, people, expected sick, expected sick above the prior (the colour)], all
+  // scaled by `scale`; occupied buildings only. Forecast rows: [buildingIndex, expected, lo, hi, excess].
+  steps: steps.map((s) => s.b.map((b, k) => [b, s.n[k] * scale, round6(scale * s.sp[k]), round6(scale * s.ex[k])])),
   forecast: { horizons: HORIZONS, everyMin: EVERY_MIN, at },
   backtest,
 };
@@ -461,11 +482,12 @@ writeFileSync(join(outDir, 'totals.json.gz'), gzJson);
 // ---------- 4b. building_heat.csv (phones; docs/building-heat-format.md) ----------
 
 // The user map's building totals as snapshots every HEAT_EVERY_MIN, for the phone's walk-in warning.
-// heat uses the map's own colour scale (√ of expected sick over buildingScaleMax), so a building the
-// map shows dark is one the phone warns about: high = past the legend's midpoint (heat ≥ 0.5).
+// heat uses the map's own colour scale (√ of expected sick above the prior over its 90th-percentile
+// peak), so a building the map shows dark is one the phone warns about: high = past the legend's
+// midpoint (heat ≥ 0.5). expected_sick stays the plain Σ P (the popups' count).
 const HEAT_EVERY_MIN = 15;
-const peaks = steps.map((st) => Math.max(0, ...st.sp.map((x) => x * scale))).sort((a, b) => a - b);
-const heatMax = peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+const peaks = steps.map((st) => Math.max(0, ...st.ex.map((x) => x * scale))).sort((a, b) => a - b);
+const heatMax = peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1; // quiet runs: the top
 const where = new Map();
 if (existsSync(bFile)) for (const b of parseCsv(readFileSync(bFile, 'utf8'))) where.set(b.location_id, [b.lat, b.lon, b.area_m2 > 0 ? Math.round(Math.sqrt(b.area_m2 / Math.PI) + 10) : '']);
 const pad2 = (x) => String(x).padStart(2, '0');
@@ -481,14 +503,14 @@ steps.forEach((st, i) => {
   if (!st.b.length || times[i] < nextSnap) return;
   nextSnap = times[i] + HEAT_EVERY_MIN * 60000;
   st.b.forEach((bi, k) => {
-    const people = st.n[k] * scale, sick = st.sp[k] * scale, b = buildings[bi];
+    const people = st.n[k] * scale, sick = st.sp[k] * scale, excess = st.ex[k] * scale, b = buildings[bi];
     if (people < MIN_PEOPLE) return; // hidden on the map too
-    const heat = Math.min(1, Math.sqrt(sick / heatMax)), [lat = '', lon = '', radius = ''] = where.get(b.id) || [];
+    const heat = Math.min(1, Math.sqrt(excess / heatMax)), [lat = '', lon = '', radius = ''] = where.get(b.id) || [];
     heatRows.push([isoLocal(times[i]), b.id, csvField(b.name), lat, lon, people, sick.toFixed(2), heat.toFixed(3), heat >= 0.5 ? 1 : 0, radius].join(','));
   });
 });
 writeFileSync(join(outDir, 'building_heat.csv'), heatRows.join('\n') + '\n');
-console.log(`building_heat.csv: ${heatRows.length - 1} rows, every ${HEAT_EVERY_MIN} min; colour max ${heatMax.toFixed(1)} expected sick`);
+console.log(`building_heat.csv: ${heatRows.length - 1} rows, every ${HEAT_EVERY_MIN} min; colour max ${heatMax.toFixed(2)} expected sick above the ${MODEL.prior * 100}% prior`);
 
 // ---------- 5. summary ----------
 

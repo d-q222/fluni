@@ -5,23 +5,26 @@
 // Buildings are scaled (each simulated agent stands for `scale` people) so the map reads like a full
 // campus. Rooms are not scaled: the walk-in warning is about the actual people in that room.
 
-export function buildTotals(frames, times, { scale = 50 } = {}) {
+// prior: the model's baseline P. Each total also carries `excess`, Σ max(0, P - prior): the colour, so a
+// crowd at the baseline isn't drawn as risk (expected stays the plain Σ P, for the counts shown).
+export function buildTotals(frames, times, { scale = 50, prior = 0 } = {}) {
   const steps = frames.map((frame) => {
     const buildings = new Map(), rooms = new Map();
     for (const a of frame) {
       if (!a.buildingId) continue; // outdoors or walking
-      add(buildings, a.buildingId, a.building, a.p, scale);
-      if (a.room) add(rooms, a.room, a.building, a.p, 1);
+      add(buildings, a.buildingId, a.building, a.p, scale, prior);
+      if (a.room) add(rooms, a.room, a.building, a.p, 1, prior);
     }
     return { buildings, rooms };
   });
   return { times, steps, scale };
 }
 
-function add(map, key, name, p, scale) {
-  const cur = map.get(key) || { name, n: 0, expected: 0 };
+function add(map, key, name, p, scale, prior) {
+  const cur = map.get(key) || { name, n: 0, expected: 0, excess: 0 };
   cur.n += scale;
   cur.expected += scale * p;
+  cur.excess += scale * Math.max(0, p - prior);
   map.set(key, cur);
 }
 
@@ -37,8 +40,9 @@ export function totalsAt(totals, t) {
   return steps[times[hi] <= t ? hi : lo];
 }
 
-// Fixed colour scale for building fills: 90th percentile of each step's busiest building.
+// Fixed colour scale for building fills: 90th percentile of each step's busiest building (by excess
+// over the baseline; the busiest moment when most are blank).
 export function buildingScaleMax(totals) {
-  const peaks = totals.steps.map((s) => Math.max(0, ...[...s.buildings.values()].map((b) => b.expected))).sort((a, b) => a - b);
-  return peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+  const peaks = totals.steps.map((s) => Math.max(0, ...[...s.buildings.values()].map((b) => b.excess ?? b.expected))).sort((a, b) => a - b);
+  return peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
 }

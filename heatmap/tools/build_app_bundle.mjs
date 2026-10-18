@@ -91,7 +91,11 @@ const anchors = [
   if (!Number.isFinite(la)) { console.warn('no label position for', t); return []; }
   return [{ t, lat: r5(la), lon: r5(lo), p, c }];
 });
-writeFileSync(join(out, 'data/labels.json'), JSON.stringify(anchors));
+// every named building, shown only at street zoom (usermap.js creates those labels lazily)
+const short = (n) => n.replace(/^(The )/, '').slice(0, 28);
+const fine = rows.filter((r) => r.name && !/^(Stanford )?Garage|Parking|Shed|Substation/i.test(r.name) && Number.isFinite(Number(r.lat)))
+  .map((r) => [short(r.name), r5(Number(r.lat)), r5(Number(r.lon))]);
+writeFileSync(join(out, 'data/labels.json'), JSON.stringify({ anchors, fine }));
 rmSync(tmp, { recursive: true, force: true });
 
 let total = 0, count = 0;

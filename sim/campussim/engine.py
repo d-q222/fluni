@@ -36,6 +36,8 @@ def recorded_config(cfg):
     """Config as stored in config.json / hashed into run_id: where the run is written is not a parameter."""
     rec = copy.deepcopy(cfg)
     rec["run"].pop("out_dir", None)
+    if rec["run"].get("intervention") != "fluni":  # keeps run ids of non-app runs as before the app policy
+        rec.get("interventions", {}).pop("fluni", None)
     return rec
 
 
@@ -78,7 +80,10 @@ def run(cfg, external_provider=None, quiet=False):
     rep = Reports(cfg, campus, pop, rngs["reports"])
     intervention = REGISTRY[rc["intervention"]]()
     if hasattr(intervention, "reset"):
-        intervention.reset({"cfg": cfg, "campus": campus, "n_agents": pop.N, "step_min": step_min})
+        intervention.reset({"cfg": cfg, "campus": campus, "pop": pop, "n_agents": pop.N, "step_min": step_min})
+    has_app = np.asarray(pop.has_app, dtype=bool)
+    comp_scale = getattr(intervention, "compliance_scale", 1.0)
+    n_events = 0
 
     run_id = make_run_id(cfg)
     run_dir = Path(rc.get("out_dir", "runs"))
@@ -110,10 +115,13 @@ def run(cfg, external_provider=None, quiet=False):
         rep.step(t, dis, beh, contacts, dev)
 
         external = external_provider(t) if external_provider else {}
-        obs = build_observable(t, timestamps[t], beh, rep, dis, intervention, external)
+        obs = build_observable(t, timestamps[t], beh, rep, dis, intervention, external,
+                               contacts=contacts, has_app=has_app, report_events=rep.events[n_events:])
+        n_events = len(rep.events)
         actions = intervention.step(obs)
         action_col = np.array(apply_actions(actions, beh, pop, rngs["intervention"], t, reports=rep,
-                                            cfg_interventions=cfg["interventions"]), dtype=object) \
+                                            cfg_interventions=cfg["interventions"],
+                                            compliance_scale=comp_scale), dtype=object) \
             if actions else no_action
         action_col = np.where(action_col == "", None, action_col)
 
@@ -151,6 +159,8 @@ def run(cfg, external_provider=None, quiet=False):
     inf_df = pd.DataFrame(dis.infections, columns=["t", "infectee", "infector", "route", "r", "b", "contribution"])
     writer.write_table("infections.csv", infections_frame(dis, campus, pop))
     writer.write_table("reports_tests.csv", reports_frame(rep.events, pop))
+    if hasattr(intervention, "log_frame"):
+        writer.write_table("app_alerts.csv", intervention.log_frame(pop.agent_id))
     summary = compute_summary(cfg, campus, pop, inf_df, T)
     writer.write_json("summary.json", summary)
     changes.close()

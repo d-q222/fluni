@@ -6,8 +6,8 @@ self-reports/tests. No sensors are simulated; GPS/Bluetooth/ultrasound are deriv
 Owner: @aidenyj (see [WORKSTREAMS.md](../WORKSTREAMS.md)). Output format:
 [docs/sim-output-format.md](../docs/sim-output-format.md). Full spec: [docs/SPEC.md](docs/SPEC.md).
 
-> **Status:** the full simulator runs end to end at 10 and 7,500 agents. Transmission is **not yet
-> calibrated** to the target campus R of 1.3–2.0 (see "Known issues"). `runs/mock_boring10/` (the
+> **Status:** the full simulator runs end to end at 10 and 7,500 agents. Influenza is calibrated
+> to campus R ≈ 1.6 (target 1.3–2.0; see "Calibration"). `runs/mock_boring10/` (the
 > hand-made mock) is kept because the heat map loads it by default.
 
 ## Run it
@@ -25,8 +25,17 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
 - `--set key.path=value` overrides any parameter (e.g. `--set disease.transmission_scale=1.5`);
   `--config file.json` deep-merges a JSON file. Parameters live in `configs/*.json`, one file per
   module; disease presets (influenza, covid19, norovirus) are in `configs/diseases.json`.
+- Humidity: `configs/weather.json` sets outdoor RH and temperature (default 60%, 10 °C, optionally per
+  day via `daily`). For influenza, heated indoor air (~30% RH by default) sets how fast airborne virus
+  dies off in each room, using the same formula as `model/` and `exposure/`. Example:
+  `--set 'weather.daily=[{"outdoor_rh_pct":80},{"outdoor_rh_pct":40}]'`.
 - `--intervention`: `none` (baseline), `self_report_isolate` (acts only on what the app can see),
-  `symptomatic_isolate_oracle` (reads ground truth; flagged as an oracle).
+  `symptomatic_isolate_oracle` (reads ground truth; flagged as an oracle), `fluni` (the FlUni app in
+  the loop: phone close-contact alerts, P(sick) advice from a Python port of `model/infer.js`, and
+  self-report advice, each with a configurable action list, followed w.p. compliance; settings in
+  `configs/interventions.json` → `fluni`, adoption is `population.has_app_rate`). A `fluni` run also
+  writes `app_alerts.csv` (`t, agent_id, alert, p_sick, weighted_min`; one row per alert, followed or not).
+  `scripts/check_psick.py <run>` checks the Python P(sick) against `model/cli.mjs` on a finished run.
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
@@ -67,19 +76,85 @@ kept because the heat map loads it by default (`heatmap/app.js` DEFAULT_RUN).
 `runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
 cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 
+`runs/influenza_none_n7000_d2_s42_5423d1a4/` is a full-size run: 7,000 agents, 2 days, seed 42,
+default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
+are committed in parts; rebuild them after cloning (see "Large runs in git").
+
+Two 1,000-agent, 14-day runs (seed 42, `output.by_agent=false`) have spread boosted above the
+calibrated default so more of campus gets infected:
+
+- `runs/influenza_none_n1000_d14_s42_f12e71fa/`: `--initial-seeds 30`, `transmission_scale=1.5`.
+  17.9% infected by day 14, measured R 1.04.
+- `runs/influenza_none_n1000_d14_s42_183f262b/`: `--initial-seeds 50`, `transmission_scale=2.0`.
+  50.3% infected by day 14, measured R 1.32, still growing at the end.
+
+Their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
+`scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
+
+## Calibration
+
+`scripts/calibrate.py` sweeps `disease.transmission_scale` over full-size runs and reports
+`measured_R` (mean secondary cases of those infected before day 14 − 7.5). Influenza uses **1.2**:
+7,000 agents × 14 days, 40 seeded cases, seeds 1–2 gave R = 1.70 and 1.55 (1.0 → 1.35, 1.4 → 1.92).
+At 1.2 the per-encounter checks (`calibration_report`) are roommate 26.8% (target 20–30%), seminar
+1.24% (~1%) and party 10.1% (~8%). COVID-19 and norovirus are not calibrated yet.
+
+```bash
+.venv/bin/python scripts/calibrate.py --agents 7000 --days 14 --scales 1 1.2 1.4 --seeds 1 2 --jobs 2   # ~25 min
+```
+
+## Class schedules
+
+By default (`schedule.sections.source = "explorecourses"`) every class is a real Winter 2025-26
+section, with its real days, times and room (`data/courses/`, see "Data"). Each agent takes 3–5
+courses:
+
+- **Seats** follow real enrollment × the undergrad share for the course level (92% for courses
+  under 100, down to 4% for 300+). They are scaled so all seats = `seat_slack` (1.25) × the courses
+  agents want, and a class never seats more than its room holds. CS 106A, MATH 51 and CS 106B are
+  the biggest classes, as on campus.
+- **Class year** sets course level (`year_level_weight`): freshmen mostly take courses under 100,
+  seniors 100–299. COLLEGE 1xx is freshmen only (90% take it), and PWR 1 is for years 1–2.
+- **Major**: each agent draws a major group from its archetype (`majors.archetype_mix`), and
+  courses in it get 1.5× (freshmen) to 5× (seniors) weight. The group isn't written to the output yet.
+- **Labs**: a course's real LAB/LBS section is added when it fits. Discussion sections (DIS) aren't
+  simulated.
+- GSB, Law, School of Medicine and overseas (OSP) courses are left out.
+
+The real rooms replace the procedural classrooms in their 45 buildings. Other rooms (labs,
+libraries, lobbies) are unchanged. `--set schedule.sections.source=synthetic` brings back the old
+invented catalog and time grid.
+
+## Large runs in git
+
+`scripts/run_parts.py split runs/<run>` cuts each `.csv.gz` over 40 MB into
+`parts/<name>/part-NNN.csv.gz` on row boundaries. Each part is a standalone gzipped CSV with the
+header, and `parts/manifest.json` records the sha256 of every original and part. After cloning:
+
+```bash
+.venv/bin/python scripts/run_parts.py join runs/influenza_none_n7000_d2_s42_5423d1a4   # ~10 s
+```
+
+This rebuilds `contacts.csv.gz` and `timeline.csv.gz` byte-for-byte (checked against the manifest)
+and regenerates `timeline_by_agent/`. The `.parquet` mirrors aren't committed or rebuilt; rerun the
+sim with the same seed if you need them (output is byte-identical). Add the run's big files to
+`sim/.gitignore` so only the parts are committed.
+
 ## Code
 
 | Module | Does |
 |---|---|
 | `campussim/campus.py` | OSM buildings, typed locations, procedural rooms, walk/bike path graphs + routing, door connectors, entry points |
 | `campussim/population.py` | agents and archetypes (studious, social, athlete, stem, commuter, homebody) |
-| `campussim/schedule.py` | class sections, parties, hangouts, games/large events, study groups |
+| `campussim/schedule.py` | class sections (real ExploreCourses schedule by default), parties, hangouts, games/large events, study groups |
 | `campussim/plans.py` | each agent's intended day: sleep, meals, classes, practice, flex, events, travel |
 | `campussim/behavior.py` | actual movement along paths, in-room positions, masks, sickness overrides |
 | `campussim/contacts.py` | true contacts per step (KD-tree, distance tiers) |
 | `campussim/disease.py` | S→E→I_pre→I_sym/I_asym→R, viral load, close-contact + Wells-Riley aerosol, imports |
 | `campussim/reports.py` | sick-behavior choice, Vaden tests, honest/dishonest self-reports, report_other |
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
+| `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
+| `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |
 | `campussim/engine.py`, `simulate.py` | main loop and CLI |
 | `view.py` | map animation viewer (MapLibre + OpenFreeMap) |
@@ -96,14 +171,25 @@ cases, one import), made after the path and biking changes. `view.py` on it show
   Frost Amphitheater, White Plaza, Meyer Green, the Oval, Engineering Quad, Main Quad courtyard,
   Lake Lagunita). Their ids are `bld_m_<slug>`.
 - `data/location_overrides.json`: hand fixes to building types, capacities and floors.
+- `data/courses/`: real class schedules from [ExploreCourses](https://explorecourses.stanford.edu)'s
+  public XML feed. `fetch_explorecourses.py` snapshots one quarter (`20252026_winter.csv.gz`: 10,904
+  meetings, 254 departments). `build_rooms.py` maps location strings to buildings (numbered Quad
+  rooms like `160-322` → Main Quad, `Gates B1` → Gates, `NVIDIA Auditorium` → Huang, …) and writes
+  `rooms_20252026_winter.csv`: 338 named rooms in 45 buildings, covering 86% of real enrollment.
+  The rest (`Departmental Room`, `School of Medicine Room`, ANKO, Raikes) goes to a generic classroom.
+  Runs read only the snapshot, never the network. Refresh with
+  `python3 data/courses/fetch_explorecourses.py --year 20252026 --term Winter && python3 data/courses/build_rooms.py`.
 
 ## Known issues
 
-- **Not calibrated.** At 7,500 agents × 7 days: 50 infections (27 imports); spread rate by day
-  infected was about 1.5–1.8 for days 2–4, but `measured_R` needs a 14-day run.
-- **Library study rooms are overfilled.** Plans send solo library study to study rooms with no
-  capacity check (up to 114 agents in a room for 4–8), which makes them the main aerosol hotspot.
-- **Too many `report_other` events** (about 50 per real self-report at full scale).
+- **Calibration is tied to today's contact structure.** Changes to who meets whom (e.g. real class
+  schedules) or to the disease model shift R; rerun `scripts/calibrate.py` after them. Real class
+  schedules (2026-10-17) came after the R ≈ 1.6 calibration, so it needs a rerun.
+- **Study rooms can still run up to 2× capacity.** Library and common-room flex picks now check
+  capacity (`plans.flex.capacity_check`): each block books a place in a room with space for the whole
+  block, weighted by free places, so Green Library's big reading rooms take most solo study. When
+  everything is full, agents study at home. At 7,000 agents the worst planned room went from 22.5× to
+  2× capacity. What's left comes from bookings outside flex (study groups and similar).
 - **Large output.** 7,500 agents × 7 days is 4.5 GB, of which 3.0 GB is `timeline_by_agent/` and
   657 MB `contacts.csv.gz`. Turn per-agent files off with `--set output.by_agent=false`.
 - **Small residual wall-crossing.** About 0.5 m per trip still runs through a footprint (500 agents,

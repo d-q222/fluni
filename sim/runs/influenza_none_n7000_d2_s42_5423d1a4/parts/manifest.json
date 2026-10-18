@@ -1,0 +1,52 @@
+{
+  "max_mb": 40,
+  "files": {
+    "contacts.csv.gz": {
+      "sha256": "5cc1beb581067e45ec77aeb96ec330796528462435fa492ecc485a55322f0357",
+      "bytes": 181017902,
+      "parts": [
+        {
+          "path": "parts/contacts.csv/part-000.csv.gz",
+          "sha256": "eea90f44ba19406d7a717a9acc08daecf01203d2d6dcfc5ad8cbef15938578a4",
+          "bytes": 41963305
+        },
+        {
+          "path": "parts/contacts.csv/part-001.csv.gz",
+          "sha256": "183eda6cf1587aee24131ff029262b03e0153c4c85a5271bd808d4ccde13c60d",
+          "bytes": 41997824
+        },
+        {
+          "path": "parts/contacts.csv/part-002.csv.gz",
+          "sha256": "84459f3d637d9fc9405d5237347380881895a34693b3a438c719f4c9d4c65600",
+          "bytes": 42038557
+        },
+        {
+          "path": "parts/contacts.csv/part-003.csv.gz",
+          "sha256": "ab3f381c37781f1d23727b2583c22f7f5ceea776ba0af2a99d129102bffc59ac",
+          "bytes": 41971436
+        },
+        {
+          "path": "parts/contacts.csv/part-004.csv.gz",
+          "sha256": "6ce3f7a02a9d96fb27176614a39ea1e7e33e5b3e1a640e6658f738178033e7dc",
+          "bytes": 4319866
+        }
+      ]
+    },
+    "timeline.csv.gz": {
+      "sha256": "7abeacaad4e64abc69ff62c37f28b429ab628f10e7d7ec20addabbfe435ea553",
+      "bytes": 79081995,
+      "parts": [
+        {
+          "path": "parts/timeline.csv/part-000.csv.gz",
+          "sha256": "a016e93223e56dba7de60926d8406ce6426e276a8362627eced20f2acb9e28a3",
+          "bytes": 42016690
+        },
+        {
+          "path": "parts/timeline.csv/part-001.csv.gz",
+          "sha256": "4e650b7c74789c882c94ca9fc055d522d423ae523631e71e06d82c10b0ab0fcf",
+          "bytes": 34757157
+        }
+      ]
+    }
+  }
+}

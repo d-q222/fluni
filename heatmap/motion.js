@@ -199,6 +199,17 @@ export function buildTracks(samples) {
   return tracks;
 }
 
+// The latest sample at or before t (no interpolation), or null outside the track's data.
+export function sampleAt(track, t) {
+  if (!track.length || t < track[0].t || t > track[track.length - 1].t) return null;
+  let lo = 0, hi = track.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (track[mid].t <= t) lo = mid; else hi = mid - 1;
+  }
+  return track[lo];
+}
+
 // Where an agent is at time t (ms), or null outside its data. Walking agents have no building/room.
 export function stateAt(track, t, router) {
   if (!track.length || t < track[0].t || t > track[track.length - 1].t) return null;

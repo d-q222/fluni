@@ -73,7 +73,9 @@ class FlUniUITestCase: XCTestCase {
         let submit = app.buttons["report.submit"]
         XCTAssertTrue(submit.isEnabled)
         submit.tap()
-        XCTAssertTrue(app.navigationBars["Me"].waitForExistence(timeout: 5), "sheet should close")
+        // The sheet shows Lisa's "Self-reported" stamp for a moment before it closes.
+        XCTAssertTrue(submit.waitForNonExistence(timeout: 5), "sheet should close")
+        XCTAssertTrue(app.navigationBars["Me"].waitForExistence(timeout: 5))
     }
 
     /// Me > I tested positive > Review and share > confirm.

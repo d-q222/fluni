@@ -1,0 +1,7 @@
+{
+  "_note": "Outdoor weather. Used by presets whose aerosol.inactivation is \"humidity\" (influenza): heated outdoor air keeps its water, so indoor RH = outdoor RH x sat(outdoor_temp_c) / sat(indoor_temp_c) (Magnus; unchanged when outdoor_temp_c >= indoor_temp_c), and airborne flu inactivation rises from 0.29/h at indoor RH <= 25% to 1.61/h at >= 45% (Noti et al. 2013). Same formula and defaults as model/infer.js and exposure/flu_risk.py. daily: optional per-sim-day overrides [{\"outdoor_rh_pct\": .., \"outdoor_temp_c\": ..}, ...]; missing keys use the values above, and days past the end of the list repeat its last entry.",
+  "outdoor_rh_pct": 60.0,
+  "outdoor_temp_c": 10.0,
+  "indoor_temp_c": 21.0,
+  "daily": []
+}

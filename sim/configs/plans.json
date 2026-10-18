@@ -20,6 +20,7 @@
     "allowed_hours": {"library": [7, 26], "dorm_study": [5, 27], "common_room": [7, 25], "gym": [6, 22],
                       "outdoor": [7, 19], "lab": [7, 23], "home": [0, 48]},
     "common_relax_p": 0.5,
+    "capacity_check": true,
     "library_room_types": ["reading_room", "study_room"],
     "common_room_types": ["lobby", "lounge", "study_room", "cafe", "generic"],
     "gym_room_types": ["weight_room"],

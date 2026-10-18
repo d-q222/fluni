@@ -14,8 +14,10 @@ final class SelfReportStore: ObservableObject {
     /// Posted by "Delete my data" so every live store forgets its in-memory copy.
     static let didDeleteData = Notification.Name("fluni.didDeleteData")
 
+    /// None on a test launch, so a test run neither reads nor writes the owner's report.
     static var defaultURL: URL? {
-        try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        guard !LaunchMode.isTestLaunch else { return nil }
+        return try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent("self-report.json")
     }
 

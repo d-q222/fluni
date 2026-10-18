@@ -9,7 +9,8 @@ const HOUR_MS = 3_600_000;
 
 const dayKey = (d) => d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
 
-export function buildForecaster(frames, times, { scale = 50, slotMin = 30 } = {}) {
+// prior: the model's baseline P; each forecast also carries `excess`, the expected sick above it (the colour).
+export function buildForecaster(frames, times, { scale = 50, slotMin = 30, prior = 0 } = {}) {
   const n = times.length;
   const nSlots = Math.ceil(1440 / slotMin);
   const slotOf = (d) => Math.floor((d.getHours() * 60 + d.getMinutes()) / slotMin);
@@ -74,13 +75,15 @@ export function buildForecaster(frames, times, { scale = 50, slotMin = 30 } = {}
     const T = new Date(tMs + horizonMin * 60000);
     const slot = slotOf(T), dT = dayKey(T);
     const kNow = floorIdx(tMs);
-    const sum = new Map(); // buildingId -> [Σq, Σq(1−q)]
-    const add = (b, q) => {
+    const sum = new Map(); // buildingId -> [Σq, Σq(1−q), Σ excess]
+    const add = (b, w, p) => { // w: chance of being in b, p: P(sick)
+      const q = w * p;
       if (!(q > 0)) return;
       let v = sum.get(b);
-      if (!v) sum.set(b, (v = [0, 0]));
+      if (!v) sum.set(b, (v = [0, 0, 0]));
       v[0] += q;
       v[1] += q * (1 - q);
+      v[2] += w * Math.max(0, p - prior);
     };
     for (const s of agents.values()) {
       const k = lastSeen(s, kNow);
@@ -92,18 +95,19 @@ export function buildForecaster(frames, times, { scale = 50, slotMin = 30 } = {}
       if (days > 0) {
         for (const [b, c] of s.count[slot]) {
           const cnt = c - (own !== undefined && own === b ? 1 : 0);
-          if (b != null && cnt > 0) add(b, (cnt / days) * p);
+          if (b != null && cnt > 0) add(b, cnt / days, p);
         }
       } else if (s.bid[k] != null) {
-        add(s.bid[k], p); // no history: assume they stay where they are
+        add(s.bid[k], 1, p); // no history: assume they stay where they are
       }
     }
     const out = new Map();
-    for (const [b, [q, v]] of sum) {
+    for (const [b, [q, v, x]] of sum) {
       const expected = scale * q, sd = Math.sqrt(scale * v);
       out.set(b, {
         name: names.get(b) ?? b,
         expected,
+        excess: scale * x,
         lo: Math.max(0, expected - Z80 * sd),
         hi: expected + Z80 * sd,
       });

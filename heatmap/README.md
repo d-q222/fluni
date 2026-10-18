@@ -54,8 +54,10 @@ Demo scenes on the sim's mock run:
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
-  - In small runs (under 500 agents, like the 10-agent mock), each agent stands for 50 people.
-    Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*` in `app.js`.
+  - Runs are scaled to a ~7,000-person campus. Under 500 agents (like the 10-agent mock) each agent
+    stands for 50 people. Up to 5,000 agents each stands for round(7000 / agents), e.g. ×7 at 1,000
+    and ×14 at 500. Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*`,
+    `CAMPUS_PEOPLE` and `FULL_RUN_AGENTS` in `app.js` (same rule in `tools/precompute.mjs`).
   - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
     (`MIN_PEOPLE`). The rule applies to the scaled count, so in ×50 small runs it never hides
     anything.
@@ -110,7 +112,10 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   - Heat is the expected number of infected people near each point now: Σ P(sick) of the people
     there, spread by a kernel that integrates to 1 (legend: per 1,000 m²). No trail of past
     positions. The spread follows the zoom (18 m close up, ~16 screen px zoomed out), with a colour
-    scale per spread. The heat is recomputed every frame while that costs under 8 ms.
+    scale per spread. The heat is recomputed every frame while that costs under 8 ms (it backs off
+    above that). To stay under it: with few people only the patches around them are blurred; big
+    spreads use a coarser grid (about 5 cells per σ); and only people on the visible map (plus a
+    50% margin) count. See "Performance" below.
   - **Airflow heat (experimental)** (`aerosol.js`): an evolving field instead of a snapshot.
     Infectious people emit into their room; the air mixes within the room, leaks through doors
     (walls sit on cell faces, with one door per ~8 m), and is ventilated away (τ 30 min indoors,
@@ -119,6 +124,11 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   - People are first binned into the grid, then the grid is smoothed with three box blurs (≈ a
     Gaussian). The cost depends on grid size, not on the number of agents, which is what the
     7,000-agent run needs.
+- **Heat is risk above the baseline.** A person counts as max(0, P(sick) − prior), with the model's
+  prior (`DEFAULTS.prior`, 2%). With few reports nearly everyone sits at the prior, and Σ P alone
+  drew a map of crowds. This applies to the room-level heat, the airflow sources, and the user
+  map's building colours (`excess` in the totals; the counts shown stay Σ P). The truth views still
+  use the sim's infectiousness.
 - **Heat → "What users see"**: the user map (see below). Building fills from totals only, with no
   people shown.
 - **People (demo only)**: one per agent, drawn as Lisa's hand-drawn tissue on a round badge.
@@ -171,6 +181,70 @@ real Stanford buildings. Building outlines come from OpenStreetMap
 python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
 ```
 
+## Big runs (thousands of agents)
+
+From 2,000 agents (`BIG_RUN` in `app.js`) the page reads precomputed files instead of computing in the
+browser. In the page, the model alone downloads tens of millions of contacts: the 7,500-agent run
+took 52 s and a 4 GB JS heap to open.
+
+```bash
+node --max-old-space-size=12000 heatmap/tools/precompute.mjs sim/runs/<run> --out heatmap/out/<run>
+mkdir -p model/out/<run> && mv heatmap/out/<run>/p_sick.csv model/out/<run>/
+```
+
+- P(sick) comes from `model/out/<run>/p_sick.csv`. There is no "Why this %?" and no
+  contact-based phone alerts then.
+- The user map, forecasts and backtest come from `heatmap/out/<run>/totals.json.gz` (or
+  `totals.json.gz` next to the timeline). Without it the page builds them itself (slow).
+- Dots are a sample (`MAX_DOTS` = 600, plus the selected person). Everyone else only feeds the heat,
+  at their latest sample, without walking along the route.
+- Files the sim split into parts (`parts/manifest.json`) are read from the parts.
+
+## Performance
+
+`tools/bench.mjs` plays each view at every speed in headless Chrome. It drives Chrome through the
+DevTools protocol, with no dependencies. It reports load time, JS heap, frame and per-frame JS time,
+a per-function CPU profile, and how far the heat peak trails a moving risky dot ("lag"):
+
+```bash
+python3 -m http.server 8766    # at the repo root
+node heatmap/tools/bench.mjs --base http://localhost:8766 --basemap streets [--run <run>] [--load]
+```
+
+Measured in headless Chrome on an M-series Mac, Oct 2026. "Heat JS" is the work in a frame that
+recomputes the heat; the heat is recomputed every frame while that costs under 8 ms, otherwise only
+every few frames. "Lag" is the p50/p95 distance in metres from a moving risky dot to the top of its
+heat, close up (zoom 18).
+
+| Run | Load | JS heap | Demo heat JS | Lag p50 / p95 | Public view |
+|---|---|---|---|---|---|
+| 10 agents, before | 2.0 s | | 23 ms (every ~4th frame) | 5–10 / 27–66 m | 0.2 ms |
+| 10 agents, now | 0.9 s | 31 MB | 0.9–1.7 ms (every frame) | 1–1.2 / 2–3.5 m | 0.2 ms |
+| 500 agents, before | 3.5 s | | 35 ms (every ~3rd frame) | 7–16 / 29–77 m | 0.5 ms |
+| 500 agents, now | 3.1 s | 255 MB | 5–8 ms (every frame) | 1.2–4.8 / 2–59 m | 0.2 ms |
+| 400 agents (busy), before | 3.4 s | 167 MB | 32 ms (every ~3rd frame) | 8–18 / 36–72 m | 0.4 ms |
+| 400 agents (busy), now | 3.2 s | 276 MB | 5–7 ms (every frame) | 1.6–4.3 / 11–21 m | 0.3 ms |
+| 7,500 agents (cca0fef5), before | 52 s | 4,017 MB | 48 ms (every ~3rd frame) | | 2.7 ms (older run) |
+| 7,500 agents (cca0fef5), now | 6.2 s | 219 MB | 7–8 ms (every frame) | | 0.3 ms |
+| 7,000 agents (5423d1a4), before | 44 s | 3,705 MB | 49 ms | | |
+| 7,000 agents (5423d1a4), now | 5.9 s | 207 MB | 7–8 ms (every frame) | | 0.3 ms |
+
+What made the difference:
+- Few people (up to 64): only the patches around them are blurred. Many people: only their
+  bounding box. Big spreads: a coarser grid. Big runs: only the visible map. The blur used to
+  cover the whole ~0.7 M-cell grid four times a frame (`diffuse.js`).
+- No people field (nothing reads it).
+- `paint()` reuses its pixel buffer.
+- `max()` scans only the live patches; it made up 20% of the 10-agent load.
+- Dots are only touched when they change.
+- The user map skips per-agent positions.
+- Big runs read precomputed P(sick) and totals.
+
+Still slow:
+- Airflow view: about 7–11 ms a frame (the aerosol solver, `aerosol.js`).
+- Big-run load is about 6 s: about 2 s parsing the 0.85 M-row compact timeline, about 1.3 s
+  computing the colour scale (`scaleMax`, 60 sampled times), about 1 s parsing trips.
+
 ## Files
 
 - `heat.js`: heat grid in metres plus colouring.
@@ -189,10 +263,14 @@ python3 tools/make_fake_agents.py --agents 250 --days 2 --seed 7
   (building totals and hourly forecasts). Usage: `node heatmap/tools/precompute.mjs
   sim/runs/<run> --out <dir>`. It is validated against the in-browser `aggregate.js` and
   `forecast.js` (identical results), and handles 7,000 agents × 14 days in about 80 s.
-  It also writes `building_heat.csv` for the phones' walk-in warning
+  It also writes `p_sick.csv` (the model's output, [docs/p-sick-format.md](../docs/p-sick-format.md);
+  `model/cli.mjs` can't read a full run's 1.8 GB of contacts) and `building_heat.csv` for the phones' walk-in warning
   ([docs/building-heat-format.md](../docs/building-heat-format.md)); the committed ones are in
   `heatmap/out/<run>/`.
+- `precomputed.js`: reads `p_sick.csv` and `totals.json.gz` for big runs (see "Big runs").
 - `loader.js`: streaming CSV loader (gunzips on the fly, keeps only the columns the adapter uses).
+  When `<name>.csv.gz` is missing it reads the run's parts (`parts/manifest.json`,
+  `sim/scripts/run_parts.py`).
   A 7,000-agent day peaks at ~0.44 GB instead of ~4.9 GB. 14-day runs still need a compact format:
   see ROADMAP D1.
 - `aggregate.js`: per-building and per-room totals, the only input to the user map.
@@ -220,9 +298,9 @@ The folder (about 2.2 MB) holds `index.html` (= `usermap.html`), `usermap.js`, `
 `paths.geojson` (the run's footpaths, faint), `labels.json` (anchor places) and `context.geojson` (OSM roads,
 rail, parks, water, Shopping Center, hospital, downtown edge; regenerate with `node heatmap/tools/fetch_context.mjs`).
 The map is vector only: the illustrated `campus_trace.webp` is no longer bundled (the vectors read better and save
-0.37 MB). It is bounded to the campus + 250 m: the first view fits the whole campus between the top chip and
-the legend (20% of the height kept clear at the bottom), that is also the furthest zoom out, and the margin
-beyond is drawn (faint, with a soft vignette) but unreachable. `?debug` exposes `window.__map` for tests. Load `index.html?clock=live` from a custom scheme such as
+0.37 MB). The first view fits the whole campus between the top chip and the slim legend strip (about 9% of the
+height kept clear at the bottom); that is also the furthest zoom out. Panning is held to the campus + 10% by
+Leaflet's default soft limit (it rubber-bands back). The margin beyond campus is drawn faint, fading toward paper. `?debug` exposes `window.__map` for tests. Load `index.html?clock=live` from a custom scheme such as
 `fluni://app/index.html?clock=live`; relative URLs only, no network. Other flags: `?at=<minutes from run
 start>` (fixed moment, for screenshots), `?horizon=60` (start on "In 1 hour"). Which moment "live" shows is
 defined in `docs/building-heat-format.md`.

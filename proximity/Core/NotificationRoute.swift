@@ -61,14 +61,33 @@ enum NotificationRoute {
         return t.isEmpty || t.count > 64 ? nil : t
     }
 
-    /// Lock-screen wording. The title is always just "FlUni"; with details off the body says nothing about health.
+    /// Lock-screen wording. The title is always just "FlUni" (iOS shows it even when previews are hidden); with details
+    /// off the body says nothing about health. With details on, the body is the advice itself, the same lines as in
+    /// the app, cut at a whole sentence so it fits a collapsed banner, with `more` added when anything was cut.
     static func text(kind: NotificationKind, detailed: Bool, buildingName: String? = nil) -> (title: String, body: String) {
         guard detailed else { return ("FlUni", "You have an update. Open FlUni to see it.") }
         switch kind {
-        case .closeContact: return ("FlUni", "You may have had a close contact. Tap to see what to do.")
-        case .nearby: return ("FlUni", "Someone nearby may be unwell. A little distance helps.")
+        case .closeContact: return ("FlUni", fit(Advice.body(.closeContact)))  // its first line already says what happened
+        case .nearby: return ("FlUni", fit([Advice.title(.nearby) + "."] + Advice.body(.nearby)))
         case .building:
-            return ("FlUni", WalkInWarning.message(for: buildingName ?? "This building"))
+            return ("FlUni", fit([WalkInWarning.message(for: buildingName ?? "This building")]))
         }
+    }
+
+    /// About four lines of a collapsed banner on a 6.1-inch iPhone.
+    static let bodyBudget = 180
+    static let more = "Tap for more details."
+
+    /// Whole sentences, in order, while they fit in `bodyBudget`; if any are left out, ends with `more`.
+    /// The first sentence is always kept, even when it is long on its own.
+    static func fit(_ sentences: [String]) -> String {
+        if sentences.joined(separator: " ").count <= bodyBudget { return sentences.joined(separator: " ") }
+        var kept: [String] = []
+        for s in sentences {
+            let next = (kept + [s, more]).joined(separator: " ")
+            if !kept.isEmpty && next.count > bodyBudget { break }
+            kept.append(s)
+        }
+        return (kept + [more]).joined(separator: " ")
     }
 }

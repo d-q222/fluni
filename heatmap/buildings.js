@@ -68,7 +68,7 @@ export class BuildingTotalsLayer {
   _style(d, vmax, minPeople, forecast) {
     const base = { stroke: true, weight: 1, interactive: true, dashArray: forecast ? '4 3' : null };
     if (d.n < minPeople) return { ...base, color: MUTED, opacity: 0.45, fill: false };
-    const t = Math.sqrt(Math.min(1, d.expected / vmax));
+    const t = Math.sqrt(Math.min(1, (d.excess ?? d.expected) / vmax)); // colour: risk above the baseline
     const { color, alpha } = heatColor(t);
     const op = alpha * MAX_FILL * (forecast ? FORECAST_FILL : 1);
     return { ...base, color: INK, opacity: 0.45, fill: op > 0.01, fillColor: color, fillOpacity: op };

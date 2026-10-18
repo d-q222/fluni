@@ -63,6 +63,37 @@ final class NotificationRouteTests: XCTestCase {
         }
     }
 
+    func testCloseContactBodyIsTheAdviceCutWithTapForMore() {
+        let body = NotificationRoute.text(kind: .closeContact, detailed: true).body
+        XCTAssertEqual(body, "You've spent about 15 minutes within 6 ft of someone who may be sick. "
+                       + "Leave the room now, or move well away and put on a mask. Tap for more details.")
+        XCTAssertLessThanOrEqual(body.count, NotificationRoute.bodyBudget)
+        XCTAssertFalse(body.contains("Tap to see what to do"))
+    }
+
+    func testShortAdviceIsSentWholeWithoutTapForMore() {
+        let nearby = NotificationRoute.text(kind: .nearby, detailed: true).body
+        XCTAssertEqual(nearby, "Someone within 6 ft may be sick. Put 6 ft or more between you, or step outside. "
+                       + "Consider wearing a mask while you're here.")
+        let building = NotificationRoute.text(kind: .building, detailed: true, buildingName: "Jerry").body
+        XCTAssertEqual(building, "Jerry has a lot of illness right now. Consider a mask, or a different spot.")
+    }
+
+    func testFitKeepsWholeSentencesInOrderAndMarksTheCut() {
+        let more = NotificationRoute.more, n = NotificationRoute.bodyBudget
+        XCTAssertEqual(NotificationRoute.fit([]), "")
+        let exact = String(repeating: "a", count: n - 1) + "."
+        XCTAssertEqual(NotificationRoute.fit([exact]), exact, "exactly the budget: sent whole")
+        let a = String(repeating: "a", count: 100) + ".", b = String(repeating: "b", count: 100) + "."
+        XCTAssertEqual(NotificationRoute.fit([a, b]), a + " " + more)
+        let huge = String(repeating: "h", count: 400) + "."
+        XCTAssertEqual(NotificationRoute.fit([huge, "x."]), huge + " " + more, "the first sentence is never dropped")
+        let s1 = String(repeating: "c", count: 60) + ".", s2 = String(repeating: "d", count: 60) + "."
+        let s3 = String(repeating: "e", count: 60) + "."
+        // s1 + s2 + more = 61+1+61+1+21 = 145 fits; adding s3 would not.
+        XCTAssertEqual(NotificationRoute.fit([s1, s2, s3]), [s1, s2, more].joined(separator: " "))
+    }
+
     func testCategoryIDsAreDistinct() {
         XCTAssertEqual(Set(NotificationKind.allCases.map(\.categoryID)).count, NotificationKind.allCases.count)
     }

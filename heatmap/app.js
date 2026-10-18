@@ -5,10 +5,11 @@ import { AerosolField, buildWalls } from './aerosol.js';
 import { loadCsv } from './loader.js';
 import { inferRisk, doseModel, DEFAULTS as MODEL } from '../model/infer.js';
 import { renderMathPanel } from './mathpanel.js';
-import { Router, buildTracks, buildTrips, attachTrips, stateAt } from './motion.js';
+import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from './motion.js';
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
+import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
@@ -21,6 +22,13 @@ const DEMO = { cellM: 3, sigmaM: 18 };
 // so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
 const SMALL_RUN_SCALE = 50;
 const SMALL_RUN_AGENTS = 500;
+// Mid-size runs are scaled up to a ~7,000-person campus (x7 at 1,000 agents), so buildings still clear
+// MIN_PEOPLE; from FULL_RUN_AGENTS on, agents count as themselves. Same rule as tools/precompute.mjs.
+const FULL_RUN_AGENTS = 5000;
+const CAMPUS_PEOPLE = 7000;
+// From this many agents, read the precomputed P(sick) and user-map totals when the run has them
+// (precomputed.js): the model in the page and per-step totals take minutes and gigabytes there.
+const BIG_RUN = 2000;
 const MIN_PEOPLE = 4;
 const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
@@ -38,6 +46,7 @@ const NOTICE_WINDOW_MS = 3 * 24 * 3600000; // retroactive exposure notice: conta
 const CONTAGIOUS = 0.9;     // P(sick) the app treats as "contagious" (≈ a positive test)
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
+const roomNames = new Map();       // room_id -> registrar room name, when the run has real class rooms
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
@@ -181,13 +190,20 @@ async function loadModel(dataUrl, agentIds) {
   try {
     const base = new URL(dataUrl, location.href);
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
+    if (agentIds.length >= BIG_RUN) { // no "Why this %?" and no contact-based phone alerts then
+      const risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
+      if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
+      console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
+    }
     const [contacts, reports, rooms] = await Promise.all([
       loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s', 'room_id', 'indoor']),
       loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value', 'target_agent_id']),
       // Room volume and ventilation for Rio's room-air term (model/README.md); default room without it.
-      loadCsv(new URL('map/rooms.csv', base), ['room_id', 'volume_m3', 'ventilation_ach', 'room_type'])
+      loadCsv(new URL('map/rooms.csv', base), ['room_id', 'volume_m3', 'ventilation_ach', 'room_type', 'room_name'])
         .then((r) => new Map(r.data.map((x) => [x.room_id, x])), () => null),
     ]);
+    roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
+    for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
     const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
@@ -260,6 +276,12 @@ const CanvasLayer = L.Layer.extend({
     map.on('zoomanim', this.animate, this);
     map.on('viewreset zoomend', this.reset, this);
     this.reset();
+  },
+  setBounds(bounds) { // the grid drawn changed its extent (a coarser heat grid)
+    const b = L.latLngBounds(bounds);
+    if (b.equals(this.bounds)) return;
+    this.bounds = b;
+    if (this._map) this.reset();
   },
   onRemove(map) {
     this.canvas.remove();
@@ -430,14 +452,16 @@ function scaleMax(heatAt, times) {
   const peaks = [];
   for (let i = 0; i < times.length; i += step) peaks.push(heatAt(times[i]).max());
   peaks.sort((a, b) => a - b);
-  return peaks[Math.floor(0.9 * (peaks.length - 1))] || 1;
+  // Above the baseline most moments can be blank: then the busiest sampled moment sets the scale.
+  return peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
 }
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
+// The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
 function* asPoints(states, truth) {
   for (const s of states) {
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : s.p, indoor: Boolean(s.buildingId) };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
   }
 }
 
@@ -538,7 +562,11 @@ async function main() {
   // Walk the sim's own logged routes (trips.csv.gz) when the run has them; the Router is the fallback.
   const trips = await loadTrips(dataUrl);
   if (trips) attachTrips(tracks, trips);
-  if (/timeline_changes\.csv(\.gz)?$/.test(dataUrl)) {
+  // Big runs: the user map's totals from tools/precompute.mjs, kept in heatmap/out/<run>/ (or next to the timeline).
+  const runDir = new URL('.', new URL(dataUrl, location.href)), run = runDir.pathname.split('/').filter(Boolean).at(-1);
+  const pre = tracks.size < BIG_RUN ? null
+    : (await loadTotals(new URL(`out/${run}/totals.json.gz`, location.href))) || (await loadTotals(new URL('totals.json.gz', runDir)));
+  if (!pre && /timeline_changes\.csv(\.gz)?$/.test(dataUrl)) { // with precomputed totals, nothing needs every step
     Object.assign(data, expandSteps(tracks, data.times, model && model.risk.pAt));
   }
   // Positions interpolate between samples, but risk comes straight from the model when there is one
@@ -547,6 +575,16 @@ async function main() {
     const st = stateAt(track, t, router);
     if (st && model) st.p = model.risk.pAt(st.id, t);
     return st;
+  };
+  // Every k-th agent (by id) gets a dot when there are too many to draw smoothly.
+  const ids = [...tracks.keys()].sort();
+  const dotSample = ids.length > MAX_DOTS ? new Set(ids.filter((_, i) => i % Math.ceil(ids.length / MAX_DOTS) === 0)) : null;
+  // Everyone without a dot only feeds the heat: their latest sample, not walked along the route, with
+  // the model's P now. Several times cheaper than stateNow, which matters at 7,500 agents.
+  const stayNow = (track, t) => {
+    const r = sampleAt(track, t);
+    return r && { id: r.id, lat: r.lat, lon: r.lon, p: model ? model.risk.pAt(r.id, t) : r.p, sick: r.sick, infectious: r.infectious,
+      building: r.building, buildingId: r.buildingId, floor: r.floor, room: r.room, walking: Boolean(r.moving) };
   };
   const { frames, times } = data;
   const router = paths ? new Router(paths) : null; // without it, agents walk in straight lines
@@ -558,24 +596,46 @@ async function main() {
   const probe = new DiffusionField(bounds, DEMO.cellM);
   const mask = outlines ? rasterizeBuildings(outlines, probe).inside : null;
   const field = new DiffusionField(bounds, DEMO.cellM, { mask });
+  // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
+  // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
+  const fields = new Map([[DEMO.cellM, field]]);
+  const fieldFor = (sigma) => {
+    const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
+    if (!fields.has(cell)) {
+      const m = outlines ? rasterizeBuildings(outlines, new DiffusionField(bounds, cell)).inside : null;
+      fields.set(cell, new DiffusionField(bounds, cell, { mask: m }));
+    }
+    return fields.get(cell);
+  };
+  // The geographic extent a grid covers (whole cells, so a little past the data bounds).
+  const gridBounds = (g) => [[g.bounds.north - (g.ny * g.cellM) / 110574, g.bounds.west],
+    [g.bounds.north, g.bounds.west + (g.nx * g.cellM) / g.mPerDegLon]];
+  let lastField = field;
   const statesAt = (t) => {
     const out = [];
-    for (const track of tracks.values()) { const st = stateNow(track, t); if (st) out.push(st); }
+    for (const [id, track] of tracks) {
+      const st = !dotSample || dotSample.has(id) ? stateNow(track, t) : stayNow(track, t);
+      if (st) out.push(st);
+    }
     return out;
   };
   // No people field: nothing masks by it.
   // The spread follows the zoom: 18 m (room-level) close up, about 16 screen pixels when zoomed out, so a
   // cloud never shrinks to a dot. Set by the map's zoom (see sigmaForZoom below).
   let sigmaM = DEMO.sigmaM;
-  const heatAt = (t, nowStates = null, truth = false) => {
-    field.clear();
-    field.deposit(asPoints(nowStates || statesAt(t), truth), 1);
-    return field.diffuse(sigmaM, { people: false });
+  // area (optional): only people inside it count, e.g. the visible map plus a margin. Blurs only cover
+  // where people were deposited, so close up on a big run this is a fraction of the campus.
+  const heatAt = (t, nowStates = null, truth = false, area = null) => {
+    const f = (lastField = fieldFor(sigmaM));
+    f.clear();
+    const states = nowStates || statesAt(t);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth), 1);
+    return f.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
-  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : 1;
-  const totals = buildTotals(frames, times, { scale });
-  const forecaster = buildForecaster(frames, times, { scale });
+  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : tracks.size < FULL_RUN_AGENTS ? Math.round(CAMPUS_PEOPLE / tracks.size) : 1;
+  const totals = pre ? pre.totals : buildTotals(frames, times, { scale, prior: MODEL.prior });
+  const forecaster = pre ? pre.forecaster : buildForecaster(frames, times, { scale, prior: MODEL.prior });
   const backtestRate = forecaster.backtest(60).rate;
   // Airflow (experimental): infectious air that builds up in rooms, leaks through doors and is
   // ventilated away (aerosol.js). Stateful, so it steps forward with the clock; a backward scrub or a
@@ -584,7 +644,7 @@ async function main() {
   let aero = null, aeroT = null, aeroMax = 1e-9;
   const airSources = function* (states, truth) {
     for (const st of states) {
-      const rate = truth ? Number(Boolean(st.infectious)) : st.p;
+      const rate = truth ? Number(Boolean(st.infectious)) : Math.max(0, st.p - MODEL.prior); // above the baseline
       if (rate > 0) yield { lat: st.lat, lon: st.lon, rate, room: st.walking ? undefined : rooms.index.get(st.room) };
     }
   };
@@ -672,6 +732,8 @@ async function main() {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
     return Math.min(120, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6)); // 6 m steps: few cached scales
   };
+  // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
+  map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
     const next = sigmaForZoom();
     if (next === sigmaM) return;
@@ -696,9 +758,6 @@ async function main() {
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines) : null; // shown in "What users see"
 
-  // Every k-th agent (by id) gets a dot when there are too many to draw smoothly.
-  const ids = [...tracks.keys()].sort();
-  const dotSample = ids.length > MAX_DOTS ? new Set(ids.filter((_, i) => i % Math.ceil(ids.length / MAX_DOTS) === 0)) : null;
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
   }
@@ -738,7 +797,7 @@ async function main() {
     m.bindTooltip(() => {
       const a = current.get(id);
       if (!a) return id;
-      const where = a.walking ? 'walking' : [a.building, a.room && `room ${a.room}`].filter(Boolean).join(', ');
+      const where = a.walking ? 'walking' : [a.building, a.room && (roomNames.get(a.room) || `room ${a.room}`)].filter(Boolean).join(', ');
       const truth = a.sick === null ? '' : ` · ${a.sick ? 'infected' : 'healthy'} (sim)`;
       return `<b>${id}</b>${where ? ` · ${where}` : ''}<br>App estimate ${pct(a.p)}${truth}`;
     });
@@ -978,7 +1037,7 @@ async function main() {
     // 7,500 agents) unless a phone is open, which needs who is near.
     if (view !== 'public' || selected) {
       for (const [id, track] of tracks) {
-        const s = stateNow(track, now);
+        const s = !dotSample || dotSample.has(id) || id === selected ? stateNow(track, now) : stayNow(track, now);
         if (s) current.set(id, s);
       }
     }
@@ -999,9 +1058,14 @@ async function main() {
       }
       if (view === 'airflow') {
         const st = [...current.values()];
+        heatLayer.setBounds([sw, ne]);
         paint(airflowAt(now, st, truthMode()), heatLayer.canvas, aeroMax);
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
-      } else if (view !== 'public' && view !== 'airborne') paint(heatAt(now, current.values(), truthMode()), heatLayer.canvas, demoScale());
+      } else if (view !== 'public' && view !== 'airborne') {
+        const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
+        heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g));
+        paint(g, heatLayer.canvas, demoScale());
+      }
       lastHeat = realNow;
       heatDirty = false;
       const cost = performance.now() - started;
@@ -1070,7 +1134,7 @@ async function main() {
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : 'Expected infected <span>per 1,000 m²</span>';
+      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : `Expected infected above the ${Math.round(MODEL.prior * 100)}% baseline <span>per 1,000 m²</span>`;
     const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
@@ -1137,7 +1201,7 @@ async function main() {
   for (const id of ['view', 'show-dots', 'dot-mode', 'horizon']) {
     $(id).addEventListener('change', () => { renderLegend(); heatDirty = true; render(performance.now()); });
   }
-  if (model) {
+  if (model?.risk.explain) {
     const why = Object.assign(document.createElement('button'), { textContent: 'Why this %?' });
     why.style.whiteSpace = 'nowrap';
     $('ph-close').before(why);
@@ -1166,10 +1230,10 @@ async function main() {
   requestAnimationFrame(tick);
   const agentParam = new URLSearchParams(location.search).get('agent'); // ?agent=a018 opens that phone
   if (agentParam) select(agentParam);
-  if (PARAMS.get('why') && model) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
+  if (PARAMS.get('why') && model?.risk.explain) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
-    current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : field), // for tools/bench.mjs
+    current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
   };
 }
 
