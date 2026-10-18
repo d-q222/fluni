@@ -82,6 +82,11 @@ status). A dropped link is re-requested for 10 min; iOS completes it when the ph
 samples count only when no advert for that ID arrived in 3 s, so foreground ranging is unchanged. A BLE median
 over n < 4 samples gets sigma × sqrt(4/n), so P(≤ 6 ft) stays honest without UWB. The links carry the same 16
 bytes as the advert; FlUni never links a peer's old and new IDs. Log lines: `hold open|poll|lost|reconnected …`.
+**Always location** (`Core/BackgroundLocation.swift`). With Always, FlUni keeps standard location updates on
+off screen (3 km accuracy, 500 m filter: cell and Wi-Fi, no GPS radio; blue location indicator shown), which keeps
+it running while locked: the 1 s tick, the link polls and a Bluetooth scan restart every 10 s carry on. Coarse
+fixes are never used for walk-in warnings (geofences do that). Off while paused or after Delete my data; without
+Always nothing changes. The Always ask is the card on Today after onboarding (and Settings).
 After a swipe-away nothing runs until iOS relaunches FlUni for a location event (significant change, visit or
 building geofence, Always permission only); FlUni then restarts Bluetooth detection. A phone that is powered
 off cannot be detected by anything.
