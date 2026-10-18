@@ -95,7 +95,9 @@ const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
     this._renderer._updateCircle(this);
     const ctx = this._renderer._ctx, p = this._point, s = (PERSON.size * this._radius) / PERSON.radius;
-    if (!ctx || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    // Only inside the renderer's redraw pass (as _updateCircle): a moved dot's update also lands here, and
+    // drawing then put a stray badge-less tissue on screen until the next redraw cleared it.
+    if (!ctx || !this._renderer._drawing || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
     ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
   },
 });
