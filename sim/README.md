@@ -80,6 +80,17 @@ cases, one import), made after the path and biking changes. `view.py` on it show
 default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
 are committed in parts; rebuild them after cloning (see "Large runs in git").
 
+Two 1,000-agent, 14-day runs (seed 42, `output.by_agent=false`) have spread boosted above the
+calibrated default so more of campus gets infected:
+
+- `runs/influenza_none_n1000_d14_s42_f12e71fa/`: `--initial-seeds 30`, `transmission_scale=1.5`.
+  17.9% infected by day 14, measured R 1.04.
+- `runs/influenza_none_n1000_d14_s42_183f262b/`: `--initial-seeds 50`, `transmission_scale=2.0`.
+  50.3% infected by day 14, measured R 1.32, still growing at the end.
+
+Their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
+`scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
+
 ## Calibration
 
 `scripts/calibrate.py` sweeps `disease.transmission_scale` over full-size runs and reports
