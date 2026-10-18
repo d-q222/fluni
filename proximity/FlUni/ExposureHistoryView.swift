@@ -23,40 +23,6 @@ extension ExposureEpisode {
     var spoken: String { summary.replacingOccurrences(of: " · ", with: ", ") }
 }
 
-/// "Recent contacts" on Today: the latest few, and a link to the full 14 days. Local only.
-struct ExposureHistorySection: View {
-    @ObservedObject var store: ExposureHistoryStore
-
-    private var items: [ExposureEpisode] {
-        (store.episodes + (store.ongoing.map { [$0] } ?? [])).sorted { $0.start > $1.start }
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Recent contacts").font(.fluni(.headline)).accessibilityAddTraits(.isHeader)
-            if items.isEmpty {
-                Text("No time near someone sick in the last 14 days.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
-            } else {
-                ForEach(items.prefix(3)) { Text($0.summary).font(.fluni(.subheadline)).foregroundStyle(Theme.ink2).accessibilityLabel($0.spoken) }
-                NavigationLink {
-                    ExposureHistoryView(store: store)
-                } label: {
-                    HStack {
-                        Text("See the last 14 days")
-                        Spacer(minLength: 8)
-                        Image(systemName: "chevron.right").accessibilityHidden(true)
-                    }
-                    .font(.fluni(.footnote, weight: .semibold)).foregroundStyle(Theme.ink2).frame(minHeight: 44)
-                }
-                .accessibilityHint("Shows every close contact from the last 14 days")
-            }
-        }
-        .foregroundStyle(Theme.ink)
-        .card()
-        .accessibilityElement(children: .contain)
-    }
-}
-
 /// The last 14 days of exposure episodes, newest first.
 struct ExposureHistoryView: View {
     @ObservedObject var store: ExposureHistoryStore
@@ -86,22 +52,6 @@ struct ExposureHistoryView: View {
         .background(Theme.paper)
         .navigationTitle("Recent contacts")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-/// Gentle heads-up on Today while someone who may be sick is probably within 6 ft.
-struct NearbyBanner: View {
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "figure.walk").font(.title3).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(Advice.title(.nearby)).font(.fluni(.subheadline, weight: .semibold))
-                Text(Advice.body(.nearby).joined(separator: " ")).font(.fluni(.footnote))
-            }
-        }
-        .foregroundStyle(Theme.ink)
-        .card(.peach)  // Lisa's peach box means "heads-up", as in the phone mock-up; ink text for contrast
-        .accessibilityElement(children: .combine)
     }
 }
 

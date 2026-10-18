@@ -1,65 +1,137 @@
 import CoreBluetooth
 import SwiftUI
 
-/// The student's home screen: one calm status card, a gentle progress bar, a count. No IDs, no
-/// per-person distances (those live in the Developer screen).
+/// The student's home screen (mockup v4, owner-approved 2026-10-18): Lisa's tissue saying one short line, a card with
+/// only the live risk estimate and "I don't feel well" (a heads-up or close-contact strip above the number while
+/// one is on), then the day so far. Someone who reported being sick sees the stay-home card and their recovery
+/// instead, never "All clear" or a risk percentage. No IDs, no per-person distances (those live in the Developer
+/// screen).
 struct TodayView: View {
+    /// Lisa's logo top left. Off for now (owner, v4); turning it on is this one line.
+    static let showLogo = false
+
     @ObservedObject var model: ProximityModel
     @ObservedObject var store: SelfReportStore
     @State private var showHow = false
     @State private var showCalc = false
+    @State private var showReport = false
     /// One line when iOS settings would stop alerts while FlUni is closed.
     @State private var backgroundHint: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var level: AlertLevel { model.exposure.level }
+    private var sick: Bool { model.selfStatusOverridesRisk }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    DemoTimeBadge()
-                    PausedBanner(model: model)
-                    if let backgroundHint {
-                        Label(backgroundHint, systemImage: "info.circle")
-                            .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    WalkInBanner(model: model)
-                    UnusualSignalsBanner(model: model)
-                    AlwaysLocationCard()  // step two of the location ask (BackgroundLocation.offersAlways); flu-offdetect
-                    if model.selfStatusOverridesRisk {
+                VStack(alignment: .leading, spacing: 0) {
+                    banners
+                    TissueHeader(line: line, sick: sick, showLogo: Self.showLogo)
+                    if sick {
                         // Someone who reported being sick never sees "All clear" or a risk percentage.
-                        stayHome
+                        AtHomeCard(model: model, store: store)
+                        RecoverySection(store: store, risk: model.myRisk)
+                            .onAppear { store.reconcile(with: model) }
                     } else {
-                        if level == .nearby { NearbyBanner().transition(.opacity) }
-                        statusCard
-                        riskCard
-                        minutesCard
-                        nearbyCard
-                        ExposureHistorySection(store: model.exposureHistory)
+                        RiskHero(p: model.liveRisk, level: level) { showReport = true }
+                        howLink
+                        DayTimelineSection(model: model, history: model.exposureHistory)
                     }
-                    Button { showHow = true } label: {
-                        Label("How FlUni works and what it shares", systemImage: "info.circle")
-                            .font(.fluni(.subheadline, weight: .semibold))
-                            .foregroundStyle(Theme.ink2)
-                            .frame(minHeight: 44)
-                    }
-                    .accessibilityHint("Opens a short explanation")
+                    footer
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
             }
             .tissueTabBarScrollRoom(alert: true)
             .background(Theme.paper)
+            // Paper behind the status bar, so the card doesn't scroll through the clock (there is no navigation bar).
+            .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: 0).background(Theme.paper) }
             .navigationTitle("Today")
+            .toolbar(.hidden, for: .navigationBar)  // the tissue's line is the header (mockup v4)
             .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
-            .onAppear(perform: checkBackground)
-            .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose, p: model.liveRisk) }
-            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
+            .sheet(isPresented: $showReport) { ReportSheet(kind: .symptoms, model: model, store: store) }
+            .onAppear {
+                checkBackground()
+                PlaceLogStore.shared.attach(model)
+                #if DEBUG
+                PlaceLogStore.shared.startDemoDayFromLaunchArguments()  // -demoDay YES: a made-up day for the timeline
+                #endif
+            }
+            .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
+            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false; showReport = false }
         }
+    }
+
+    /// The tissue's one line: calm, specific, never alarmist.
+    private var line: String {
+        if sick { return "Rest up." }
+        if model.isPaused { return "Taking a break." }
+        switch level {
+        case .none: return "All calm nearby."
+        case .nearby: return "I'm keeping watch."
+        case .closeContact: return "What to do is below."
+        }
+    }
+
+    /// Notes that only show when they apply (demo clock, pause, iOS settings, a busy building, odd signals, the
+    /// Always-location ask).
+    private var banners: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DemoTimeBadge()
+            PausedBanner(model: model)
+            if let backgroundHint {
+                Label(backgroundHint, systemImage: "info.circle")
+                    .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            WalkInBanner(model: model)
+            UnusualSignalsBanner(model: model)
+            AlwaysLocationCard()  // step two of the location ask (BackgroundLocation.offersAlways); flu-offdetect
+        }
+    }
+
+    private var howLink: some View {
+        Button { showCalc = true } label: {
+            HStack(spacing: 8) {
+                if !typeSize.isAccessibilitySize {  // the mark only gets in the way at the largest sizes
+                    Text("f(x)").font(.custom("Georgia-BoldItalic", size: 14, relativeTo: .footnote)).accessibilityHidden(true)
+                }
+                Text("How your risk estimate is worked out").font(.nunito(14, relativeTo: .footnote, weight: .semibold))
+            }
+            .underline()
+            .foregroundStyle(Theme.ink2)
+            .frame(minHeight: 44)
+            .padding(.horizontal, 6)
+        }
+        .padding(.top, 2)
+        .accessibilityHint("Opens the numbers behind this estimate")
+        .accessibilityIdentifier("risk.how")
+    }
+
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "lock").font(.footnote.weight(.semibold)).accessibilityHidden(true)
+                Text("Your precise location never leaves this phone and is never seen by anyone.")
+            }
+            .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            .padding(.top, 14)
+            .overlay(alignment: .top) { DashedRule() }
+            Button { showHow = true } label: {
+                Label("How FlUni works and what it shares", systemImage: "info.circle")
+                    .font(.fluni(.footnote, weight: .semibold)).underline()
+                    .foregroundStyle(Theme.ink2)
+                    .frame(minHeight: 44)
+            }
+            .accessibilityHint("Opens a short explanation")
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 26)
     }
 
     private func checkBackground() {
@@ -72,115 +144,223 @@ struct TodayView: View {
             backgroundHint = nil
         }
     }
+}
 
-    // MARK: Sick
+// MARK: Header
 
-    private var stayHome: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            AtHomeCard(model: model, store: store)
-            Text(model.myRisk == .contagious ? "Phones near you see: tested positive." : "Phones near you see: possibly sick.")
-                .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
-                .accessibilityIdentifier("today.sharedStatus")
-        }
-        .onAppear { store.reconcile(with: model) }
-    }
+/// Lisa's tissue, small, top right, saying one short line in a speech bubble. At accessibility text sizes the
+/// tissue keeps quiet (the line would push the card off screen); VoiceOver still reads it.
+struct TissueHeader: View {
+    let line: String
+    var sick = false
+    var showLogo = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
-    // MARK: Status
-
-    private var statusCard: some View {
-        let s = Self.style(level)
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(s.title).font(.fluni(.title2, weight: .bold))
-                    Text(s.subtitle).font(.fluni(.subheadline))
-                }
-                Spacer(minLength: 0)
-                if level == .none {
-                    Image("Tissue").resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
-                } else {
-                    // Looks like an info button, so it is one: it opens how alerts work.
-                    Button { showHow = true } label: {
-                        Image(systemName: level == .closeContact ? "exclamationmark.circle.fill" : "info.circle.fill")
-                            .font(.title).frame(minWidth: 44, minHeight: 44)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("How alerts work")
-                    .accessibilityIdentifier("status.info")
-                }
+    var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            if showLogo {
+                Image("Logo").resizable().scaledToFit().frame(height: 54).accessibilityLabel("FlUni")
             }
-            if level != .none {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Advice.body(level), id: \.self) { line in
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Image(systemName: "arrow.right").font(.caption.bold()).accessibilityHidden(true)
-                            Text(line).font(.fluni(.subheadline))
-                        }
-                    }
-                }
+            Spacer(minLength: 8)
+            if !typeSize.isAccessibilitySize {
+                SpeechBubble(text: line).padding(.trailing, 3)
             }
+            Image(sick ? "FeelingSick" : "Tissue").resizable().scaledToFit()
+                .frame(width: sick ? 55 : 42, height: 42)
+                .rotationEffect(.degrees(sick ? 0 : 8))
+                .offset(y: 6)
+                .accessibilityHidden(true)
         }
-        .foregroundStyle(s.text)
-        // All clear: paper box with a sage tint. Alerts: Lisa's peach box (ink text; fire-ink fails on peach).
-        .modifier(StatusBox(level: level, fill: s.fill))
-        .accessibilityElement(children: .contain)  // not .combine: that would swallow the info button
+        .frame(minHeight: 46)
+        .padding(.bottom, 8)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(line)
+        .accessibilityIdentifier("today.home")
     }
+}
 
-    private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color, text: Color) {
-        switch level {
-        case .none:
-            return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45), Theme.ink)
-        case .nearby:
-            return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
-        case .closeContact:
-            return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.ink)
-        }
+/// A rounded speech bubble with a tail pointing right, at the tissue.
+struct SpeechBubble: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.nunito(14, relativeTo: .subheadline, weight: .semibold))
+            .foregroundStyle(Theme.ink)
+            .lineLimit(1)
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .padding(.trailing, BubbleShape.tail)
+            .background(BubbleShape().fill(Theme.surface))
+            .overlay(BubbleShape().stroke(Theme.ink, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)))
     }
+}
 
-    // MARK: Risk
-
-    private var riskCard: some View {
-        RiskCardView(p: model.ownScore) { showCalc = true }  // never low for someone who reported being sick
+/// One outline: a rounded rectangle with a small tail on its right edge, pointing right.
+struct BubbleShape: Shape {
+    static let tail: CGFloat = 6
+    func path(in rect: CGRect) -> Path {
+        let r: CGFloat = 13, t = Self.tail, half: CGFloat = 5
+        let x1 = rect.maxX - t, y0 = rect.minY, y1 = rect.maxY, mid = rect.midY
+        let rr = min(r, rect.height / 2)
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX + rr, y: y0))
+        p.addLine(to: CGPoint(x: x1 - rr, y: y0))
+        p.addArc(center: CGPoint(x: x1 - rr, y: y0 + rr), radius: rr, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+        p.addLine(to: CGPoint(x: x1, y: mid - half))
+        p.addLine(to: CGPoint(x: rect.maxX, y: mid))
+        p.addLine(to: CGPoint(x: x1, y: mid + half))
+        p.addLine(to: CGPoint(x: x1, y: y1 - rr))
+        p.addArc(center: CGPoint(x: x1 - rr, y: y1 - rr), radius: rr, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+        p.addLine(to: CGPoint(x: rect.minX + rr, y: y1))
+        p.addArc(center: CGPoint(x: rect.minX + rr, y: y1 - rr), radius: rr, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+        p.addLine(to: CGPoint(x: rect.minX, y: y0 + rr))
+        p.addArc(center: CGPoint(x: rect.minX + rr, y: y0 + rr), radius: rr, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+        p.closeSubpath()
+        return p
     }
+}
 
-    // MARK: Minutes
+// MARK: The risk card
 
-    private var minutesCard: some View {
-        let mins = model.exposure.minutes
-        let goal = ExposureTracker.closeContactMinutes
-        let tint = mins >= goal ? Theme.fireInk : Theme.ink2
-        let caption = mins >= goal ? "You've reached the \(Int(goal))-minute close-contact mark."
-            : mins > 0 ? "About \(Int((goal - mins).rounded(.up))) more minutes would make this a close contact."
-            : "No time near someone with symptoms or a positive test."
-        return VStack(alignment: .leading, spacing: 10) {
-            Text("Close-contact time").font(.fluni(.headline))
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int(min(mins, 99)))").font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
-                Text("of \(Int(goal)) min").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
+/// The top card: the phone's live estimate as the headline with a tiny band indicator, and "I don't feel well".
+/// A heads-up or close contact adds a compact strip above the number. The campus-model number (Debug "Play as"
+/// persona only) is an extra line, never in the live number's place.
+struct RiskHero: View {
+    /// This phone's live estimate (ProximityModel.liveRisk); it changes every tick near someone sick.
+    let p: Double
+    let level: AlertLevel
+    let onUnwell: () -> Void
+    @ObservedObject private var store = PSickStore.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if level != .none { AlertStrip(level: level).padding(.bottom, 6) }
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 14) { number; indicator }
+                VStack(alignment: .leading, spacing: 4) { number; indicator }
             }
-            ProgressView(value: min(mins, goal), total: goal).tint(tint).accessibilityHidden(true)
-            Text(caption).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Your risk estimate, \(RiskEstimate.liveText(p)), \(Self.bandWord(p))\(rose ? ", up from \(RiskEstimate.liveText(RiskEstimate.prior))" : "")")
+            .accessibilityIdentifier("risk.card")
+            if let official = store.campusP {
+                Text("Campus model: \(RiskEstimate.percentText(official))")
+                    .font(.fluni(.subheadline, weight: .semibold)).monospacedDigit().foregroundStyle(Theme.ink2)
+            }
+            Button(action: onUnwell) {
+                Text("I don't feel well").font(.fredoka(18, relativeTo: .headline))
+            }
+            .buttonStyle(ChunkyButtonStyle())
+            .padding(.top, 10)
+            .accessibilityHint("Report symptoms")
+            .accessibilityIdentifier("today.unwell")
         }
         .foregroundStyle(Theme.ink)
         .card()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Close-contact time")
-        .accessibilityValue("\(Int(mins)) of \(Int(goal)) minutes. \(caption)")
+        .task { if store.feed == nil, !store.agent.isEmpty { await store.reload() } }
     }
 
-    // MARK: Nearby
+    private var rose: Bool { p > RiskEstimate.prior && RiskEstimate.liveText(p) != RiskEstimate.liveText(RiskEstimate.prior) }
 
-    private var nearbyCard: some View {
-        let n = model.peers.count
-        let text = n == 0 ? "No other FlUni phones nearby" : n == 1 ? "1 other FlUni phone nearby" : "\(n) other FlUni phones nearby"
-        return HStack(spacing: 12) {
-            Image(systemName: "person.2.wave.2").font(.title3).foregroundStyle(Theme.ink2).accessibilityHidden(true)
-            Text(text).font(.fluni(.body, weight: .semibold))
+    private var number: some View {
+        Text(RiskEstimate.liveText(p))
+            .font(.fredoka(76, relativeTo: .largeTitle)).tracking(-2).monospacedDigit()
+            .lineLimit(1).minimumScaleFactor(0.6)
+            .padding(.vertical, -6)  // the font's line box is taller than its figures (the mockup sets line-height 1)
+            .contentTransition(reduceMotion ? .identity : .numericText(value: p))
+            .animation(reduceMotion ? nil : .smooth, value: p)
+    }
+
+    private var indicator: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 7) {
+            Circle().fill(Self.bandColor(p)).overlay(Circle().strokeBorder(Theme.ink, lineWidth: 1.5))
+                .frame(width: 10, height: 10)
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 0.5 }
+            Text(Self.bandWord(p)).font(.nunito(17, relativeTo: .body, weight: .semibold))
+            if rose {
+                Text("up from \(RiskEstimate.liveText(RiskEstimate.prior))")
+                    .font(.nunito(15, relativeTo: .subheadline)).foregroundStyle(Theme.ink2)
+            }
+        }
+    }
+
+    /// Same tiers as the map: low = sage, elevated = sun, high = fire.
+    static func bandColor(_ p: Double) -> Color {
+        switch RiskEstimate.band(p) {
+        case .low: return Theme.sage
+        case .elevated: return Theme.sun
+        case .high: return Theme.fire
+        }
+    }
+
+    static func bandWord(_ p: Double) -> String {
+        switch RiskEstimate.band(p) {
+        case .low: return "Low"
+        case .elevated: return "Elevated"
+        case .high: return "High"
+        }
+    }
+}
+
+/// The heads-up / close-contact strip inside the risk card: tinted, an (!) icon, the alert's title and its first step.
+/// Ink only on the peach tints (as on Lisa's peach box).
+struct AlertStrip: View {
+    let level: AlertLevel
+
+    var body: some View {
+        let close = level == .closeContact
+        // Advice.body(.closeContact) starts with the "about 15 minutes" sentence; its first step is the next line.
+        let step = close ? Advice.body(level).dropFirst().first : Advice.body(level).first
+        HStack(alignment: .top, spacing: 10) {
+            AlertIcon(size: 20, fill: Theme.surface, stroke: Theme.ink).padding(.top, 2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Advice.title(level)).font(.fredoka(16, relativeTo: .headline))
+                if let step { Text(step).font(.nunito(14, relativeTo: .subheadline)) }
+            }
+            .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .foregroundStyle(Theme.ink)
-        .card()
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Color(hex: close ? 0xe6a088 : 0xecbba0), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.ink, lineWidth: 1.5))
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("today.alert")
+    }
+}
+
+/// The (!) mark: a filled circle with an exclamation stroke.
+struct AlertIcon: View {
+    var size: CGFloat = 16
+    var fill = Theme.ember
+    var stroke = Theme.fireInk
+
+    var body: some View {
+        Canvas { ctx, s in
+            let k = s.width / 16
+            let circle = Path(ellipseIn: CGRect(x: k, y: k, width: 14 * k, height: 14 * k))
+            ctx.fill(circle, with: .color(fill))
+            ctx.stroke(circle, with: .color(stroke), lineWidth: 1.6 * k)
+            var bang = Path()
+            bang.move(to: CGPoint(x: 8 * k, y: 4.2 * k)); bang.addLine(to: CGPoint(x: 8 * k, y: 8.8 * k))
+            bang.move(to: CGPoint(x: 8 * k, y: 11.3 * k)); bang.addLine(to: CGPoint(x: 8 * k, y: 11.5 * k))
+            ctx.stroke(bang, with: .color(Theme.ink), style: StrokeStyle(lineWidth: 1.9 * k, lineCap: .round))
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+/// A 1.5 pt dashed hairline across the full width (the mockup's dividers).
+struct DashedRule: View {
+    var body: some View {
+        Line().stroke(Color(hex: 0xe4d8c2), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+            .frame(height: 1.5)
+            .accessibilityHidden(true)
+    }
+
+    private struct Line: Shape {
+        func path(in r: CGRect) -> Path { Path { $0.move(to: CGPoint(x: 0, y: r.midY)); $0.addLine(to: CGPoint(x: r.maxX, y: r.midY)) } }
     }
 }
 
@@ -271,14 +451,5 @@ struct CalculationSheet: View {
             }
         }
         .foregroundStyle(Theme.ink)
-    }
-}
-
-/// Paper box with a tint for "all clear"; peach box for alerts.
-private struct StatusBox: ViewModifier {
-    let level: AlertLevel
-    let fill: Color
-    func body(content: Content) -> some View {
-        if level == .none { content.card(fill: fill) } else { content.card(.peach) }
     }
 }

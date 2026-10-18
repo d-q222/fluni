@@ -10,13 +10,13 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(app.buttons["onboarding.next"].exists)
         XCTAssertFalse(tab("Today").exists, "no tabs during onboarding")
         completeOnboarding()
-        XCTAssertTrue(app.staticTexts["All clear"].waitForExistence(timeout: 5), "fresh install is all clear")
+        XCTAssertEqual(el("today.home").label, "All calm nearby.", "fresh install is all clear")
 
         // Relaunch without the reset: the saved "hasOnboarded" flag must skip onboarding.
         app.terminate()
         app.launchEnvironment["FLUNI_UITEST_RESET"] = nil
         app.launch()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 15))
+        XCTAssertTrue(el("today.home").waitForExistence(timeout: 15))
         XCTAssertFalse(app.buttons["onboarding.next"].exists)
         XCTAssertFalse(app.staticTexts["Know when someone sick is near"].exists)
     }
@@ -28,13 +28,14 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(tab("Today").isSelected)
         openTab("Map")
         XCTAssertTrue(tab("Map").isSelected)
-        XCTAssertFalse(app.navigationBars["Today"].exists)
+        XCTAssertFalse(el("today.home").exists)
         openTab("Me")
         XCTAssertTrue(tab("Me").isSelected)
         XCTAssertTrue(app.staticTexts["How are you doing?"].waitForExistence(timeout: 5))
         openTab("Today")
         XCTAssertTrue(tab("Today").isSelected)
-        XCTAssertTrue(app.staticTexts["All clear"].exists)
+        XCTAssertEqual(el("today.home").label, "All calm nearby.")
+        XCTAssertTrue(el("today.unwell").exists, "I don't feel well")
     }
 
     // MARK: Risk
@@ -57,14 +58,14 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertNotNil(estimate.label.range(of: #"estimate: 2\.0%"#, options: .regularExpression), estimate.label)
 
         app.buttons["Done"].tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(el("today.home").waitForExistence(timeout: 5))
         XCTAssertFalse(app.navigationBars["How is this calculated?"].exists)
     }
 
     /// Someone who reported being sick sees the stay-home card on Today: no risk percentage, no "All clear".
     func testSickUserSeesNoRiskPercentOrAllClearOnToday() {
         launchPastOnboarding()
-        XCTAssertTrue(app.staticTexts["All clear"].waitForExistence(timeout: 10), "healthy baseline")
+        XCTAssertTrue(el("risk.card").waitForExistence(timeout: 10), "healthy baseline")
         reportSymptoms()
         assertTodayIsStayHome()
         openTab("Me")
@@ -84,6 +85,7 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(el("athome.card").waitForExistence(timeout: 10))
         XCTAssertFalse(app.staticTexts["All clear"].exists)
         XCTAssertFalse(el("risk.card").exists)
+        XCTAssertEqual(el("today.home").label, "Rest up.")
         XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label CONTAINS '%'")).count, 0, "no percentage on Today")
         XCTAssertTrue(el("today.sharedStatus").exists)
     }
@@ -139,8 +141,8 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(el("report.symptoms").isSelected, "status reads possibly sick")
         XCTAssertFalse(el("report.fine").isSelected)
         XCTAssertTrue(el("athome.card").waitForExistence(timeout: 5), "At home card appears")
-        XCTAssertTrue(app.staticTexts["What to do"].exists)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Day 1 of'")).firstMatch.exists)
+        XCTAssertTrue(el("checkin.better").exists, "the one-tap check-in")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label MATCHES 'Day [0-9] of 5'")).firstMatch.exists)
     }
 
     func testPositiveNeedsConfirmationAndCancelKeepsOldStatus() {
@@ -246,8 +248,9 @@ final class FlUniUITests: FlUniUITestCase {
         turnOn.tap()
 
         // Today
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10))
+        XCTAssertTrue(el("today.home").waitForExistence(timeout: 10))
         XCTAssertTrue(tab("Today").isHittable)
+        XCTAssertTrue(scrollTo(el("today.unwell")).isHittable, "I don't feel well")
         XCTAssertTrue(scrollTo(app.buttons["risk.how"]).isHittable, "risk details button")
 
         // Map

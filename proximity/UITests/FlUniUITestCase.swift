@@ -25,7 +25,7 @@ class FlUniUITestCase: XCTestCase {
         let turnOn = app.buttons["onboarding.turnOn"]
         XCTAssertTrue(turnOn.waitForExistence(timeout: 5), file: file, line: line)
         turnOn.tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10), "should land on Today", file: file, line: line)
+        XCTAssertTrue(el("today.home").waitForExistence(timeout: 10), "should land on Today", file: file, line: line)
     }
 
     func launchPastOnboarding() {
@@ -40,7 +40,9 @@ class FlUniUITestCase: XCTestCase {
         let t = tab(name)
         XCTAssertTrue(t.waitForExistence(timeout: 10), "\(name) tab", file: file, line: line)
         t.tap()
-        XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 10), "\(name) title", file: file, line: line)
+        // Today has no navigation bar (mockup v4): its header is the tissue's line, id today.home.
+        let landed = name == "Today" ? el("today.home") : app.navigationBars[name]
+        XCTAssertTrue(landed.waitForExistence(timeout: 10), "\(name) title", file: file, line: line)
     }
 
     /// Any element type, by accessibility identifier (SwiftUI combined elements vary in type).
