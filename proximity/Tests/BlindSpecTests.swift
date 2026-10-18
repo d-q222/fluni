@@ -1117,6 +1117,7 @@ final class BlindPlumbingTests: XCTestCase {
     // README "Test launches skip onboarding": the flags that mark a test launch.
     func testLaunchModeTestKeys() {
         let keys = Set(LaunchMode.testKeys.map { $0.hasPrefix("-") ? String($0.dropFirst()) : String($0) })
-        XCTAssertEqual(keys, ["risk", "speed", "sources", "encryption", "inviteTimeout", "rotate", "riskAfter", "skipOnboarding"])
+        // demoPeer added 2026-10-18: a pretend sick peer must never read or write the owner's saved state.
+        XCTAssertEqual(keys, ["risk", "speed", "sources", "encryption", "inviteTimeout", "rotate", "riskAfter", "skipOnboarding", "demoPeer"])
     }
 }
