@@ -1,0 +1,14 @@
+{
+  "_doc": "Which sim runs each model trains and is scored on. Paths are relative to the repo root; globs allowed; missing paths are skipped with a warning. A run matched by more than one split goes to the first of: val, stop, train. val = held-out scoring runs (compare.py default). stop = early stopping only (MLP/GNN), never scored. train = everything models fit on. 1k and 7k runs mix freely; each run is one graph.",
+  "val": [
+    "ml/data/val_runs/influenza_none_n1000_d14_s43_*"
+  ],
+  "stop": [
+    "ml/data/runs/*_s1??0_*"
+  ],
+  "train": [
+    "sim/runs/influenza_none_n1000_d14_s42_a986df0a",
+    "sim/runs/influenza_none_n7000_d14_s42_*",
+    "ml/data/runs/*"
+  ]
+}
