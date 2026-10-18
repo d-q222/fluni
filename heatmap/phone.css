@@ -209,3 +209,6 @@
 .sheet .block p { color: var(--ink-2); margin: 0 0 8px; }
 .sheet .block .num { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sheet .fineprint { font-size: 13px; color: var(--ink-2); }
+
+#ph-map.muted-base .leaflet-tile-pane, #ph-map.muted-base .leaflet-simPane-pane, #ph-map.muted-base .leaflet-simpane-pane { opacity: .3; }
+#ph-map { background: linear-gradient(#f4ead6, #f1e6cf); }

@@ -1285,7 +1285,8 @@ async function main() {
 
     if (!phoneMap && phoneTab === 'map') {
       phoneMap = baseMap('ph-map', { zoomControl: false, attributionControl: false });
-      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines, { avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] }).addTo(phoneMap);
+      if (outlines) phoneBuildings = new BuildingTotalsLayer(outlines, { badges: false, avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] }).addTo(phoneMap);
+      phoneMap.getContainer().classList.add('muted-base');
       phoneMap.setView([me.lat, me.lon], 15.5);
       withHeat = true;
     }

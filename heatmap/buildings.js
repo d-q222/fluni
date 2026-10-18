@@ -8,8 +8,9 @@ import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
 export class BuildingTotalsLayer {
   // avoid: () => [DOMRect, ...] the labels must stay clear of (legend, chip)
-  constructor(geojson, { avoid = () => [] } = {}) {
+  constructor(geojson, { avoid = () => [], badges = true } = {}) {
     this.geojson = geojson;
+    this.badges = badges; // the presenter's count badges (FlUni's own map has none)
     this.avoid = avoid;
     this.totals = new Map();
     this.opts = { minPeople: 4, forecast: false };
