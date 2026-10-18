@@ -6,6 +6,7 @@
 //   node heatmap/tools/bench.mjs [--base http://localhost:8766] [--run <sim run>] [--at 2115]
 //        [--secs 4] [--views demo,phone,zoom,public,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
 //        [--top 12] [--json out.json] [--shot dir] [--tiles] [--basemap streets|sim|drawn] [--load]
+//        [--load-limit 300]
 //
 // frame = time between animation frames (16.7 ms is a smooth 60 fps); work = JavaScript run inside
 // requestAnimationFrame callbacks that frame (the app's tick plus Leaflet's canvas redraws).
@@ -30,6 +31,7 @@ const SECS = Number(args.secs || 4);
 const VIEWS = (args.views || 'demo,phone,zoom,public,airflow,embed').split(',');
 const SPEEDS = (args.speeds || '0,1,2,3').split(',').map(Number);
 const TOP = Number(args.top || 12);
+const LOAD_LIMIT_S = Number(args['load-limit'] || 300);
 const AGENT = args.agent || 'A0008';
 const run = (args.run ? `&run=${args.run}` : '') + (args.basemap ? `&basemap=${args.basemap}` : '');
 const DESKTOP = { width: 1400, height: 900, deviceScaleFactor: 2, mobile: false };
@@ -192,13 +194,14 @@ async function benchIn(cdp, name) {
   let load = 0;
   await cdp.send('Inspector.enable');
   const crashed = () => cdp.state.crashed;
-  for (let i = 0; i < 6000 && !load && !crashed(); i++) {
+  // A busy page answers late, so poll with a timeout and give up after LOAD_LIMIT_S of wall time.
+  for (const end = Date.now() + LOAD_LIMIT_S * 1000; !load && !crashed() && Date.now() < end;) {
     await sleep(50);
-    load = await cdp.evaluate('window.fluni ? performance.now() : 0').catch(() => 0);
+    load = await Promise.race([cdp.evaluate('window.fluni ? performance.now() : 0').catch(() => 0), sleep(5000).then(() => 0)]);
   }
   if (crashed()) throw new Error(`${name}: renderer crashed while loading (${url})`);
   const loadProfile = (await cdp.send('Profiler.stop')).profile;
-  if (!load) throw new Error(`${name}: page never became ready (${url})\n${cdp.errors.join('\n')}`);
+  if (!load) throw new Error(`${name}: not ready after ${LOAD_LIMIT_S} s (${url})\n${cdp.errors.join('\n')}`);
   const loadTop = [...breakdown(loadProfile).incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, ms }));
   await cdp.send('HeapProfiler.collectGarbage');
   const heapMB = (await cdp.send('Runtime.getHeapUsage')).usedSize / 1e6;
