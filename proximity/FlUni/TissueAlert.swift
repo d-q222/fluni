@@ -32,8 +32,8 @@ struct TissueAlert: View {
             if case .open = phase {
                 // Dim the screen above the tab bar while the sheet is out.
                 Theme.paper.opacity(0.72)
-                    .frame(width: w, height: UIScreen.main.bounds.height - TissueTabBar.lift - TissueTabBar.height)
-                    .offset(y: h + TissueTabBar.lift - UIScreen.main.bounds.height)
+                    .frame(width: w, height: UIScreen.main.bounds.height - TissueTabBar.height)
+                    .offset(y: h - UIScreen.main.bounds.height)
                     .onTapGesture {}   // swallow taps behind the sheet
             }
             Image(art).resizable().frame(width: w, height: h)
@@ -44,7 +44,6 @@ struct TissueAlert: View {
             if case .open = phase { note(w, h) }
         }
         .frame(width: w, height: h)
-        .padding(.bottom, TissueTabBar.lift)  // sits on the box, which is lifted clear of the home indicator
         .frame(maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: .bottom)
         .opacity(isShown ? 1 : 0)
