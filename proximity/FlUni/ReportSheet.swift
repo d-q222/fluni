@@ -18,6 +18,8 @@ struct ReportSheet: View {
     @State private var confirmPositive = false
     @State private var error: String?
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var stamped = false   // Lisa's "Self-reported" stamp lands before the sheet closes
 
     var body: some View {
         NavigationStack {
@@ -41,6 +43,13 @@ struct ReportSheet: View {
                     .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
             }
             .background(Theme.paper)
+            .overlay { stampOverlay }
+            // Closes 0.8 s after the stamp lands. A task, so it's cancelled if the sheet goes away first.
+            .task(id: stamped) {
+                guard stamped else { return }
+                try? await Task.sleep(for: .milliseconds(800))
+                if !Task.isCancelled { dismiss() }
+            }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
@@ -48,7 +57,7 @@ struct ReportSheet: View {
                 Button("Share that I tested positive", role: .destructive) { submit() }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("FlUni phones near you will see \"contagious\" (nothing else about you) and may alert their owners. Staying home is the best thing you can do now.")
+                Text("Phones near you will see \"contagious\" (nothing else about you) and may alert their owners. Staying home is the best thing you can do now.")
             }
         }
     }
@@ -87,44 +96,76 @@ struct ReportSheet: View {
         HStack(alignment: .bottom, spacing: Space.s) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text("What are you feeling?").font(.fluni(.section)).accessibilityAddTraits(.isHeader)
-                Text("Pick any that fit. One is enough.").font(.fluni(.note)).foregroundStyle(Theme.ink2)
+                Text("Tap every sticker that fits. One is enough.").font(.fluni(.note)).foregroundStyle(Theme.ink2)
             }
             Spacer(minLength: 0)
-            if !typeSize.isAccessibilitySize {
-                Image("FeelingSick").resizable().scaledToFit().frame(width: 96)
-                    .accessibilityHidden(true)  // Lisa's illustration
-            }
         }
         .foregroundStyle(Theme.ink)
         // Two columns of tick boxes; one column when large text needs the width.
         LazyVGrid(columns: typeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible(), spacing: Space.xs), GridItem(.flexible())],
                   alignment: .leading, spacing: Space.xs) {
-            ForEach(Symptom.allCases, id: \.self) { s in
-                let on = picked.contains(s)
-                Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
-                    HStack(alignment: .firstTextBaseline, spacing: Space.s) {
-                        Tick(on: on)
-                        Text(s.label).font(.fluni(.reading)).multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Spacer(minLength: 0)
-                    }
-                    .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, Space.s).padding(.vertical, Space.s)
-                    .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
-                    .background(on ? Theme.surface2 : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radius))
-                    .overlay(RoundedRectangle(cornerRadius: Theme.radius)
-                        .stroke(on ? Theme.ink : Theme.hairline, lineWidth: on ? Theme.selectedStroke : 1))
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
-                .accessibilityIdentifier("symptom.\(s.rawValue)")
-            }
+            ForEach(Symptom.allCases, id: \.self) { sticker($0) }
         }
         DatePicker("When did it start?", selection: $date, in: ...Date(), displayedComponents: .date)
             .font(.fluni(.heading)).foregroundStyle(Theme.ink)
             .frame(minHeight: 44)
         sharedBox("Phones near you will only see \"possibly sick\". Your symptoms, the date and your name are never shared. They stay on this phone.")
+    }
+
+    /// One control: Lisa's sticker for the symptom, with a tick box and the word under it. Picked = ink tick,
+    /// a 2 pt ink edge and a slight tilt of the sticker (no tilt with Reduce Motion); never colour alone.
+    private func sticker(_ s: Symptom) -> some View {
+        let on = picked.contains(s)
+        let lift = on && !reduceMotion
+        return Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
+            VStack(alignment: .leading, spacing: Space.xs) {
+                Image(s.art).resizable().scaledToFit()
+                    .frame(height: typeSize.isAccessibilitySize ? 96 : 72)
+                    .rotationEffect(.degrees(lift ? -6 : 0))
+                    .scaleEffect(lift ? 1.06 : 1)
+                    .padding(Space.xxs)   // room for the tilt, so the drawing never clips
+                    .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
+                HStack(alignment: .firstTextBaseline, spacing: Space.xs) {
+                    Tick(on: on)
+                    Text(s.label).font(on ? .fluni(.strong) : .fluni(.reading)).multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .foregroundStyle(Theme.ink)
+            .padding(Space.s)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .background(on ? Theme.surface2 : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.radius))
+            .overlay(RoundedRectangle(cornerRadius: Theme.radius)
+                .stroke(on ? Theme.ink : Theme.hairline, lineWidth: on ? Theme.selectedStroke : 1))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.6), value: on)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(s.label)
+        .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
+        .accessibilityIdentifier("symptom.\(s.rawValue)")
+    }
+
+    /// Lisa's "Self-reported" stamp, pressed onto the sheet after a symptoms report is saved, large enough to read.
+    private var stampOverlay: some View {
+        ZStack {
+            if stamped {
+                Theme.paper.opacity(0.7).ignoresSafeArea().transition(.opacity)
+                VStack(spacing: Space.s) {
+                    Image("StampSelfReported").resizable().scaledToFit().frame(width: 220)
+                        .rotationEffect(.degrees(reduceMotion ? 0 : -12))
+                        .accessibilityHidden(true)
+                    Text("Saved. Phones near you now see \"possibly sick\".").font(.fluni(.heading)).foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(Space.l)
+                .transition(reduceMotion ? .opacity : .scale(scale: 1.8).combined(with: .opacity))
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: tests
@@ -166,7 +207,11 @@ struct ReportSheet: View {
     private func submit() {
         do {
             switch kind {
-            case .symptoms: try store.symptoms(picked, onset: date, model: model)
+            case .symptoms:
+                try store.symptoms(picked, onset: date, model: model)
+                // Saved: the stamp shows for a moment, then the sheet closes (the .task above). Straight away with Reduce Motion.
+                if reduceMotion { dismiss() } else { withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { stamped = true } }
+                return
             case .positive: try store.positive(test, date: date, model: model)
             case .negative: try store.negative(test, date: date, model: model)
             }
@@ -194,5 +239,19 @@ private struct Tick: View {
             .frame(width: size, height: size)
             .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 3 }
             .accessibilityHidden(true)
+    }
+}
+
+private extension Symptom {
+    /// Lisa's drawing for each symptom (FlUni asset catalog; sources in heatmap/assets/illustrations/symptoms).
+    var art: String {
+        switch self {
+        case .fever: return "SymptomFever"
+        case .cough: return "SymptomCough"
+        case .soreThroat: return "SymptomSoreThroat"
+        case .aches: return "SymptomAches"
+        case .fatigue: return "SymptomFatigue"
+        case .runnyNose: return "SymptomRunnyNose"
+        }
     }
 }

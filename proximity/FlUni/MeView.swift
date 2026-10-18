@@ -93,6 +93,7 @@ struct MeView: View {
                 .padding(.horizontal, Space.m)
                 .padding(.bottom, Space.l)
             }
+            .contentMargins(.bottom, Space.xl, for: .scrollContent)
             .background(Theme.paper)
             .navigationTitle("Me")
             #if DEBUG

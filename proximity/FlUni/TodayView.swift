@@ -38,6 +38,7 @@ struct TodayView: View {
                     notices
                     if isSick {
                         StayingHomeView(model: model, store: store)
+                        WalkInBanner(model: model)
                         DisclosureGroup {
                             ExposureHistorySection(store: model.exposureHistory, showsTitle: false).padding(.top, Space.xs)
                         } label: {
@@ -48,16 +49,19 @@ struct TodayView: View {
                     } else {
                         // Paused: the paused notice above is the status; "All clear" wouldn't be true.
                         if !model.isPaused { statusHero }
+                        WalkInBanner(model: model)
                         ledger
                         ExposureHistorySection(store: model.exposureHistory)
                     }
-                    Button { showHow = true } label: { Text("How FlUni works and what it shares") }
+                    Button { showHow = true } label: { Text("How it works and what's shared") }
                         .buttonStyle(QuietLinkStyle())
                         .accessibilityHint("Opens a short explanation")
                 }
                 .padding(.horizontal, Space.m)
                 .padding(.bottom, Space.l)
             }
+            // Room to scroll the last line fully clear of the floating tab bar.
+            .contentMargins(.bottom, Space.xl, for: .scrollContent)
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)
@@ -92,7 +96,6 @@ struct TodayView: View {
                 Text(backgroundHint).font(.fluni(.fine)).foregroundStyle(Theme.ink)
                     .panel()
             }
-            WalkInBanner(model: model)
             UnusualSignalsBanner(model: model)
         }
     }
@@ -140,7 +143,7 @@ struct TodayView: View {
     private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color) {
         switch level {
         case .none:
-            return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45))
+            return ("All clear", "Nobody near you has reported symptoms or a positive test.", Theme.sage.opacity(0.45))
         case .nearby:
             return ("Someone nearby may be sick", "They're probably within 6 ft of you right now.", Theme.sun.opacity(0.5))
         case .closeContact:
@@ -186,7 +189,7 @@ struct TodayView: View {
 
     private var nearbyLine: some View {
         let n = peerCount
-        return LedgerLine(label: "Other FlUni phones nearby") {
+        return LedgerLine(label: "Phones nearby with the app") {
             Text(n == 0 ? "None" : "\(n)").font(.fluni(.section)).monospacedDigit()
         }
         .foregroundStyle(Theme.ink)
@@ -228,7 +231,8 @@ struct Step: View {
                 .frame(width: ring, height: ring)
                 .overlay(Circle().stroke(Theme.ink, lineWidth: Theme.stroke))
                 .accessibilityHidden(true)
-            Text(text).font(.fluni(.reading)).fixedSize(horizontal: false, vertical: true)
+            // Core's advice says "report it in FlUni"; in SF the name reads as "FIUni", so the step says "the app".
+            Text(text.replacingOccurrences(of: "FlUni", with: "the app")).font(.fluni(.reading)).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Step \(number): \(text)")
@@ -243,7 +247,7 @@ struct HowItWorksSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.m) {
                     block("How it works",
-                          "Your phone and other phones running FlUni notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
+                          "Your phone and other phones running the app notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
                     HandRule()
                     block("What your phone shares",
                           "Only a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
@@ -252,7 +256,7 @@ struct HowItWorksSheet: View {
                           "Your location is never sent to other people or to a server. Matching happens on your phone, and the map shows building totals, not people.")
                     HandRule()
                     block("Good to know",
-                          "FlUni works best while the app is open, and keeps checking over Bluetooth in the background, less often. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
+                          "It works best while the app is open, and keeps checking over Bluetooth in the background, less often. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
                 }
                 .padding(.horizontal, Space.m).padding(.vertical, Space.l)
             }
@@ -289,7 +293,7 @@ struct CalculationSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.l) {
                     block("Close contact",
-                          "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, FlUni tells you it's a close contact.",
+                          "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, you get a close-contact alert.",
                           "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
                     block("Closeness-weighted time",
                           "The same minutes, but closer counts more: under 1 m ×1, 1–2 m ×0.6, 2–5 m ×0.1, farther in the room ×0.02.",

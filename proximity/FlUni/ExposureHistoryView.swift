@@ -161,18 +161,19 @@ struct CloseContactSheet: View {
 
     var body: some View {
         let lines = Advice.body(.closeContact)
-        // Scrolls at large text sizes instead of clipping; "Got it" stays pinned at the bottom.
+        // Scrolls at large text sizes instead of clipping. "Got it" follows the steps directly: no dead gap.
         ScrollView {
             VStack(alignment: .leading, spacing: Space.l) {
                 VStack(alignment: .leading, spacing: Space.s) {
-                    Image("Tissue").resizable().scaledToFit().frame(width: 72).rotationEffect(.degrees(10))
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .padding(.bottom, -Space.l)
-                        .accessibilityHidden(true)
-                    Text("You were close to someone who may be sick")
-                        .font(.fluni(.display)).fixedSize(horizontal: false, vertical: true)
-                        .accessibilityAddTraits(.isHeader)
-                    if let first = lines.first { Text(first).font(.fluni(.reading)) }
+                    HStack(alignment: .top, spacing: Space.s) {
+                        Text("You were close to someone who may be sick")
+                            .font(.fluni(.lead)).fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: 0)
+                        Image("Tissue").resizable().scaledToFit().frame(width: 64).rotationEffect(.degrees(10))
+                            .offset(x: 4, y: -4).accessibilityHidden(true)
+                    }
+                    if let first = lines.first { Text(first).font(.fluni(.reading)).fixedSize(horizontal: false, vertical: true) }
                 }
                 .foregroundStyle(Theme.ink)
                 .card(.peach)
@@ -185,19 +186,17 @@ struct CloseContactSheet: View {
                     }
                 }
                 .foregroundStyle(Theme.ink)
-                Text("This is a nudge, not a diagnosis. It's saved under Recent contacts on Today.")
-                    .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
+                VStack(alignment: .leading, spacing: Space.s) {
+                    Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
+                        .accessibilityHint("Closes this message")
+                    Text("A nudge, not a diagnosis. You'll find it again under Recent contacts on Today.")
+                        .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
+                }
             }
-            .padding(.horizontal, Space.m).padding(.top, Space.l)
+            .padding(.horizontal, Space.m).padding(.vertical, Space.l)
             .frame(maxWidth: .infinity)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .safeAreaInset(edge: .bottom) {
-            Button("Got it", action: onDone).buttonStyle(PrimaryButtonStyle())
-                .accessibilityHint("Closes this message")
-                .padding(.horizontal, Space.m).padding(.vertical, Space.s)
-                .background(Theme.paper)
-        }
         .background(Theme.paper.ignoresSafeArea())
     }
 }

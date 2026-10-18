@@ -11,7 +11,7 @@ struct PausedBanner: View {
             VStack(alignment: .leading, spacing: Space.m) {
                 VStack(alignment: .leading, spacing: Space.xs) {
                     Text("Detection is paused").font(.fluni(.display)).accessibilityAddTraits(.isHeader)
-                    Text("FlUni isn't sharing your status or counting close-contact time, \(PauseSchedule.describe(p, calendar: .current, now: Date())).")
+                    Text("Your status isn't shared and close-contact time isn't counted, \(PauseSchedule.describe(p, calendar: .current, now: Date())).")
                         .font(.fluni(.note)).fixedSize(horizontal: false, vertical: true)
                 }
                 .accessibilityElement(children: .combine)

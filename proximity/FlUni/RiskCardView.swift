@@ -32,7 +32,7 @@ struct RiskCardView: View {
                 }
                 // Same number for colour and advice, so they can never disagree.
                 Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.note))
-                Text("From time near other FlUni phones in the last 24 hours. An estimate, not a diagnosis.")
+                Text("From time near other phones with the app in the last 24 hours. An estimate, not a diagnosis.")
                     .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
             }
             .accessibilityElement(children: .combine)

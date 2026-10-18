@@ -16,10 +16,19 @@ struct StayingHomeView: View {
         VStack(alignment: .leading, spacing: Space.l) {
             VStack(alignment: .leading, spacing: Space.m) {
                 // Lisa's "feeling sick" tissue (design pass), sitting in the corner like the all-clear tissue.
-                Image("FeelingSick").resizable().scaledToFit().frame(height: 112)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.bottom, -Space.l)
-                    .accessibilityHidden(true)
+                HStack(alignment: .top, spacing: Space.s) {
+                    // Lisa's "Self-reported" stamp while the status comes from symptoms, not a test. Large enough
+                    // to read; VoiceOver hears the word.
+                    if r.positiveKind == nil && !r.symptoms.isEmpty {
+                        Image("StampSelfReported").resizable().scaledToFit().frame(width: 104)
+                            .rotationEffect(.degrees(-10))
+                            .accessibilityLabel("Self-reported")
+                    }
+                    Spacer(minLength: 0)
+                    Image("FeelingSick").resizable().scaledToFit().frame(height: 112)
+                        .accessibilityHidden(true)
+                }
+                .padding(.bottom, -Space.l)
                 VStack(alignment: .leading, spacing: Space.xs) {
                     Text(model.myRisk == .contagious ? "You tested positive" : "You've said you have symptoms")
                         .font(.fluni(.display)).accessibilityAddTraits(.isHeader)

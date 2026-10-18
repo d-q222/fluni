@@ -38,7 +38,7 @@ struct OnboardingView: View {
 
     private var page1: some View {
         slide(title: "Know when someone sick is near",
-              text: "FlUni tells you if you've been close to a classmate who may be sick, and what to do about it. It also shows how busy and how risky buildings are on campus.") {
+              text: "Get a heads-up if you've been close to a classmate who may be sick, and what to do about it. The map shows how busy and how risky campus buildings are.") {
             // Lisa's tissue, large and a little tilted, hung off the right edge of the page.
             Image("Tissue").resizable().scaledToFit().frame(width: 200, height: 200)
                 .rotationEffect(.degrees(-10))
@@ -91,7 +91,7 @@ struct OnboardingView: View {
                 .accessibilityAddTraits(.isHeader).font(.fluni(.display)).foregroundStyle(Theme.ink)
             Text("iOS will ask for a few permissions. Here's why:").font(.fluni(.reading)).foregroundStyle(Theme.ink2)
                 .padding(.bottom, Space.xs)
-            perm("Bluetooth and local network", "to notice other FlUni phones close by.")
+            perm("Bluetooth and local network", "to notice other phones with the app close by.")
             HandRule()
             perm("Nearby Interaction", "for precise distance (is it 3 feet or 10?) on newer iPhones.")
             HandRule()

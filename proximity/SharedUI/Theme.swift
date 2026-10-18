@@ -80,6 +80,8 @@ enum Surface {}
 enum TextRole {
     /// Today's status, a sheet's lead headline. largeTitle bold.
     case display
+    /// A long headline that would be too heavy at display size (the close-contact moment). title2 bold.
+    case lead
     /// Screen part titles ("Recent contacts", "What to do"). title3 bold, a header for VoiceOver.
     case section
     /// Card titles, row titles, the question being asked. headline.
@@ -100,6 +102,7 @@ extension Font {
     static func fluni(_ role: TextRole) -> Font {
         switch role {
         case .display: return .system(.largeTitle, design: .rounded, weight: .bold)
+        case .lead: return .system(.title2, design: .rounded, weight: .bold)
         case .section: return .system(.title3, design: .rounded, weight: .bold)
         case .heading: return .system(.headline, design: .rounded, weight: .semibold)
         case .reading: return .system(.body, design: .rounded)
