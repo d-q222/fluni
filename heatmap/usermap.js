@@ -5,7 +5,6 @@
 //   ?clock=live (default)   map the device's local weekday + time of day onto the run (docs/building-heat-format.md)
 //   ?at=<minutes>           show that many minutes after the run's start instead (for screenshots)
 //   ?horizon=60             start on the "In 1 hour" forecast
-import { smoothZoom } from './smoothzoom.js';
 import { INK, heatColor, buildingStyle, colourMax, haloRadius, GLOW, HALO_BLUR, fmt, rampCss } from './userstyle.js';
 
 const P = new URLSearchParams(location.search);
@@ -84,8 +83,8 @@ async function main() {
   // ---- map ----
   // Bounded to the campus extent + 250 m. Beyond that the user never goes, but a few roads, the Shopping
   // Center and downtown are drawn faintly in the margin (data/context.geojson, from OSM).
-  const map = smoothZoom(L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
-    preferCanvas: true, worldCopyJump: false, inertia: true })); // smooth wheel / pinch zoom (smoothzoom.js)
+  const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
+    preferCanvas: true, worldCopyJump: false, inertia: true });
   const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
   const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440), PHALO = pane('halo', 425);
   map.getPane('halo').style.filter = HALO_BLUR;
@@ -223,7 +222,7 @@ async function main() {
   const styleFor = (n, hotSick, forecast) => buildingStyle(n, hotSick, vmax, { minPeople, forecast });
 
   const haloR = () => haloRadius(map.getZoom()); // px; gone by street zoom
-  map.on('zoomend zoomrefresh', () => { const r = haloR(); for (const it of items) if (it.halo) it.halo.setRadius(r); });
+  map.on('zoomend', () => { const r = haloR(); for (const it of items) if (it.halo) it.halo.setRadius(r); });
   function render(force) {
     const { s, t } = snapshot();
     if (!force && s === step) return;
