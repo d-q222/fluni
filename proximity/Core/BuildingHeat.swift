@@ -19,6 +19,46 @@ struct BuildingHeat: Equatable {
 
     enum ParseError: Error, Equatable { case empty, badHeader(String) }
 
+    /// A live file bigger than this is refused (the bundled one is about 0.4 MB).
+    static let maxLiveBytes = 5_000_000
+    static let maxNameLength = 60
+
+    /// Names come from files we don't control and end up in notifications: drop control, format (bidi,
+    /// zero-width), line and paragraph separator characters, fold other whitespace to one space, cap the length.
+    static func sanitizedName(_ raw: String) -> String {
+        var out = ""
+        var lastSpace = true  // also trims leading spaces
+        for u in raw.unicodeScalars {
+            let cat = u.properties.generalCategory
+            if u == "\t" || u == "\n" || u == "\r" || cat == .spaceSeparator {
+                if !lastSpace { out.unicodeScalars.append(" "); lastSpace = true }
+                continue
+            }
+            switch cat {
+            case .control, .format, .lineSeparator, .paragraphSeparator, .surrogate, .privateUse, .unassigned: continue
+            default: out.unicodeScalars.append(u); lastSpace = false
+            }
+        }
+        let capped = String(out.prefix(maxNameLength))
+        return capped.hasSuffix(" ") ? String(capped.dropLast()) : capped
+    }
+
+    /// Live data may only refresh heat, high, people and expected_sick of buildings the BUNDLED file already
+    /// knows, within the bundled run's time range. Geometry, names and radii always come from the bundled file;
+    /// unknown ids and out-of-range snapshots are dropped. Nil when nothing usable is left.
+    static func merged(bundled: BuildingHeat, live: BuildingHeat) -> BuildingHeat? {
+        guard let range = bundled.timeRange else { return nil }
+        var out = bundled
+        out.snapshots = live.snapshots.compactMap { snap in
+            guard range ~= snap.t else { return nil }
+            let known = snap.readings.filter { bundled.buildings[$0.key] != nil }
+            return known.isEmpty ? nil : Snapshot(t: snap.t, readings: known)
+        }
+        out.rejected = live.rejected
+        out.rowCount = live.rowCount
+        return out.snapshots.isEmpty ? nil : out
+    }
+
     struct Building: Equatable {
         let id: String
         let name: String
@@ -186,7 +226,9 @@ struct BuildingHeat: Equatable {
             guard let r = num(f[9]), r > 0 else { return nil }
             radius = r
         }
-        let name = f[2].isEmpty ? f[1] : f[2]
+        var name = sanitizedName(f[2])
+        if name.isEmpty { name = sanitizedName(f[1]) }
+        if name.isEmpty { name = "Building" }
         return (t, Building(id: f[1], name: name, lat: lat, lon: lon, radius: radius),
                 Reading(people: people, expectedSick: sick, heat: heat, high: f[8] == "1"))
     }

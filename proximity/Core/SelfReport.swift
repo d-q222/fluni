@@ -179,3 +179,27 @@ struct SelfReporter {
         return SelfReportRecord(risk: risk, onset: setAt.map(startOfDay), lastCheckIn: setAt)
     }
 }
+
+/// Where the self-report record lives: a JSON file (encrypted while the phone is locked), not UserDefaults.
+enum SelfReportFile {
+    static let oldDefaultsKey = "selfReportRecord"
+
+    /// The saved record. If there is no file yet but the old UserDefaults entry exists, it is moved into the
+    /// file and the old entry is deleted (only after the file was written). Nil when there is nothing saved.
+    static func load(url: URL, defaults: UserDefaults) -> SelfReportRecord? {
+        if let data = try? Data(contentsOf: url), let r = try? JSONDecoder().decode(SelfReportRecord.self, from: data) { return r }
+        guard let old = defaults.data(forKey: oldDefaultsKey) else { return nil }
+        guard let r = try? JSONDecoder().decode(SelfReportRecord.self, from: old) else {
+            defaults.removeObject(forKey: oldDefaultsKey)  // unreadable: don't keep health data around
+            return nil
+        }
+        if save(r, to: url) { defaults.removeObject(forKey: oldDefaultsKey) }
+        return r
+    }
+
+    @discardableResult
+    static func save(_ r: SelfReportRecord, to url: URL) -> Bool {
+        guard let data = try? JSONEncoder().encode(r) else { return false }
+        do { try data.write(to: url, options: [.atomic, .completeFileProtection]); return true } catch { return false }
+    }
+}

@@ -42,6 +42,15 @@ final class PSickStore: ObservableObject {
         } catch let e as PSickLoader.Failure { status = e.message } catch { status = error_(error) }
     }
 
+    /// Delete my data: no persona, no loaded file, back to the default run and the clock's fresh-install state.
+    func forget() {
+        agent = ""
+        feed = nil
+        status = ""
+        PSickLoader.runID = ""
+        clock.forget()
+    }
+
     func clearPersona() { agent = "" }
 
     private func error_(_ e: Error) -> String { PSickLoader.message(for: e) }

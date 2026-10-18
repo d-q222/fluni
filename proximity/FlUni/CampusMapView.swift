@@ -86,6 +86,7 @@ struct CampusMapView: View {
                         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showDetailed = false } } }
                 }
             }
+            .onReceive(router.dismissSheets) { showList = false; showDetailed = false }
             .onAppear { frame(); focusIfAsked() }
             .onChange(of: heat?.buildings.count) { _, _ in frame(); focusIfAsked() }
             .onChange(of: router.focusBuilding) { _, _ in focusIfAsked() }

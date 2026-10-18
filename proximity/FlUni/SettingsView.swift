@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import WebKit
 
 /// Detection on/off, what is shared, notifications, the map address, deleting local data, and About.
 struct SettingsView: View {
@@ -176,8 +177,22 @@ struct SettingsView: View {
     private func deleteEverything() {
         hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
         heatmapURL = ""
-        Self.eraseLocalData()
-        model.forgetEverything()
+        model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
+        BuildingWatcher.shared.sync(paused: true)
+        WalkInMonitor.shared.forgetEverything()
+        PSickStore.shared.forget()
+        NotificationCenter.default.post(name: SelfReportStore.didDeleteData, object: nil)
+        Self.eraseSystemData()
+        Self.eraseLocalData()  // last, so nothing above can write a key back
+    }
+
+    /// Notifications already shown or waiting, the map's web data (cookies, storage, caches) and cached downloads.
+    static func eraseSystemData() {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllDeliveredNotifications()
+        center.removeAllPendingNotificationRequests()
+        WKWebsiteDataStore.default().removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast) {}
+        URLCache.shared.removeAllCachedResponses()
     }
 
     /// Deletes the contents of Application Support (exposure history and anything else saved there)

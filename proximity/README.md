@@ -24,7 +24,7 @@ launch arguments. Plan: move `Core/` into a Swift package later (keep it free of
   IDs or per-person distances). A sheet explains how it works and what is shared.
 - **Map**: the heat map web page (user view, `?embed=app`). The gear button sets its address.
 - **Me**: "I feel fine" / "I have symptoms" / "I tested positive" (with a confirmation), what each
-  shares, and when the status was set. "Developer tools" at the bottom opens the **Developer** screen:
+  shares, and when the status was set. "Developer tools" at the bottom (Debug builds only; a Release FlUni has no such row) opens the **Developer** screen:
   per-peer rows with sensor chips and Details, demo speed, source toggles, reset, radio status.
 
 **Test launches skip onboarding.** If any of `-risk -speed -sources -encryption -inviteTimeout -rotate

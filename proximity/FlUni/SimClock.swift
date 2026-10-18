@@ -91,6 +91,14 @@ final class SimClock: ObservableObject {
         if t != simTime { simTime = t }
     }
 
+    /// Delete my data: the default run, time zero, following the map.
+    func forget() {
+        runID = PSickLoader.defaultRunID
+        range = nil
+        simTime = 0
+        follow = true
+    }
+
     private func restartTimer() {
         timer?.invalidate(); timer = nil
         let following = demoActive && follow

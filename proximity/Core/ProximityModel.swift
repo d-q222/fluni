@@ -76,7 +76,7 @@ final class ProximityModel: ObservableObject {
         guard !started else { return }
         started = true
         if UIApplication.shared.applicationState == .background { log("bg launch") }
-        UIApplication.shared.isIdleTimerDisabled = true  // keep the screen on during the demo
+        if keepsScreenOn { UIApplication.shared.isIdleTimerDisabled = true }  // harness only
         restoreSavedStatus()
         restorePause()
         applyLaunchArguments()  // first: link settings must be in place before the session exists
@@ -200,10 +200,13 @@ final class ProximityModel: ObservableObject {
 
     /// After "Delete my data": back to a fresh install's state (the caller has cleared the files and defaults).
     func forgetEverything() {
-        if isPaused { resume() }
+        pause(.untilResumed)  // radios stay off until onboarding's "Turn on" calls resume()
+        UserDefaults.standard.removeObject(forKey: "pauseState")  // a relaunch starts fresh, not paused
         myRisk = .none
         statusSetAt = nil
         resetExposure()
+        exposureHistory.reset()
+        lastFix = nil
     }
 
     func resetExposure() {
@@ -219,7 +222,10 @@ final class ProximityModel: ObservableObject {
     /// GPS-to-GPS ranging needs each phone's fix on the other phone. The harness keeps it for testing;
     /// FlUni turns it off so "your precise location never leaves this phone" is literally true
     /// (indoors GPS was 7–10 m off at 0.5 m anyway, so detection loses next to nothing).
-    var sharesLocationWithPeers = true
+    /// Fails closed: false unless the harness opts in.
+    var sharesLocationWithPeers = false
+    /// Harness only: keep the screen on during link tests. FlUni lets the phone lock.
+    var keepsScreenOn = false
 
     /// FlUni sets this before start(): Bluetooth keeps working in the background (fixed service UUID +
     /// GATT read, state restoration) and sightings drive exposure while the timer is asleep. The harness
@@ -468,10 +474,9 @@ final class ProximityModel: ObservableObject {
         e.advance(simSeconds: 0, contacts: guarded.map { ($0.pClose, $0.risk) })
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        if exposure.level > notifiedLevel {
-            notifiedLevel = exposure.level
-            notify(exposure.level)
-        }
+        let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
+        notifiedLevel = next.notified
+        if let level = next.notify { notify(level) }
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
 
         // Ease GPS off while any enabled UWB reading was fresh in the last 15 s (hysteresis vs flapping).

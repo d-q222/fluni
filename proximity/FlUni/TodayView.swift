@@ -50,6 +50,7 @@ struct TodayView: View {
             .onAppear(perform: checkBackground)
             .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
+            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
         }
     }
 
