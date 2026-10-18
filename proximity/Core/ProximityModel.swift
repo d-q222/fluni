@@ -64,7 +64,8 @@ final class ProximityModel: ObservableObject {
     private var uwbDropAt: [String: Date] = [:]
     private var myFix: CLLocation?
     /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
-    @Published private(set) var lastFix: CLLocation?
+    /// @Unobserved: WalkInMonitor subscribes to `$lastFix`; no view reads it, so a fix (~1 Hz) redraws nothing.
+    @Unobserved private(set) var lastFix: CLLocation?
     private var lastTick = Date()
     private var lastRotation = Date()
     private var lastSummary = Date.distantPast
