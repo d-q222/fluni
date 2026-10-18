@@ -8,6 +8,10 @@ struct SettingsView: View {
     @AppStorage("heatmapURL") private var heatmapURL = ""
     @AppStorage("hasOnboarded") private var hasOnboarded = true
     @AppStorage(AppNotifications.detailsKey) private var lockScreenDetails = true
+    // Which system notifications to send (NotificationPrefs; SystemNotifier enforces them). Default on.
+    @AppStorage(NotificationPrefs.key(.nearby)) private var notifyNearby = true
+    @AppStorage(NotificationPrefs.key(.closeContact)) private var notifyCloseContact = true
+    @AppStorage(NotificationPrefs.key(.building)) private var notifyBuildings = true
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
     @State private var choosePause = false
@@ -112,6 +116,12 @@ struct SettingsView: View {
     private var notificationsSection: some View {
         Section {
             LabeledContent("Alerts") { Text(notificationText).foregroundStyle(Theme.ink2) }
+            Toggle("Someone nearby may be sick", isOn: $notifyNearby)
+                .accessibilityIdentifier("settings.notify.nearby")
+            Toggle("Close contact", isOn: $notifyCloseContact)
+                .accessibilityIdentifier("settings.notify.closeContact")
+            Toggle("Busy buildings", isOn: $notifyBuildings)
+                .accessibilityIdentifier("settings.notify.buildings")
             Toggle("Show details on lock screen", isOn: $lockScreenDetails)
             Button("Open iPhone Settings") {
                 if let u = URL(string: UIApplication.openSettingsURLString) { openURL(u) }
@@ -120,8 +130,14 @@ struct SettingsView: View {
         } header: {
             Text("Notifications").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact. The title is always just \"FlUni\". "
-                 + "With details off, the message only says there is an update, so people looking at your lock screen learn nothing about your health.")
+            VStack(alignment: .leading, spacing: 6) {
+                if !notifyCloseContact {
+                    Text("You won't be warned after 15 minutes near someone who may be sick.")
+                        .accessibilityIdentifier("settings.notify.closeContactOffNote")
+                }
+                Text("With details off, your lock screen only says there's an update.")
+            }
+            .foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -130,8 +146,8 @@ struct SettingsView: View {
 
     private var closedSection: some View {
         Section("When FlUni is closed") {
-            Text("Nearby alerts keep working in the background using Bluetooth; they're less frequent than with FlUni open.")
-            Text("If you swipe FlUni away, iOS stops nearby alerts until you open it again; building warnings still work.")
+            Text("Nearby alerts keep working in the background and on the lock screen, a bit less often than with FlUni open.")
+            Text("Don't swipe FlUni away: iOS may then stop alerts until you open it again.")
         }
         .font(.fluni(.footnote))
         .foregroundStyle(Theme.ink)

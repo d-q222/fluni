@@ -212,6 +212,26 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertFalse(app.staticTexts["Detection is paused"].exists)
     }
 
+    /// Settings → Notifications: three kinds, all on; turning Close contact off shows the one-line note.
+    func testNotificationTogglesDefaultOnAndCloseContactNote() {
+        launchPastOnboarding()
+        openTab("Me")
+        scrollTo(el("settings.row")).tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        for id in ["settings.notify.nearby", "settings.notify.closeContact", "settings.notify.buildings"] {
+            let t = app.switches[id]
+            scrollTo(t)
+            XCTAssertEqual(t.value as? String, "1", "\(id) on by default")
+        }
+        let close = app.switches["settings.notify.closeContact"]
+        XCTAssertFalse(el("settings.notify.closeContactOffNote").exists)
+        close.switches.firstMatch.tap()
+        XCTAssertEqual(close.value as? String, "0")
+        XCTAssertTrue(el("settings.notify.closeContactOffNote").waitForExistence(timeout: 5), "the footer note")
+        close.switches.firstMatch.tap()
+        XCTAssertTrue(el("settings.notify.closeContactOffNote").waitForNonExistence(timeout: 5))
+    }
+
     func testDeleteMyDataReturnsToOnboarding() {
         launchPastOnboarding()
         reportSymptoms()

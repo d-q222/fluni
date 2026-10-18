@@ -629,7 +629,8 @@ final class ProximityModel: ObservableObject {
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         let kind = alertGate.step(exposure.level, now: now)
         if let kind {
-            log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")")
+            log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")"
+                + (SystemNotifier.shared.prefs.allows(kind) ? "" : " setting=off"))
             if UIApplication.shared.applicationState == .active {
                 UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
             }
@@ -732,15 +733,13 @@ final class ProximityModel: ObservableObject {
 
 }
 
-/// Posts through UNUserNotificationCenter (text from NotificationRoute via AppNotifications, which respects the
-/// lock-screen details setting). A background task keeps FlUni running until iOS has accepted the request, so a
-/// wake-up that crosses a threshold can't be suspended halfway through posting it (flu-offdetect).
+/// Posts through SystemNotifier, the one door that honours the student's notification settings (text from
+/// NotificationRoute via AppNotifications, which respects the lock-screen details setting).
 final class UNPoster: AlertPosting {
+    let notifier: SystemNotifier
+    init(notifier: SystemNotifier = .shared) { self.notifier = notifier }
+
     func post(_ kind: NotificationKind) {
-        let window = BackgroundWindow.begin("fluni.alert")
-        let c = AppNotifications.content(kind: kind)  // category + userInfo + neutral text
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: c, trigger: nil)) { _ in
-            window.end()
-        }
+        notifier.post(kind, content: AppNotifications.content(kind: kind))  // category + userInfo + neutral text
     }
 }

@@ -101,18 +101,18 @@ final class WalkInMonitor: ObservableObject {
     }
 
     /// Same source as Today's stay-home mode (ProximityModel.selfStatusOverridesRisk). A background region wake
-    /// may run before Today attached the model, so fall back to the saved report.
+    /// may run before Today attached the model, so fall back to the saved report, then to the status the model
+    /// restores at launch: the report file has complete protection and can't be read while the phone is locked.
     private var isSick: Bool {
         if let model { return model.selfStatusOverridesRisk }
-        guard let url = SelfReportStore.defaultURL, let r = SelfReportFile.load(url: url, defaults: .standard) else { return false }
-        return r.risk != .none
+        if let url = SelfReportStore.defaultURL, let r = SelfReportFile.load(url: url, defaults: .standard) { return r.risk != .none }
+        return (Risk(rawValue: UserDefaults.standard.integer(forKey: "savedStatus")) ?? .none) != .none
     }
 
     private func post(_ b: BuildingHeat.Building) {
-        let c = AppNotifications.content(kind: .building, buildingID: b.id, buildingName: b.name, sick: isSick)
-        let window = BackgroundWindow.begin("fluni.walkin.post")  // flu-offdetect: may run on a background region wake
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "walkin-\(b.id)", content: c, trigger: nil)) { _ in
-            window.end()
-        }
+        // SystemNotifier: honours the "Busy buildings" setting and keeps a background region wake alive while posting.
+        SystemNotifier.shared.post(.building, content: AppNotifications.content(kind: .building, buildingID: b.id,
+                                                                                buildingName: b.name, sick: isSick),
+                                   identifier: "walkin-\(b.id)")
     }
 }
