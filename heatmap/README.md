@@ -214,10 +214,15 @@ The Swift app's Map tab loads a self-contained, offline copy of the user map: no
 node heatmap/tools/build_app_bundle.mjs sim/runs/<run> --out heatmap/out/app-bundle
 ```
 
-The folder (about 1.4 MB for the default run) holds `index.html` (= `usermap.html`), `usermap.js`,
-`heat.js` (colour stops), `vendor/leaflet/`, the illustrated base map (`assets/trace/`, `assets/containers/`)
-and `data/`: `totals.json.gz` (plus a plain `totals.json` fallback) and `buildings.geojson` (outlines of
-buildings that appear in the totals). Load `index.html?clock=live` from a custom scheme such as
+The folder (about 2.2 MB) holds `index.html` (= `usermap.html`), `usermap.js`, `heat.js` (colour stops),
+`vendor/leaflet/`, `assets/containers/` and `data/`: `totals.json.gz` (plus a plain `totals.json` fallback),
+`buildings.geojson` (every mapped building, drawn as a neutral paper outline; only those in the totals get heat),
+`paths.geojson` (the run's footpaths, faint), `labels.json` (anchor places) and `context.geojson` (OSM roads,
+rail, parks, water, Shopping Center, hospital, downtown edge; regenerate with `node heatmap/tools/fetch_context.mjs`).
+The map is vector only: the illustrated `campus_trace.webp` is no longer bundled (the vectors read better and save
+0.37 MB). It is bounded to the campus + 250 m: the first view fits the whole campus between the top chip and
+the legend (20% of the height kept clear at the bottom), that is also the furthest zoom out, and the margin
+beyond is drawn (faint, with a soft vignette) but unreachable. `?debug` exposes `window.__map` for tests. Load `index.html?clock=live` from a custom scheme such as
 `fluni://app/index.html?clock=live`; relative URLs only, no network. Other flags: `?at=<minutes from run
 start>` (fixed moment, for screenshots), `?horizon=60` (start on "In 1 hour"). Which moment "live" shows is
 defined in `docs/building-heat-format.md`.

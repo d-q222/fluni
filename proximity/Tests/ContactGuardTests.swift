@@ -50,18 +50,47 @@ final class ContactGuardTests: XCTestCase {
         }
     }
 
-    func testBurstTripsLogsAndClearsAtWindowBoundary() {
+    func testBurstTripsLogsOnceAndClearsWhenBurstIDsAreGone() {
         var g = ContactGuard()
         var logs: [String] = []
         _ = g.apply(now: t0, (0..<5).map { peer("b\($0)") }, log: { logs.append($0) })
         XCTAssertTrue(g.flagged)
         XCTAssertEqual(logs, ["guard burst ids=5"])
-        let still = [peer("b0")]
-        _ = g.apply(now: t0.addingTimeInterval(299), still)
+        // A burst ID that lingers past the 5-min window is still not trusted.
+        let still = [peer("b0"), peer("later")]
+        var out = g.apply(now: t0.addingTimeInterval(300), still, log: { logs.append($0) })
         XCTAssertTrue(g.flagged)
-        let out = g.apply(now: t0.addingTimeInterval(300), still)
+        XCTAssertEqual(out.map(\.pClose), [0, 1], "a phone first seen after the burst counts")
+        out = g.apply(now: t0.addingTimeInterval(300 + 899), [peer("later")])
+        XCTAssertTrue(g.flagged, "b0 left 899 s ago: still remembered")
+        out = g.apply(now: t0.addingTimeInterval(300 + 900), [peer("later")])
         XCTAssertFalse(g.flagged)
-        XCTAssertEqual(out[0].pClose, 1)
+        XCTAssertEqual(logs.count, 1)
+    }
+
+    /// Blind spec test finding: 40 contagious IDs appearing over 2 min and staying used to be trusted once the
+    /// 5-min window passed (top 2 at P = 1), and to count as "new" again at 15 min. Must never reach close contact.
+    func testLingeringBurstNeverCreatesCloseContact() {
+        var g = ContactGuard(), t = ExposureTracker()
+        let ids: (Int) -> [ContactGuard.Input] = { s in (0..<40).filter { s >= $0 * 3 }.map { self.peer("spoof\($0)", rssi: -45) } }
+        // Before the 5th ID shows up (12 s) the first ones count, as any real phone would: 3 x 1 + 9 x 2 = 21 s.
+        run(&g, &t, seconds: 60, speed: 1, peers: ids)
+        XCTAssertEqual(t.minutes, 21.0 / 60, accuracy: 1e-9)
+        run(&g, &t, seconds: 40 * 60, speed: 1, start: 60) { ids($0 + 60) }
+        XCTAssertEqual(t.minutes, 21.0 / 60, accuracy: 1e-9, "nothing more once the burst is seen, however long it lingers")
+        XCTAssertNotEqual(t.level, .closeContact)
+    }
+
+    /// A real phone that stays more than 15 min is not re-counted as a new ID, so it can't help trip a burst.
+    func testLongStayingPeerIsNotNewAgain() {
+        var g = ContactGuard()
+        var logs: [String] = []
+        for s in stride(from: 0, through: 1800, by: 10) {
+            let extra = s == 1800 ? (0..<4).map { peer("n\($0)") } : []
+            _ = g.apply(now: t0.addingTimeInterval(Double(s)), [peer("real")] + extra, log: { logs.append($0) })
+        }
+        XCTAssertFalse(g.flagged, "4 new + 1 long-stayer is not more than 4 new")
+        XCTAssertTrue(logs.isEmpty)
     }
 
     func testFlaggedBurstSuppressesBluetoothOnlyButNotUWB() {
@@ -135,7 +164,9 @@ final class ContactGuardTests: XCTestCase {
         _ = g.apply(now: t0.addingTimeInterval(-1000), [peer("b0")])
         XCTAssertTrue(g.flagged)
         _ = g.apply(now: t0.addingTimeInterval(300), [peer("b0")])
-        XCTAssertFalse(g.flagged)
+        XCTAssertTrue(g.flagged, "b0 is still around")
+        _ = g.apply(now: t0.addingTimeInterval(1200), [])
+        XCTAssertFalse(g.flagged, "every burst ID gone for 15 min")
     }
 
     func testNaNAndEmptyInput() {
