@@ -1,8 +1,11 @@
 # Model tests
 
+See also [COMPARISON.md](COMPARISON.md) for the side-by-side of Rio's script, `infer.js` and `model/alt`.
+
 ## How to run
 
 ```bash
+node model/compare.mjs     # the three implementations side by side
 node model/test.mjs        # plain node, no dependencies, exits non-zero on failure
 node model/alt/test.mjs    # the separate alt model's own tests (not part of this file)
 ```
