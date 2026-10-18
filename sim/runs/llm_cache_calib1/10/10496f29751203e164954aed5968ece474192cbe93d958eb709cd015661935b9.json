@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "10:15",
+    "place": "home",
+    "start": "09:40"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:AA214_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_1040629370",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "15:05",
+    "place": "bld:bld_m_green_library",
+    "start": "13:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:00",
+    "place": "bld:bld_m_white_plaza",
+    "start": "15:15"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "home",
+    "start": "16:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:25",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "event",
+    "end": "21:30",
+    "place": "event:EV00099",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Friday: Chris is sick and Dell's roommate is coughing. I feel fine, so I'm keeping class, dinner, Taper and a short masked lounge stop. Watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris! Thanks for the heads up Dell. I feel fine, will be masked in crowds and only stopping by the lounge briefly. Stay well everyone!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris is sick and Dell's roommate is coughing. I feel fine, so I'll keep most plans but mask in crowds. I'll skip the long lounge hangout and make it a short masked stop, then head home earlier. Send a quick reply to the group wishing Chris well.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

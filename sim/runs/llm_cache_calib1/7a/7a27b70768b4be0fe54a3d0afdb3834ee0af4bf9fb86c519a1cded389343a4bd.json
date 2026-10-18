@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Studying physics with my roommate Jody at Green; we're both masked and feeling fine, working on Monday's problem set (inelastic collision). Nothing changes in my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

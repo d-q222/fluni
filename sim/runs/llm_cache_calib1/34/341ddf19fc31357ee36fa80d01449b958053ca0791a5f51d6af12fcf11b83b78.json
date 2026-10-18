@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "10:20",
+    "place": "plan:bld_m_green_library_f2_210",
+    "start": "09:05"
+   },
+   {
+    "activity": "gym",
+    "end": "11:25",
+    "place": "plan:bld_255490604_f1_102",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "bld:bld_232841950",
+    "start": "11:35"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:CS194W_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "14:35",
+    "place": "bld:bld_m_lake_lagunita",
+    "start": "14:10"
+   },
+   {
+    "activity": "lab",
+    "end": "17:05",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "14:55"
+   },
+   {
+    "activity": "eat",
+    "end": "17:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:15"
+   },
+   {
+    "activity": "lab",
+    "end": "23:20",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "17:55"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:50",
+    "place": "home",
+    "start": "00:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:50"
+   }
+  ],
+  "diary": "Friday: sticking to my routine of class, lab and study, masked and distanced from Scout. Feeling fine but still anxious and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine: class, lab, study. I'll stay masked indoors and keep my distance from Scout. Stern Dining is crowded, so I'll eat quickly. Skipping any parties, since I'm still anxious about illness.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "No idea who, Devon just mentioned it in passing. Anyway, good you're feeling fine. I've got to head to study, see you around!",
+  "shared_health": false
+ }
+}

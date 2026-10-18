@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, heading over soon! Come find us, we'll be near the student section. Keep the mask on in the crowd, it's gonna be packed.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey True! Pretty good, just taking it easy. I've got a study group later and then I'll probably head back to my room. You going to Green?",
+  "shared_health": false
+ }
+}

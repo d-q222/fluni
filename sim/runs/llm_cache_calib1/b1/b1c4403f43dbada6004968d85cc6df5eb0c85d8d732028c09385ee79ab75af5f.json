@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bailey. Mask, huh? Heads up, Sidney tested positive for flu today. I feel fine, but I'm skipping the dorm hangout tonight. You should probably skip it too.",
+  "shared_health": true
+ }
+}

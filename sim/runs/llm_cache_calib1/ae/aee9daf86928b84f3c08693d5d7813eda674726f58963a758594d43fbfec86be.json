@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "10:30",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "12:30",
+    "place": "home",
+    "start": "10:30"
+   },
+   {
+    "activity": "rest",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "17:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Saturday: still feverish and achy despite the negative test. Staying in my room all day to rest and drink fluids, skipping lab, and keeping the group posted.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Ari and Sidney. Still feverish with chills and a cough, even though my test was negative. I'm staying in my room today and skipping lab. Will update you if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Still feverish with chills and a cough, even though my flu test was negative. I'm marked as might be sick, so I should stay in my room, rest, and drink fluids. I'll skip lab and the football game. A quick reply to Ari is polite, and I'll keep the group updated.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

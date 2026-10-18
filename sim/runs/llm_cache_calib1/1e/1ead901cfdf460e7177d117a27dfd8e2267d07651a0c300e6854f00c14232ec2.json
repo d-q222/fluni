@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Cool, 3:30 matches mine, thanks! I'll double check the chat anyway. Have fun at Green, see you at practice!",
+  "shared_health": false
+ }
+}

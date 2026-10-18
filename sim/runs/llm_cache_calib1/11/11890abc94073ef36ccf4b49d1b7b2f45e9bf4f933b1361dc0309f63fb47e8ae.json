@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Yeah, I'm doing fine, no symptoms. Thanks for the heads up though, I'll keep an eye out. Do you know who it is?",
+  "shared_health": true
+ }
+}

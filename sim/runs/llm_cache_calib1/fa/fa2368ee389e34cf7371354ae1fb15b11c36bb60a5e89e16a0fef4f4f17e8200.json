@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "20:50",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:20",
+    "place": "bld:bld_232841950",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Stern was crowded so I masked up and ate fast. Feel fine, negative test; keeping distance from sick folks in the dorm and sticking to my routine.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 44 people. I feel fine and tested negative, so I'll wear a mask while I finish eating quickly, then head home. Hadley and Sidney in my dorm looked sick, so I'll keep my distance. I'll stick to my usual evening, but swap the busy student center hangout for a quieter evening at home and maybe the lounge briefly. Early sleep since practice tomorrow.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with True from my dorm at breakfast; they seemed fine and are headed to class and practice. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

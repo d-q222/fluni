@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat down for dinner with Chris at Lakeside; they feel fine and plan to hit Flo Mo, the dorm lounge, then the Taper hangout. We'll cross paths at Taper and the lounge. No changes to my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

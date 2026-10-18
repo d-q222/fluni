@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Chris at Lakeside; they feel fine and are going to Flo Mo with Dakota then Taper. I said I'd see them at Taper and the lounge after my study block.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

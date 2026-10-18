@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks for the heads up. Actually I feel fine, no cough on my end, so maybe you're thinking of someone else. I'm staying masked and in tonight too. Let me know if you start feeling off.",
+  "shared_health": true
+ }
+}

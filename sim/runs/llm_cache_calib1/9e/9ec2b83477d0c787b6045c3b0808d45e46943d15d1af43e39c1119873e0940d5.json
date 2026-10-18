@@ -1,0 +1,104 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:35"
+   },
+   {
+    "activity": "class",
+    "end": "11:25",
+    "place": "class:MATH51_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:ENGR14_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:20",
+    "place": "bld:bld_232841950",
+    "start": "15:20"
+   },
+   {
+    "activity": "lab",
+    "end": "18:40",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "23:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:45",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "00:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Fri Jan 9: Harper is staying home after a FlUni alert. I feel fine and am keeping my usual class, lab and study routine, a bit aware of the flu going around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Harper, rest up and feel better!",
+    "time": "",
+    "to": "A0215"
+   }
+  ],
+  "thoughts": "Harper is staying home after a FlUni alert, but I feel fine. I'm only a little worried and the flu is going around, though my routine is pretty fixed with problem sets and lab. I'll keep my plans and maybe send Harper a quick supportive reply. No mask, as usual.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

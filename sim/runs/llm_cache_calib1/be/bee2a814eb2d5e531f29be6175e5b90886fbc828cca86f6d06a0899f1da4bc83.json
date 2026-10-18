@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Winter at Taper; they feel fine but are worried about Dakota and Chris's flu. We agreed to text if symptoms or an app ping come up. I'm keeping my distance and sticking to my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

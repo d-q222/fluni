@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Perfect timing, you eating here too? Grab a seat with me before the Taper thing.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Chris! Ah, I can't, I've got lab all evening. Hope it's fun though! I'm keeping my distance from crowds right now with everyone coughing.",
+  "shared_health": false
+ }
+}

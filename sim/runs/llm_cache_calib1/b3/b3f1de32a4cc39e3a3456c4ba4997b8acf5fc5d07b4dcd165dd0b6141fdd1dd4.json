@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ooh, we're both hitting Flo Mo later, ha. I've got CS 106A, a writing class, and something fun I'm still figuring out. What about you, how's your seminar?",
+  "shared_health": false
+ }
+}

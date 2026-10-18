@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Waverly, ready for this lecture? I feel like the first week back is already a lot.",
+  "shared_health": false
+ }
+}

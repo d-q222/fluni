@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Zuri is masked, feels fine, and is avoiding the dorm lounge. We agreed to text each other if anything pings or symptoms start. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

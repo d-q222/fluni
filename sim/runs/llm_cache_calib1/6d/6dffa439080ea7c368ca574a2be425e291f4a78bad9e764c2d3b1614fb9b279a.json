@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oakley at Stern; they're masking out of caution but feel fine, and have gym at 11:45. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

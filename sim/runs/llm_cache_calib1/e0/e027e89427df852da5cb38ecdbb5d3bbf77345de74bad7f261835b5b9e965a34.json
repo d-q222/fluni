@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Bailey about Sidney's flu; Bailey already knew, is masked, feels fine, and is skipping the hangout too. We agreed to keep distance and text the group if symptoms show up.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

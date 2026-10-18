@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Fallon, masked, said they feel fine with a quiet app and will text me if anything changes; I said the same and mentioned Jesse's fever. We agreed to text each other if either of us gets symptoms or an app ping.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

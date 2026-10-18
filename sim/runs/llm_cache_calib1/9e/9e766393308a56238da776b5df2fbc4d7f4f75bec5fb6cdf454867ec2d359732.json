@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Cool, no pressure, swing by if you're not dead. Tell the dorm I said hey!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Wynn at Lakeside; they feel great with no symptoms. We'll both be at Flo Mo later and the Taper hangout tonight. Nothing health-related to worry about.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

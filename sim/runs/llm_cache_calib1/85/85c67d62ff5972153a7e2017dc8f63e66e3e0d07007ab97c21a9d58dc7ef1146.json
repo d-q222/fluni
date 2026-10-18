@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Marley! I noticed the mask, you doing okay? Wallace turned out to be a close contact of mine, so I've been a bit on edge lately.",
+  "shared_health": false
+ }
+}

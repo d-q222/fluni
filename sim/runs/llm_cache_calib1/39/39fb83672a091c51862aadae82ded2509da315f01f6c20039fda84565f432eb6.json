@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning. You doing okay? Everyone seems to be sniffling lately, I'm trying not to freak out about it.",
+  "shared_health": false
+ }
+}

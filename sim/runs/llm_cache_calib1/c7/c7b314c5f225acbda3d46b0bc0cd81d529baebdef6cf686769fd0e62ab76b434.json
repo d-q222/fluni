@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for telling me, that's good to know. I'll let you know right away if anything feels off. Maybe keep the mask on around here for a bit, and let me know if Wesley tests positive.",
+  "shared_health": false
+ }
+}

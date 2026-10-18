@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Perfect. Grab a spot by the door, and if anyone starts hacking we're out. Did you eat already?",
+  "shared_health": false
+ }
+}

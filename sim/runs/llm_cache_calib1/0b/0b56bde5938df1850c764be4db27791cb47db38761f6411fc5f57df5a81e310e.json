@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dell at Lakeside; they're coming to Taper around 8:30 after the gym and I said I'd save them a spot. I feel fine and my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

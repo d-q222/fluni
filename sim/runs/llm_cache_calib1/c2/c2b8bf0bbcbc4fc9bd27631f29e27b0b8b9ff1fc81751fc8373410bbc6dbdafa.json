@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Not really, just Eden's warning and my roommate Bryce said someone might be a close contact. I feel fine though. Smart to be careful, I'll keep an eye out. Stay safe!",
+  "shared_health": true
+ }
+}

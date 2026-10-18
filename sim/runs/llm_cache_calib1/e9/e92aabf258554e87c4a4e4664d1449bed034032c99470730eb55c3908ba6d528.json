@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Tyler in the Lucie Stern lobby; I feel fine, shared the unconfirmed Stern fever rumors, and Tyler also plans to stay near the edge of the hangout and leave early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "14:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "home",
+    "start": "14:15"
+   },
+   {
+    "activity": "study_group",
+    "end": "16:15",
+    "place": "event:EV00136",
+    "start": "15:15"
+   },
+   {
+    "activity": "lab",
+    "end": "19:20",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "19:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:45",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: heard Dakota and Chris tested positive for flu in the dorm. Still feel fine but anxious. Keeping the mask on, skipping the hangout, and sticking to study group, lab and meals.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Armani. I feel fine too, masking everywhere and skipping the lounge. Text if you get symptoms or an app alert.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Flu is going around my dorm, and I feel fine. I'll keep my routine since the study group and lab matter, but I'll mask up everywhere indoors. I'll skip the dorm hangout and avoid the lounge. I'll study at home for a bit, but my roommate could be exposed, so I'll keep my distance. I'll eat quickly and be careful. I'll reply to the group briefly.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

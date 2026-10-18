@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Aspen from my dorm at Mark Taper; they wore a mask but said they feel fine, just being careful. Nothing agreed, no change to my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

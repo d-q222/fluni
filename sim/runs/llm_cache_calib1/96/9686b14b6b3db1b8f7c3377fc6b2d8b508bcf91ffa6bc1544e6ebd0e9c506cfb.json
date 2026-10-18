@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Eden from my dorm at Flomo; they wear a mask indoors out of anxiety but say they have no symptoms. Nothing changes, sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

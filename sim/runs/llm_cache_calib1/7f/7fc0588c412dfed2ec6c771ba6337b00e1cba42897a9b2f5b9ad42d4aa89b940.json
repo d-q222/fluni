@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Yeah, I feel fine, just staying careful. Skyler's still waiting on a flu test, so I'm keeping some distance. Heading to the gym after this, you?",
+  "shared_health": true
+ }
+}

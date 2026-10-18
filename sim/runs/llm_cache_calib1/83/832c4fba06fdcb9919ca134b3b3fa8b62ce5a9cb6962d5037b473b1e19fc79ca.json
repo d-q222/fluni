@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ocean (masked, feels fine) is also wary about Dakota and Chris; they plan to go to the dorm hangout tonight with a mask and keep it short. I'm skipping it and heading home to study masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

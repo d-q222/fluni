@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean, you're in my dorm, right? Lucie Stern? How's your Monday going?",
+  "shared_health": false
+ }
+}

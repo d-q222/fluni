@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, thanks, I'm good on the mask but I'll bail with you if people start coughing. Chris is sick, right? Dell's already skipping the lounge.",
+  "shared_health": false
+ }
+}

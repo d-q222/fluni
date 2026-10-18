@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Yeah, just finishing up here. I feel totally fine, honestly. Taper sounds good, I'll see you there. I'll bail from the lounge if people start coughing though.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Scout, who lives in my dorm, told me they're a close contact of someone sick; they feel fine and are masked. I kept my distance and told them to get tested if anything feels off. I'll keep my mask on and watch for symptoms myself.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

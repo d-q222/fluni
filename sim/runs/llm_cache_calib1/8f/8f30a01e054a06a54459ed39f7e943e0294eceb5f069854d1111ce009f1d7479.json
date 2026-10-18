@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Oli was masking indoors out of caution but says they have no symptoms. I told them I'd be at Green Library from 11:20 and again around 5:40 tonight so we could study together.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

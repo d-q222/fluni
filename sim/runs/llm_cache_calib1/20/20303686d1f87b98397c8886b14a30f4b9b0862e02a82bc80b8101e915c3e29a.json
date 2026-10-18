@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Yeah, I'm here for a bit to study before class. White Plaza sounds fun, I'm planning to swing by this evening for a quick catch-up with Dell. Maybe I'll see you there!",
+  "shared_health": false
+ }
+}

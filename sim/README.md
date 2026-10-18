@@ -300,6 +300,40 @@ live in 53 dorms (at most 97 in one, Florence Moore Hall) instead of 77% in one:
 Except the 4-day spread run, their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
 `scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
 
+## Training runs
+
+Runs for `ml/` and the behaviour fit. All are 14 days, seed 42, rule-based agents only. For most,
+only the five files `ml/fluniml/data.py` reads are committed (`contacts.parquet`, `infections.csv`,
+`agents_static.csv`, `config.json`, `summary.json`). Rerun the command (output is byte-identical) to
+get the rest.
+
+| Run | Agents | Initial cases | `transmission_scale` | Infected | R | Committed |
+|---|---|---|---|---|---|---|
+| `influenza_none_n1000_d14_s42_a986df0a` | 1,000 | 30 | 1.2 | 15.4% | 0.98 | 5 files |
+| `influenza_none_n7000_d14_s42_f90e5e60` | 7,000 | 90 | 1.2 | 18.3% | 1.45 | small files (no contacts) |
+| `influenza_none_n1000_d14_s42_689ae9f0` | 1,000 | 5 | 1.2, old behaviour | 5.0% | 0.97 | 5 files |
+| `influenza_none_n1000_d14_s42_f4bf301c` | 1,000 | 5 | 1.446, calibrated behaviour | 9.8% | 1.38 | 5 files |
+| `influenza_none_n7500_d14_s42_9776284a` | 7,500 | 5 | 1.2, old behaviour | 5.3% | 1.54 | small files (no contacts) |
+| `influenza_none_n7500_d14_s42_17ed9cd6` | 7,500 | 5 | 1.446, calibrated behaviour | 10.3% | 2.04 | small files (no contacts) |
+| `influenza_none_n1000_d14_s42_{22a44427, 9214956b, f4573d76, 2329d271, 291f8efd, 14859125}` | 1,000 | 10, 30, 30, 30, 30, 30 | 1.5, 1.8, 2.0, 2.5, 3.0, 4.0 | 6.6%, 32%, 45%, 57%, 59%, 79% | 0.90–1.76 | 5 files |
+| `influenza_none_n1000_d21_s42_4f488dd3` (21 days) | 1,000 | 30 | 2.5 | 74% | 1.16 | 5 files |
+
+```bash
+.venv/bin/python simulate.py --agents 1000 --days 14 --seed 42 --initial-seeds 30                 # a986df0a
+.venv/bin/python simulate.py --agents 7000 --days 14 --step-min 5 --seed 42 --initial-seeds 90    # f90e5e60, ~8 min
+.venv/bin/python simulate.py --agents 7500 --days 14 --initial-seeds 5                            # old behaviour
+.venv/bin/python simulate.py --agents 7500 --days 14 --initial-seeds 5 --set personality.mode=big_five \
+    --set worry.mode=on --set personality.rates_source=calibrated --set disease.transmission_scale=1.446  # calibrated
+```
+
+The calibrated runs read `configs/behavior_calibrated.json`, fitted from the calibration run
+`runs/influenza_fluni_n300_d7_s7_06ba2d48/` (committed in full, with its API response cache
+`runs/llm_cache_calib1/`, so it reruns without API calls) by
+`scripts/calibrate_agents.py runs/influenza_fluni_n300_d7_s7_06ba2d48 --min-rows 5 --min-kind-rows 2`.
+`worry.half_life_fitted` was then set to false by hand (see `half_life_note` in the file). 1.446 is
+the scale that re-fits R to 1.65 with calibrated behaviour (7,000 agents × 14 days, 3 scales × 2
+seeds). Each arm is one seed, so the old vs calibrated difference isn't significant yet.
+
 ## Calibration
 
 `scripts/calibrate.py` sweeps `disease.transmission_scale` over full-size runs and reports

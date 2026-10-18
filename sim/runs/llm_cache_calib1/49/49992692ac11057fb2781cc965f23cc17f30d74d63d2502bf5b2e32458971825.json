@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:55",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:45",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:40",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:45",
+    "place": "bld:bld_232841950",
+    "start": "19:55"
+   },
+   {
+    "activity": "party",
+    "end": "00:45",
+    "place": "event:EV00131",
+    "start": "22:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Feel fine. Plan is Cal game, dinner, Taper, then party and home a bit earlier, avoiding anyone coughing.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Dell! Feel better Chris. I feel fine, heading to the Cal game and party tonight, keeping distance from anyone coughing. Stay well all!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feel fine, calm by nature. Saturday: football game vs Cal is too fun to skip, and the party tonight. Illness is going around (Chris, Oli), so I'll keep things a bit shorter, stay away from anyone coughing, and head home earlier than usual. I'll skip the lounge.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

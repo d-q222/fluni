@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Sorry I missed White Plaza yesterday, lab ate my whole day. How's your week going?",
+  "shared_health": false
+ }
+}

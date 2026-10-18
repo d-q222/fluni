@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:25",
+    "place": "event:EV00161",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday evening: quick dinner at crowded Stern, then studying at home. Will mask and keep the dorm hangout short. Feel fine but a bit wary with positives in the dorm.",
+  "messages": [],
+  "thoughts": "Stern is crowded and a couple of dorm people tested positive. I feel fine, so I'll finish dinner quickly, head home to study, and mask at the hangout for a short stay as I told Oakley and Lake. Then relax and sleep at a reasonable time.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

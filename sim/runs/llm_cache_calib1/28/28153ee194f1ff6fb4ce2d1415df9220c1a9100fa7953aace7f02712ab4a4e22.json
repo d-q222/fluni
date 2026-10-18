@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:00",
+    "place": "dorm_lounge",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "22:40",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Dinner at crowded Stern, masked and feeling fine. Study group in the lounge at 7:50, then studying in my room and bed by 23:30.",
+  "messages": [],
+  "thoughts": "Stern is crowded, but I feel fine and I'm masked. I'll finish dinner, then head to the dorm lounge for study group at 19:50, study in my room afterward, and get to bed at a reasonable hour. I'll keep my mask on indoors and take Mika's spare for the group.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

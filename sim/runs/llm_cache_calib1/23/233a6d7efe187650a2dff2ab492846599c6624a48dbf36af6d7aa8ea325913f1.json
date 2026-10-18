@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Damn, fever and cough at Vaden isn't great. I'm still planning on going, but I'll probably mask up if it's packed. Maybe hang near the edge or bail early if it gets crowded. I'm feeling fine too.",
+  "shared_health": true
+ }
+}

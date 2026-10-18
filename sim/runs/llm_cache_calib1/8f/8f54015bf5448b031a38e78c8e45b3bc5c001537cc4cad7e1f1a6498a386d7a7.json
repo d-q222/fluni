@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! What's up, you studying here too or just grabbing coffee? Are you coming to the Arizona game tonight?",
+  "shared_health": false
+ }
+}

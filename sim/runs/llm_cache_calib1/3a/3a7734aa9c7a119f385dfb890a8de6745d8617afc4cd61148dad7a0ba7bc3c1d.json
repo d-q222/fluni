@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:15"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:BIO84_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:COLLEGE102_SEM16",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:15",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:PWR1RLA_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:45",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:20",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:20"
+   }
+  ],
+  "diary": "Wednesday: followed my usual routine of classes, meals and quiet time in my room, wearing a mask in crowded places. Feeling fine, still a bit wary.",
+  "messages": [],
+  "thoughts": "Normal Wednesday. I feel fine, so I'll follow my routine: breakfast at Stern, back-to-back classes, a quiet afternoon in my room, dinner, then some quiet time. I'll skip the basketball game since crowds aren't my thing. I'll wear a mask indoors to be careful.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

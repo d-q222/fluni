@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Feeling fine, just being careful with all the coughing going around. Eden warned about fevers in Stern too. You doing okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, grabbing dinner, it's been good so far, just classes and getting back into the swing of things. You eating here too? Want to sit together?",
+  "shared_health": false
+ }
+}

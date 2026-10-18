@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for telling me, Sidney, I appreciate it. I'm actually waiting on a test too, FlUni pinged me, but I feel fine. Hope yours comes back okay, feel better!",
+  "shared_health": true
+ }
+}

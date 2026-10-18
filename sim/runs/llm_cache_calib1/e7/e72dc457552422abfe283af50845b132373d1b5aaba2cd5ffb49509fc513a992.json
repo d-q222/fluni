@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, just hanging out, nothing crazy. Totally get it though, sounds like a packed day. Maybe next time if you've got a free night.",
+  "shared_health": false
+ }
+}

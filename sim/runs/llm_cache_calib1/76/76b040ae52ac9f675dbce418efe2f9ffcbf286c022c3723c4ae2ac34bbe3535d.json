@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:10",
+    "place": "bld:bld_643965064",
+    "start": "08:30"
+   },
+   {
+    "activity": "gym",
+    "end": "12:20",
+    "place": "plan:bld_232805668_f1_102",
+    "start": "11:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:50",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:10",
+    "place": "class:CS246_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:40",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "16:20"
+   },
+   {
+    "activity": "relax",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "17:00"
+   }
+  ],
+  "diary": "Thursday: usual campus routine, masked, home by evening. Feel fine but still a bit worried as a Wallace close contact.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feeling fine today, still masking on campus. Let me know if either of you feels off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feel fine, still a close contact of Wallace so I'll stay careful. I'll keep my usual routine with a mask and head home on time. I'll check in with Marley and Wallace about symptoms.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

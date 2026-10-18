@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Yeah, Mika told me about Skyler, that's a relief. I'm going to skip the hangout though, a few people in our dorm are still sick and I've got studying. Have fun, maybe keep your mask on?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,97 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m76",
+   "m77",
+   "m82"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:30",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "gym",
+    "end": "11:20",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:45"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:PWR1HT_SEM01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:30"
+   },
+   {
+    "activity": "gym",
+    "end": "15:20",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "13:55"
+   },
+   {
+    "activity": "relax",
+    "end": "16:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "15:30"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:ECON155_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_1040629370",
+    "start": "18:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:55",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thursday: gym, PWR, ECON, then Lakeside dinner with Chris, Taper with Dell, and the lounge with Onyx. Feeling fine, still a bit wary of the illness going around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "I'm in for Lakeside dinner, Taper, and the lounge tonight!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, very social. Keep the usual routine: gym, PWR, ECON. Dinner at Lakeside at 6:15 with Chris sounds fun, then Taper at 7:15 with Dell, then the lounge at 8 with Onyx. I can hit all three social things and skip the library study. No mask, I rarely wear one.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

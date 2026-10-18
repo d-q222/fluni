@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Val I'm waiting on a flu test from Vaden (feeling fine, FlUni flagged me); Val is masking out of anxiety and feels fine. I promised to text Val as soon as I get my result.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,110 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "health_visit",
+    "end": "10:20",
+    "place": "bld:bld_26250731",
+    "start": "09:55"
+   },
+   {
+    "activity": "rest",
+    "end": "10:25",
+    "place": "bld:bld_26250731",
+    "start": "10:20"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:10",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:MUSIC19A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "plan:bld_m_green_library_f1_102",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "16:05"
+   },
+   {
+    "activity": "class",
+    "end": "18:55",
+    "place": "class:CHEM31B_LEC01_2",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "21:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:40",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:40"
+   }
+  ],
+  "diary": "FlUni told me to get tested at Vaden even though I feel fine, so I went and I'm masking in crowded places. I told Oli, and I'm keeping the rest of my classes and study plans.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Hey, FlUni just told me to get tested at Vaden. I feel fine, but I'm going to get tested and I'll mask up. Just a heads up since we've been studying together.",
+    "time": "",
+    "to": "A0055"
+   }
+  ],
+  "thoughts": "FlUni says get tested at Vaden. I feel fine, but I'm a conscientious person who usually follows health advice, so I'll cut the gym short, go to Vaden, then make it to class if there's time. I'll mask up in crowded indoor spaces for now. I'll let Oli know I got a close contact alert since we've been studying together.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

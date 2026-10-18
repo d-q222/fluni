@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Studied PHYSICS 41 momentum problems with my roommate Emerson at Green; they're masked and say they feel fine, just careful. I said I feel fine too and kept my chair a bit back. No plans changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "gym",
+    "end": "14:05",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "13:40"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:25"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "17:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Heard Dakota and Chris tested positive. I feel fine, so I'll keep the lift and Stern dinner, mask around people, skip the dorm hangout, and wash my hands.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up. I feel fine, keeping a mask on and skipping the dorm hangout tonight.",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "Dorm has confirmed positives, and I feel fine. I'll keep my easy recovery routine, quick lift, then stay in my room, skip the packed hangout, and mask if I'm around people. Eat at Stern at a slightly off time to avoid crowds.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! I feel fine, just being careful. Mika got a FlUni stay-home notice after we had breakfast, so I'm keeping my distance and grabbing a quick dinner before heading back to my room. You doing okay?",
+  "shared_health": true
+ }
+}

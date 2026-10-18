@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Flo Mo at 6:30, I'll be there! My day's been good, just class and studying. Feeling fine, just a little wary with stuff going around. You feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Carter I'm skipping the Stern lounge because Sidney and Hadley are sick; Carter agreed to hang at Taper by the door with me and we'll bounce if anyone coughs. We both feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I'm feeling fine too, just cautious. Nobody in our dorm that I know of, but I keep hearing about it around campus. Let's keep masking up. I've got to head to Green soon, catch you later?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:45"
+   },
+   {
+    "activity": "lab",
+    "end": "11:25",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:ARTSTUDI146M_PRA01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:25",
+    "place": "bld:bld_232841950",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_212",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "21:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "21:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Stuck to my usual Wednesday routine and kept masking indoors since illness is going around the dorm. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine. Illness is going around the dorm, so I'll keep wearing a mask indoors as a precaution. Class, library, and lab as planned, then home to relax and sleep.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

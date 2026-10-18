@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:00",
+    "place": "off_campus",
+    "start": "10:00"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "off_campus",
+    "start": "11:00"
+   },
+   {
+    "activity": "relax",
+    "end": "17:00",
+    "place": "off_campus",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "off_campus",
+    "start": "17:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "off_campus",
+    "start": "18:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Saturday: stayed home to keep contacts low, studied and rested. Feel fine, still watching for symptoms after Wallace got sick.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Marley. I feel fine, staying home today. Wallace, hope you feel better soon. I'll tell you both if anything feels off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "It's Saturday and I feel fine. Marley is staying home, Wallace is sick. I'm a commuter with no need to come to campus, and a class listed 09:00-17:00 on a Saturday seems odd. Staying home keeps contacts low while I watch for symptoms. I'll sleep in, study at home, and text Marley a quick reply.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

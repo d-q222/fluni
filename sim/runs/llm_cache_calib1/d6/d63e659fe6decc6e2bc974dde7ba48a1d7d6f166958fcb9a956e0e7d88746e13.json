@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey, is this seat taken? Or, um, sorry, is this your room? I think I booked this one.",
+  "shared_health": false
+ }
+}

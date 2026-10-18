@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Just being careful. Chris is sick and Oli's been coughing, so I'm playing it safe. I feel fine though. You doing okay?",
+  "shared_health": true
+ }
+}

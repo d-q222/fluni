@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Met Winter at Maples before the Arizona game; we're all sitting together with Wynn, Dell, Onyx and Carter, then Taper or the dorm lounge after. Feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

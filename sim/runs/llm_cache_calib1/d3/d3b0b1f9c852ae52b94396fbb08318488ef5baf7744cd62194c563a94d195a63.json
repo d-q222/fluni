@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Morning. You heading to class or just chilling here for a bit?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Pretty normal, three classes and now dinner. Gym later, then studying. I've been a little wary of everything going around, so the mask's been on in class. How about you?",
+  "shared_health": false
+ }
+}

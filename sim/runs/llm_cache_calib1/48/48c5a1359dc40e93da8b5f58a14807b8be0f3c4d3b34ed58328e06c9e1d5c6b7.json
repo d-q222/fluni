@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nah, I'm gonna pass tonight. I've got gym then I'll rest at home, and I'd rather not be around a packed room with people sick. Have fun though, stay masked!",
+  "shared_health": false
+ }
+}

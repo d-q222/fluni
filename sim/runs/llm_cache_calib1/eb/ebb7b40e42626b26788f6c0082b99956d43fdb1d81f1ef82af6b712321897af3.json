@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Had dinner with Wynn at Lakeside; they said they feel great and are going to Flo Mo and then the Taper hangout tonight. I'll see them at Taper. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

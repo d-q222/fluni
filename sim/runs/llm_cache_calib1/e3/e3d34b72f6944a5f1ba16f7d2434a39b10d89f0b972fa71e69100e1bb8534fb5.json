@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Emerson still has no word on Jesse's test result; both of us feel fine and are masking in the room. I asked Emerson to text me the second they hear so I can pass it to Neo.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

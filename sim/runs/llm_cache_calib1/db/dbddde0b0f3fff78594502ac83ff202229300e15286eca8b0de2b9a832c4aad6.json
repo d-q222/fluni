@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! Oh nice, that's a relief, thanks for telling me. Yeah, let's get this lift done.",
+  "shared_health": false
+ }
+}

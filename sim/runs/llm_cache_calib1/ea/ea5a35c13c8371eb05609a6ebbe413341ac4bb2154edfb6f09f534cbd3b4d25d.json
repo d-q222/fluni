@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Yeah, I'm fine, no symptoms and app's quiet. Dylan said Teagan and Dakota are sick in our dorm though, so I'm skipping the lounge. You?",
+  "shared_health": true
+ }
+}

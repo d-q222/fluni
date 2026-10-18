@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232805685_f1_101",
+    "start": "11:20"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:EE102A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:00",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:15",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "lab",
+    "end": "21:10",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Fri Jan 9: Teagan texted that they have fever and cough. I feel fine but will keep my mask on, skip the dorm hangout tonight and go to bed earlier.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Teagan. Feel better, hope Vaden helps. Let me know if you need anything.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan is sick and I feel fine. I don't know how close I was to them, but I'll be careful: keep my mask on indoors, stick to classes and lab, and skip the crowded dorm hangout tonight. I'll eat dinner at a quieter time and get to bed earlier. I'll text Teagan a quick reply wishing them well.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

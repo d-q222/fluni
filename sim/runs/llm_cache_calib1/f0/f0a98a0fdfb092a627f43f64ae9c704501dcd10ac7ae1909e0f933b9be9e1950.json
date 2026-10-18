@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I heard two people in our dorm tested positive, kind of freaking me out. I haven't tested yet, I feel fine though. I'm going to Vaden at 2:15 and then staying in my room. How about you?",
+  "shared_health": true
+ }
+}

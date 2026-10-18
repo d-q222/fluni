@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, I'm not actually masked, just wary. You're the one with the mask. Is something actually going around, or are you feeling off?",
+  "shared_health": true
+ }
+}

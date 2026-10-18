@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, still masking. I feel fine, just anxious about it. Skipping the party and the game too, I'm eating quick then heading home. Maybe skip the gym crowd tonight?",
+  "shared_health": true
+ }
+}

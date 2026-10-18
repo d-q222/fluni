@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jaden! Doing okay, thanks, just grabbing lunch before my own lab this afternoon. Hope yours goes smoothly!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good, let's grab a table! I'll text Chris to find us. Smart on the mask, honestly, I might start doing that too if the fevers keep spreading.",
+  "shared_health": false
+ }
+}

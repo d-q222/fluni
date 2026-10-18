@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, I'll keep my distance and watch for symptoms. Let me know if you start feeling off. I'm going to grab my food and head back, stay safe!",
+  "shared_health": false
+ }
+}

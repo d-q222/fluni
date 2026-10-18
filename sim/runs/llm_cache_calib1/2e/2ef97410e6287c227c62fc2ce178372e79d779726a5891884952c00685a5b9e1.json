@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:SPANLANG3_LNG01",
+    "start": "09:50"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:PHYSICS41_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:20",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:JAPANLNG2_LNG05",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:35"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:25"
+   },
+   {
+    "activity": "relax",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "20:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Mika got a FlUni stay-home notice, so I'm staying careful. Classes masked, studying at home, skipping the hangout. Feeling fine but a bit more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Mika. Rest up and stay in. I'm staying masked and skipping the hangout again.",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Mika's warning makes me a bit warier, but I feel fine and have no FlUni alert myself. I'll keep going to class masked, since I'm already in Spanish, and otherwise stay close to my usual routine. I'll eat at Stern a bit off-peak, study at home, and skip the dorm hangout again.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

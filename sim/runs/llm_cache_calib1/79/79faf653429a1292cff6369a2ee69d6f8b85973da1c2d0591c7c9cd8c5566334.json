@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Morning. You doing okay? Everyone's been so paranoid about that fever rumor lately.",
+  "shared_health": false
+ }
+}

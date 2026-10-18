@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "12:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "gym",
+    "end": "20:10",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Stern was packed so I ate fast and masked. Going to the Cal game with True, then study, gym, and resting at home, skipping the dorm hangout.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Heading to the game now, I'll find you in the crowd. Masking up!",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "Stern is crowded and I feel fine. I'll finish eating quickly and mask up, then head to the Cal game with True as planned. Gym in the evening, skip the dorm hangout and rest at home. I'll skip the extra library study session since the game runs till 16:30, then do a short study after.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, lab again, then dinner. Stress is fine, just trying not to get sick. Good to see you're masked up now.",
+  "shared_health": false
+ }
+}

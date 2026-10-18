@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:50",
+    "place": "event:EV00040",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:10",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:10"
+   }
+  ],
+  "diary": "Ate dinner at a crowded Stern Dining, felt fine but a bit wary. Plan: relax in the room, dorm hangout at 9, then sleep; check the team chat for practice.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, but I feel fine. I'll finish eating quickly, then head home to relax and go to the dorm hangout at 9. I'm a bit wary, but no symptoms, so I'll stay normal and keep an eye on how I feel. Still need to check the team chat about practice tomorrow.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

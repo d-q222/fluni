@@ -1,0 +1,101 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m5"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:BIOE271_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "10:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:20"
+   },
+   {
+    "activity": "relax",
+    "end": "12:35",
+    "place": "home",
+    "start": "10:45"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_232715666",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:ARTSTUDI122_PRA01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:45",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:40",
+    "place": "bld:bld_m_green_library",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "22:20",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Said yes to dinner at Wilbur with Wynn and friends tonight. Skipping the other invites to keep a quiet evening. Staying masked indoors.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Wilbur at 7 sounds good, I'll be there! I'll head home after dinner though.",
+    "time": "",
+    "to": "A0274"
+   }
+  ],
+  "thoughts": "I'm a homebody and a bit anxious, but the first Monday of the quarter is a good time to see a friend. I'll accept one small dinner, Wilbur at 19:00, since I'm mostly at Stern anyway. I'll skip the late Taper hangout and the other dinners. I'll keep my mask on indoors except while eating, and keep the rest of my routine.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

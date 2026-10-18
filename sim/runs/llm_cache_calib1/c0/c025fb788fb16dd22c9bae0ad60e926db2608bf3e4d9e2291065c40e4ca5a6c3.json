@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:25",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:PSYCH35_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "gym",
+    "end": "12:25",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:10"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:CS243_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "gym",
+    "end": "18:25",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "18:35"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wed Jan 7: classes, gym, then the Arizona basketball game tonight and lounge after. Feeling fine, a little wary of the illness going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "event:EV00047",
+    "text": "Basketball vs Arizona tonight at Maples, 7pm. Who's in?",
+    "time": "19:00",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, so I'll keep my usual routine but swap some of the long relax time for something social. A basketball game tonight sounds fun, and I'll invite friends along. Not masking, I'm still just a little wary.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

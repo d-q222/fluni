@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan! I noticed the mask, everything okay or just being careful? A lot of people seem to be masking lately.",
+  "shared_health": false
+ }
+}

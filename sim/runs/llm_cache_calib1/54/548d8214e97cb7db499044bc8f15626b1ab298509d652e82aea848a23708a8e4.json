@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Devon warned me that several people in our dorm have fevers and coughs. I told them I feel fine and that Skyler is waiting on a flu test. I'll keep my distance and stay careful, but my plans stay the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern Dining; they have lifting at 6:45 and may swing by the basketball game late if not wiped. Nothing health-related shared; I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

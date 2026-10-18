@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m28",
+   "m29",
+   "m30",
+   "m32"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "10:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "09:45"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "16:50",
+    "place": "bld:bld_232841950",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wednesday: classes, Taper hangout, then the Arizona game at Maples with the whole group. Feeling healthy and happy.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "I'm in for the game tonight! See you all at Maples at 7.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling great, and the whole group is heading to the Arizona game tonight. Easy yes. I'll keep my usual day: sleep in, breakfast, classes, Taper hangout, dinner, then the game with friends, then lounge hang. No need for a mask.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

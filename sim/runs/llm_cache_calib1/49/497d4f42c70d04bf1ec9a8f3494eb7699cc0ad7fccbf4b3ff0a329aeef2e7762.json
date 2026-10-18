@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, better safe. Want to grab seats together? I'll keep a little distance though, hope that's okay!",
+  "shared_health": false
+ }
+}

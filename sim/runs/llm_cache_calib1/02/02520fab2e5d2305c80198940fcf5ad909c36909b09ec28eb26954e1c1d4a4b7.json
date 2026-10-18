@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh good, glad Skyler's negative. Yeah, I'm planning on the dorm hangout tonight, after practice and dinner. You going?",
+  "shared_health": false
+ }
+}

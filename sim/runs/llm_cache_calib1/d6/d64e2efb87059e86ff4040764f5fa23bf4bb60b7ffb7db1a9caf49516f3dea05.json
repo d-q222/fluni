@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Just grabbing lunch before heading back to study. How's your day going?",
+  "shared_health": false
+ }
+}

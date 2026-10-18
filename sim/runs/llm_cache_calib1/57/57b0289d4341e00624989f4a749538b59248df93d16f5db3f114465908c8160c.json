@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:20",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:30",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "lab",
+    "end": "12:05",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "10:35"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:50",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "study",
+    "end": "02:50",
+    "place": "home",
+    "start": "01:55"
+   },
+   {
+    "activity": "relax",
+    "end": "03:20",
+    "place": "home",
+    "start": "02:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "03:20"
+   }
+  ],
+  "diary": "Teagan tested positive and I was near them Thursday. I feel fine but I'm masking, skipping the game, studying at home, and still going to lab. Still quite worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads-up, Teagan. Feel better! I'm fine so far, masking and skipping the game. Will tell you all if I get symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan is confirmed positive and I was near them Thursday. I feel fine, but I'm worried. I'll keep my disciplined routine, mask up indoors, skip the football game, and avoid crowded spots. Lab is important, so I'll go but keep distance. I'll eat at off-peak times and study at home more instead of the Green reading room. I'll thank Teagan and tell the group I'll watch symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

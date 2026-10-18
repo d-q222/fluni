@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Morning. I noticed the mask, you doing okay?",
+  "shared_health": false
+ }
+}

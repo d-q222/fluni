@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain. Pretty crowded in here, huh? I'm just finishing up before heading to Green to study.",
+  "shared_health": false
+ }
+}

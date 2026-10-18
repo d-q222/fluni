@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "10:00",
+    "place": "home",
+    "start": "08:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "rest",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Thu Jan 8: Still sick and positive, staying in my room resting and doing light studying. Bailey got sick too, which makes me anxious, but friends are being kind.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Jaden and Ari, really appreciate it. Bailey, sorry you're sick too. Rest up and drink lots of fluids. I'm staying in my room and will shout if I need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm still sick with a positive test, so I'm staying in my room. Bailey is sick too, which makes me feel guilty and anxious. I'll sleep, rest, do light studying, skip class and the hangout. I'll text Bailey a short reply and hope they feel better. Nothing needs dropping off yet, but I may thank Jaden and Ari.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

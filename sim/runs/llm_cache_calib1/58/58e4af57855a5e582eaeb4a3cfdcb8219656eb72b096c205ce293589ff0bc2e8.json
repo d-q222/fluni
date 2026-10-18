@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "off_campus",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "11:10",
+    "place": "off_campus",
+    "start": "09:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:00",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "11:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_643965064",
+    "start": "12:05"
+   },
+   {
+    "activity": "class",
+    "end": "18:10",
+    "place": "class:URBANST127B_PRA01",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "off_campus",
+    "start": "18:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Friday: Marley warned again about Wallace being sick. I feel fine, plan to stay masked at class, keep contacts low and go home after. Still a bit worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up. I feel fine too, masking on campus and will tell you right away if anything feels off.",
+    "time": "",
+    "to": "A0181"
+   }
+  ],
+  "thoughts": "Marley warned me about Wallace being sick. I feel fine, but I'm a close contact, so I'll stay careful. I'll keep my routine, go to class masked since it's a long lecture, and keep contacts low, and go home afterward. I'll reply to Marley and check in.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "13:00",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "rest",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Still sick and positive, isolating at home all day. Dakota is sick too, so I warned Wynn to skip the party. Hoping everyone else stays healthy.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Wynn, Dakota and I both have fever/cough now and I tested positive. Maybe skip the party tonight, it's definitely going around. Stay safe!",
+    "time": "",
+    "to": "A0274"
+   }
+  ],
+  "thoughts": "I tested positive and still have fever, chills and aches. Dakota is sick too, so this is spreading. I'm staying home all day, skipping the game and party. I'll sleep, rest, and eat in my room. I'll warn Wynn to skip the party since Dakota and I are both sick.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Campbell said Chris has a fever, Oli is coughing, and Mika got a FlUni stay-home notice; Campbell feels fine and is skipping the dorm lounge. I'll avoid the lounge, keep masking, and stick to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

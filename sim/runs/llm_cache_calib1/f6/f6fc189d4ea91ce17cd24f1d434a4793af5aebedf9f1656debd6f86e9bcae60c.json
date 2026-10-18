@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Good news, Skyler tested negative, so I think we're in the clear. You still coming to the hangout at 8?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh weird, my bad, I could've sworn you had one on! Yeah, I've heard stuff's going around, but I feel fine. Anyway, we should start the assignment together tonight if you want.",
+  "shared_health": true
+ }
+}

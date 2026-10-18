@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon. Yeah, looks like it'll be a long one. I see the mask, staying careful?",
+  "shared_health": false
+ }
+}

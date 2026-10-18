@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "12:40",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:25",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:50",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:40",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Chris and Dakota are sick and I saw Dakota Thursday. I feel fine, so I'm doing the game and dinner, skipping Taper and the party, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better soon Chris and Dakota! I feel fine right now but I was around Dakota Thursday, so I'm skipping the party and keeping my distance. Will tell you if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris and Dakota both got sick, and I hung out with Dakota Thursday at dinner and Taper. I feel fine, but I'm a bit more worried now. I'll sleep in, still go to the game since it's outdoors, then skip the crowded party and Taper hangout to be careful. I'll stay honest and tell friends I feel fine but am keeping distance.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

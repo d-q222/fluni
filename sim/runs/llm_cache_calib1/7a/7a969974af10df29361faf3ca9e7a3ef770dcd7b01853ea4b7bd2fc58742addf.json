@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "20:20",
+    "place": "home",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "21:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thursday evening: Stern Dining was crowded so I ate fast and left. Studying, masked at lab, skipping the party again; still anxious and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 44 people and I'm anxious, so I'll grab food quickly and head home rather than linger. Then my usual study, a masked lab session in the evening, and sleep. Skipping the party again.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Carter at Stern lunch; they're going to the Arizona game at Maples at 7 with Onyx and Winter and said to come after lifting, lounge after. Told them maybe, still no firm commitment.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

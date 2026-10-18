@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:40",
+    "place": "home",
+    "start": "18:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "event:EV00027",
+    "start": "20:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Tuesday evening: ate quickly at crowded Stern Dining, then studied at home and stopped by the dorm hangout. Feeling fine, a bit aware of illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 49 people, and illness is going around, so I'll eat quickly and head back. I feel fine. I'll stick to my usual routine: study at home, then drop by the dorm hangout for a bit, then relax and sleep. I won't wear a mask but will stay careful.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

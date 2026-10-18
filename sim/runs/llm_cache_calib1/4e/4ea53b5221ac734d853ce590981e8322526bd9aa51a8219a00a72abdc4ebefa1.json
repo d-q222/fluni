@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, thanks for telling me, I appreciate that. Hope it comes back negative! I'll keep my mask on too. Let me know how it goes?",
+  "shared_health": false
+ }
+}

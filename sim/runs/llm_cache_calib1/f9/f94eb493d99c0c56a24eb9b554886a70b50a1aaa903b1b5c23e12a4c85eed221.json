@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean. Crowded in here, huh? I'm just grabbing food and heading back to my room.",
+  "shared_health": false
+ }
+}

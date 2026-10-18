@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Perfect, let's grab a table! Dakota should be around here somewhere. How's your quarter starting off so far?",
+  "shared_health": false
+ }
+}

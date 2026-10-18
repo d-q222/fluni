@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:35",
+    "place": "home",
+    "start": "07:10"
+   },
+   {
+    "activity": "eat",
+    "end": "08:10",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "07:40"
+   },
+   {
+    "activity": "study",
+    "end": "09:40",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:15"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:PWR2KSC_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f3_307",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "23:20",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "23:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Plan a standard Tuesday of Green Library study and PWR seminar, masked indoors. Feeling fine, still a bit watchful about illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual disciplined Tuesday routine of study and PWR class, masked indoors. Stern was crowded yesterday so I'll keep meals quick. A short gym session fits in the evening, then an early night.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Jesse from my dorm at Mark Taper; they wear a mask out of anxiety but say they have no symptoms. Nothing changes, I'm still feeling fine and keeping an eye out.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:40",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232805685_f1_101",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:CS111_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:EE102A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:BIOE123_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:00",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:25",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "00:50",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:45",
+    "place": "home",
+    "start": "00:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:45"
+   }
+  ],
+  "diary": "Regular Monday of classes, library study, and evening lab. Feeling fine, wearing a mask indoors since I'm a little worried about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. Feeling fine, so I'll stick to my routine: sleep, study at Lathrop, three classes, dinner at Stern, evening lab. I'll wear a mask indoors since I'm a bit worried about illness going around.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:05"
+   },
+   {
+    "activity": "relax",
+    "end": "15:10",
+    "place": "home",
+    "start": "13:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:10",
+    "place": "plan:bld_m_green_library_f2_213",
+    "start": "15:15"
+   },
+   {
+    "activity": "gym",
+    "end": "17:45",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:00",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "bld:bld_232805662",
+    "start": "19:05"
+   },
+   {
+    "activity": "study",
+    "end": "22:00",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "20:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:30",
+    "place": "dorm_lounge",
+    "start": "22:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Normal Monday: studied, hit the gym, and hung out in the dorm lounge at night. Feeling healthy and not worried.",
+  "messages": [],
+  "thoughts": "Monday of early January, feeling fine. I'll follow my usual routine but swap in some social time with friends in the evening since I get energy from people. Sleep until morning, eat at Stern, study, gym, then hang out.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

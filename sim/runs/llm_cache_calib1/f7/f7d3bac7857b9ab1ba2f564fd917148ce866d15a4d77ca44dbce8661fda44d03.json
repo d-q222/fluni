@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton. I see you're masking too, so it's not just me. Are you feeling okay, or is it just the dorm stuff going around?",
+  "shared_health": false
+ }
+}

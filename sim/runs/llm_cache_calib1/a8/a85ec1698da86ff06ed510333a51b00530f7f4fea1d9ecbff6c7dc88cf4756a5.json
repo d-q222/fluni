@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Bailey at Stern Dining; we both feel fine and are being careful. I suggested grabbing food later this week if everyone stays healthy.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

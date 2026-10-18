@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell is masked and skipping the lounge because Oli is coughing and Chris has a fever; Taper is still on and Dell said to find them after if I bail early. I feel fine and am keeping my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

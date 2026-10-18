@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner at Lakeside with Onyx and Dakota. Onyx said they're a bit wary of the sickness going around; I'm feeling fine, just cautious. Onyx has study group at Green tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

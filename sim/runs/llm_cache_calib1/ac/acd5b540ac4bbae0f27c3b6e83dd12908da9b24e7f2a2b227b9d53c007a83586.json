@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "bld:bld_232805662",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:SPANLANG12R_LNG02",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:COLLEGE102_SEM44",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "18:00",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:15",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "bld:bld_232805662",
+    "start": "22:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Followed my usual Tuesday of Spanish, seminar, and lab, masked indoors. Feeling fine, still a little anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Tuesday routine is solid. I feel fine, a bit anxious, so I'll keep my mask on indoors and follow my usual schedule. I'll grab lunch-ish food around the Coupa stop and maybe dinner at Stern between lab stretches. Home at a reasonable hour to sleep.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

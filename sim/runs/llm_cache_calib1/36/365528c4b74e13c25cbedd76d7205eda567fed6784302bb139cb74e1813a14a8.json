@@ -1,0 +1,89 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m5"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:15",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "study",
+    "end": "13:20",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "11:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "14:55",
+    "place": "bld:bld_232841950",
+    "start": "13:25"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS243_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:50",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "dorm_lounge",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "02:15",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:15"
+   }
+  ],
+  "diary": "Monday Jan 5: going to Wilbur dinner with Wynn then the Stern lounge. Skipping the gym tonight. Feeling fine, a bit worried about sickness going around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Wilbur at 7 works for me, see you there, then Stern lounge!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Three dinner invites. I'm very social, so I want to go to one. Wynn's Wilbur dinner at 19:00 plus Stern lounge hangout fits best after class and gym, and I can stay near home. I'll skip the gym slot for dinner. Keep the rest of my routine, including the Taper hangout I already invited people to. Not wearing a mask, only mildly worried.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

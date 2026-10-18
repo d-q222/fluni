@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:40",
+    "place": "home",
+    "start": "07:25"
+   },
+   {
+    "activity": "study",
+    "end": "08:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "07:45"
+   },
+   {
+    "activity": "eat",
+    "end": "08:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "lab",
+    "end": "09:20",
+    "place": "plan:bld_738808361_f3_305",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:HUMBIO3A_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:PHYSICS43_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:10"
+   },
+   {
+    "activity": "gym",
+    "end": "14:10",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "12:55"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "home",
+    "start": "14:25"
+   },
+   {
+    "activity": "study_group",
+    "end": "16:20",
+    "place": "event:EV00021",
+    "start": "15:15"
+   },
+   {
+    "activity": "relax",
+    "end": "17:15",
+    "place": "bld:bld_232841950",
+    "start": "16:25"
+   },
+   {
+    "activity": "class",
+    "end": "19:05",
+    "place": "class:CS140E_LEC01",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:35",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:35"
+   }
+  ],
+  "diary": "Followed my usual Tuesday routine of classes, gym, study group, and library. Feeling fine, still masking indoors out of caution.",
+  "messages": [],
+  "thoughts": "Normal Tuesday. I feel fine, so I'll keep my usual routine and wear a mask indoors since I'm a bit wary. The study group is at Green Library, so I'll go there. I'll skip texting anyone.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

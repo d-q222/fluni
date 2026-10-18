@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Winter about the Arizona game tonight; they're in after the gym and want an aisle seat near us around 7. Both feeling fine, no plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

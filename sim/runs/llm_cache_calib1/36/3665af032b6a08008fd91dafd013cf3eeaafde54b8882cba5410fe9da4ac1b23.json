@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell is coming to the Arizona game at 7 after the gym and will join the lounge hangout afterward; I said I'd save us seats. Nothing health-related came up.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

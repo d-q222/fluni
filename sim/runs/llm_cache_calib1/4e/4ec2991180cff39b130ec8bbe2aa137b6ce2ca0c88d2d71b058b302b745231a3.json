@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:45",
+    "place": "home",
+    "start": "12:05"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "12:50"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "bld:bld_232841950",
+    "start": "13:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:45",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "14:55"
+   },
+   {
+    "activity": "relax",
+    "end": "18:40",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "event:EV00144",
+    "start": "20:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:35"
+   }
+  ],
+  "diary": "Sun Jan 11: Feeling fine, still a bit worried with Chris and Dakota sick. Skipping the game, doing outside time, Taper study, Stern dinner and a short dorm hangout.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris and Dakota. I feel fine, will let you know if that changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sunday. I feel fine, but Chris and Dakota are sick and I've been around people. I'm social and bad at following advice, so I'll keep a mostly normal day but dial it back a bit. Sleep late, relax, get some fresh air outside, study at Taper, eat at Stern, and go to the dorm hangout briefly. Skip the crowded game. I won't mask.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

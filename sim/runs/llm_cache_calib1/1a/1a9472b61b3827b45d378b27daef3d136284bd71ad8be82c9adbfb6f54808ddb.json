@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:40"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "08:15"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:MUSIC19A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:05",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "16:55",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "17:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "study",
+    "end": "19:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:40"
+   },
+   {
+    "activity": "study",
+    "end": "20:40",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:10",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Normal Monday: classes, lab, and lots of studying. Feeling fine, just a bit mindful about illness going around.",
+  "messages": [],
+  "thoughts": "Monday, first day of the week. I feel fine, so I'll stick close to my usual routine: classes, labs, and plenty of library study. I'll sleep in a bit, keep the morning relaxed, and wrap up with some study before bed. A little worried about illness going around, but no mask needed.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

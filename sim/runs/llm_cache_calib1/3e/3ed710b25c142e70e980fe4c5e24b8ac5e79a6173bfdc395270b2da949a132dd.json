@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah I feel totally fine, just a little worried about getting sick too honestly. Anyway, see you at Flo Mo, and then maybe Taper after with Wynn?",
+  "shared_health": true
+ }
+}

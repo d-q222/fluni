@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Yeah, mask on, just trying to be careful. Quarter's going fine so far, pretty busy though. How about you?",
+  "shared_health": false
+ }
+}

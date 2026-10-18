@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Neo, morning! How's it going? Sorry, I'm heading to study soon, but I'm keeping my distance and masking with all the exposure notices in the dorm.",
+  "shared_health": false
+ }
+}

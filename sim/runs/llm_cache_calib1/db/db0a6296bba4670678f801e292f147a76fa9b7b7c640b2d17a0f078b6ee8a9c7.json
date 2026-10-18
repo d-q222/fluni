@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same here, honestly. Okay, let's grab those seats before class fills up.",
+  "shared_health": false
+ }
+}

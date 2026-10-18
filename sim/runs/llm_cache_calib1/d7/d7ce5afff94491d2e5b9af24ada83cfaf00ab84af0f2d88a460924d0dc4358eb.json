@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good, I'll grab us a spot by the wall so it's less crowded. I'll keep mine on until I eat too.",
+  "shared_health": false
+ }
+}

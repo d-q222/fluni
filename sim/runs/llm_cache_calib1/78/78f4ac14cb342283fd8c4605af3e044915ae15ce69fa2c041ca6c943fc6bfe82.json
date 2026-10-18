@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Eden! Yeah, Lake mentioned the fever thing earlier. I feel totally fine though, no symptoms. Bummer you're skipping the lounge, but staying in makes sense. Feel better if anything pops up!",
+  "shared_health": true
+ }
+}

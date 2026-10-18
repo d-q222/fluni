@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Pretty good, feeling fine so far. Just grabbing food before the gym. Staying a bit careful though. You doing okay?",
+  "shared_health": true
+ }
+}

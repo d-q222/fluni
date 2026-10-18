@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Harper. Yeah, I've noticed a bit of coughing too. I feel fine, just staying wary. Smart to keep the mask on.",
+  "shared_health": true
+ }
+}

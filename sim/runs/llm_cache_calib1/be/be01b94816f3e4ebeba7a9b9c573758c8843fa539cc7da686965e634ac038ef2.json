@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! You heading to the Arizona game tonight? We're all going, you should come.",
+  "shared_health": false
+ }
+}

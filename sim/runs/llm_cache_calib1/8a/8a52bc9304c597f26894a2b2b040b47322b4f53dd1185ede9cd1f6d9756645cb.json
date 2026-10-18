@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer is masking and waiting on a Vaden flu test (FlUni told them to get checked though they feel fine). They'll text me the result. I'm keeping some distance and staying masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

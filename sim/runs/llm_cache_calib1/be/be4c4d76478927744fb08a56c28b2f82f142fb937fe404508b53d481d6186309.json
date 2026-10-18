@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer! It's pretty decent tonight, the pasta's solid. I'm just grabbing a quick bite before lab.",
+  "shared_health": false
+ }
+}

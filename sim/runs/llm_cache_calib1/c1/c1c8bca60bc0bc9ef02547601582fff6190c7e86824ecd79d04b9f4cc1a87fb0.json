@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Not sure, I haven't heard from Onyx yet. Let's head in and look for them, I'm pumped for this game!",
+  "shared_health": false
+ }
+}

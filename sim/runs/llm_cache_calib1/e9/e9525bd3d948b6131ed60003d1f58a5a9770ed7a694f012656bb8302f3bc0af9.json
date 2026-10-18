@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:20",
+    "place": "home",
+    "start": "07:40"
+   },
+   {
+    "activity": "eat",
+    "end": "09:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:25"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:HUMBIO3A_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:PHYSICS43_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_333374283",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:40"
+   },
+   {
+    "activity": "study",
+    "end": "17:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:10"
+   },
+   {
+    "activity": "class",
+    "end": "19:05",
+    "place": "class:CS140E_LEC01",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "20:40",
+    "place": "plan:bld_m_green_library_f1_104",
+    "start": "19:45"
+   },
+   {
+    "activity": "gym",
+    "end": "21:40",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "20:55"
+   },
+   {
+    "activity": "study",
+    "end": "23:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "21:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:00"
+   }
+  ],
+  "diary": "Keeping my usual Thursday routine of classes, library, and gym. Feeling fine, masking indoors and still waiting on Sawyer's test result before sharing a table.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll keep my usual Thursday routine. I'll stay masked indoors since exposure notices are going around the dorm, and keep avoiding a shared table with Sawyer until their test result is back. Sticking with the familiar schedule.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

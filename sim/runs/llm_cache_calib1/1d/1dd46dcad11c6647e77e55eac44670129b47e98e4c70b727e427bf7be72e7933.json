@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:00"
+   },
+   {
+    "activity": "gym",
+    "end": "14:05",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "12:55"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "14:25"
+   },
+   {
+    "activity": "gym",
+    "end": "18:30",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "17:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Easy recovery day after the Cal game, a lift, meals at Stern, skipping the packed hangout. Feeling fine, mask handy, washing hands.",
+  "messages": [],
+  "thoughts": "Sunday after the Cal game, feeling fine. Sleep in, then a light day: brunch at Stern, a lift, some downtime, dinner, and skip the packed hangout or just drop by briefly. Keep the mask handy and wash hands.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

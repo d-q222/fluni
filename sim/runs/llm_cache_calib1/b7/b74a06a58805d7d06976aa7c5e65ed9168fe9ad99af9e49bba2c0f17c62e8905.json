@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Aspen! Saw the mask, everything okay? I heard people in Stern have been coming down with fevers.",
+  "shared_health": false
+ }
+}

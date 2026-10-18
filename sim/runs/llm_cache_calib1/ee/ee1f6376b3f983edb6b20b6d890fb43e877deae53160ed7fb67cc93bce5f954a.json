@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Salem mentioned a rumor of someone in a dorm with a fever and cough, but no name. I feel fine and am sticking to my plan, staying watchful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

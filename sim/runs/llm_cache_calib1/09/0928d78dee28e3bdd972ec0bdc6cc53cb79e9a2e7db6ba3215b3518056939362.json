@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:35",
+    "place": "home",
+    "start": "08:15"
+   },
+   {
+    "activity": "lab",
+    "end": "09:20",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:BIO84_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "lab",
+    "end": "10:50",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "11:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "class",
+    "end": "13:00",
+    "place": "class:REES100_SEM01",
+    "start": "12:00"
+   },
+   {
+    "activity": "lab",
+    "end": "16:00",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "home",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "21:45",
+    "place": "plan:bld_232841921_f3_307",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "01:30",
+    "place": "bld:bld_1169967277",
+    "start": "22:00"
+   },
+   {
+    "activity": "relax",
+    "end": "02:30",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:30"
+   }
+  ],
+  "diary": "Friday: sticking to the usual lab, class and study routine, eating quickly at Stern and keeping distance from crowds. Feeling fine, still a bit wary of the flu.",
+  "messages": [],
+  "thoughts": "Friday, feeling fine. I'll follow my usual routine but avoid crowded Stern Dining by eating at a quieter time and keep my distance. Flu is going around so I'll stay careful but not skip anything important.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

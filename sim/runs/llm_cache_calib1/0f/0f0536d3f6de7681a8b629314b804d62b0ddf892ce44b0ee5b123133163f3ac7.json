@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat with Lake at the basketball game at Maples; both masked or wary, both feel fine. Told them about the dorm fever rumor. Sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

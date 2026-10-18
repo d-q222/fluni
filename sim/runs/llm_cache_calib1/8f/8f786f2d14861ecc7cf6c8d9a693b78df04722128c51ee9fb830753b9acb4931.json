@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "08:40",
+    "place": "home",
+    "start": "08:10"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:EARTHSYS106_LEC01",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:30",
+    "place": "bld:bld_m_green_library",
+    "start": "10:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "relax",
+    "end": "14:40",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:STATS118_LEC01",
+    "start": "14:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:55",
+    "place": "bld:bld_232805662",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:55",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Thursday: Eden warned that some people in Lucie Stern have fevers. I feel fine and only mildly cautious; sticking with class, Coupa, Lakeside, Taper and the lounge.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Eden! See you all at Lakeside, Taper and the lounge. Tell us if anyone gets sick.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Eden's heads up about fevers in Lucie Stern is a little concerning, but I feel fine and I'm calm about it. I'll keep my plans: class, study, lunch, Coupa, then dinner, Taper and the lounge. I'll skip nothing but maybe be a bit more careful, wash hands. Not masking indoors, that's not really me.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

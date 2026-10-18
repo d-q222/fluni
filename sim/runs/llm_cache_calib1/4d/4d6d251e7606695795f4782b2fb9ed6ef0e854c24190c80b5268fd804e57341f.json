@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Harper from my dorm at Taper; they're masked, skipping crowds because of all the coughing, and have lab tonight so they're not coming to the game. Makes me a bit warier, but I'm still going.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

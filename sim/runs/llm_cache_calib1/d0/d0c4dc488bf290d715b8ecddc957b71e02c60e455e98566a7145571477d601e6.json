@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Had dinner with Carter at Lakeside; they feel fine, took my spare mask, and are still on for Taper with Dell and the lounge at 8:45. Both of us are being careful about the Stern fevers; nothing health-related to share beyond that.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

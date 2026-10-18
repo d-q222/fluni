@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh good, that makes sense, I've been a little worried too. Yeah, a library table sounds great! I'm at Green from 11:20 and then again around 5:40 tonight, so come find me.",
+  "shared_health": false
+ }
+}

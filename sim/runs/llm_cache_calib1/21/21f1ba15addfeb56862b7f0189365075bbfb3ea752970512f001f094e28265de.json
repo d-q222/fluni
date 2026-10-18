@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "23:15",
+    "place": "home",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "Thu Jan 8: Stern was crowded so I ate fast and went home to study masked. Skyler's test was negative, but some people in the dorm are sick, so I'm skipping the hangout and staying wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded, so I'll eat quickly masked when not actively eating and head home. Skyler's negative result is a relief but others in the dorm are sick, so I'll skip the hangout, study in my room, and go to bed at a reasonable hour.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

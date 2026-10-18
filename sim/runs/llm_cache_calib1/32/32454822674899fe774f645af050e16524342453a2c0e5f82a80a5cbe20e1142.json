@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sure, side works. There's a couple of open spots over there by the wall, let's grab those.",
+  "shared_health": false
+ }
+}

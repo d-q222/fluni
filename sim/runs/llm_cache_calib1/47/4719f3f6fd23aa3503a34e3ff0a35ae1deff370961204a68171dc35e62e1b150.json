@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oli that Teagan tested positive and Dakota is sick; Oli is masked, feels fine, and said Val has the flu. I'm staying masked, sticking to my plan, and avoiding crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! Yeah, Winter mentioned people coming to Taper, so I figured I'd swing by and get some studying in first. You here to hang out too?",
+  "shared_health": false
+ }
+}

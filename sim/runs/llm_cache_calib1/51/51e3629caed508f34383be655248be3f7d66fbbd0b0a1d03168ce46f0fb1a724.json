@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Wynn at Lakeside; they mentioned people being wary of an illness going around via Salem. I feel fine. Wynn suggested hanging at Taper tonight, which already fits my plan.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_232841950",
+    "text": "Taper tonight at 8 sounds good, see you there after Flo Mo!",
+    "time": "20:00",
+    "to": "A0274"
+   }
+  ],
+  "replan": false,
+  "worry": 2
+ }
+}

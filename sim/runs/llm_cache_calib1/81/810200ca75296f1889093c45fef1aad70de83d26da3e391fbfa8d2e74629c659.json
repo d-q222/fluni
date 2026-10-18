@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "gym",
+    "end": "17:10",
+    "place": "bld:bld_6593510",
+    "start": "13:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "bld:bld_232805662",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "gym",
+    "end": "20:05",
+    "place": "bld:bld_6593510",
+    "start": "18:55"
+   },
+   {
+    "activity": "study",
+    "end": "21:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "20:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:25",
+    "place": "home",
+    "start": "21:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:25"
+   }
+  ],
+  "diary": "Sun Jan 11: True warned that Dakota and Chris in our dorm tested positive. I feel fine, sticking to gym, study and meals, masking in crowds and keeping distance.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up! I feel fine too, keeping distance and watching for symptoms. Will tell you if anything changes.",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "Feel fine, but sickness is spreading in the dorm. I'll keep my routine of gym, study and meals, but trim crowded stuff and keep distance. Might wear a mask in crowded dining and the gym since the warning is close to home. Skip the game to avoid crowds.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

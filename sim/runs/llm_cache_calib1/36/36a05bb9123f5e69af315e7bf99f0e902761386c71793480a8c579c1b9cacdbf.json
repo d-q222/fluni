@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Chris at Lakeside; they feel fine but are a bit wary of the illness going around. We plan to meet at Flo Mo at 6:30 and maybe go to Taper with Wynn after.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

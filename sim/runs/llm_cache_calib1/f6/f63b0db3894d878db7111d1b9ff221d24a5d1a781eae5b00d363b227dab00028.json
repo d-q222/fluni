@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody, thanks for the heads up. I feel fine, no symptoms and my app's been quiet. I'll keep my distance from anyone who seems sick too. Let me know if you hear how the test goes.",
+  "shared_health": true
+ }
+}

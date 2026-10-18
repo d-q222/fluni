@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Stevie, masked and feeling fine, that Dakota and Chris tested positive; they said they'd stay in their room. I feel fine, so I'm sticking to the plan: head home, mask, skip the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ugh, good to know, thanks for the heads up. I feel fine too, but I'll keep my mask handy and probably skip the packed spots. Hope Hadley and Sidney feel better. Catch you later!",
+  "shared_health": true
+ }
+}

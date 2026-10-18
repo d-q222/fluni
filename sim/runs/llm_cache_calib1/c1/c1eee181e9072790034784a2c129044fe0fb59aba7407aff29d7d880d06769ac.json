@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter said Skyler saw Sidney and Hadley at Vaden, Sidney with fever and cough. I told Winter I'm still going to the hangout but will mask up if packed and bail early; Winter will stay near the door and text if it gets gross.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

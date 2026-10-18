@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, same here, I've got classes later and then a lounge hangout tonight. I feel fine, just keeping an eye out. If you're around tonight, come by the lounge, though masks encouraged! Stay healthy!",
+  "shared_health": true
+ }
+}

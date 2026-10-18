@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine too, just being careful. Thanks for telling me, that's good to know. Hope you stay okay, text me if you need anything. I'm heading off to study soon.",
+  "shared_health": true
+ }
+}

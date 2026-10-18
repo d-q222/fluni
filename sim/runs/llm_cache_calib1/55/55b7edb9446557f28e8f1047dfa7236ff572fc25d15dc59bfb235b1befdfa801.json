@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I feel totally fine, no symptoms or anything. Honestly the mask is probably smart, I just never remember to wear one. Want to grab seats before the lecture starts?",
+  "shared_health": true
+ }
+}

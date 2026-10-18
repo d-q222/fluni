@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Neo, morning. Hope you're feeling okay. I'm trying to stay masked and careful with all the illness going around.",
+  "shared_health": false
+ }
+}

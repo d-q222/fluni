@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dakota at Taper; they heard Chris has a fever and Oli is coughing, and plan to bail from the hangout if it gets coughy. I said I'd pop in and leave early too.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

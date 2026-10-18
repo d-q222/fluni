@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Ocean (masked) in the lobby; hangout is packed. We agreed to text each other if it gets gross, and I'll mask up and bail early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

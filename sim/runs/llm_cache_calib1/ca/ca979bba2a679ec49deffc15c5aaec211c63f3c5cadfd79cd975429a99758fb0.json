@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m2",
+   "m3"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:55"
+   },
+   {
+    "activity": "gym",
+    "end": "10:30",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:35"
+   },
+   {
+    "activity": "hangout",
+    "end": "11:30",
+    "place": "bld:bld_m_white_plaza",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "relax",
+    "end": "14:50",
+    "place": "dorm_lounge",
+    "start": "12:25"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:COLLEGE102_SEM37",
+    "start": "15:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:15",
+    "place": "bld:bld_232805662",
+    "start": "16:20"
+   },
+   {
+    "activity": "relax",
+    "end": "18:20",
+    "place": "dorm_lounge",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "20:15",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:35",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:35"
+   }
+  ],
+  "diary": "First Monday of the quarter. Gym, seminar, then Flo Mo dinner with Chris and Taper hangout with Winter. Feeling fine.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Count me in for Flo Mo dinner and Taper after!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter, feeling fine and very social. I'll sleep in, keep the usual gym and seminar routine, then do dinner at Flo Mo with Chris, and head to the Taper hangout with Winter afterward. Not too worried, no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

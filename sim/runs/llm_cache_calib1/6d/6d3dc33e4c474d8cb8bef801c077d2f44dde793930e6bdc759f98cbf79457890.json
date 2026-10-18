@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "12:30",
+    "place": "home",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick and Dell's roommate is coughing. I'm staying home, masking, skipping the lounge and keeping Stern meals short. Feeling fine but anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Dell. Good call masking and staying out of the lounge. I'm staying in too. Hope Oli feels better!",
+    "time": "",
+    "to": "A0126"
+   }
+  ],
+  "thoughts": "Dell's roommate is coughing and Chris is sick, and Stern has fever rumors. I feel fine but I'm anxious. I'll stick to my routine: study at home, keep Stern meals short and masked, skip the lounge. I'll send a quick reply to Dell and keep an eye on symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

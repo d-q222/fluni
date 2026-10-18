@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine, just a little paranoid lately. Skyler's waiting on a flu test so everyone's on edge. Good luck with lab, get some sleep!",
+  "shared_health": true
+ }
+}

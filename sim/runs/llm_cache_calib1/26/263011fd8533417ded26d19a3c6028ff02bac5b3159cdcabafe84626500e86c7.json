@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika. I'm feeling fine, just eating quick too. Didn't you get a stay-home notice yesterday? Maybe let's keep some distance, no offense. How are you doing?",
+  "shared_health": true
+ }
+}

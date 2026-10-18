@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nope, I feel fine, no symptoms. Honestly that's kinda concerning about Scout though. Let's grab seats near the door again and keep masks on. Let me know if you start feeling off or your app pings you, okay?",
+  "shared_health": true
+ }
+}

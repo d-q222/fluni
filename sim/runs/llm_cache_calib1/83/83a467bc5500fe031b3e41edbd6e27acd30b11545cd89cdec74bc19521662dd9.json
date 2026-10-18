@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up! I was near Dakota too, so same boat. I feel fine, just masking and staying low-key. Heading to Green to study after dinner. Text me if you start feeling off?",
+  "shared_health": true
+ }
+}

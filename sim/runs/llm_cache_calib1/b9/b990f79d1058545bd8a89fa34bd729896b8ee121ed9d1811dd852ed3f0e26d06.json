@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Yeah, I'm planning on it, the game's on my list tonight. I'll probably swing by Green for a bit first, then meet you all at Maples. What time are you heading over?",
+  "shared_health": false
+ }
+}

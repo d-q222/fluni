@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'll be there tonight, probably masked up for a bit. See you then!",
+  "shared_health": false
+ }
+}

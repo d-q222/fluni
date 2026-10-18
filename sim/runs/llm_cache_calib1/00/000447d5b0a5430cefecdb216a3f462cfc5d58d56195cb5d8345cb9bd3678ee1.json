@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CS106B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:25",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "lab",
+    "end": "18:55",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "18:10"
+   },
+   {
+    "activity": "study",
+    "end": "21:55",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:55",
+    "place": "plan:bld_1169967277_f2_202",
+    "start": "22:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:10",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:10"
+   }
+  ],
+  "diary": "Friday: Stern Dining was crowded, so I left quickly. Feeling fine, sticking to class, lab and study while watching for symptoms with illness in the dorm.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded and illness is going around my dorm. I feel fine and I'm disciplined, so I'll head out and keep my routine. I'll skip lingering in the crowd, relax briefly at home, then class, lab, and study. Maybe wear a mask in crowded spaces, but indoors I rarely do. I'll keep watching for symptoms.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

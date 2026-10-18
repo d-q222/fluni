@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:DESIGN1_WKS01",
+    "start": "13:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:10",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "14:50"
+   },
+   {
+    "activity": "relax",
+    "end": "17:15",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:20"
+   },
+   {
+    "activity": "gym",
+    "end": "19:10",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "18:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:55",
+    "place": "dorm_lounge",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "21:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "00:00"
+   },
+   {
+    "activity": "relax",
+    "end": "02:40",
+    "place": "home",
+    "start": "01:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:40"
+   }
+  ],
+  "diary": "Normal Monday: class, gym, then hung out in the lounge and studied at Green. Feeling fine, just a little cautious about illness.",
+  "messages": [],
+  "thoughts": "Monday, feeling fine. I'll stick close to my usual routine but be a bit more social: lunch with friends and a hangout in the evening. Not too worried, just washing hands and being sensible.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

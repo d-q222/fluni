@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon! Back to the grind, huh? How's your first day been?",
+  "shared_health": false
+ }
+}

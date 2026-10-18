@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm feeling fine, just a little anxious about everything going around. Wait, is it bad in our dorm? Have you heard of people actually getting sick?",
+  "shared_health": true
+ }
+}

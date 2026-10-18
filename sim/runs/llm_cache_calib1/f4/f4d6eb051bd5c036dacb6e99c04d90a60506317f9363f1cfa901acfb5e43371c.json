@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, agreed. Let's both watch for symptoms and text the group if anything shows up. I'm heading back to study after I eat.",
+  "shared_health": false
+ }
+}

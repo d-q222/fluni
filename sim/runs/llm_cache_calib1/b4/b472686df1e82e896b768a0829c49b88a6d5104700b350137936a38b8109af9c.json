@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "07:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:25"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:05",
+    "place": "bld:bld_m_the_oval",
+    "start": "08:05"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_m_green_library_f3_312",
+    "start": "09:15"
+   },
+   {
+    "activity": "relax",
+    "end": "13:15",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "gym",
+    "end": "15:10",
+    "place": "bld:bld_232715573",
+    "start": "14:10"
+   },
+   {
+    "activity": "study",
+    "end": "17:15",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:20"
+   },
+   {
+    "activity": "relax",
+    "end": "23:20",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:20"
+   }
+  ],
+  "diary": "Sunday Jan 11: quiet routine of study, gym and early night. Feel fine, still watching the dorm fever rumor and masking in crowds.",
+  "messages": [],
+  "thoughts": "Sunday, I feel fine. Stick to my disciplined routine: sleep in, breakfast, light study, gym, meals, early night. I'll keep masking in crowded spaces and stay watchful about the dorm fever rumor. Swim practice isn't listed, so I'll do the usual gym session at the pool area.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

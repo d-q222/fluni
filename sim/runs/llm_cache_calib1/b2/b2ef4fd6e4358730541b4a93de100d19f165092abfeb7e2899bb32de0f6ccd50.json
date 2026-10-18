@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:50",
+    "place": "home",
+    "start": "08:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:55"
+   },
+   {
+    "activity": "study",
+    "end": "11:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "gym",
+    "end": "17:30",
+    "place": "bld:bld_6593510",
+    "start": "15:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:35",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "17:40"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "20:40",
+    "place": "home",
+    "start": "19:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "event:EV00124",
+    "start": "20:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Saturday: routine of study, gym and the dorm hangout, keeping it shorter. Feel fine, still watching for symptoms with several people sick in the dorm.",
+  "messages": [],
+  "thoughts": "Saturday, I feel fine. Dorm has sickness going around, so I'll be careful but still keep my usual routine: sleep in, some study, eat, practice and gym, and the dorm hangout in the evening. Maybe catch the football game with teammates. I'll keep the hangout moderate and head home on time.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

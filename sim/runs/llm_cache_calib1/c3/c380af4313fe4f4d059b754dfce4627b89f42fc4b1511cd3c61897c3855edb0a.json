@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx was also around Dakota on Friday, is masked and feels fine, and is heading back to stay in tonight. We agreed to text right away if either of us feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:10"
+   },
+   {
+    "activity": "rest",
+    "end": "10:00",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "rest",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "15:30"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Still sick and positive, staying in my room to rest and study lightly, skipping class and lab. Worried about Bailey but glad friends are supportive.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Ari and Bailey. I'm staying in and resting, still positive. Bailey, feel better, let me know if you need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Still sick and positive. Staying in my room is the responsible thing and matches my honest, anxious nature. Bailey is sick too, so I'll keep resting and doing light studying, skipping classes and lab. A short thank-you text is enough.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

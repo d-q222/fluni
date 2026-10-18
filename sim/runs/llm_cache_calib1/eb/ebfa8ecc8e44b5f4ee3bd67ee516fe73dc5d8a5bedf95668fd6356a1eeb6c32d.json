@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan! Grabbing dinner before lab? How's your Monday going?",
+  "shared_health": false
+ }
+}

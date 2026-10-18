@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, heading to the game with True and Ocean, we're sitting together. Yep, negative last time and feeling fine. Keep your mask on in the crowd, you should join us!",
+  "shared_health": true
+ }
+}

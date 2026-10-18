@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:40",
+    "place": "home",
+    "start": "09:20"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "09:45"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:MATH273A_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_333374283",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "lab",
+    "end": "16:10",
+    "place": "class:BIOE123_LBS03",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "16:20"
+   },
+   {
+    "activity": "relax",
+    "end": "18:45",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "21:45",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:50",
+    "place": "event:EV00073",
+    "start": "22:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Following the usual grind of class, long lab, then the dorm hangout late. Feeling fine, still a little wary about illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, just a bit wary. Stick to the usual routine: class, lab, study. The dorm hangout overlaps with lab slightly, so I'll catch it after lab. No mask indoors, but I'll stay aware of any symptoms.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

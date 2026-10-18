@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, will do. I'm skipping the dorm hangout tonight and heading to lab after dinner. Let me know if you hear Teagan's test result, and I'll do the same.",
+  "shared_health": false
+ }
+}

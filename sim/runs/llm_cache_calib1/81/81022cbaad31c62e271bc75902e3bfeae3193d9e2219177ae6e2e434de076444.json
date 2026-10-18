@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:25",
+    "place": "event:EV00000",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "bld:bld_232841950",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "22:25",
+    "place": "home",
+    "start": "21:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:25"
+   }
+  ],
+  "diary": "Stern Dining was packed so I ate fast and left. Went to the CHEM 31B study group, studied at Taper, then home. Still masking and a bit worried about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll eat quickly and keep my mask on when not actually chewing. I feel fine and I like routine, so I'll still go to the CHEM 31B study group, which is at Green Library from 19:00, then study at Taper and head home early. Staying a little cautious since I'm worried about illness.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

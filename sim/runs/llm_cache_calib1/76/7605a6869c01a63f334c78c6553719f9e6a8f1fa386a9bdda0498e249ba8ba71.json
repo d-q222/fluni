@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oli (masked, heading to lab). Confirmed we'll study at Green tonight; I'll arrive a bit after 5:40 because CHEM lab runs until about 6:15.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

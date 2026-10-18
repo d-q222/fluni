@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, I'm fine, just being careful since stuff's going around. Have you heard who's been sick? Stay safe!",
+  "shared_health": true
+ }
+}

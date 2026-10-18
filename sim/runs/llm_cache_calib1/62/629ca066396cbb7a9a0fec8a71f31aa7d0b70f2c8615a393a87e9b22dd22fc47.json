@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dylan! Heading to lab after this, you eating here too? Stern's been packed lately.",
+  "shared_health": false
+ }
+}

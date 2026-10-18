@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_333374283",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f4_405",
+    "start": "08:35"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "11:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:20"
+   },
+   {
+    "activity": "study",
+    "end": "14:50",
+    "place": "home",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:55"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "bld:bld_232805671",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_232715666",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:05",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "study",
+    "end": "22:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:40",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "22:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Fri Jan 9: Feeling fine after the negative test. Following my usual classes, gym, and Green study routine while staying mindful.",
+  "messages": [],
+  "thoughts": "Feeling fine, test negative. Stick with the usual routine: breakfast, Green study, CHEM lecture, gym, library. Stay mindful but no need to change much.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

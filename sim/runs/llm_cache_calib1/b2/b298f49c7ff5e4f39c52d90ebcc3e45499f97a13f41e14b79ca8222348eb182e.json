@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Teagan (masked, says they feel fine) told me Scout is a close contact of someone sick and they're watching for symptoms. I'll keep an eye on my own health and keep my plan of lab then home early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

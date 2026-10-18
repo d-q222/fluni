@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I've heard Teagan, Dakota and Chris are sick or tested positive, so it's kind of going around. Since you were a close contact, maybe keep the mask on and test if anything feels off. I'm heading out soon, take care!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "10:55"
+   },
+   {
+    "activity": "relax",
+    "end": "18:55",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Dakota and Chris are sick, Wynn is staying in too. I'm skipping the game and the dorm hangout, masking, keeping Stern meals short, and staying home. Feeling fine but anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update, Dakota. Hope the test goes okay. Rest up and let us know if you need anything.",
+    "time": "",
+    "to": "A0279"
+   }
+  ],
+  "thoughts": "Dakota and Chris are sick and Wynn is staying in, so I'm keeping to my cautious plan. I'll sleep in, eat short masked meals at Stern, study at home, and skip the dorm hangout and the game. I'll send a quick supportive reply to Dakota.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

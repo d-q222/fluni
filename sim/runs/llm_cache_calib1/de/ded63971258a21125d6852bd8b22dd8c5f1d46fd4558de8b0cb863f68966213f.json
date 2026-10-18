@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with roommate Finley (masked, feels fine) at 23:05; neither has heard from Wesley. Agreed to tell each other if anything changes; I'm avoiding the lounge and sticking to my study plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

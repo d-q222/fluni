@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Paxton my flu test was negative; they're fine too and still masking in crowded places. Nothing changes, I'm keeping my gym and Green study plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

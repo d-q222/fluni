@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:25",
+    "place": "home",
+    "start": "06:55"
+   },
+   {
+    "activity": "eat",
+    "end": "08:15",
+    "place": "bld:bld_232715666",
+    "start": "07:35"
+   },
+   {
+    "activity": "study",
+    "end": "09:25",
+    "place": "bld:bld_m_green_library",
+    "start": "08:25"
+   },
+   {
+    "activity": "class",
+    "end": "10:45",
+    "place": "class:MS&E250A_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:50"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:05"
+   },
+   {
+    "activity": "gym",
+    "end": "13:45",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "plan:bld_m_green_library_f1_107",
+    "start": "13:50"
+   },
+   {
+    "activity": "class",
+    "end": "16:10",
+    "place": "class:CS182_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "practice",
+    "end": "17:55",
+    "place": "plan:bld_232715573_f1_101",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Regular Monday of classes, lifting and swim practice. Feeling fine, just a little aware of illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick to my usual routine: classes, gym, practice. Not too worried, just washing hands and staying aware.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

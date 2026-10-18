@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "10:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "09:40"
+   },
+   {
+    "activity": "study",
+    "end": "12:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:15",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "lab",
+    "end": "18:10",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:30",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:55"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:35"
+   }
+  ],
+  "diary": "Still feel fine after being near Teagan Thursday. Keeping the masked routine of meals, lab and studying at home, avoiding the lounge and the game. Still quite worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Feel better. I feel fine so far and am masking. Let us know if you need anything.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan's positive test was already known and I feel fine. I'll keep my masked routine: sleep, meals, study, lab. I'll skip the lounge and the game, and watch for symptoms. A quick reply to Teagan is kind and fits my character.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "lab",
+    "end": "21:30",
+    "place": "plan:bld_307364465_f3_303",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:35",
+    "place": "home",
+    "start": "21:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:35"
+   }
+  ],
+  "diary": "Stern Dining was crowded so I ate fast, masked up, and went to lab as usual. Feeling fine but still a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 42 people, and I'm anxious about illness. I'll wrap up dinner quickly, mask up, and head to my usual lab session. Afterward I'll go home, relax, and sleep on schedule.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

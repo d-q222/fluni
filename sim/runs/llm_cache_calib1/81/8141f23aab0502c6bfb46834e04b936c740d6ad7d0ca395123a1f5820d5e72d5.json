@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday evening: Stern was crowded, so I ate fast with a mask on and went back to my room. Staying in tonight, avoiding the lounge. Feel fine but wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded with 44 people and people in my dorm are sick. I'll finish my meal quickly with a mask on, then head back to my room and stay there for the night, avoiding the lounge. Nothing else needed.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

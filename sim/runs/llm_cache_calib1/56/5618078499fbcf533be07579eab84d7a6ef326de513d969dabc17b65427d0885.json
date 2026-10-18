@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm fine, no symptoms and the app's been quiet. Just anxious. Keeping distance seems smart. Anyway, I've got to get to Green for studying, see you around.",
+  "shared_health": true
+ }
+}

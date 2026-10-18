@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chris wore a mask at the Arizona game, said they feel fine and are just wary, then seemed to brush it off. They're joining our group's seats; I'm not too concerned but will keep a bit of distance maybe.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

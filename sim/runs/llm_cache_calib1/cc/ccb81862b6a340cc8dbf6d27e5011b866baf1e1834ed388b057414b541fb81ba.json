@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Devon I have a fever and cough and kept my distance; Devon urged me to go to Vaden and stay in. I should rest and skip crowded stuff, maybe get checked.",
+  "messages": [],
+  "replan": true,
+  "worry": 4
+ }
+}

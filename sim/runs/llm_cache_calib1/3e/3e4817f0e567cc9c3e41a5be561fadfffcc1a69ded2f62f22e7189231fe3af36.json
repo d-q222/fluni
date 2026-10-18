@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:25",
+    "place": "class:MATH51_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:35",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:ENGR14_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:20"
+   },
+   {
+    "activity": "lab",
+    "end": "23:00",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "17:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:20",
+    "place": "home",
+    "start": "23:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:20"
+   }
+  ],
+  "diary": "Regular Monday of classes, study, and a long evening in lab. Feeling fine, only a little worried about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll follow my usual routine: classes, lunch, study, then lab. Not too worried, and I won't bother with a mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

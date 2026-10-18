@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh nice, yeah I'm already planning to swing by Taper tonight! Flo Mo after this too, so I'll probably see you there. Glad you feel good, I've been a little wary of whatever's going around.",
+  "shared_health": false
+ }
+}

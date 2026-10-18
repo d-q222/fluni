@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani. Yeah, still being careful. I'm a FlUni close contact from a few days ago, but I feel fine so far. Just heading home soon to sleep. You?",
+  "shared_health": true
+ }
+}

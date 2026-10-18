@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same here, edge of the room sounds smart. Let's head up, and I'll catch you later.",
+  "shared_health": false
+ }
+}

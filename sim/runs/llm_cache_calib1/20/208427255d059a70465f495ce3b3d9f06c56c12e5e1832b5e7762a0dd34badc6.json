@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "16:05"
+   },
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "rest",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sun Jan 11: FlUni told me to get tested but I already tested positive, so I'm staying in to rest and study lightly. Still worried about Bailey and keeping my distance from everyone.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope you're feeling better soon, Bailey. I'm still positive and staying in. Let me know if you need anything.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "I'm still sick and already tested positive, so the FlUni advice to get tested is redundant. I've been resting for days and my symptoms are only mild, so I'll stay in. Bailey is sick too, so I'll check in by text. I'll eat in my room and keep studying lightly, then go to bed early. I'll wear a mask if my roommate is around.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

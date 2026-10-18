@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, quick dinner before heading back to study. Good luck with the study group!",
+  "shared_health": false
+ }
+}

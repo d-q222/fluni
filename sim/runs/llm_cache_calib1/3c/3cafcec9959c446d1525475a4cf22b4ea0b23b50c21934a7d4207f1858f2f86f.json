@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "12:05"
+   },
+   {
+    "activity": "class",
+    "end": "14:35",
+    "place": "class:CS106EA_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:45",
+    "place": "bld:bld_m_meyer_green",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:55",
+    "place": "bld:bld_232841950",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "22:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Tuesday plan: class, some outdoor time, Lakeside then Flo Mo dinner, and Taper hangout with friends, skipping Wilbur due to overlap. Feeling healthy and happy.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll keep my social day going. Sleep in, class at 13:30, some outdoor time, then dinner with friends and Taper hangout. The dinners overlap so I'll pick Lakeside early and Flo Mo, then Taper, skipping Wilbur. No mask, not worried.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

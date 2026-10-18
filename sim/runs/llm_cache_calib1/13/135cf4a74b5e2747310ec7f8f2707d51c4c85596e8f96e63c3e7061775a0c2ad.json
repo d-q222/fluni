@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, you too. Hope we both get answers soon. I'll head home and isolate after this, so I'd say take care and rest up.",
+  "shared_health": false
+ }
+}

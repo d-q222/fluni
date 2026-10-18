@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout! Morning. You doing okay? I'm just finishing breakfast before heading to the library.",
+  "shared_health": false
+ }
+}

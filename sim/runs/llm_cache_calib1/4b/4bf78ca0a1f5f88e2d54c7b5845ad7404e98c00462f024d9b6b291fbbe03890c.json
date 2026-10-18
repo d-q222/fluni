@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Jody (dorm, masked, feels fine) at Green; they also noted lots of coughing in the dorm. Staying masked and keeping my study plan until Val's test result comes in.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:55",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Mon Jan 5: Lunch at Stern was crowded so I left quickly to study in my room. Plan to wear a mask at the crowded dinner and study group tonight. Feeling fine but a bit wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded, so I'll finish lunch quickly and head back to my room to study. I'm a homebody and a bit wary, so I'll keep a low profile. I'll still keep the dinner at Stern at 18:20 and the study group afterward. Mika offered a spare mask, so I'll wear one at the crowded dinner.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

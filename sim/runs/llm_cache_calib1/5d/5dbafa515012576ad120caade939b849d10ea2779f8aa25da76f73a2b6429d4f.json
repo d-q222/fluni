@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dakota at Lakeside; we both feel fine and are a bit wary of illness. Plan to meet at Flo Mo at 6:30 and maybe Taper with Wynn after.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

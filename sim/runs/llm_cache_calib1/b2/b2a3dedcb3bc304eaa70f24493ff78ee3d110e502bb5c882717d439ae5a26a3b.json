@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, fair, you're a better person than me. I'm feeling fine so I'm risking it. Text me if you change your mind, it's gonna be fun!",
+  "shared_health": true
+ }
+}

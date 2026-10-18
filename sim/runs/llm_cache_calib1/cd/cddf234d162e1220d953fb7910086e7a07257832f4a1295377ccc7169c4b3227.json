@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:40",
+    "place": "home",
+    "start": "08:30"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:ME30_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:HISTORY106E_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "17:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "relax",
+    "end": "19:50",
+    "place": "home",
+    "start": "17:45"
+   },
+   {
+    "activity": "lab",
+    "end": "22:40",
+    "place": "plan:bld_469393555_f1_105",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Monday back to classes and lab; stuck to my routine and wore a mask in crowded spots. Feeling fine but a little anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday, first day back. I'm organized so I'll mostly stick to my routine. Feeling fine, a bit anxious about illness going around, so I'll wear a mask in crowded indoor spaces. Sleep a little earlier than autopilot to be rested.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

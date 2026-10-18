@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Chris, a dorm neighbor, at the Taper cafe; just coffee small talk. Nothing to change in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

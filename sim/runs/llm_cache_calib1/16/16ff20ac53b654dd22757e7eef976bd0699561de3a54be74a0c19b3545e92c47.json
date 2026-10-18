@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I feel fine too, just being careful. Mask stays on for me too. Let's pop in, stay by the edge, and head out early. Sleep well!",
+  "shared_health": true
+ }
+}

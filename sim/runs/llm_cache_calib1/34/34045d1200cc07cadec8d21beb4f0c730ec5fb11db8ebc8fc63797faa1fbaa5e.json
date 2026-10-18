@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Oli at crowded Stern Dining; both of us masked, they're heading to Green to study. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Yep, Taper's still on, I'll be masked and heading home early after. Oli's still coughing so I'm staying out of the room as much as I can. I feel fine though, you?",
+  "shared_health": true
+ }
+}

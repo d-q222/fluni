@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Grabbing dinner before lab? I've been masking up indoors lately, seems like stuff's going around.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli. Heads up, Teagan tested positive and Dakota in our dorm is sick too. I feel fine and my last test was negative, but I'm staying masked. Good that you are too.",
+  "shared_health": true
+ }
+}

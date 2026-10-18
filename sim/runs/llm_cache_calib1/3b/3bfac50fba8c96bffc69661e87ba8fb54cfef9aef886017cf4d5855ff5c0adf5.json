@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sidney from my dorm told me at Vaden they have a fever and cough and are waiting on a flu test; I told them I'm waiting on a test too but feel fine. Hadley also looked really sick. I'll wait on my result and mask in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

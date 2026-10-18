@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Ocean at Stern Dining; they think practice is at 4:20, my plan says 3:35. I need to check the team chat to confirm the time. Nothing health-related shared; I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

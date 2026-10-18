@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "bld:bld_m_green_library",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "18:10",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wed Jan 7: Stern was crowded again so I ate quickly and left. Sticking to CS103, lab, and dinner; masked indoors, feeling fine, a little worried.",
+  "messages": [],
+  "thoughts": "Stern is crowded again, so I'll finish eating quickly and head to CS103 with my mask on. I'm feeling fine and organized, so the lab routine stays. I'll grab dinner at Stern a bit earlier or on schedule, then lab, then home to rest.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

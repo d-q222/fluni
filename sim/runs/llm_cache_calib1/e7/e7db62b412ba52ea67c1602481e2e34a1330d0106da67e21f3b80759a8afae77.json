@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, I'll do the same. I'm on the second floor too, so I'll see you there. Mask on, windows open if we can!",
+  "shared_health": false
+ }
+}

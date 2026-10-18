@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Ari at Coupa; they were wearing a mask and said they're fine, just anxious about everything going around. I said I'm fine too and suggested a dorm hangout sometime.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

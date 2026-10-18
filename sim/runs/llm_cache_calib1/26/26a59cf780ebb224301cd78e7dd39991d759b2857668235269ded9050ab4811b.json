@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Bryce I feel fine but am worried about the Dakota exposure; Bryce is masked and heading to Green Library around nine. We agreed to text if either feels off, and I'm staying in tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

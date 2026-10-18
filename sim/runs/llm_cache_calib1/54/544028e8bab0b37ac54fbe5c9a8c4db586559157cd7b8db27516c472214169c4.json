@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Emerson! Pretty good, just the usual Monday, classes and library. I'm heading to study after this. How about you? I see you've got a mask on too.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Val! Crowded in here again, huh. Just a heads up, I talked to someone a few minutes ago who got a FlUni flag, so I'm keeping my distance a bit. Hope you're doing okay.",
+  "shared_health": false
+ }
+}

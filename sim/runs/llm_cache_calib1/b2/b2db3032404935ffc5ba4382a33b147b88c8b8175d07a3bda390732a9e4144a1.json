@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, just grabbing lunch. Taper tonight for sure, I'm doing Wilbur dinner first then heading over around 8:30. You coming?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan! Yeah, packed. Heads up, FlUni flagged me this morning so I got tested at Vaden. I feel fine and my last test was negative, but I'm keeping my distance just in case.",
+  "shared_health": true
+ }
+}

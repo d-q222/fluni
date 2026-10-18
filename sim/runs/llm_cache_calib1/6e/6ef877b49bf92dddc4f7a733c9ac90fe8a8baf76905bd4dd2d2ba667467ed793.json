@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:40",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "12:05",
+    "place": "home",
+    "start": "11:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_1040629370",
+    "start": "12:05"
+   },
+   {
+    "activity": "relax",
+    "end": "16:30",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:30",
+    "place": "bld:bld_m_lake_lagunita",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "18:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Saturday: Chris tested positive and Dakota has symptoms after hanging out with me last night. I feel fine but I'm skipping the game and party, staying low-key and masked, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris and Dakota, thanks for being honest. I feel fine but I was around you both, so I'm skipping the game and party tonight and staying low-key, masking. Wynn, maybe rethink the party. Text me if you need anything!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris tested positive and Dakota, who I hung out with last night, now has a fever. I feel fine, but I was around Dakota and Chris, so I'm a lot more worried. I'll sleep in, skip the crowded football game and the party to avoid spreading anything if I'm incubating. I'll do low-risk stuff: grab food, a masked outdoor walk, and let friends know I'm staying careful. I'll keep an eye out for symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

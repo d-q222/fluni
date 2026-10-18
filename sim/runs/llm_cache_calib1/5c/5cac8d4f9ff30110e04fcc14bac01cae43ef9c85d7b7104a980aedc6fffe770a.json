@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Lake at Stern Dining; confirmed practice is 3:30 for both of us. Nobody mentioned being sick. Plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

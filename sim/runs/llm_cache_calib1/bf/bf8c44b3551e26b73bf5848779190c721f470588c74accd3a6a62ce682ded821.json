@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Paxton told me Teagan and Chris have fever and cough with tests pending; Paxton is masked and skipping the hangout. I feel fine, will keep masking, watch for symptoms, go to Vaden if any show up, and share test results with Paxton and Dylan.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

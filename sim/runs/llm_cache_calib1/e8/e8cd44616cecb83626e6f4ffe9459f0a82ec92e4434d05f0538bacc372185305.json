@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Devon at night; both fine, no word from Wesley. Devon heard Oli is coughing and Chris has a fever in the lounge, so we're avoiding the lounge and will tell each other if anything changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce is masked, feels fine, no symptoms; we both agreed to avoid the dorm lounge and text each other if symptoms or app alerts show up.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,16 @@
+t,agent_id,alert,p_sick,weighted_min
+531,A0100,self_report,0.02,0.0
+558,A0108,self_report,0.02,0.0
+773,A0125,self_report,0.0202,0.0
+830,A0144,nearby,0.0214,2.5
+835,A0144,close_contact,0.0251,15.0
+975,A0292,self_report,0.0212,0.0
+999,A0290,nearby,0.1181,2.5
+1004,A0290,close_contact,0.1495,15.0
+1292,A0290,close_contact,0.1884,185.0
+1307,A0170,self_report,0.0218,0.0
+1327,A0143,self_report,0.97,0.0
+1356,A0175,self_report,0.97,0.0
+1580,A0290,close_contact,0.1822,87.5
+1779,A0098,self_report,0.1636,0.0
+1868,A0290,close_contact,0.1698,212.5

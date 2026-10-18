@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "No worries, I'm just working through problem sets, so quiet's perfect.",
+  "shared_health": false
+ }
+}

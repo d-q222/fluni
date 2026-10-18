@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel great, just fueling up before class and practice. Smart to be careful though, see you around the dorm!",
+  "shared_health": true
+ }
+}

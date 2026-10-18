@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! I'm fine, just being careful with all the illness going around. I'm skipping Taper tonight, I'm having a quiet night in after dinner. Have fun though!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, quick breakfast before class. Hey, you're masking up, everything alright or just being careful? I've been meaning to grab a spare mask myself.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Mika (masked, says they feel fine) at Stern Dining; they said a few people in our dorm are sick. I feel fine and am still watching for symptoms and sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

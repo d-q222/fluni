@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "home",
+    "start": "08:20"
+   },
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:ANTHRO118_SEM01",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:PHYSICS43_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "lab",
+    "end": "12:10",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "14:00",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "13:10"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:05"
+   },
+   {
+    "activity": "class",
+    "end": "16:45",
+    "place": "class:POLISCI31_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "lab",
+    "end": "23:00",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:50",
+    "place": "home",
+    "start": "23:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Normal Tuesday: classes, lab in the evening, meals at Wilbur. Feeling fine, still mildly watchful about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual Tuesday routine. Classes, lab, and meals at Wilbur. I'll stay a bit careful but there's no reason to change anything. Almost never wear a mask indoors, so no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

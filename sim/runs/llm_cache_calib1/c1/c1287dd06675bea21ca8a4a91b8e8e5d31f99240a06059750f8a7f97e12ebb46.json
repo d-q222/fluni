@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Umi (masked) feels fine but is very worried and is staying in their room today. I told them I'm testing at Vaden at 2:15 and will let them know how it goes.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

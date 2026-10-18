@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Emerson at Wilbur Dining; we both feel fine and are masking. Emerson will text me if they hear Jesse's test result. Plan unchanged: keep masking and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

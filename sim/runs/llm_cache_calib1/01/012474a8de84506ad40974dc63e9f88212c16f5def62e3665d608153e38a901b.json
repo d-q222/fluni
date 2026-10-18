@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel totally fine, just a little worried. Staying in tonight sounds smart. Let's keep masking and check in tomorrow. See you later!",
+  "shared_health": true
+ }
+}

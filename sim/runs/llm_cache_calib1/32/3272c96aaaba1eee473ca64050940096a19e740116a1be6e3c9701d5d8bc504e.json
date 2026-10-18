@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks! Have a good one, see you around the dorm. Maybe we can hit dinner after practice.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, quick Taper then a short lounge stop. Fair warning, there's fever stuff going around Stern, so I'll bail if people are coughing. Onyx has spare masks if you want one.",
+  "shared_health": false
+ }
+}

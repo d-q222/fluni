@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Oh wow, same here, I was a close contact of Dakota too. I feel fine, just keeping it low-key and masking outside. Let's text each other if either of us feels off?",
+  "shared_health": true
+ }
+}

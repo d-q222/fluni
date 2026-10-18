@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:55"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CLASSICS112_LEC01",
+    "start": "12:00"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:25"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Thu Jan 8: Classes, dinner at Stern at 18:30, then home and skipping the hangout. Waiting on Skyler's flu result, masking and staying careful.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks, please do text me Skyler's result. Stay careful!",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Quiet Thursday. Skyler's flu test is pending and Sidney is sick, so I'll stay careful, mask in class and crowded places, and keep to my routine. I'll keep the Stern dinner at 18:30 since I agreed, then go home instead of the hangout.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

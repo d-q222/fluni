@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, thanks for telling me. FlUni told me the same thing yesterday, so I'm staying in till the 11th and just grabbing quick masked meals. I feel fine too, just anxious. Let's keep our distance and I'll head back to my room soon.",
+  "shared_health": true
+ }
+}

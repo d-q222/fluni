@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks! Yeah, I'm fine, just masking out of caution since stuff's going around. Alright, I'm heading out, see you later!",
+  "shared_health": true
+ }
+}

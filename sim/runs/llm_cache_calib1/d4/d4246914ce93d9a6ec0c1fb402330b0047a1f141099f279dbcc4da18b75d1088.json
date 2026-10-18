@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nah, just that Skyler got a FlUni alert and is waiting on results. Hopefully it's nothing! You coming to the dorm hangout at 8?",
+  "shared_health": false
+ }
+}

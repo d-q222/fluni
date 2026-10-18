@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Feeling totally fine, no symptoms at all. Just relaxing before class. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley! Pretty quiet, mostly lab and studying. I feel fine but I'm keeping my distance with everyone sick in the dorm. You doing okay?",
+  "shared_health": true
+ }
+}

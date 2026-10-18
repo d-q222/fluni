@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with True, a Lucie Stern neighbor, at Flomo lunch. Told them I'm fine and just masking out of anxiety. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

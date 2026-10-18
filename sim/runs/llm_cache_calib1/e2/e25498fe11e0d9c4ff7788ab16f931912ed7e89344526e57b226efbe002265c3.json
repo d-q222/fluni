@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dakota, who lives in my dorm, has fever, chills and cough and is also waiting on a flu test; they think it's the same bug going around Stern. I stayed a seat away and told them to rest and warn the dorm. I'll keep masking and stay home after my test.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: at Vaden getting tested after Teagan's positive. Dakota from our dorm is here too with fever, chills, cough, waiting on a flu test. Stay masked and keep your distance in the dorm. I'll share my result when I get it.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 4
+ }
+}

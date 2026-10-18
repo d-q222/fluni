@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Dakota at Lakeside; both feel fine, a bit wary of the illness going around. Dakota invited me to Taper after Flo Mo with Chris and Wynn; I said I'd text them after the study group ends around 9.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

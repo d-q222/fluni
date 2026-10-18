@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Bryce feels fine and is masked; they're staying careful because Scout might be a close contact of someone sick. We agreed to sit near the door with masks on and tell each other if symptoms or app alerts show up.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

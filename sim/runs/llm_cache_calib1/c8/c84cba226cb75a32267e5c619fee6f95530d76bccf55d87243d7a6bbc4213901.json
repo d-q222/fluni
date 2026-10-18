@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Neo at Stern Dining that Emerson's friend Jesse has a fever and is getting tested; Neo feels fine. I promised to text Neo the result once Emerson tells me. Heading to lab, masking in the room until then.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "12:40",
+    "place": "bld:bld_26250731",
+    "start": "11:50"
+   },
+   {
+    "activity": "rest",
+    "end": "22:30",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Woke up sick with fever, chills, cough and aches, likely the Stern bug. Skipping football and the party, going to Vaden and resting. Told friends I'm sick, wearing a mask when out.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Hey all, I woke up with a fever, chills, cough and sore throat. Probably what Chris and Oli have. Skipping the game and the party, going to get checked at Vaden. Watch out if you hung out with me last night.",
+    "time": "",
+    "to": "group"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Good call masking last night. I'm sick now, so stay careful and keep your distance from me for a bit.",
+    "time": "",
+    "to": "A0126"
+   }
+  ],
+  "thoughts": "I woke up with fever, chills, cough, sore throat and body aches. After Chris and Oli being sick and me being around people last night, this is probably the same thing. I'm social and usually push through, but I feel awful and I'm worried. I'll sleep in, grab a late brunch, skip gym and the football game, maybe visit Vaden since it's getting real, then rest. I'll be honest and tell friends so they know, especially Dell, Onyx and Carter. Skip the party tonight.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

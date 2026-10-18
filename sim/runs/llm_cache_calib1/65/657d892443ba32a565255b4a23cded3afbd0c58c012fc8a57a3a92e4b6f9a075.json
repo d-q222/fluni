@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, doing okay, still feel fine. Maybe think about skipping the game too, since it's a big crowd and you were around Dakota? Let me know if you start feeling off, and I'll do the same.",
+  "shared_health": true
+ }
+}

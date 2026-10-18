@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Dining was crowded so I ate quickly with a mask, then studied at Green. Feel fine, still watching for symptoms after the Wesley close contact warning.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 49 people and I'm a close contact via Wesley. I'll put on a mask, finish eating quickly, then study at Green Library in the reading room as usual, since it's quieter. Then home early, no gym. I'll keep watching for symptoms and think about testing.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

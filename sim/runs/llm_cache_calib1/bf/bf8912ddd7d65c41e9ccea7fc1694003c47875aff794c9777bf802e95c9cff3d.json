@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:15",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:05"
+   },
+   {
+    "activity": "study",
+    "end": "22:15",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "22:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "bld:bld_232841950",
+    "start": "23:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "00:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Left crowded Stern for my usual study spots, masked and kept distance, skipped the game. Feel fine but still anxious about the Wesley contact.",
+  "messages": [],
+  "thoughts": "Stern is crowded with 41 people and I'm a close contact, still anxious. I'll leave and get to a quieter study spot, sticking with my routine but skipping the crowded dining later. I'll mask in crowds, keep distance, and eat a bit earlier or later. Feeling fine, so no need to isolate. Skip the football game.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

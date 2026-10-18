@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ugh, good call skipping the lounge. I'm gonna keep my distance from that too. Stay healthy, Campbell, see you around!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,53 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m19"
+  ],
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_1040629370",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:55",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Monday night: Lakeside dinner, then Flo Mo with Dakota, then Taper hangout. Skipped Wilbur because of overlap. Feeling healthy and happy.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Lakeside now, then Flo Mo, then Taper at 8:25. Skipping Wilbur, sorry Winter and Eden!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine and social. Lots of overlapping dinners: Lakeside at 17:30 with friends, Flo Mo at 18:30 with Dakota, Wilbur at 19:00 conflicts. I'll do Lakeside, then Flo Mo, skip Wilbur, then Taper at 20:25 and Dakota's invite at 20:00 is close enough. Then relax at home and sleep.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "lab",
+    "end": "17:30",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "15:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:05"
+   },
+   {
+    "activity": "relax",
+    "end": "00:40",
+    "place": "home",
+    "start": "23:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:40"
+   }
+  ],
+  "diary": "Harper is staying home after a FlUni alert. I feel fine and kept my lab and study routine, with dinner at Stern. Still only a little worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Harper, hope you stay well. I feel fine so I'm keeping my usual lab schedule.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Harper is staying home to be safe, but I feel fine and I'm calm about it. I have problem sets and lab work, so I'll keep my usual routine. I'll add a dinner break since the routine skips eating. No mask, since I rarely wear one.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

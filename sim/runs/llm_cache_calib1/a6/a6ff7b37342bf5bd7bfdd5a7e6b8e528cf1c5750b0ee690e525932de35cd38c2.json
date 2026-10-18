@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sounds good, let's eat and see how Taper feels. I feel fine too, so I'm in unless it gets coughy.",
+  "shared_health": true
+ }
+}

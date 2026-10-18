@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Chris is sick, so they're out, and Eden's skipping too. I feel fine, just being careful. Let's grab food and decide on the lounge after Taper.",
+  "shared_health": true
+ }
+}

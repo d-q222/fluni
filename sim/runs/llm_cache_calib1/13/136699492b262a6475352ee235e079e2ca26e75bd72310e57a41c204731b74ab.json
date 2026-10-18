@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! What's up, you headed to Taper tonight? A bunch of us are going around 8:30.",
+  "shared_health": false
+ }
+}

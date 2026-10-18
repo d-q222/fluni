@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:EE102A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:00",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:00",
+    "place": "bld:bld_m_meyer_green",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "lab",
+    "end": "21:00",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "22:15",
+    "place": "home",
+    "start": "21:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:15"
+   }
+  ],
+  "diary": "Fri Jan 9: Teagan and Chris from my dorm have fever and cough, flu tests pending. I feel fine, will keep masking, skip the hangout and sleep early.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Hope it's not flu and you feel better soon. I'll keep my distance and mask up. Let us know if you need anything.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan and Chris from my dorm have flu symptoms, and Stern Dining has been crowded with fever rumors. I feel fine, so I'll keep my routine but be careful. I'll grab food to go-ish at a quieter time, wear my mask, and skip the dorm hangout. Class and lab still matter since I'm disciplined. I'll send Teagan a quick supportive reply and head to bed early.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

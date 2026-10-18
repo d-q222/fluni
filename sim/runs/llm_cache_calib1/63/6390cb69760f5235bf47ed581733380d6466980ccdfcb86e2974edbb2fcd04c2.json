@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:SPANLANG12R_LNG02",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:COLLEGE102_SEM44",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "22:35",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:55",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:55"
+   }
+  ],
+  "diary": "Bailey still has flu symptoms despite a negative test. I'm fine, staying masked, sticking to class, lab, and my room, and offered Bailey help from a distance. Still very anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update, Bailey. Rest up and drink lots of fluids. I'm staying away so I don't catch it, but text me if you need anything dropped off outside your door!",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "Bailey still has flu-like symptoms even with a negative test, which makes me anxious. I feel fine and tested negative, so I'll keep to my routine: masked at class, study alone in my room, lab, and eat at Stern. I'll text Bailey something kind and offer to leave food outside the door rather than visit.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,93 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:PSYCH1_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "13:40",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "14:10",
+    "place": "bld:bld_232715666",
+    "start": "14:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "plan:bld_m_green_library_f3_305",
+    "start": "14:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:35",
+    "place": "plan:bld_738808361_f3_305",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:40"
+   },
+   {
+    "activity": "gym",
+    "end": "21:40",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Val has flu-like symptoms and is getting tested. I feel fine, keeping my usual schedule, masking indoors and keeping distance from Sawyer while we wait for the result.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Sawyer, will mask up and keep some distance at the table. Hope you stay well too.",
+    "time": "",
+    "to": "A0050"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Val, sorry you're feeling sick. Rest up and let us know your test result.",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Val has flu-like symptoms, and I feel fine. I'll keep my routine since I'm disciplined, but mask up everywhere indoors and keep distance from Sawyer at the library table. I'll thank Sawyer and ask Val to tell us the test result.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

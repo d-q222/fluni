@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sure, let's sit together! I'm in ENGR248 though, so maybe we're in neighboring rooms? Either way, I'll grab a seat near the door and we can chat before class starts.",
+  "shared_health": false
+ }
+}

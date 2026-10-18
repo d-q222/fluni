@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate breakfast with Stevie at Stern; they're masked, feel fine, a bit nervous, and skipping the lounge stuff too. Nothing changed; I'm still masking and skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

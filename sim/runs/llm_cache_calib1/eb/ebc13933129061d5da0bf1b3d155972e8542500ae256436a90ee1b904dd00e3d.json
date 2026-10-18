@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dylan! Good to see another mask person. How's your week going so far?",
+  "shared_health": false
+ }
+}

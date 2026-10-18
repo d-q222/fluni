@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton! Yeah, it's packed. I'm good, just eating before heading to Green. Fair warning, FlUni flagged me and I'm waiting on a flu test, but I feel fine and my last one was negative.",
+  "shared_health": true
+ }
+}

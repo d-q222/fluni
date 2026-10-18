@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Just grabbing coffee before a study block. Yeah, I'm definitely going to the game, Onyx is saving seats around 7. Then Taper and the lounge after. You in?",
+  "shared_health": false
+ }
+}

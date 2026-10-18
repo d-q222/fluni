@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Skyler wore a mask, said their test was negative, and is skipping the party. They said Hadley and Sidney, both from our dorm, looked sick at Vaden, and Sidney had a fever and cough. I'm still going with the plan but I'll stay a bit wary.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "lab",
+    "end": "15:50",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Teagan tested symptomatic Friday and I may be exposed from Wednesday. I feel fine but am masking, skipping the dorm hangout, and staying close to my routine. Moderately worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling me, Teagan. Hope the Vaden test goes okay. I feel fine now but will watch symptoms and mask up. Feel better!",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan is symptomatic and we talked Wednesday, so I may have been exposed. I feel fine, but I'll be careful: mask in shared spaces, skip the crowded dorm hangout, and keep an eye on symptoms. I'll keep my lab and routine but avoid the library reading room and study at home instead. Eat early at Stern, then sleep early.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan. Studying here too? I'm just trying to get through some reading.",
+  "shared_health": false
+ }
+}

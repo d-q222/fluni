@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Nah, I'm gonna skip it, big crowds make me nervous right now. I'm just keeping it low-key tonight. Have fun though!",
+  "shared_health": false
+ }
+}

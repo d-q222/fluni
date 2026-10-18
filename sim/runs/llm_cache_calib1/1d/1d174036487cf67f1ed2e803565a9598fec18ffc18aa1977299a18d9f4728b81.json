@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Umi (masked, dorm neighbor) I'm waiting on my flu test but feel fine; they appreciated it and asked me to share the result. I'll keep some distance and tell them when it comes back.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

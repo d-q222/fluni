@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:25",
+    "place": "home",
+    "start": "09:35"
+   },
+   {
+    "activity": "class",
+    "end": "11:45",
+    "place": "class:CS129_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:MS&E111DS_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:45",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:45",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "15:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Thursday: classes, lab, early dinner, skipping the party since illness is going around; home to sleep early. Feeling fine, still a bit wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, but illness is going around: Teagan's contact, masked friends, Val anxious. I'll keep my disciplined routine of classes, lab and study. I'm an introvert and a late party in a crowd feels like a bad idea with illness around, so I'll skip it and go home early to sleep. I'll keep watching for symptoms and check FlUni.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

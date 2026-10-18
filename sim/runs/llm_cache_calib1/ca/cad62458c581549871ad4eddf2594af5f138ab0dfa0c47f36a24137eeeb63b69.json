@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah, just being careful, I feel fine. Umi had a spare from Mika so I figured why not. You good?",
+  "shared_health": true
+ }
+}

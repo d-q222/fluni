@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same here, just relaxing a bit before I hit the books tonight. I feel fine, but I'm a little anxious about everything going around. Good luck with the lab!",
+  "shared_health": true
+ }
+}

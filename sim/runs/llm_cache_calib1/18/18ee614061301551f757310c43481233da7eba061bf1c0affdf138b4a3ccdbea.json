@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "12:40"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "13:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:20",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "15:40"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thu Jan 8: Bailey is sick with flu symptoms even though the test was negative. I feel fine but worried; keeping class and lab, skipping the hangout, studying in my room and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the update, Bailey. Rest up and text if you need food or anything dropped at your door. I'll keep my distance.",
+    "time": "",
+    "to": "A0292"
+   }
+  ],
+  "thoughts": "Bailey has flu symptoms now, after Sidney. I feel fine and haven't been in close contact with Bailey recently, just a chat at a distance. I'll keep my lab and study plans since they matter, skip the hangout, and keep distance. I'll check how I feel and head home early for studying. Worry is high but I'm not symptomatic, so no Vaden visit.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! Yeah, it's packed, but I'm good. Heading to the Arizona game at Maples tonight at 7, you going?",
+  "shared_health": false
+ }
+}

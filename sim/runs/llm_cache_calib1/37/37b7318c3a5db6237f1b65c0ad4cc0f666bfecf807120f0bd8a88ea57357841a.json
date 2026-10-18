@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Armani. Yeah, I'm fine, just masking since Teagan and Dakota are sick in our dorm. I'm skipping the lounge for now. Text me if you get symptoms or an app alert, okay?",
+  "shared_health": true
+ }
+}

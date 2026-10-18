@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "08:40"
+   },
+   {
+    "activity": "relax",
+    "end": "10:25",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:DESIGN162A_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "lab",
+    "end": "13:20",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CS22A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "14:20"
+   },
+   {
+    "activity": "lab",
+    "end": "17:05",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "14:55"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Sidney texted that they have a fever and cough. I feel fine but am more worried now; kept classes and lab but skipping the dorm hangout tonight to limit contacts and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up. Hope Vaden sorts you out, get some rest. I'll keep my distance.",
+    "time": "",
+    "to": "A0168"
+   }
+  ],
+  "thoughts": "Sidney is sick and I'm in the same friend group, so I might have been near them recently. I feel fine, though. I'll follow health advice: keep my routine mostly, skip the crowded dorm hangout, and keep distance. I'll reply to Sidney briefly and wear no mask since indoor masks aren't my habit, but I'll watch for symptoms.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

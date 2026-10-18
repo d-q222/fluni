@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Kind of the sickness stuff. I feel fine, but Oli's been coughing and Chris has a fever, so I'm masking and keeping it short. Might be smart to stay out of the Stern lounge for a bit. Good luck studying!",
+  "shared_health": true
+ }
+}

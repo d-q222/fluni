@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "08:10"
+   },
+   {
+    "activity": "gym",
+    "end": "10:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:PWR1HT_SEM01",
+    "start": "11:00"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "16:10",
+    "place": "bld:bld_m_white_plaza",
+    "start": "14:00"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:ECON155_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:00",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thu Jan 8: Eden warned about fevers in Lucie Stern. I feel fine and kept my plans: gym, classes, Lakeside, Taper, then the lounge. A bit more wary now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Eden! Hope you stay well, I'll be careful.",
+    "time": "",
+    "to": "A0267"
+   }
+  ],
+  "thoughts": "Eden's warning about fevers in my dorm gives me a little pause, but I feel fine and I'm very social. I'll keep my plans, maybe skip the Lucie Stern lounge later if it feels sketchy, but probably still go. I'll text a quick reply to Eden. No mask, as usual.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "rest",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "17:00",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Saturday: still feverish and achy, negative test but app flags me as maybe sick. Sidney is positive. Staying in my room resting, skipping the game, and considering a retest at Vaden if no better.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Sidney, feel better soon. I'm still feverish and achy even with a negative test, so I'm staying in my room today. Will keep you posted and may get retested.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Still feverish and achy, negative test but app says might be sick, and Sidney is positive. I'll stay in my room, rest, drink fluids, and skip the game. Since symptoms persist, a retest at Vaden could be worth it, but it's Saturday and I feel awful, so I'll stay in and reconsider tomorrow. I'll text Sidney back and update the group honestly.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

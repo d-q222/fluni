@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Morning. You grabbing breakfast too? I'm about to head lift with Max at 8:50 if you want to come.",
+  "shared_health": false
+ }
+}

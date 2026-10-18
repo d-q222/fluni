@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:25",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:PSYCH35_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:45",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "15:45",
+    "place": "bld:bld_232841950",
+    "start": "13:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:35",
+    "place": "bld:bld_m_the_oval",
+    "start": "15:50"
+   },
+   {
+    "activity": "relax",
+    "end": "18:15",
+    "place": "home",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "20:15",
+    "place": "home",
+    "start": "18:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "bld:bld_232841950",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick and Dell and Eden are skipping the lounge. I feel fine, keeping class and Taper but skipping the lounge since Sidney and Hadley are sick in our dorm. A bit more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Ugh, feel better Chris. Stay in bed, drink fluids.",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "thoughts": "Chris is sick, Dell and Eden are bailing, and Sidney and Hadley in my dorm looked sick. I feel fine and I'm not going to hide in my room, but I'll skip the Stern lounge hangout tonight and keep things lighter. I'll go to class, grab food, and hang out at Taper with whoever shows up. I'll be social, but not pile into a crowded lounge. I'll text Chris to feel better.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

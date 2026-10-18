@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same, I feel fine too, just being careful. Let's go, I don't want to be late.",
+  "shared_health": true
+ }
+}

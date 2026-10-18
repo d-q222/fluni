@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:30",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "relax",
+    "end": "18:45",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "19:50",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "eat",
+    "end": "20:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "21:50",
+    "place": "home",
+    "start": "20:30"
+   },
+   {
+    "activity": "study",
+    "end": "23:45",
+    "place": "home",
+    "start": "21:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:40",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:40"
+   }
+  ],
+  "diary": "Saturday: Stern was crowded at lunch, so I ate fast masked and went back to my room. Staying in until Sunday per FlUni, studying, still fine but anxious.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 41 people and I'm supposed to stay in until Sunday per FlUni. I'll finish eating quickly with my mask on and head back to my room. I'll study there, keep my usual evening routine, and just grab a quick masked dinner. Still feeling fine but anxious.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

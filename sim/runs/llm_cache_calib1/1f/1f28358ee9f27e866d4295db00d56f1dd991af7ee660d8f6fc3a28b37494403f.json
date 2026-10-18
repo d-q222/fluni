@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "gym",
+    "end": "20:05",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:20",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:20"
+   }
+  ],
+  "diary": "Thu evening: Skyler tested negative, which is a relief. Ate at crowded Stern, then gym and an easy night at home. Still staying a bit careful with the dorm fevers.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "",
+    "time": "",
+    "to": "A0191"
+   }
+  ],
+  "thoughts": "Stern Dining is crowded, but I feel fine. Skyler tested negative, so that's good news. I'll eat quickly, go to the gym as usual, then head home. I'll text Lake and the group that Skyler's negative, since I promised to update Lake.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

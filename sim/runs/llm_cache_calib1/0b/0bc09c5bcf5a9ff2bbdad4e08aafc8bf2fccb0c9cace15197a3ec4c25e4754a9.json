@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Still masking, huh? Smart. I'm waiting on a flu test result from Vaden, feel fine though, so I'll keep my distance a bit while we eat.",
+  "shared_health": true
+ }
+}

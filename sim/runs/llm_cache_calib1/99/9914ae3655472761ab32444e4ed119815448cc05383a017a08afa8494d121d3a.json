@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, my bad, Dell said Oli was still coughing yesterday, I must've mixed that up. Good that you feel fine though. Let's both keep masks on in the room and tell each other if anything feels off, deal?",
+  "shared_health": false
+ }
+}

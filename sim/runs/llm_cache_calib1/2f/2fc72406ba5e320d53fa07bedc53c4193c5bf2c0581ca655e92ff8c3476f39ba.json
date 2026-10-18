@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! You eating here too? I'm heading to Taper later, then maybe a short masked lounge stop. You feel okay? Stern's been full of coughing lately.",
+  "shared_health": false
+ }
+}

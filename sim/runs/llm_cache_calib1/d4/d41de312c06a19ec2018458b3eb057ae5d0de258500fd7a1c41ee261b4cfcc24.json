@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden told me about fevers in Stern and is masking and skipping the lounge tonight. I said I feel fine and kept my plans; a bit more wary but not changing anything.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Finley. Morning. I'm a FlUni close contact from Wesley, so I'm keeping some distance, but I feel fine so far.",
+  "shared_health": true
+ }
+}

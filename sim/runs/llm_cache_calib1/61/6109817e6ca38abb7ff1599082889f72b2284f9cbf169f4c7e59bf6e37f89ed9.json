@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Deal, I'll let you know if anything feels off. I've got lab and class all afternoon, so I'm just trying to stay on top of stuff. See you around!",
+  "shared_health": false
+ }
+}

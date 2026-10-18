@@ -1,0 +1,18 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:05"
+   }
+  ],
+  "diary": "Test came back negative around 2am. Feel fine, so I went to sleep. Will keep masking indoors and stay watchful for symptoms.",
+  "messages": [],
+  "thoughts": "It's past 2am and my test came back negative. I feel fine, so there's no reason to change anything. I'll go to sleep and keep masking tomorrow.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

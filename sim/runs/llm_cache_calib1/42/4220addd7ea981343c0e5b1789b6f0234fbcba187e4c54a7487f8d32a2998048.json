@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, packed. Heads up, I got a close contact warning from Wesley yesterday. I feel fine, but I'm masking and keeping some distance just in case.",
+  "shared_health": true
+ }
+}

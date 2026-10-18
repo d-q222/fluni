@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:25",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:PHYSICS266_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "15:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:50"
+   },
+   {
+    "activity": "relax",
+    "end": "16:35",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "15:30"
+   },
+   {
+    "activity": "lab",
+    "end": "19:05",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_738808362_f3_306",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Tuesday: stuck to my usual routine of class, study and lab, masked indoors. Feeling fine, still a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual organized Tuesday routine. Keep my mask on indoors since I'm anxious about illness going around. Classes, study, then evening lab, and home to wind down.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

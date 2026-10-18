@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Sitting with Dakota, Wynn, Dell and Onyx, Carter's saving me an aisle spot. Come join! Wait, why the mask, you feeling okay?",
+  "shared_health": false
+ }
+}

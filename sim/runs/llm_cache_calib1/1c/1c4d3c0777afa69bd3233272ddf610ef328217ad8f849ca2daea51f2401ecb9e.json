@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yes, I'd love to! I only have a few minutes before the gym, but let me grab a seat with you. How was your break?",
+  "shared_health": false
+ }
+}

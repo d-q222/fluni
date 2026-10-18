@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nice, sounds like a packed day! Mine's been the same, gym then seminar, and I've got Flo Mo dinner later too. Let's grab food and sit, what classes are you in this quarter?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Skyler (masked, friend from my dorm) said they're waiting on a flu test result but feel fine; we kept distance and they'll text me when they hear back. I'll stay a bit careful before practice.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

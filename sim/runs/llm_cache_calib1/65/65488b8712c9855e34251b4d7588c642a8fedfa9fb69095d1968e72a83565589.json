@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I've heard Chris has a fever and Oli's been coughing, and Mika got a FlUni stay-home thing. I feel fine, just kinda paranoid. I'm heading back to my room soon anyway, so I'm skipping the coughy lounge tonight.",
+  "shared_health": true
+ }
+}

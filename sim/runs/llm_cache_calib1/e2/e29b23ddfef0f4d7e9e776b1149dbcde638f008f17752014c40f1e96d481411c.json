@@ -1,0 +1,103 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m2",
+   "m3",
+   "m6"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:00",
+    "place": "home",
+    "start": "09:35"
+   },
+   {
+    "activity": "gym",
+    "end": "11:15",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "10:15"
+   },
+   {
+    "activity": "study",
+    "end": "12:15",
+    "place": "bld:bld_232841950",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "20:20",
+    "place": "home",
+    "start": "19:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "First Monday of the quarter: classes, gym, then two dinners (Lakeside and Flo Mo) and the Taper hangout with friends. Feeling healthy and excited.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "I'm in for all of it! Lakeside, Flo Mo, then Taper tonight. See you all there!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter and I feel great. Three dinner invites: Lakeside at 17:30, Flo Mo at 18:30, and a Taper hangout at 20:25. I can do Lakeside early and Flo Mo later, and I'll still catch the Taper hangout. Two dinners is a lot but I'm social and it's catch-up night. I'll keep gym and classes, and skip the weird 4am wakefulness by sleeping in.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

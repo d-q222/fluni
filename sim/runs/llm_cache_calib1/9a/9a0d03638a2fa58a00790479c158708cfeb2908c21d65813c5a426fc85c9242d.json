@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Val. Seeing a lot of masks lately, I guess people are being careful. How's your week going?",
+  "shared_health": false
+ }
+}

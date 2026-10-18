@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter asked about my mask; I said I'm fine, just being careful. I turned down Taper tonight and Winter is going anyway, feeling fine. Still planning a quiet night in after dinner.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

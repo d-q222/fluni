@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer, morning! Heading to lab before class. Still on for the library table tonight?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Finley. Yeah, I feel fine, just anxious. Still masking in crowds and keeping my distance. Text me if anything feels off, okay?",
+  "shared_health": true
+ }
+}

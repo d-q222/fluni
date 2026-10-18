@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do. Same goes for you, just tell me if you start feeling off. I feel fine right now, just finishing up a problem set. Night, Finley.",
+  "shared_health": true
+ }
+}

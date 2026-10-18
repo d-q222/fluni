@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Perfect, let's eat. I'm starving too, then we bike over to Taper together.",
+  "shared_health": false
+ }
+}

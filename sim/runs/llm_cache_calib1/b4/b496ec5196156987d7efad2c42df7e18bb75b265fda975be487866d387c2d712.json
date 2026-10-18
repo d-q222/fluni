@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Neo at Stern I feel fine and am masking in crowded places because Bryce mentioned a possible close contact. Nothing changes; keep masking and following my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

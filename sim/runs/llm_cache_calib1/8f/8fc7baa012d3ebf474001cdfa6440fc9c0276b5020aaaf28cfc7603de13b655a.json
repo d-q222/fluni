@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Will do, I'll get tested if anything feels off. Okay, let's get set up, I think the others will be here soon.",
+  "shared_health": false
+ }
+}

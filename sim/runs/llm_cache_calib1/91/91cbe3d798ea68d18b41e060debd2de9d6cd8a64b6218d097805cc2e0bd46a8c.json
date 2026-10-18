@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same here, mask stays on. Fevers in Stern, huh? I hadn't heard specifics, just rumors. Anyway, see you in there, stay healthy!",
+  "shared_health": false
+ }
+}

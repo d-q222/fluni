@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:30",
+    "place": "home",
+    "start": "08:35"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick and Dell's roommate is coughing. I'm staying home, masking, skipping the lounge and keeping Stern meals short. Feeling fine but quite anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're feeling awful, Chris. Thanks for telling us. Get checked at Vaden and rest up!",
+    "time": "",
+    "to": "A0227"
+   }
+  ],
+  "thoughts": "Chris is sick and Dell's roommate is coughing, plus the Stern fever rumors. I feel fine, so I'll stay in, mask, and keep meals short at Stern, maybe grabbing food at off-peak times. Skipping all social stuff tonight. I'll check in on Chris briefly and keep the routine otherwise.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer, who lives in my dorm, told me FlUni flagged them and they're waiting on a flu test, though they feel fine and their last test was negative. I'll keep my mask on, keep some distance, and watch for symptoms. Sawyer will let me know if it comes back positive.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

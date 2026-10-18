@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Good to see you. Heads up, I was around Dakota on Friday and they tested positive, so I'm keeping my mask on and some distance. I feel fine, though. How are you doing?",
+  "shared_health": true
+ }
+}

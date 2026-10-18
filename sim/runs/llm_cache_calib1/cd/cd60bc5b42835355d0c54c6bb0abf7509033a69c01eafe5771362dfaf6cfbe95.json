@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:50",
+    "place": "home",
+    "start": "07:30"
+   },
+   {
+    "activity": "lab",
+    "end": "09:25",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "07:55"
+   },
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CME102_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "lab",
+    "end": "12:15",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "gym",
+    "end": "13:55",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "12:45"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "bld:bld_232841950",
+    "start": "14:00"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS246_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "18:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "16:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:05",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "00:50",
+    "place": "plan:bld_m_green_library_f2_203",
+    "start": "22:10"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Stuck to my usual Tuesday routine and wore a mask indoors since illness is going around the dorm. Feeling fine, a little wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll follow my usual disciplined Tuesday routine. Illness is going around the dorm, so I'll wear a mask indoors as a cheap precaution. Nothing new to plan, no need to text anyone.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

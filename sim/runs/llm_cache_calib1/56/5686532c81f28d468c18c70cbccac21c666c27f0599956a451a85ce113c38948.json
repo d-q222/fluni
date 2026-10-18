@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, yeah, space sounds good. Let's grab those two by the aisle before class fills up.",
+  "shared_health": false
+ }
+}

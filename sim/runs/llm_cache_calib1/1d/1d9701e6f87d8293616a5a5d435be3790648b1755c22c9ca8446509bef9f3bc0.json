@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:40",
+    "place": "home",
+    "start": "06:10"
+   },
+   {
+    "activity": "study",
+    "end": "07:05",
+    "place": "home",
+    "start": "06:40"
+   },
+   {
+    "activity": "gym",
+    "end": "08:15",
+    "place": "bld:bld_6593510",
+    "start": "07:25"
+   },
+   {
+    "activity": "eat",
+    "end": "08:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "10:20",
+    "place": "home",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:COLLEGE102_SEM70",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "practice",
+    "end": "17:40",
+    "place": "bld:bld_232715573",
+    "start": "15:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:15",
+    "place": "bld:bld_m_the_oval",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:50",
+    "place": "event:EV00040",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:10",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:10"
+   }
+  ],
+  "diary": "Tuesday plan: gym, class, practice, dorm hangout tonight. Feeling fine but still a bit wary of illness; need to confirm practice time in the team chat.",
+  "messages": [],
+  "thoughts": "Feeling fine, a little wary of illness. Follow my usual routine: early gym, class, practice, dorm hangout in the evening. I'll confirm practice time in the team chat. No mask indoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

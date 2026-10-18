@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Emerson in the lobby before the hangout; both masked and feeling fine, both wary of the Stern fever rumors. We agreed to stay near the edge and leave early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

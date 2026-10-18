@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah, just a precaution, I feel fine. Heard a few people in our dorm are sick so I'm being careful. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

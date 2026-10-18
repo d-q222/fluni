@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ugh, okay, that's a little sketchy. I'll think about it, maybe I'll just pop in for a bit. I'll text you as soon as I hear anything, promise.",
+  "shared_health": false
+ }
+}

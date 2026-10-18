@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:45"
+   },
+   {
+    "activity": "gym",
+    "end": "12:20",
+    "place": "bld:bld_232715642",
+    "start": "10:40"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "bld:bld_m_green_library",
+    "start": "15:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:30",
+    "place": "bld:bld_m_meyer_green",
+    "start": "16:30"
+   },
+   {
+    "activity": "relax",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:10",
+    "place": "bld:bld_232841950",
+    "start": "19:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "event:EV00060",
+    "start": "21:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:30",
+    "place": "bld:bld_232841950",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Wednesday plan: gym, dance, CS161, library, dinner at Stern with friends, then dorm hangout and Taper. Feeling fine, a little worried about illness going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "bld:bld_m_stern_dining",
+    "text": "Dinner at Stern at 6:30? Then dorm hangout after!",
+    "time": "18:30",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, a little worried about illness but I'm social and spontaneous. Sleep in, then Stern breakfast, gym, dance class, CS161 lecture, study at Green, dinner at Stern with Stevie, dorm hangout, then Taper. No mask, I rarely bother.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

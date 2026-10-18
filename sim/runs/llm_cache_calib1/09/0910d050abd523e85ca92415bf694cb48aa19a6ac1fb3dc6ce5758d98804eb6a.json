@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Aspen in the lobby before the hangout; they're masked and mentioned rumors of fevers around Stern. We both plan to pop in briefly and then go to bed, and I'll stay careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

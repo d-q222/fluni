@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Just being careful, I feel fine. Skyler told me at lunch they were waiting on a flu test, so I'm keeping my mask on. Did Stevie say what the alert was about?",
+  "shared_health": true
+ }
+}

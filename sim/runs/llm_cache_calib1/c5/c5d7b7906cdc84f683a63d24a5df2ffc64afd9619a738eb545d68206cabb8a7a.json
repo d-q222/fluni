@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Glad you made it. Pretty packed in here, huh? Want to grab seats together?",
+  "shared_health": false
+ }
+}

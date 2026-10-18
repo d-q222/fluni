@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I feel fine. I get anxious with everything going around, so the mask helps me relax. Are you feeling okay?",
+  "shared_health": true
+ }
+}

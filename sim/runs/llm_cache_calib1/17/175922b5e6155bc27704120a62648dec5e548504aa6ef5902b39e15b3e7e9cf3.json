@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "12:40",
+    "place": "class:FRENLANG1_LNG02",
+    "start": "12:35"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS103_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "lab",
+    "end": "21:15",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Teagan has a fever and I was near them Thursday. I feel fine, but I'm masking, keeping distance, and skipping the dorm hangout tonight. Still worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Teagan. Feel better and let us know your test result.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan has a fever and I was near them at Stern yesterday. I feel fine, but I'm worried. I'll keep my mask on, still go to CS103 since I'm disciplined, but sit apart. I'll skip the crowded Stern lunch and eat early or grab food quickly. I'll skip the dorm hangout and tonight's lab if I feel any symptoms. I'll still do lab with a mask, since it's less crowded. Dinner will be quick. I'll also thank Teagan and tell the group I'm masking.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

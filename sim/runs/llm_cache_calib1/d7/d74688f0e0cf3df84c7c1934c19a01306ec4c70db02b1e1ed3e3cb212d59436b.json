@@ -1,0 +1,107 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m4"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:45",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:20",
+    "place": "home",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:SPANLANG3_LNG01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:PHYSICS41_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:00",
+    "place": "class:JAPANLNG2_LNG05",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:40",
+    "place": "bld:bld_232715666",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "15:30",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "21:00",
+    "place": "dorm_lounge",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:40",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Normal Monday with classes. Going to dinner at Stern with the group tonight, then studying. Still a bit wary of illness, mask on indoors.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sounds good, I'll be at Stern at 18:20!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Normal Monday. Classes as usual. Campbell invited the group to dinner at Stern at 18:20 before study group. I'm introverted but it's a small circle and I like them, so I'll go, wearing a mask when not eating. I'll skip Flomo dinner and eat at Stern instead. Keep the rest of the routine.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

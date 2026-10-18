@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Ocean to join Skyler and me at the Cal game; Ocean said they'll come find us and will mask in the crowd. Both feel fine. No change to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

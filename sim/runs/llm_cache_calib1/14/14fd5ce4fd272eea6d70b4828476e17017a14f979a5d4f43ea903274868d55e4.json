@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Aspen. Mask on, huh? Is something going around, or just being careful?",
+  "shared_health": false
+ }
+}

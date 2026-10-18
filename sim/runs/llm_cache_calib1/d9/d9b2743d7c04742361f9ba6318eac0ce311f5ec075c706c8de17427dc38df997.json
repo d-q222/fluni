@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Wynn is heading to the lounge briefly, then to the EV00081 party around 10:25; they said to skip it if I feel off. I feel fine, so I might swing by after my lounge lap.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Umi is skipping the hangout and staying careful at home; I told them my test was negative. I'm sticking to my plan: home, then maybe Mark Taper, masking in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

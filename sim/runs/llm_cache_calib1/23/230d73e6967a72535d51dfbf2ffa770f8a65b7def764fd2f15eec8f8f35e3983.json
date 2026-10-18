@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie! Day's good so far, just grabbing lunch. Yeah, with all the coughing in Stern I figured I'd mask up. How about you, holding up okay?",
+  "shared_health": false
+ }
+}

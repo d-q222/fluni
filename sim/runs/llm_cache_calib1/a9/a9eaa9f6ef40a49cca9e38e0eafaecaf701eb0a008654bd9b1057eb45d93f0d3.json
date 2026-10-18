@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, honestly skip it. Come hang here by the door instead, way less sketchy. If anyone starts coughing we bounce.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "21:55",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:15",
+    "place": "home",
+    "start": "21:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:15"
+   }
+  ],
+  "diary": "Stern was crowded at dinner so I ate fast, masked up, and went home to study and rest. Feeling fine, a little wary because Wallace is a close contact.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 49 people and Wallace is a close contact. I feel fine, but I'd rather finish eating quickly and head home to my room, where it's quiet. I'll keep my mask on while in the crowd, study at home, and wind down early.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

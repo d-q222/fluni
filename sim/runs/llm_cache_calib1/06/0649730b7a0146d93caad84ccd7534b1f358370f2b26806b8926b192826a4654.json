@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh no, hope Sidney gets checked soon. Thanks for telling me. I'll keep my mask on and keep my distance too. Take care, Devon.",
+  "shared_health": false
+ }
+}

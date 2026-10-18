@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Not really confirmed cases that I know of, honestly. Wesley and Fallon both said they feel fine and were just masking as a precaution. I've just heard it's going around, so I figured better safe. I feel fine too.",
+  "shared_health": true
+ }
+}

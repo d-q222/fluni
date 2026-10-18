@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine too, no symptoms and nothing from the app. Thanks for the heads up about Jesse. I'll keep the mask on at the hangout and then head to lab. Text me if your app pings or you start feeling off, and I'll do the same.",
+  "shared_health": true
+ }
+}

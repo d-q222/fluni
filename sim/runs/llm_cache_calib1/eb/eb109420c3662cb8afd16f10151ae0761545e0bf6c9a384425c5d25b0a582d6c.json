@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! You made it! Where are we sitting, did Onyx save seats?",
+  "shared_health": false
+ }
+}

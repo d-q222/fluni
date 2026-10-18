@@ -1,0 +1,114 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:00",
+    "place": "home",
+    "start": "06:35"
+   },
+   {
+    "activity": "gym",
+    "end": "07:45",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "07:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:45"
+   },
+   {
+    "activity": "study",
+    "end": "08:55",
+    "place": "bld:bld_232805662",
+    "start": "08:00"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:MATH107_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "10:45",
+    "place": "bld:bld_m_lake_lagunita",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "11:40",
+    "place": "bld:bld_333374283",
+    "start": "11:15"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "bld:bld_232805662",
+    "start": "11:45"
+   },
+   {
+    "activity": "practice",
+    "end": "17:45",
+    "place": "plan:bld_18564360_f1_101",
+    "start": "15:20"
+   },
+   {
+    "activity": "gym",
+    "end": "19:30",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "17:55"
+   },
+   {
+    "activity": "eat",
+    "end": "20:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "21:15",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "gym",
+    "end": "21:50",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "21:35"
+   },
+   {
+    "activity": "study",
+    "end": "23:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "22:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Sticking to the usual routine of class, practice and lifting. Feeling fine, a bit wary after Lake's dorm fever rumor; will wash hands and sort out that spare mask.",
+  "messages": [],
+  "thoughts": "Normal Thursday routine. Feeling fine, a bit wary after Lake's fever rumor. I'll stick with class, practice, lifting, and keep things familiar. Maybe eat at Stern as usual. No mask indoors, just wash hands.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

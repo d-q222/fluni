@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "home",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "10:05"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:20",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:30",
+    "place": "bld:bld_m_the_oval",
+    "start": "15:45"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "FlUni told me to leave my spot this morning, so I went back to study at home and will keep masking in crowds, skipping the game and gym, and watching for symptoms.",
+  "messages": [],
+  "thoughts": "FlUni says leave where I am, so I'll get out of the crowded spot and head home to study alone. I feel fine, but I'm anxious about the Wesley contact. I'll stay in the dorm for the morning, skip crowded dining at peak times if possible, still go to CHEM lecture masked since grades matter, and study at Green in the evening with a mask. I'll skip the basketball game and the oval is fine for fresh air.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

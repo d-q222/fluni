@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine, just a little anxious. Heading to Green Library after this. Text me if anything pings or you start feeling off, okay? Stay safe!",
+  "shared_health": true
+ }
+}

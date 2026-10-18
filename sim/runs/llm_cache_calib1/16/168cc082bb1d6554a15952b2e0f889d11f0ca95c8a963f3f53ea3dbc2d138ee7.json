@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody! Ready for physics? I heard people are coughing a lot lately, so I'm keeping my mask on.",
+  "shared_health": false
+ }
+}

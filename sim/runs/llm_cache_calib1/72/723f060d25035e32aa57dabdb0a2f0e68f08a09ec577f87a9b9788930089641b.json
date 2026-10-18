@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! You eating here too? We're doing Taper later and then a short lounge hangout, you in? Everyone's kinda cautious after Eden's fever warning.",
+  "shared_health": false
+ }
+}

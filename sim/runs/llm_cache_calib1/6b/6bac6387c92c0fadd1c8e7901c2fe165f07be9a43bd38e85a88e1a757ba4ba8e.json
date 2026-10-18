@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Oli at Stern; both feel fine and are masking. We'll both be on Green's second floor today and will tell each other if anything feels off. Still need to follow up with Val about the food drop-off.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hey Val, how are you feeling? Happy to drop off food or anything you need, just tell me what and when.",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

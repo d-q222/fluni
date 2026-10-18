@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Wynn at Lakeside; they feel fine too. We'll keep the lounge short, bail if anyone's coughing, and meet at Taper.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat near the door with Fallon in CS 194W; both masked and feeling fine, a bit anxious. Nothing new learned and no plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

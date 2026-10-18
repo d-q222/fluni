@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Okay, thanks for telling me. I'll keep masking and stay careful. Hope it's nothing! I'm going to finish eating, see you around, Lake.",
+  "shared_health": false
+ }
+}

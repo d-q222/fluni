@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter, yeah still up. I feel fine, just being careful. I'm anxious about the Stern fever stuff and Scout maybe being a close contact. How about you, any symptoms?",
+  "shared_health": true
+ }
+}

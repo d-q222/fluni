@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, let's go find them! Carter said they'd be near Onyx too, so we should spot the group pretty easily.",
+  "shared_health": false
+ }
+}

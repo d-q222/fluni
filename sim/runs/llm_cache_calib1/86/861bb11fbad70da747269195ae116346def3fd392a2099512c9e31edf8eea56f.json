@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Wait, I'm actually not masked, just eating. I feel fine though, a bit worried with Chris and Dakota sick. You good? Staying in tonight?",
+  "shared_health": true
+ }
+}

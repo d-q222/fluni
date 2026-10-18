@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine too, app's quiet. Let's both text if anything changes. I'm heading off to study, take care!",
+  "shared_health": true
+ }
+}

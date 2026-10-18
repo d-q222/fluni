@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Umi told me Dakota and Chris in our dorm tested positive; first real names I've heard. Umi is masked and feels fine. I feel fine, will keep masking in crowds and stick to my gym and study plan.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Umi says Dakota and Chris in our dorm tested positive. I feel fine but I'm masking in crowds. Stay careful, tell me if you get symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

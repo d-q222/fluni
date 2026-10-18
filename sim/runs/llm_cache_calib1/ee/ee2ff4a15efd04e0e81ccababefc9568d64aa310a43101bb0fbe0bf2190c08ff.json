@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, sounds good, let's lift together. I'll meet you there around 8:50 then, just gotta finish eating.",
+  "shared_health": false
+ }
+}

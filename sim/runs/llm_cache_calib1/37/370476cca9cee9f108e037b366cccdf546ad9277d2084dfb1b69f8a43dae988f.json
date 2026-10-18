@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Ocean, a Lucie Stern dormmate, at Stern lunch; casual small talk, nothing health-related. Sticking with my usual routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

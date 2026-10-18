@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:DESIGN1_WKS01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:55",
+    "place": "home",
+    "start": "14:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "gym",
+    "end": "20:15",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "19:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:55",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:05"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Mon Jan 5: Stern was packed at lunch so I ate fast. Class, White Plaza, Lakeside dinner, gym, Taper tonight. Feeling fine, a little cautious.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll eat quickly and head out. I feel fine and rarely worry. Class is at 13:30 in Lathrop per the listing, so I'll go then. After that it's White Plaza, Lakeside dinner, gym, then Taper. I'll skip the late Green study and sleep a bit earlier.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

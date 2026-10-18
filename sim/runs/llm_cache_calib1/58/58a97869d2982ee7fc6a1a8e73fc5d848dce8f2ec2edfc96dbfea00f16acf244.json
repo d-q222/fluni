@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika! Yeah, feeling good this morning, no symptoms at all. Heading to the gym after breakfast. You still feeling fine?",
+  "shared_health": true
+ }
+}

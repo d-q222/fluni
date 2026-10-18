@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm heading to Green after this to study till nine or so. Good luck with the study group!",
+  "shared_health": false
+ }
+}

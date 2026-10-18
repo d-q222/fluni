@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Dakota I feel fine, I'm masking because of Oli and Chris, and I'm skipping the lounge. Dakota still plans to go to the lounge and will bail if anyone coughs. Taper is still on, then I head home.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

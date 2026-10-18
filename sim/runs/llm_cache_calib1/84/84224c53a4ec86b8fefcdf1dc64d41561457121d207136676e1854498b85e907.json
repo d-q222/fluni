@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nice, that's smart. Glad we're all being careful. I'll take my mask off to eat but keep a little distance. Want me to grab you a spare mask for the study group?",
+  "shared_health": false
+ }
+}

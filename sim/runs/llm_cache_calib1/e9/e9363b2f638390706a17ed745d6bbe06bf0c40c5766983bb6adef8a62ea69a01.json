@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Stevie (masked, from my dorm) I'm waiting on my flu test but feel fine; they said they'll keep distance and asked me to share the result. Plan unchanged, keep masking in crowds.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

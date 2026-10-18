@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ari from my dorm and BIO 84 is masking, said their friends are sick but they tested negative; we sat near the aisle with some space. I'll keep masking and distance, and stick to my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

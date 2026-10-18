@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "10:10",
+    "place": "class:MATH62CM_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "lab",
+    "end": "11:45",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:05"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:10",
+    "place": "class:CS106B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:25",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "lab",
+    "end": "18:55",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "18:10"
+   },
+   {
+    "activity": "study",
+    "end": "21:55",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:55",
+    "place": "plan:bld_1169967277_f2_202",
+    "start": "22:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:10",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:10"
+   }
+  ],
+  "diary": "Friday: sticking to my usual class, lab and study routine. Feeling fine, keeping distance from sick dorm neighbors and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine of class, lab and study. Illness is going around the dorm, so I'll keep my distance and watch for symptoms. No need for a mask, but I'll stay alert and check in with Finley.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

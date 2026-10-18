@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Wait, I'm not masked, I'm fine, no symptoms. Just a bit wary with stuff going around. Thanks, but I've got lab and problem sets tonight. Maybe another time.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Ha, same, I've heard people mention it. I'm good though, no symptoms at all. See you at Flo Mo then, save me a seat!",
+  "shared_health": true
+ }
+}

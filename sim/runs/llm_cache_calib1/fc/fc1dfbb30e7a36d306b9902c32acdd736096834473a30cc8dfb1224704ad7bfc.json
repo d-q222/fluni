@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:10",
+    "place": "home",
+    "start": "07:35"
+   },
+   {
+    "activity": "eat",
+    "end": "08:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:15"
+   },
+   {
+    "activity": "class",
+    "end": "10:10",
+    "place": "class:BIO173_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "gym",
+    "end": "11:40",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "10:20"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:MATSCI152_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "15:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:20",
+    "place": "bld:bld_m_white_plaza",
+    "start": "15:25"
+   },
+   {
+    "activity": "lab",
+    "end": "22:40",
+    "place": "plan:bld_232841901_f3_302",
+    "start": "16:25"
+   },
+   {
+    "activity": "study",
+    "end": "23:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "22:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:55",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:55"
+   }
+  ],
+  "diary": "Routine Tuesday: classes, gym, long lab, library, then bed. Feeling fine, still a bit wary of getting sick.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll follow my usual routine. Classes, gym, lab. I might drop by the dorm hangout briefly in the evening, but I'm introverted and have lab until late, so I'll skip most of it. Staying a little cautious but no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

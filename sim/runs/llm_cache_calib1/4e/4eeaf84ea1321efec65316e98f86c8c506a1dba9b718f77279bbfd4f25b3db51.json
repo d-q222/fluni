@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:35",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "11:10",
+    "place": "bld:bld_333374283",
+    "start": "10:40"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "11:15"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_333374283",
+    "start": "13:15"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "bld:bld_1169967277",
+    "start": "14:00"
+   },
+   {
+    "activity": "lab",
+    "end": "17:35",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "15:20"
+   },
+   {
+    "activity": "relax",
+    "end": "19:25",
+    "place": "home",
+    "start": "17:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_333374283",
+    "start": "19:30"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Teagan is positive and Dakota is sick too. I feel fine but I'm worried, so I'm masked, avoiding the lounge, game and gym, and keeping lab and study going.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us. Rest up and let us know if you need anything. I'll stay out of the lounge.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan is positive, and Dakota in my dorm has symptoms too. I feel fine but I'm worried. I'll keep my routine of lab and study, stay masked, and avoid the lounge, the game and the gym. I'll eat at Arrillaga but keep it short, and maybe take food back home for one meal. I'll text Teagan a quick, blunt reply.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

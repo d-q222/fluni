@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika, morning. Early breakfast before the gym?",
+  "shared_health": false
+ }
+}

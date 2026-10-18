@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, let's start with Monday's set. I'll pull up problem 1, and I'll keep my chair a bit back, just being careful.",
+  "shared_health": false
+ }
+}

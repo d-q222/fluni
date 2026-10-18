@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Good to see you masked up. Heads up, a friend of mine just tested positive, so I'm being careful too. I feel fine, though.",
+  "shared_health": true
+ }
+}

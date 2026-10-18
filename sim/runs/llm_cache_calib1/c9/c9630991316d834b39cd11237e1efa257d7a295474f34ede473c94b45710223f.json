@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:30",
+    "place": "home",
+    "start": "08:35"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Skipping the lounge hangout tonight because of the Stern fever rumors. Staying home, masking, and quick meals at Stern. Feeling fine but anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry, I'm skipping the lounge hangout tonight because of the fever rumors in Stern. Staying in and masking. Stay well, everyone!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Fever rumors in Stern make me anxious. I told Dakota I'm skipping the lounge tonight, but there's an agreed 20:00 lounge plan in my kept plan. I'll drop it and stay home, masked. I'll keep meals at Stern but go at off-peak times and take food back if possible. Study mostly at home, skip the crowded library.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

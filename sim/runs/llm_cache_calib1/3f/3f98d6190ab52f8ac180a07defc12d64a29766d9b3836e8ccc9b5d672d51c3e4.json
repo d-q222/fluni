@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:05",
+    "place": "home",
+    "start": "07:30"
+   },
+   {
+    "activity": "eat",
+    "end": "08:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:10"
+   },
+   {
+    "activity": "relax",
+    "end": "11:00",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "11:05"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "relax",
+    "end": "13:30",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "event",
+    "end": "15:35",
+    "place": "event:EV00113",
+    "start": "13:45"
+   },
+   {
+    "activity": "gym",
+    "end": "16:55",
+    "place": "bld:bld_255490604",
+    "start": "16:00"
+   },
+   {
+    "activity": "relax",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_333374283",
+    "start": "19:05"
+   },
+   {
+    "activity": "gym",
+    "end": "22:15",
+    "place": "bld:bld_255490604",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:25",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:25"
+   }
+  ],
+  "diary": "Saturday: routine of study, the Cal football game, and gym. Feel fine, masking in crowds and still watching for the dorm fever rumor.",
+  "messages": [],
+  "thoughts": "Saturday, feel fine. Sticking to my routine: sleep in a bit, breakfast at Stern, study at Green, then the Cal football game as a team event, gym later. I'll mask at the crowded stadium and dining spots and keep an eye out for the dorm fever rumor.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

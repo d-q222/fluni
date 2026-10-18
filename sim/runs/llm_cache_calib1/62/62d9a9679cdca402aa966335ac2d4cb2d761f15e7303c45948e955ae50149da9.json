@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey, yeah, I feel fine, no symptoms. Still keeping the mask on and the window cracked. I'll tell you right away if that changes, same for you?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner at Lakeside with Dakota; both feel fine despite Eden's fever warning about Stern. Plan unchanged: bike to Taper together, then lounge, then the party.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

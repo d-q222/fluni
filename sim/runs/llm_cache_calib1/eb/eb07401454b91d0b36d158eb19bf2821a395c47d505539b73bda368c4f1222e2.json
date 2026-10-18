@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Yep, still on for Taper with Dell and Carter, then the lounge at 8:45. I feel fine, just being careful with the Stern fevers going around. You coming?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan! Are you in this ENGR class too? Glad to see someone else masking.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Mika at Stern breakfast; they're masked and feel fine, no symptoms. Nothing changes: keep masking, stick to my schedule, meet Lake at 8:30pm for the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

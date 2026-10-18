@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, fair point, I'll think about it. A big crowd isn't great if I was exposed. I'll text you if I start feeling off, and you do the same. Stay safe!",
+  "shared_health": false
+ }
+}

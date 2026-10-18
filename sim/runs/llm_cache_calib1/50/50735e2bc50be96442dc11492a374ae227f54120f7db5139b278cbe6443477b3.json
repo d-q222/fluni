@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:35"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:40",
+    "place": "bld:bld_m_the_oval",
+    "start": "13:10"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "plan:bld_1169967277_f3_301",
+    "start": "13:55"
+   },
+   {
+    "activity": "class",
+    "end": "18:05",
+    "place": "class:CEE283_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "bld:bld_1169967277",
+    "start": "18:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_1040629370",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "plan:bld_1169967277_f3_301",
+    "start": "19:40"
+   },
+   {
+    "activity": "relax",
+    "end": "22:40",
+    "place": "home",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:35",
+    "place": "plan:bld_1169967277_f2_201",
+    "start": "22:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Thursday: left crowded Stern Dining quickly, swapped Taper for quiet study at Breer, then class and evening study. Feel fine, still wary of the flu.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 41 people and flu is going around. I feel fine, so I'll finish lunch quickly and keep my distance. Then I'll mostly keep my routine but spend the afternoon somewhere quieter, like the Oval and Breer, instead of crowded Taper. I'll still go to class and lab-type study in the evening.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

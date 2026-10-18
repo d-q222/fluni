@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Onyx, masked and feeling fine, said Chris tested positive and Dakota is sick after hanging out Friday. I kept my distance, will watch for symptoms, and stick to the plan: quick dinner, home, masking.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

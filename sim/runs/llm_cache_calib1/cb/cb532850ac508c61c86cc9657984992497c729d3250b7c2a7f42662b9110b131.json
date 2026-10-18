@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with masked Wesley at Stern breakfast; both feel fine, anxious, keeping distance and will text if anything feels off. Continuing my usual plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

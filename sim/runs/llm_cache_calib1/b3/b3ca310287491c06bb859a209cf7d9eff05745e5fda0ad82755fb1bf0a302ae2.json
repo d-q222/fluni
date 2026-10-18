@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan! Pretty good, just class and lab stuff. I'm feeling fine, just masking since everyone's so worried about illness going around. You doing okay?",
+  "shared_health": true
+ }
+}

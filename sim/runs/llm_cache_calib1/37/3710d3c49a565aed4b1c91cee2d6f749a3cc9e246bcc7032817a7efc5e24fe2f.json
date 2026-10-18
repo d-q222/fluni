@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "gym",
+    "end": "15:05",
+    "place": "bld:bld_6593510",
+    "start": "13:20"
+   },
+   {
+    "activity": "practice",
+    "end": "17:35",
+    "place": "bld:bld_232715573",
+    "start": "15:35"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "bld:bld_6593510",
+    "start": "18:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "20:35",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "event:EV00100",
+    "start": "20:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "22:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Fri Jan 9: Stern was packed, so I ate fast and kept to lifting and practice. Feel fine, but several people in the dorm are sick, so I'm watching for symptoms and will keep the hangout short.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded and a few people in my dorm are sick, so I'll finish eating quickly and head to the gym. Skyler tested negative, I feel fine. I'll stick to my routine of lifting and practice, skip lingering in crowds, and go to the dorm hangout later but leave earlier than usual and keep an eye on symptoms.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

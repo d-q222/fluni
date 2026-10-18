@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, nice, sounds like a packed day! I'm already headed to Taper later with Winter, so I'll see you there. Let's grab food first though.",
+  "shared_health": false
+ }
+}

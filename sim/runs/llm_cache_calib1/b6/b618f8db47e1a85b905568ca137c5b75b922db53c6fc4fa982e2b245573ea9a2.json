@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nice, glad you're okay. Yeah, I feel fine too, no symptoms. Sorry to hear about Sidney and Bailey though. Maybe keep some distance from them for a few days? I'm gonna head back and chill soon.",
+  "shared_health": true
+ }
+}

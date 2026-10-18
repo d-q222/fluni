@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan! Good to see you. Is the food any good tonight?",
+  "shared_health": false
+ }
+}

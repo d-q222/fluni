@@ -1,0 +1,113 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m33"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_232715666",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "10:25",
+    "place": "class:SPANLANG3_LNG01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:PHYSICS41_LEC02",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:JAPANLNG2_LNG05",
+    "start": "12:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "14:00",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "15:15",
+    "place": "home",
+    "start": "14:10"
+   },
+   {
+    "activity": "study",
+    "end": "16:45",
+    "place": "plan:bld_1169967277_f2_202",
+    "start": "15:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:15",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:15",
+    "place": "dorm_lounge",
+    "start": "19:25"
+   },
+   {
+    "activity": "study",
+    "end": "22:35",
+    "place": "home",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:50",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Wednesday: classes and meals as usual, dinner at Stern with the group at 6:30 and a short dorm hangout, then studying. Feeling fine, masked indoors, still a bit wary.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sounds good, see you at Stern at 6:30!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, so I'll keep my usual routine. Campbell invited the group to Stern dinner at 6:30 and the dorm hangout after. Stern was crowded yesterday, but dinner with friends is nice, and I'll mask when not eating. I'll accept, keep dinner a bit longer, then head back for a short hangout and study at home. Skipping the basketball game.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

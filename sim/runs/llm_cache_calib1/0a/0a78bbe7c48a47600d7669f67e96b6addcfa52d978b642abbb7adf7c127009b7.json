@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, heading over now. I feel fine too, just being careful. I'll stay near the door and bail if it gets gross. Maybe see you in there?",
+  "shared_health": true
+ }
+}

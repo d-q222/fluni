@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, Eden just told me. I feel fine, just staying in my room and keeping my mask on. I'm finishing up here and heading back. You stay careful too!",
+  "shared_health": true
+ }
+}

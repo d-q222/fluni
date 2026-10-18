@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Basketball tonight? Hm, I've got lifting after dinner, so probably not. Maybe if I'm not wiped. You going?",
+  "shared_health": false
+ }
+}

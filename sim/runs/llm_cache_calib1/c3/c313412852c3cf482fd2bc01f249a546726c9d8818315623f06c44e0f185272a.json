@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, pretty rough honestly. Fever, chills, cough, the whole thing. I'm waiting on a flu test too, and I think it's the same bug going around Stern. Good call keeping your distance, I've got my mask on when I'm out. Hope yours comes back negative.",
+  "shared_health": true
+ }
+}

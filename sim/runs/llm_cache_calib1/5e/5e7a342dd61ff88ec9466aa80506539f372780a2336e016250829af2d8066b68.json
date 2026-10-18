@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! What's up, you heading to class or just chilling?",
+  "shared_health": false
+ }
+}

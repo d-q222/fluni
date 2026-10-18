@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:40",
+    "place": "bld:bld_m_meyer_green",
+    "start": "09:05"
+   },
+   {
+    "activity": "study",
+    "end": "12:10",
+    "place": "plan:bld_m_green_library_f4_401",
+    "start": "09:45"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "plan:bld_m_green_library_f3_305",
+    "start": "12:45"
+   },
+   {
+    "activity": "event",
+    "end": "15:45",
+    "place": "event:EV00113",
+    "start": "13:15"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "gym",
+    "end": "20:10",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Feeling fine. Plan to go to the Cal football game masked in the crowd, gym in the evening, then skip the dorm hangout and rest at home.",
+  "messages": [],
+  "thoughts": "Saturday, feeling fine. Football vs Cal is a fun event and I'm outgoing, so I'll go. I'll mask in the crowd. I'll keep the routine mostly, but skip the dorm hangout since I said I'd rest, and just chill at home. Still gym and meals.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

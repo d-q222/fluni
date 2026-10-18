@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Finley, still up? I'm feeling fine, just winding down. How are you holding up, any word from Wesley?",
+  "shared_health": true
+ }
+}

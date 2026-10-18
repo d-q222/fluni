@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Morgan at Stern Dining; Morgan is fine, heading to Green to study. I'm fine, masking, heading to lab then back to the dorm.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

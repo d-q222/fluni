@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm doing fine, no symptoms. Just wearing it since I get anxious about whatever's going around. Glad you're being careful too. I've got class soon, so I should head out, but good seeing you!",
+  "shared_health": true
+ }
+}

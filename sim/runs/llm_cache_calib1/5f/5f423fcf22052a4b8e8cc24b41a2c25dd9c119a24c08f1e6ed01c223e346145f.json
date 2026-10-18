@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley! Good to see you. How are you feeling? I've been a little anxious since you mentioned the exposure.",
+  "shared_health": false
+ }
+}

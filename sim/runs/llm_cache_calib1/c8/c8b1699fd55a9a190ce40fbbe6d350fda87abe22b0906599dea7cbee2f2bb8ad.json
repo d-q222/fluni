@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Rain! Yeah, I'm still feeling fine, test was negative and I'm keeping my mask on around people. Let me know if anything feels off, okay?",
+  "shared_health": true
+ }
+}

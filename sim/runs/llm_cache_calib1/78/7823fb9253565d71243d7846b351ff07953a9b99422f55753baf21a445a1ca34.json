@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "11:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "12:00",
+    "place": "bld:bld_26250731",
+    "start": "11:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "18:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "rest",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: still feverish with cough and aches. Going to Vaden for a retest, then staying in my room to rest and skipping lab and the game.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Ari, I'm getting retested at Vaden today. I'll let you know if I need anything.",
+    "time": "",
+    "to": "A0284"
+   }
+  ],
+  "thoughts": "Still feverish, achy, cough. Negative test but app says maybe sick and Sidney is positive. Ari offered help. I'll go to Vaden for a retest midday, then straight back to my room to rest and do light studying. Skip lab and the game. Honest with the group.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

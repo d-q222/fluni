@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, packed. I'm about to head out to the Cal game after this. Hope you get some quiet in your room.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh, no, I haven't gotten a notice, I'm feeling fine too. I think I'm just following the FlUni advice to stay in. Distance is totally fine, I'm masked and heading back soon anyway.",
+  "shared_health": true
+ }
+}

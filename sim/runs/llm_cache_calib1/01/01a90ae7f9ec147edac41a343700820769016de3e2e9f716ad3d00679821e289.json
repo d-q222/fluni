@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:05",
+    "place": "bld:bld_232841950",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Wed Jan 7: Stayed at the Arizona game with the group, then Taper to hang out and bed. Feeling fine, a little cautious about illness.",
+  "messages": [],
+  "thoughts": "I'm at the Arizona game with the group, and it's crowded but I feel fine. I'll stay for most of the game, then head to Taper to hang out like planned, then go back to the dorm and sleep. I'm only a little worried, so no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

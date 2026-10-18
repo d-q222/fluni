@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Skyler said they saw both of them at Vaden, Sidney had a fever and cough. I'm feeling fine though. I was gonna skip the lounge, but I'm still deciding on the hangout. You going?",
+  "shared_health": true
+ }
+}

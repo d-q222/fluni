@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:50",
+    "place": "home",
+    "start": "07:25"
+   },
+   {
+    "activity": "eat",
+    "end": "08:25",
+    "place": "bld:bld_1040629370",
+    "start": "08:00"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:35"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:ENGR108_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_333374283",
+    "start": "11:50"
+   },
+   {
+    "activity": "rest",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "14:40",
+    "place": "class:ANTHRO120H_SEM01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "plan:bld_m_green_library_f2_213",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:35",
+    "place": "home",
+    "start": "20:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:35"
+   }
+  ],
+  "diary": "Thu Jan 8: Feel fine but still anxious about Wesley's exposure. Sticking to classes and library, masked, skipping the gym to limit exposure.",
+  "messages": [],
+  "thoughts": "I feel fine, but I'm still anxious about Wesley's exposure. I'll stick to my routine, mask indoors, and watch for symptoms. I'll skip the gym and eat quickly instead, since crowded places make me nervous.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

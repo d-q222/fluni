@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Just being careful, I feel fine though. A few people I've talked to have sick friends, so I'm keeping the mask on in crowded spots. Have you heard anything?",
+  "shared_health": true
+ }
+}

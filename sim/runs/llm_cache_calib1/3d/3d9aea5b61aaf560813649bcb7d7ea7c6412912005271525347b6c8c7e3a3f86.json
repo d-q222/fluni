@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx. I'm about to head out to my study group. You doing okay?",
+  "shared_health": false
+ }
+}

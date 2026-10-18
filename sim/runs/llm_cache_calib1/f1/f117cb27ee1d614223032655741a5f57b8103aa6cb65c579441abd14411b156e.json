@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, I feel fine, no symptoms! I'm just a little anxious about all the illness going around, so I mask indoors to be safe. How about you, feeling okay?",
+  "shared_health": true
+ }
+}

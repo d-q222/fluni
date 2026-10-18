@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:30",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "gym",
+    "end": "11:20",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "09:45"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:PWR1HT_SEM01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:30"
+   },
+   {
+    "activity": "gym",
+    "end": "15:30",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "13:55"
+   },
+   {
+    "activity": "relax",
+    "end": "16:20",
+    "place": "bld:bld_m_white_plaza",
+    "start": "15:30"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:ECON155_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "study",
+    "end": "19:45",
+    "place": "bld:bld_m_green_library",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "19:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thursday: gym, PWR, ECON, then study and lounge hangout with friends. Feeling fine, still a bit wary of the illness going around.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "dorm_lounge",
+    "text": "Dorm lounge hangout tonight after dinner? Come through!",
+    "time": "19:45",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Fresh day, feeling fine. I'll sleep in, hit the gym, go to PWR and ECON, eat with friends, then hang out in the evening since I'm a social person. Not too worried about illness.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

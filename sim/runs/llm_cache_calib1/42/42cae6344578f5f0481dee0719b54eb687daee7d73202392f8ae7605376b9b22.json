@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Nice, you're masking too? Crowded in here this morning.",
+  "shared_health": false
+ }
+}

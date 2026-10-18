@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm feeling fine too, just a little anxious about everything going around. Scout from our dorm said they're a close contact of someone sick, so I'm keeping an eye out. Stay safe, I've got to head to study!",
+  "shared_health": true
+ }
+}

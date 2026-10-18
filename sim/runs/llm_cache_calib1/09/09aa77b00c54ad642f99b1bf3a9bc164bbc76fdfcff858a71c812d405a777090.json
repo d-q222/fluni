@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:ME128_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "11:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:25"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "home",
+    "start": "11:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:MS&E111DS_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:30",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "17:45"
+   },
+   {
+    "activity": "lab",
+    "end": "22:05",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Tuesday plan: classes, problem sets, evening lab, then home earlier to sleep. Feeling fine, slightly wary about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual disciplined routine: classes, problem sets, and evening lab. Slightly wary about illness, but no symptoms. I'll skip the SYMSYS study group since I have lab then. I'll sleep a bit more than usual by wrapping up earlier tonight.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Campbell Skyler's negative flu result (Umi had already told them); Campbell feels fine and may pop into the hangout briefly. I suggested a mask. I'm still heading home to relax and sleep.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

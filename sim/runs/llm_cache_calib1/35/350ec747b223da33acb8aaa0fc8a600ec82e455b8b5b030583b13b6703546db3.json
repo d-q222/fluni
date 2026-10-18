@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Dylan. I feel fine too, no symptoms and the app's quiet. Glad you tested negative. I'm skipping the lounge and keeping the mask on. Let me know if anything changes.",
+  "shared_health": true
+ }
+}

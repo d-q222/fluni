@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden is masked, feels fine, and is heading home after dinner. I said I'm fine but worried about Chris and Dakota, and told Eden to text me if they want to hang. Sticking with my plan: Green, short dorm hangout, then home.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

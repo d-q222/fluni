@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief hello with Finley, my dormmate, at Green; they were wearing a mask but didn't say anything about their health. Nothing changed, I'm still heading to lab and then home early.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

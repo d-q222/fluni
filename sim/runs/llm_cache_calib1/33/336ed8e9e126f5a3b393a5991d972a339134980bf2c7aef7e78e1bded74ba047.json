@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Salem! Yeah, I'm doing fine, no symptoms. Heard the flu's been around, Sidney and Bailey both got hit. You feeling okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Heading to the Cal game after this? True said you two are sitting together, I'll find you guys there.",
+  "shared_health": false
+ }
+}

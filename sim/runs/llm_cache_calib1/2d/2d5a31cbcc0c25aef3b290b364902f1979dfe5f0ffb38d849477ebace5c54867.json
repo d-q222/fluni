@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Honestly I think they're just playing it safe, they didn't say they were sick. I feel fine too, just a little paranoid with everything going around. Anyway, sit, who else is coming?",
+  "shared_health": true
+ }
+}
