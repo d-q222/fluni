@@ -15,6 +15,9 @@ import SwiftUI
 struct TissueAlert: View {
     let level: AlertLevel
     let visible: Bool
+    /// flu-persist: whether this level's alert was already read (saved across relaunches), and how to record a read.
+    var isRead: (AlertLevel) -> Bool = { _ in false }
+    var onRead: (AlertLevel) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Phase { case hidden, popped, pulling(Int), open }
@@ -75,7 +78,7 @@ struct TissueAlert: View {
         case .pulling, .open:
             if !visible || level == .none { phase = .hidden }
         default:
-            let want = visible && level != .none && level != readLevel
+            let want = visible && level != .none && level != readLevel && !isRead(level)  // flu-persist: isRead
             phase = want ? .popped : .hidden
             if want && !reduceMotion {
                 withAnimation(.easeInOut(duration: 0.18).repeatForever(autoreverses: true).delay(0.6)) { wiggle = true }
@@ -138,7 +141,7 @@ struct TissueAlert: View {
                 .background(Color(hex: 0xf8e3aa).opacity(0.94), in: RoundedRectangle(cornerRadius: 10))
             }
             .accessibilityFocused($sheetFocused)
-            Button("Got it") { readLevel = level; withAnimation(.easeOut(duration: 0.15)) { phase = .hidden } }
+            Button("Got it") { readLevel = level; onRead(level); withAnimation(.easeOut(duration: 0.15)) { phase = .hidden } }
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
                 .accessibilityIdentifier("tissueAlert.ok")
         }

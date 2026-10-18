@@ -90,7 +90,9 @@ private struct TissueAlertHost: View {
     @ObservedObject var model: ProximityModel
     let onToday: Bool
     var body: some View {
-        TissueAlert(level: model.exposure.level, visible: onToday && model.myRisk == .none)
+        // flu-persist: "already read" lives in the model's saved alert state, so a relaunch doesn't pop it again.
+        TissueAlert(level: model.exposure.level, visible: onToday && model.myRisk == .none,
+                    isRead: { model.isAlertRead($0) }, onRead: { model.markAlertRead($0) })
     }
 }
 

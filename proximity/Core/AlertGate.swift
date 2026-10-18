@@ -52,6 +52,22 @@ protocol AlertPosting: AnyObject {
 struct AlertGate: Equatable, Codable {
     private(set) var level = AlertLevel.none
     private(set) var lastNotifiedAt: [AlertLevel: Date] = [:]
+    /// When the user last read each level's in-app alert (the tissue's "Got it"). Saved too, so a relaunch, or the
+    /// peer dropping out of range for a moment, doesn't pop an alert they have already read.
+    private(set) var lastReadAt: [AlertLevel: Date] = [:]
+
+    mutating func markRead(_ level: AlertLevel, now: Date) {
+        if level != .none { lastReadAt[level] = now }
+    }
+
+    /// True while `level`'s alert was read within that level's notification cooldown (30 min heads-up, 12 h close
+    /// contact): the same rule as notifications, so the in-app alert pops again exactly when a notification could.
+    func isRead(_ level: AlertLevel, now: Date) -> Bool {
+        guard level != .none else { return true }
+        guard let t = lastReadAt[level] else { return false }
+        let since = now.timeIntervalSince(t)
+        return since >= 0 && since < BackgroundAlert.cooldown(level)
+    }
 
     /// Feed the tracker's level after each tick. Returns the kind to notify, if any.
     mutating func step(_ new: AlertLevel, now: Date) -> NotificationKind? {

@@ -304,6 +304,15 @@ final class ProximityModel: ObservableObject {
         riskStore.save(exposure, gate: alertGate, now: Date())
     }
 
+    /// flu-persist: the user read the in-app alert for `level` (the tissue's "Got it"); saved at once, so it doesn't
+    /// pop again after a relaunch within the level's cooldown.
+    func markAlertRead(_ level: AlertLevel, now: Date = Date()) {
+        alertGate.markRead(level, now: now)
+        riskStore.save(exposure, gate: alertGate, now: now)
+    }
+
+    func isAlertRead(_ level: AlertLevel, now: Date = Date()) -> Bool { alertGate.isRead(level, now: now) }
+
     /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
     /// false so a stray argument can never change what a student sees.
     var acceptsLaunchArguments = true
