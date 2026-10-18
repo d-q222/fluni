@@ -30,8 +30,12 @@ const LUT32 = new Uint32Array(LUT.buffer); // one RGBA pixel per entry, same byt
 // The same ramp, but from STRONG_FROM of the colour max on at least STRONG_ALPHA opaque, so a building that
 // is clearly above the baseline reads at campus zoom (heat sits on beige footprints of a similar hue).
 const STRONG_FROM = 0.1, STRONG_ALPHA = 215;
-const LUT32_STRONG = LUT32.map((px, i) => (i >= Math.round(Math.sqrt(STRONG_FROM) * 255) && px >>> 24 < STRONG_ALPHA
-  ? ((px & 0x00ffffff) | (STRONG_ALPHA << 24)) >>> 0 : px));
+// The alpha eases up to the floor over the 48 entries below STRONG_FROM, so a glow has no visible ring there.
+const LUT32_STRONG = LUT32.map((px, i) => {
+  const i0 = Math.round(Math.sqrt(STRONG_FROM) * 255), a = px >>> 24;
+  const floor = i >= i0 ? STRONG_ALPHA : i >= i0 - 48 ? a + ((STRONG_ALPHA - a) * (i - (i0 - 48))) / 48 : 0;
+  return a < floor ? ((px & 0x00ffffff) | (Math.round(floor) << 24)) >>> 0 : px;
+});
 
 // The same ramp with its faint end eased in (smoothstep up to SOFT_TO of the ramp) instead of starting at a
 // visible alpha: tight, overlapping blobs then have no rim, so two people's edges don't cross like ripples.
