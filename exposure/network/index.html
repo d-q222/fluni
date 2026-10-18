@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flu Network Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same tokens as ../index.html (the calculator). Series: 1 = contacts + reports (blue),
+   2 = reports only (orange), truth = ink. P(flu) dots use the blue sequential ramp. */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --fg: #17202b; --muted: #5d6b7a; --line: #d5dce4;
+  --accent: #1f5fbf; --accent-soft: #dce7f7;
+  --s1: #2a78d6; --s2: #eb6834; --truth: #17202b; --grid: #e6eaef;
+  --seq0: #eef3fa; --seq1: #cde2fb; --seq2: #86b6ef; --seq3: #3987e5; --seq4: #1c5cab; --seq5: #0d366b;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --panel: #18202a; --fg: #e6ebf1; --muted: #93a1b0; --line: #2a3542;
+    --accent: #6fa3f2; --accent-soft: #1d2d45;
+    --s1: #3987e5; --s2: #d95926; --truth: #e6ebf1; --grid: #222c37;
+    --seq0: #1c2531; --seq1: #183a66; --seq2: #1c5cab; --seq3: #3987e5; --seq4: #86b6ef; --seq5: #cde2fb;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --panel: #18202a; --fg: #e6ebf1; --muted: #93a1b0; --line: #2a3542;
+  --accent: #6fa3f2; --accent-soft: #1d2d45;
+  --s1: #3987e5; --s2: #d95926; --truth: #e6ebf1; --grid: #222c37;
+  --seq0: #1c2531; --seq1: #183a66; --seq2: #1c5cab; --seq3: #3987e5; --seq4: #86b6ef; --seq5: #cde2fb;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px));
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin: 0 0 4px; }
+header p, .sub { margin: 0; color: var(--muted); max-width: 78ch; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; position: sticky; top: 0; z-index: 5; }
+.bar input[type=range] { flex: 1 1 260px; accent-color: var(--accent); }
+button { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--accent-soft); color: var(--fg); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.when { font-family: var(--font-mono); font-size: 14px; min-width: 22ch; }
+label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.tile .k { color: var(--muted); font-size: 13px; }
+.tile .v { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.tile .d { color: var(--muted); font-size: 13px; }
+canvas#dots { width: 100%; height: auto; display: block; cursor: pointer; touch-action: manipulation; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; color: var(--muted); margin-top: 8px; }
+.sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.ramp { display: inline-flex; height: 10px; border-radius: 3px; overflow: hidden; width: 140px; vertical-align: middle; margin: 0 6px; }
+.ramp span { flex: 1; }
+.ring { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--truth); vertical-align: middle; margin-right: 6px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.tip { position: fixed; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 20; display: none; max-width: 280px; }
+.tip b { font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th { color: var(--muted); font-weight: 500; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; border: 1px solid var(--line); margin: 2px 4px 2px 0; }
+.mono { font-family: var(--font-mono); font-size: 13px; }
+.eq { font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); border-radius: 6px; padding: 8px 10px; overflow-x: auto; white-space: pre; }
+details summary { cursor: pointer; font-weight: 600; }
+.note { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Who has the flu? A whole-campus mean-field</h1>
+    <p id="intro">Every student's probability of having the flu, updated after every meeting. It uses Baker et al. (PNAS 2021)'s mean-field method, with λ<sub>j→i</sub> from the exposure calculator. The model sees only what phones could see: contacts, self-reports and tests. Rings show who is really sick in the sim. The model never sees them.</p>
+  </header>
+
+  <div class="card bar">
+    <button id="play" aria-label="Play">▶ Play</button>
+    <input id="t" type="range" min="0" value="0" aria-label="Time">
+    <span class="when" id="when"></span>
+    <label class="chk"><input type="checkbox" id="showTruth" checked> show who is truly sick</label>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 id="dotsTitle">1,000 students</h2>
+      <p class="sub">Colour is P(flu) as the app would show it at this moment. Click a student to see why.</p>
+      <canvas id="dots" tabindex="0" aria-label="Grid of students coloured by probability of flu"></canvas>
+      <div class="legend">
+        <span>P(flu)</span><span>0</span><span class="ramp" id="ramp"></span><span>≥ 40%</span>
+        <span><span class="ring"></span>truly infected (sim truth)</span>
+      </div>
+    </div>
+    <div style="display:grid; gap:20px; min-width:0">
+      <div class="card">
+        <div class="tiles" id="tiles"></div>
+      </div>
+      <div class="card">
+        <h2>Expected vs actual sick</h2>
+        <p class="sub">Sum of everyone's P(flu) compared with the number truly infected.</p>
+        <svg id="chartSum" viewBox="0 0 520 200" role="img" aria-label="Expected and actual number sick over time"></svg>
+        <div class="legend" id="legSum"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Finding hidden cases</h2>
+      <p class="sub">Ranking quality (AUC) among people who haven't reported anything yet. 0.5 is a coin flip. Only contacts can point at these people.</p>
+      <svg id="chartAuc" viewBox="0 0 520 200" role="img" aria-label="AUC among unreported people over time"></svg>
+      <div class="legend" id="legAuc"></div>
+    </div>
+    <div class="card">
+      <h2>If we test the top 50</h2>
+      <p class="sub">How many of the 50 highest-P students are really infected. The paper uses this view to pick who to test.</p>
+      <svg id="chartTop" viewBox="0 0 520 200" role="img" aria-label="Infected among top 50 over time"></svg>
+      <div class="legend" id="legTop"></div>
+    </div>
+  </div>
+
+  <div class="card" id="person">
+    <h2 id="pTitle">Pick a student</h2>
+    <p class="sub" id="pSub">Click a dot above. The starting pick is the student with the most contact-driven risk.</p>
+    <svg id="chartPerson" viewBox="0 0 1100 200" role="img" aria-label="This student's probability of flu over time"></svg>
+    <div class="legend" id="legPerson"></div>
+    <div id="evidence" style="margin-top:8px"></div>
+    <h2 style="margin-top:14px">Meetings that raised their risk most</h2>
+    <p class="sub">Each row shows every input to λ<sub>j→i</sub>, then how much that meeting added. λ is the chance the meeting infects them if the other person is infected. The added risk is P(they were still healthy) × P(other has flu) × λ.</p>
+    <div class="tablewrap"><table id="meet"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>Method</h2>
+    <p class="sub">Baker, Biazzo, Braunstein, Catania, Dall'Asta, Ingrosso, Krzakala, Mazza, Mézard, Muntoni, Refinetti, Sarao Mannelli and Zdeborová. "Epidemic mitigation by statistical inference from contact tracing data." PNAS 118 (32), 2021.</p>
+    <div class="eq">P_S^i(t+1) = P_S^i(t) · Π_j [ 1 − Σ_a P_j(age a, t) · λ_j→i(a, t) ] · (1 − γ·Δt)
+λ_j→i(a, t) = 1 − exp(−q(a) · B · T · ( 1/(Q_near · d²) + 1/(V · loss) ))     indoors
+            = 1 − exp(−q(a) · B · T / (Q_near · d² · 5))                         outdoors
+loss = ACH + settling + virus decay(indoor RH(outdoor RH, outdoor °C))
+q(a) = scale · quanta_peak · shedding(a − onset)</div>
+    <ul class="note" id="methodList"></ul>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+// data.js sets window.NET_DATA; ?run=<run_id> picks another output folder.
+(function () {
+  const run = new URLSearchParams(location.search).get('run') || 'influenza_none_n1000_d14_s42_25fe957a';
+  const s = document.createElement('script');
+  s.src = 'out/' + encodeURIComponent(run) + '/data.js';
+  s.onload = () => main(window.NET_DATA);
+  s.onerror = () => { document.getElementById('intro').textContent = 'No data for ' + run + '. Run: uv run exposure/network/mean_field.py sim/runs/' + run; };
+  document.head.appendChild(s);
+})();
+
+function main(D) {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const N = D.ids.length, T = D.n_steps, dt = D.dt_h;
+  const start = new Date(D.start);
+  const truth = D.truth;
+  const M = D.metrics;
+  const fmtPct = p => p >= 0.995 ? '>99%' : p < 0.001 ? '<0.1%' : (p * 100 < 10 ? (p * 100).toFixed(1) : Math.round(p * 100)) + '%';
+  const whenOf = n => {
+    const a = new Date(start.getTime() + n * dt * 3600e3), b = new Date(a.getTime() + dt * 3600e3);
+    const d = a.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const h = x => String(x.getHours()).padStart(2, '0') + ':00';
+    return `Day ${Math.floor(n * dt / 24) + 1} · ${d} ${h(a)}–${h(b)}`;
+  };
+  const stepOfT = t => Math.floor(t * D.step_min / 60 / dt);
+  document.getElementById('dotsTitle').textContent = N.toLocaleString() + ' students';
+
+  // ---------------------------------------------------------------- state
+  const slider = document.getElementById('t');
+  slider.max = T - 1;
+  let n = Math.min(T - 1, Math.round(3 * 24 / dt) - 1);
+  let selected = null, playing = null;
+  const showTruth = document.getElementById('showTruth');
+
+  // ---------------------------------------------------------------- dots
+  const seq = ['--seq0', '--seq1', '--seq2', '--seq3', '--seq4', '--seq5'].map(css);
+  document.getElementById('ramp').innerHTML = seq.map(c => `<span style="background:${c}"></span>`).join('');
+  const hexToRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const seqRgb = seq.map(hexToRgb);
+  const colorOf = p => {                      // sqrt scale: 0 .. 0.4+
+    const x = Math.min(1, Math.sqrt(Math.max(p, 0) / 0.4)) * (seqRgb.length - 1);
+    const i = Math.min(seqRgb.length - 2, Math.floor(x)), f = x - i;
+    const c = seqRgb[i].map((v, k) => Math.round(v + (seqRgb[i + 1][k] - v) * f));
+    return `rgb(${c})`;
+  };
+  const cv = document.getElementById('dots'), ctx = cv.getContext('2d');
+  const COLS = Math.ceil(Math.sqrt(N * 1.6)), ROWS = Math.ceil(N / COLS);
+  let cell = 10;
+  function layoutDots() {
+    const w = cv.clientWidth || 600, dpr = window.devicePixelRatio || 1;
+    cell = w / COLS;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(cell * ROWS * dpr);
+    cv.style.height = (cell * ROWS) + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function drawDots() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const r = Math.max(2, cell * 0.36), ink = css('--truth'), acc = css('--accent');
+    for (let i = 0; i < N; i++) {
+      const x = (i % COLS + 0.5) * cell, y = (Math.floor(i / COLS) + 0.5) * cell;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = colorOf(D.p_now[i][n]); ctx.fill();
+      if (showTruth.checked && truth && truth[i][n] === '1') {
+        ctx.lineWidth = 1.6; ctx.strokeStyle = ink; ctx.beginPath(); ctx.arc(x, y, r + 1.6, 0, 7); ctx.stroke();
+      }
+      if (i === selected) {
+        ctx.lineWidth = 2.5; ctx.strokeStyle = acc; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, 7); ctx.stroke();
+      }
+    }
+  }
+  const tip = document.getElementById('tip');
+  const showTip = (e, html) => { tip.innerHTML = html; tip.style.display = 'block';
+    const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 14, innerHeight - tip.offsetHeight - 8);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
+  const hideTip = () => { tip.style.display = 'none'; };
+  const dotAt = e => { const b = cv.getBoundingClientRect();
+    const c = Math.floor((e.clientX - b.left) / cell), r = Math.floor((e.clientY - b.top) / cell);
+    const i = r * COLS + c; return c >= 0 && c < COLS && i >= 0 && i < N ? i : null; };
+  cv.addEventListener('mousemove', e => { const i = dotAt(e); if (i === null) return hideTip();
+    showTip(e, `<b>${D.ids[i]}</b><br>P(flu) now <b>${fmtPct(D.p_now[i][n])}</b><br>reports only: ${fmtPct(D.p_base[i][n])}` +
+      (truth ? `<br>sim truth: ${truth[i][n] === '1' ? 'infected' : 'not infected'}` : '')); });
+  cv.addEventListener('mouseleave', hideTip);
+  cv.addEventListener('click', e => { const i = dotAt(e); if (i !== null) select(i); });
+
+  // ---------------------------------------------------------------- tiles
+  function drawTiles() {
+    const m = M[n] || {};
+    const f = v => v == null ? '–' : v.toFixed(2);
+    document.getElementById('tiles').innerHTML = `
+      <div class="tile"><div class="k">Expected sick (Σ P)</div><div class="v">${Math.round(m.expected)}</div><div class="d">actually sick: ${m.actual}</div></div>
+      <div class="tile"><div class="k">AUC, everyone</div><div class="v">${f(m.auc)}</div><div class="d">reports only: ${f(m.base_auc)}</div></div>
+      <div class="tile"><div class="k">AUC, no reports yet</div><div class="v">${f(m.auc_unreported)}</div><div class="d">${m.unreported_infected} hidden cases · reports only 0.50</div></div>
+      <div class="tile"><div class="k">Sick in top 50</div><div class="v">${m.top50_hits}</div><div class="d">reports only ${m.base_top50_hits} · random ${m.random50}</div></div>`;
+  }
+
+  // ---------------------------------------------------------------- line charts
+  const NS = 'http://www.w3.org/2000/svg';
+  function lineChart(svg, series, opts) {
+    const W = +svg.viewBox.baseVal.width, H = +svg.viewBox.baseVal.height;
+    const L = 40, R = 14, Tp = 10, B = 24, w = W - L - R, h = H - Tp - B;
+    const len = series[0].values.length;
+    const all = series.flatMap(s => s.values).filter(v => v != null);
+    const nice = v => { const e = 10 ** Math.floor(Math.log10(v)), f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; };
+    const ymin = opts.ymin ?? 0, ymax = opts.ymax ?? nice(Math.max(...all) || 1);
+    const X = i => L + (len === 1 ? 0 : i / (len - 1) * w), Y = v => Tp + h - (v - ymin) / (ymax - ymin) * h;
+    let g = '';
+    const ticks = opts.ticks || 4;
+    for (let k = 0; k <= ticks; k++) {
+      const v = ymin + (ymax - ymin) * k / ticks;
+      g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/>`;
+      g += `<text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${opts.fmt ? opts.fmt(v) : Math.round(v)}</text>`;
+    }
+    const perDay = Math.round(24 / dt);
+    for (let d = 0; d * perDay < len; d += opts.dayEvery || 2) {
+      g += `<text x="${X(d * perDay)}" y="${H - 6}" text-anchor="middle">d${d + 1}</text>`;
+    }
+    if (opts.ref != null) g += `<line x1="${L}" x2="${W - R}" y1="${Y(opts.ref)}" y2="${Y(opts.ref)}" stroke="var(--muted)" stroke-dasharray="2 3"/>`;
+    if (opts.bands) for (const [a, b] of opts.bands)
+      g += `<rect x="${X(a)}" y="${Tp}" width="${Math.max(1, X(b) - X(a))}" height="${h}" fill="var(--truth)" opacity="0.08"/>`;
+    for (const s of series) {
+      let d = '', pen = false;
+      s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
+      g += `<path d="${d}" fill="none" stroke="var(${s.color})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" ${s.dash ? 'stroke-dasharray="5 4"' : ''}/>`;
+    }
+    if (opts.marks) for (const mk of opts.marks)
+      g += `<line x1="${X(mk.n)}" x2="${X(mk.n)}" y1="${Tp + h}" y2="${Tp + h - 8}" stroke="var(--fg)" stroke-width="2"/>`;
+    g += `<line class="now" x1="${X(n)}" x2="${X(n)}" y1="${Tp}" y2="${Tp + h}" stroke="var(--accent)" stroke-width="1.5"/>`;
+    g += `<g class="hover" style="display:none"><line y1="${Tp}" y2="${Tp + h}" stroke="var(--muted)"/>${series.map(s => `<circle r="4" fill="var(${s.color})" stroke="var(--panel)" stroke-width="2"/>`).join('')}</g>`;
+    g += `<rect x="${L}" y="${Tp}" width="${w}" height="${h}" fill="transparent" class="hit"/>`;
+    svg.innerHTML = g;
+    const hover = svg.querySelector('.hover'), hit = svg.querySelector('.hit');
+    const idxAt = e => { const b = svg.getBoundingClientRect(); const x = (e.clientX - b.left) / b.width * W;
+      return Math.max(0, Math.min(len - 1, Math.round((x - L) / w * (len - 1)))); };
+    hit.addEventListener('mousemove', e => {
+      const i = idxAt(e); hover.style.display = '';
+      hover.querySelector('line').setAttribute('x1', X(i)); hover.querySelector('line').setAttribute('x2', X(i));
+      hover.querySelectorAll('circle').forEach((c, k) => { const v = series[k].values[i];
+        c.style.display = v == null ? 'none' : ''; c.setAttribute('cx', X(i)); c.setAttribute('cy', v == null ? 0 : Y(v)); });
+      showTip(e, `<div class="note">${whenOf(i)}</div>` + series.map(s => `<span class="sw" style="background:var(${s.color})"></span>${s.name}: <b>${s.values[i] == null ? '–' : (opts.tipFmt || (v => Math.round(v)))(s.values[i])}</b>`).join('<br>'));
+    });
+    hit.addEventListener('mouseleave', () => { hover.style.display = 'none'; hideTip(); });
+    hit.addEventListener('click', e => setStep(idxAt(e)));
+  }
+  const legend = (el, series) => { document.getElementById(el).innerHTML = series.map(s =>
+    `<span><span class="sw" style="background:var(${s.color})${s.dash ? ';background:repeating-linear-gradient(90deg,var(' + s.color + ') 0 5px,transparent 5px 8px)' : ''}"></span>${s.name}</span>`).join(''); };
+
+  function drawCharts() {
+    const sum = [
+      { name: 'Σ P, contacts + reports', color: '--s1', values: M.map(m => m.expected) },
+      { name: 'Σ P, reports only', color: '--s2', values: D.p_base[0].map((_, k) => D.p_base.reduce((a, r) => a + r[k], 0)) },
+      { name: 'truly infected', color: '--truth', dash: true, values: M.map(m => m.actual) },
+    ];
+    lineChart(document.getElementById('chartSum'), sum, {}); legend('legSum', sum);
+    const a = [
+      { name: 'contacts + reports', color: '--s1', values: M.map(m => m.auc_unreported) },
+      { name: 'reports only', color: '--s2', values: M.map(m => m.base_auc_unreported) },
+    ];
+    lineChart(document.getElementById('chartAuc'), a, { ymin: 0.4, ymax: 0.8, ref: 0.5, fmt: v => v.toFixed(1), tipFmt: v => v.toFixed(3) }); legend('legAuc', a);
+    const t = [
+      { name: 'contacts + reports', color: '--s1', values: M.map(m => m.top50_hits) },
+      { name: 'reports only', color: '--s2', values: M.map(m => m.base_top50_hits) },
+      { name: 'random 50', color: '--truth', dash: true, values: M.map(m => m.random50) },
+    ];
+    lineChart(document.getElementById('chartTop'), t, { ymax: 50, ticks: 5 }); legend('legTop', t);
+  }
+
+  // ---------------------------------------------------------------- person
+  const kindName = { pos: 'positive test', neg: 'negative test', sym: 'self-report: might be sick', rec: 'self-report: recovered', other: 'reported by someone else' };
+  function select(i) {
+    selected = i; drawDots();
+    const id = D.ids[i];
+    document.getElementById('pTitle').textContent = `${id}: P(flu) ${fmtPct(D.p_now[i][n])} at ${whenOf(n)}`;
+    const inf = D.infected_at[id];
+    document.getElementById('pSub').textContent = inf
+      ? `Sim truth (hidden from the model): infected at ${whenOf(stepOfT(inf[0])).replace(/^Day \d+ · /, '')} by ${inf[2] === 'IMPORT' ? (inf[1] === 'seed' ? 'being a starting case' : 'someone off campus') : inf[2] + ' (' + inf[1] + ')'}.`
+      : 'Sim truth (hidden from the model): never infected in this run.';
+    const bands = [];
+    if (truth) { let a = null; for (let k = 0; k <= T; k++) { const on = k < T && truth[i][k] === '1';
+      if (on && a === null) a = k; if (!on && a !== null) { bands.push([a, k - 1]); a = null; } } }
+    const ev = D.evidence[id] || [];
+    const ser = [
+      { name: 'P(flu), contacts + reports', color: '--s1', values: D.p_now[i] },
+      { name: 'P(flu), reports only', color: '--s2', values: D.p_base[i] },
+    ];
+    const ymax = Math.min(1, Math.ceil(Math.max(0.1, ...D.p_now[i], ...D.p_base[i]) * 1.05 * 4) / 4);
+    lineChart(document.getElementById('chartPerson'), ser, { ymax, fmt: v => Math.round(v * 100) + '%', tipFmt: fmtPct, bands, marks: ev.map(e => ({ n: stepOfT(e.t) })), dayEvery: 1 });
+    document.getElementById('legPerson').innerHTML = ser.map(s => `<span><span class="sw" style="background:var(${s.color})"></span>${s.name}</span>`).join('') +
+      `<span><span class="sw" style="height:10px;background:var(--truth);opacity:.15"></span>truly infected (sim truth)</span><span><span class="sw" style="width:2px;height:10px;background:var(--fg)"></span>a report or test</span>`;
+    document.getElementById('evidence').innerHTML = ev.length
+      ? ev.map(e => `<span class="pill">${whenOf(stepOfT(e.t)).replace(/^Day (\d+) · .*? /, 'd$1 ')}: ${kindName[e.kind]}</span>`).join('')
+      : '<span class="note">No reports or tests about this student.</span>';
+    const rows = D.top[i];
+    const tb = document.getElementById('meet');
+    if (!rows.length) { tb.innerHTML = '<tr><td class="note">No meeting added more than 0.01%.</td></tr>'; return; }
+    const stageTxt = s => s == null ? '–' : (s < 0 ? `${(-s).toFixed(1)} d before symptoms` : `day ${s.toFixed(1)} of symptoms`);
+    tb.innerHTML = `<thead><tr><th>When</th><th>With</th><th>P(they have flu)</th><th>P(still healthy)</th><th>Minutes</th><th>Distance</th><th>Room</th><th>Setting</th><th>Humidity out → in</th><th>Their stage</th><th>λ</th><th>Added risk</th><th>Days since</th></tr></thead><tbody>` +
+      rows.map(r => {
+        const out = r.outdoor_min > r.min / 2;
+        const days = ((n - r.n) * dt / 24);
+        return `<tr><td>${whenOf(r.n).replace(/^Day (\d+) · /, 'd$1 ')}</td><td><a href="#" data-i="${D.ids.indexOf(r.other)}">${r.other}</a></td>
+          <td>${fmtPct(r.p_other)}</td><td>${fmtPct(r.p_self_s)}</td><td>${Math.round(r.min)}</td><td>${r.dist.toFixed(1)} m</td>
+          <td>${r.room_m3 ? Math.round(r.room_m3) + ' m³, ' + r.ach + ' ACH' : '–'}</td><td>${out ? 'outdoors' : 'indoors'}</td>
+          <td>${r.rh_out}% → ${out ? r.rh_out : r.rh_in}%</td><td>${stageTxt(r.stage)}</td><td>${(r.lam * 100).toFixed(2)}%</td>
+          <td><b>${fmtPct(r.contrib)}</b></td><td>${days < 0 ? 'later' : days.toFixed(1)}</td></tr>`;
+      }).join('') + '</tbody>';
+    tb.querySelectorAll('a[data-i]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); select(+a.dataset.i); document.getElementById('person').scrollIntoView({ behavior: 'smooth' }); }));
+  }
+
+  // ---------------------------------------------------------------- method notes
+  const P = D.params, C = D.constants;
+  document.getElementById('methodList').innerHTML = [
+    `<b>Both people's probabilities.</b> Each meeting's term is P(i still healthy) × P(j infected) × λ. Every student's distribution feeds everyone they meet, not only people who reported.`,
+    `<b>Stage of flu.</b> Each student carries a distribution over infection age in ${dt} h steps, covering ${P.illness_days} days. j's infectiousness follows the calculator's shedding curve, which peaks around symptom onset (${P.onset_days} d after infection). ${Math.round(P.p_asym * 100)}% of cases are asymptomatic, at ${P.asym_rel}× infectiousness.`,
+    `<b>Time since the meeting.</b> An infection caught at a meeting ages: latent, then infectious, then over after ${P.illness_days} days. The table's "days since" counts that age.`,
+    `<b>Duration, distance, room, indoors/outdoors, humidity.</b> λ comes from the calculator's dose model. Duration and distance come from each 5-min contact. Room volume and ACH come from map/rooms.csv. Outdoors, there is no room term and wind dilutes 5× more. Outdoor ${D.weather[0].outdoor_rh}% RH at ${D.weather[0].outdoor_temp_c} °C heats to ${D.weather[0].indoor_rh.toFixed(0)}% RH indoors, which sets the virus decay. ${D.counts.wall_rows.toLocaleString()} contacts through walls are skipped.`,
+    `<b>Calibration.</b> The calculator's λ is scaled ×${P.lambda_scale}, fitted by calibrate.py so a run started from the sim's true seeds reproduces the sim's infection count. Unscaled, the calculator's λ gives about 6× the sim's on-campus infections.`,
+    `<b>Observations, as in the paper's MF.</b> A positive test sets P(infected) = 1 from ${P.tau_pos_days} d before the result. A symptom self-report, or a report by someone else, sets it with weight given by a likelihood ratio (${P.lr_sym}, ${P.lr_other}). A negative test multiplies infected mass by the false-negative rate ${P.fnr}. "Recovered" sets P(R) = 1. Reports reach back in time, so everyone is rerun from that point, and the people a reporter met days ago go up as well.`,
+    `<b>Message-passing correction.</b> When computing j → i, the model leaves out the infection mass j caught from i. This keeps risk from echoing inside a pair (dynamic message passing, the paper's ref. 10).`,
+    `<b>Prior.</b> ${P.prior * 100}% infected at the start, ages spread evenly. Off-campus infection is ${P.import_per_day} per day.`,
+    `Constants: breathing ${C.BREATHING_RATE} m³/h, ${C.QUANTA_PEAK} quanta/h at peak, near-field ${C.NEAR_FIELD_Q} m³/h at 1 m, settling ${C.DEPOSITION}/h.`,
+  ].map(x => `<li>${x}</li>`).join('');
+
+  // ---------------------------------------------------------------- time
+  function setStep(k) {
+    n = Math.max(0, Math.min(T - 1, k)); slider.value = n;
+    document.getElementById('when').textContent = whenOf(n);
+    drawDots(); drawTiles();
+    document.querySelectorAll('svg line.now').forEach(l => {
+      const svg = l.ownerSVGElement, W = +svg.viewBox.baseVal.width, x = 40 + n / (T - 1) * (W - 54);
+      l.setAttribute('x1', x); l.setAttribute('x2', x); });
+    if (selected !== null) document.getElementById('pTitle').textContent = `${D.ids[selected]}: P(flu) ${fmtPct(D.p_now[selected][n])} at ${whenOf(n)}`;
+  }
+  slider.addEventListener('input', () => setStep(+slider.value));
+  showTruth.addEventListener('change', drawDots);
+  const playBtn = document.getElementById('play');
+  playBtn.addEventListener('click', () => {
+    if (playing) { clearInterval(playing); playing = null; playBtn.textContent = '▶ Play'; return; }
+    if (n >= T - 1) setStep(0);
+    playBtn.textContent = '❚❚ Pause';
+    playing = setInterval(() => { if (n >= T - 1) { playBtn.click(); return; } setStep(n + 1); }, 350);
+  });
+  addEventListener('resize', () => { layoutDots(); drawDots(); });
+
+  layoutDots(); drawCharts(); setStep(n);
+  // start on the student whose risk the contacts raised most above reports-only
+  let best = 0, bestGap = -1;
+  for (let i = 0; i < N; i++) { const g = Math.max(...D.p_now[i].map((v, k) => v - D.p_base[i][k])); if (g > bestGap) { bestGap = g; best = i; } }
+  select(best);
+}
+</script>
+</body>
+</html>
