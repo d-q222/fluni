@@ -17,6 +17,9 @@ struct ReportSheet: View {
     @State private var test = TestKind.rapid
     @State private var confirmPositive = false
     @State private var error: String?
+    @State private var stamped = false   // Lisa's "Self-reported" stamp lands before the sheet closes
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         NavigationStack {
@@ -33,6 +36,7 @@ struct ReportSheet: View {
                 .padding(16)
             }
             .background(Theme.paper)
+            .overlay { stampOverlay }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
@@ -60,23 +64,12 @@ struct ReportSheet: View {
             .frame(maxWidth: .infinity).accessibilityHidden(true)  // Lisa's illustration
         Text("What are you feeling?").font(.fluni(.headline)).foregroundStyle(Theme.ink)
             .accessibilityAddTraits(.isHeader)
-        VStack(spacing: 8) {
-            ForEach(Symptom.allCases, id: \.self) { s in
-                let on = picked.contains(s)
-                Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
-                    HStack {
-                        Text(s.label).font(.fluni(.body))
-                        Spacer()
-                        Image(systemName: on ? "checkmark.square.fill" : "square").accessibilityHidden(true)
-                    }
-                    .foregroundStyle(Theme.ink)
-                    .frame(minHeight: 28)
-                    .card(fill: on ? Theme.surface2 : Theme.surface)
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
-                .accessibilityIdentifier("symptom.\(s.rawValue)")
-            }
+        Text("Tap every sticker that fits.").font(.fluni(.subheadline)).foregroundStyle(Theme.ink2)
+        // Sticker grid (design pass): one of Lisa's tissue drawings per symptom, always with its word.
+        // Two columns, one at accessibility text sizes so labels never truncate.
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: typeSize.isAccessibilitySize ? 1 : 2),
+                  spacing: 10) {
+            ForEach(Symptom.allCases, id: \.self) { s in sticker(s) }
         }
         DatePicker("When did it start?", selection: $date, in: ...Date(), displayedComponents: .date)
             .font(.fluni(.body)).foregroundStyle(Theme.ink)
@@ -87,6 +80,60 @@ struct ReportSheet: View {
             .disabled(picked.isEmpty).opacity(picked.isEmpty ? 0.5 : 1)
             .accessibilityIdentifier("report.submit")
             .accessibilityHint(picked.isEmpty ? "Pick at least one symptom first" : "Shares \"possibly sick\" with phones near you")
+    }
+
+    /// A symptom sticker. Picked = peach box, a check badge, and a small tilt; never colour alone, so it
+    /// reads the same under Increase Contrast (flat cards) and Differentiate Without Color.
+    private func sticker(_ s: Symptom) -> some View {
+        let on = picked.contains(s)
+        return Button { if on { picked.remove(s) } else { picked.insert(s) } } label: {
+            VStack(spacing: 6) {
+                Image(s.art).resizable().scaledToFit()
+                    .frame(height: 76)
+                    .rotationEffect(.degrees(on && !reduceMotion ? -5 : 0))
+                    .scaleEffect(on && !reduceMotion ? 1.06 : 1)
+                    .accessibilityHidden(true)
+                Text(s.label).font(.fluni(.subheadline, weight: on ? .semibold : .regular))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(Theme.ink)
+            .frame(maxWidth: .infinity, minHeight: 116)
+            .overlay(alignment: .topTrailing) {
+                if on {
+                    Image(systemName: "checkmark.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(Theme.paper, Theme.fireInk)
+                        .font(.title3)
+                        .accessibilityHidden(true)
+                }
+            }
+            .card(on ? CardStyle.peach : CardStyle.paper)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.6), value: on)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(s.label)
+        .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
+        .accessibilityIdentifier("symptom.\(s.rawValue)")
+    }
+
+    /// Lisa's "Self-reported" stamp, thumped onto the sheet after a symptoms report is saved.
+    /// Always in the hierarchy so the `if` inside the ZStack can animate its insertion.
+    private var stampOverlay: some View {
+        ZStack {
+            if stamped {
+                Theme.paper.opacity(0.6).ignoresSafeArea()
+                    .transition(.opacity)
+                Image("StampSelfReported").resizable().scaledToFit()
+                    .frame(width: 220)
+                    .rotationEffect(.degrees(-12))
+                    .transition(reduceMotion ? .opacity : .scale(scale: 2.2).combined(with: .opacity))
+                    .accessibilityLabel("Self-reported")
+            }
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: tests
@@ -135,7 +182,13 @@ struct ReportSheet: View {
     private func submit() {
         do {
             switch kind {
-            case .symptoms: try store.symptoms(picked, onset: date, model: model)
+            case .symptoms:
+                try store.symptoms(picked, onset: date, model: model)
+                // Saved: show the stamp for a moment, then close (straight away with Reduce Motion).
+                if reduceMotion { dismiss(); return }
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { stamped = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { dismiss() }
+                return
             case .positive: try store.positive(test, date: date, model: model)
             case .negative: try store.negative(test, date: date, model: model)
             }
@@ -146,6 +199,20 @@ struct ReportSheet: View {
             error = "Pick at least one symptom."
         } catch {
             self.error = "Couldn't save that. Please try again."
+        }
+    }
+}
+
+private extension Symptom {
+    /// Lisa's drawing for each symptom (FlUni asset catalog; sources in heatmap/assets/illustrations/symptoms).
+    var art: String {
+        switch self {
+        case .fever: return "SymptomFever"
+        case .cough: return "SymptomCough"
+        case .soreThroat: return "SymptomSoreThroat"
+        case .aches: return "SymptomAches"
+        case .fatigue: return "SymptomFatigue"
+        case .runnyNose: return "SymptomRunnyNose"
         }
     }
 }
