@@ -105,7 +105,7 @@ function strip(d) {
 
 // Lisa's two-frame scenes at the top of the risk card (assets/scenes/<name>-1/-2.png), by state. Hand-drawn
 // animation: the two frames swap like a flipbook. Only states she has drawn get one; Reduce Motion holds frame 1.
-const SCENE = { none: 'fine' };
+const SCENE = { none: 'fine', sick: 'sick' };
 const scene = (key) => {
   const n = SCENE[key];
   if (!n) return '';
@@ -158,7 +158,7 @@ const FEELINGS = [['better', 'Better'], ['same', 'The same'], ['worse', 'Worse']
 function sickHome(d, walk) {
   const s = d.stay, day = s ? Math.min(s.day, 5) : 0, over = s && s.over;
   const wk = (ms) => new Date(ms).toLocaleDateString('en-US', { weekday: 'short' });
-  const card1 = card('hero sickcard', '', `<p class="status"><span class="dot sun"></span>You're staying home</p>
+  const card1 = card('hero sickcard', '', `${scene('sick')}<p class="status"><span class="dot sun"></span>You're staying home</p>
     <p class="daybig">${over ? 'Day 5 is done' : `Day ${day} of 5`}</p>
     <div class="checkin"><p>${over ? 'How are you feeling now?' : 'How are you feeling today?'}</p>
     <div class="choices">${FEELINGS.map(([k, t]) => `<button data-act="feel" data-k="${k}" aria-pressed="${d.feel === k}"><img src="${ASSET.replace('illustrations/', 'checkin/')}${k}.png" alt="">${t}</button>`).join('')}</div></div>`);
