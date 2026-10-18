@@ -98,6 +98,21 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → synthetic data (@aidenyj), 2026-10-17: 1,000-agent runs put 77% of agents in one dorm.**
+  - In `influenza_none_n1000_d14_s42_f12e71fa`, `agents_static.csv` `home_dorm` is: Florence Moore
+    Hall 774, Junipero 119, off campus 100, Trancos 7. Dorms seem to fill in order instead of
+    being sampled across campus.
+  - At night that puts 774 agents in FloMo. The user map scales mid-size runs to a ~7,000-person
+    campus (×7), so it shows 5,418 people and ~1,370 expected sick in FloMo, against ~450 real
+    residents.
+  - The whole outbreak also lives in one building, which makes the demo map lopsided.
+  - **Ask:** when n is below the full campus, sample homes across all dorms in proportion to their
+    real capacity, so 1,000 agents spread over ~40 dorms. Then regenerate the boosted 1,000-agent
+    runs.
+  - Shorter runs would also help the live demo. At 1,000 agents × 14 days (11 M contacts) the
+    page needs precomputed files (4.6 s load, but no "Why this %?"). Four days loads live in 6 s
+    with every feature.
+
 - **heat map → synthetic data (@aidenyj), 2026-10-17: false reports in the 7,000-agent run.**
   - **What we see:** `influenza_none_n7000_d2_s42_5423d1a4` has 6 infections (all off-campus imports)
     but 308 reports, 307 of them false: 303 false `report_other`s (294 different targets) and 4 false
