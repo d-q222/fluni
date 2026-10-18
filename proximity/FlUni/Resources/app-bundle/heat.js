@@ -27,6 +27,11 @@ const LUT = (() => {
   return lut;
 })();
 const LUT32 = new Uint32Array(LUT.buffer); // one RGBA pixel per entry, same byte order as ImageData
+// The same ramp, but from STRONG_FROM of the colour max on at least STRONG_ALPHA opaque, so a building that
+// is clearly above the baseline reads at campus zoom (heat sits on beige footprints of a similar hue).
+const STRONG_FROM = 0.1, STRONG_ALPHA = 215;
+const LUT32_STRONG = LUT32.map((px, i) => (i >= Math.round(Math.sqrt(STRONG_FROM) * 255) && px >>> 24 < STRONG_ALPHA
+  ? ((px & 0x00ffffff) | (STRONG_ALPHA << 24)) >>> 0 : px));
 
 // Draw the grid onto a canvas (one pixel per cell). vmax is fixed across frames, so a colour means
 // the same thing at every moment. Colour follows √(value / vmax) so a lone sick person still shows;
@@ -34,7 +39,7 @@ const LUT32 = new Uint32Array(LUT.buffer); // one RGBA pixel per entry, same byt
 // people within ~1σ.
 // Runs every frame, so the canvas size (setting it clears and reallocates) and the pixel buffer are
 // kept between calls, and pixels are written whole (no per-pixel subarray).
-export function paint(grid, canvas, vmax, { minPeople = 0 } = {}) {
+export function paint(grid, canvas, vmax, { minPeople = 0, strong = false } = {}) {
   if (canvas.width !== grid.nx) canvas.width = grid.nx;
   if (canvas.height !== grid.ny) canvas.height = grid.ny;
   const ctx = canvas.getContext('2d');
@@ -42,7 +47,7 @@ export function paint(grid, canvas, vmax, { minPeople = 0 } = {}) {
     canvas.img = ctx.createImageData(grid.nx, grid.ny);
     canvas.px = new Uint32Array(canvas.img.data.buffer);
   }
-  const px = canvas.px, { heat, people } = grid;
+  const px = canvas.px, { heat, people } = grid, lut = strong ? LUT32_STRONG : LUT32;
   px.fill(0);
   const peopleScale = 2 * Math.PI * grid.sigmaM * grid.sigmaM;
   for (let i = 0; i < heat.length; i++) {
@@ -50,7 +55,7 @@ export function paint(grid, canvas, vmax, { minPeople = 0 } = {}) {
     if (people[i] * peopleScale < minPeople) continue;
     const t = Math.sqrt(Math.min(1, heat[i] / vmax));
     if (t < 0.02) continue;
-    px[i] = LUT32[Math.round(t * 255)];
+    px[i] = lut[Math.round(t * 255)];
   }
   ctx.putImageData(canvas.img, 0, 0);
 }

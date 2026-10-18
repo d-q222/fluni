@@ -36,6 +36,11 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
   `configs/interventions.json` → `fluni`, adoption is `population.has_app_rate`). A `fluni` run also
   writes `app_alerts.csv` (`t, agent_id, alert, p_sick, weighted_min`; one row per alert, followed or not).
   `scripts/check_psick.py <run>` checks the Python P(sick) against `model/cli.mjs` on a finished run.
+- Housing: by default residents fill dorms one after another, so a run with fewer agents than
+  campus lands in 1–3 dorms (1,000 agents: 77% in Florence Moore Hall).
+  `--set population.housing.assignment=spread` instead fills whole bedrooms drawn at random from
+  every dorm, so residents spread roughly in proportion to dorm capacity (1,000 agents: 53 dorms,
+  at most 11% in one). The key is not in `configs/population.json`, so default run ids are unchanged.
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
@@ -76,9 +81,11 @@ kept because the heat map loads it by default (`heatmap/app.js` DEFAULT_RUN).
 `runs/influenza_none_n500_d2_s42_aea9db72/` is a 500-agent, 2-day run with default settings (no seeded
 cases, one import), made after the path and biking changes. `view.py` on it shows agents on paths.
 
-`runs/influenza_none_n7000_d2_s42_5423d1a4/` is a full-size run: 7,000 agents, 2 days, seed 42,
-default settings (6 imports, no campus spread yet in 2 days). Its files over GitHub's 100 MB limit
-are committed in parts; rebuild them after cloning (see "Large runs in git").
+The full-size 7,000-agent, 2-day run (`influenza_none_n7000_d2_s42_5423d1a4`) is archived: it was made
+before the `report_other` rate fix, humidity and calibration, so 303 of its 303 `report_other`s are
+false. It's kept, with all its parts, at the git tag `archive/sim-n7000-5423d1a4`:
+`git checkout archive/sim-n7000-5423d1a4 -- sim/runs/influenza_none_n7000_d2_s42_5423d1a4`, then
+`run_parts.py join` it (see "Large runs in git").
 
 Two 1,000-agent, 14-day runs (seed 42, `output.by_agent=false`) have spread boosted above the
 calibrated default so more of campus gets infected:
@@ -88,7 +95,17 @@ calibrated default so more of campus gets infected:
 - `runs/influenza_none_n1000_d14_s42_183f262b/`: `--initial-seeds 50`, `transmission_scale=2.0`.
   50.3% infected by day 14, measured R 1.32, still growing at the end.
 
-Their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
+Two 1,000-agent runs (seed 42, `--initial-seeds 50`, `transmission_scale=2.0`,
+`output.by_agent=false`) use `--set population.housing.assignment=spread`, so the 900 residents
+live in 53 dorms (at most 97 in one, Florence Moore Hall) instead of 77% in one:
+
+- `runs/influenza_none_n1000_d4_s42_73b8452c/`: 4 days, for the live demo. 10.6% infected by day 4
+  (50 seeded), new infections by day 52, 13, 17, 24. Files are under 40 MB, so nothing is split.
+- `runs/influenza_none_n1000_d14_s42_25fe957a/`: 14 days. 22.3% infected by day 14, measured R
+  0.86. Same settings as 183f262b (50.3%), but with residents spread out far fewer people catch it
+  in dorms (69 vs 161) and common rooms (15 vs 96).
+
+Except the 4-day spread run, their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
 `scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
 
 ## Calibration
@@ -132,7 +149,7 @@ invented catalog and time grid.
 header, and `parts/manifest.json` records the sha256 of every original and part. After cloning:
 
 ```bash
-.venv/bin/python scripts/run_parts.py join runs/influenza_none_n7000_d2_s42_5423d1a4   # ~10 s
+.venv/bin/python scripts/run_parts.py join runs/<run>   # ~10 s for a 7,000-agent, 2-day run
 ```
 
 This rebuilds `contacts.csv.gz` and `timeline.csv.gz` byte-for-byte (checked against the manifest)

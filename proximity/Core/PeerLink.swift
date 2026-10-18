@@ -63,7 +63,8 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     static let largerNameWait: TimeInterval = 4       // the larger name invites too if the smaller hasn't by then
     static let minRestartGap: TimeInterval = 5        // discovery restarts at least this far apart
     static let restartDelay: TimeInterval = 0.5       // stop, then start on a later main-queue turn
-    static let releaseDelay: TimeInterval = 2         // keep a stopped browser/advertiser alive this long
+    static let releaseDelay: TimeInterval = 120       // keep a stopped browser/advertiser alive this long (see below)
+    static let minBrowseBeforeStop: TimeInterval = 5  // never stop a browser that started less than this ago
     static let retireAfterRelink: TimeInterval = 3    // old identity kept this long after the new link is up (UWB tokens)
     static let retireDeadline: TimeInterval = 15
 
@@ -81,7 +82,9 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         let gen: Int
         let me: MCPeerID
         let advertiser: MCNearbyServiceAdvertiser
-        let browser: MCNearbyServiceBrowser
+        /// Replaced (never stopped and restarted) on a discovery restart; see `restartDiscovery`.
+        var browser: MCNearbyServiceBrowser
+        var browsingSince = Date.distantPast
         var found: [MCPeerID: Date] = [:]   // peer -> first seen
         var slots: [MCPeerID: Slot] = [:]
         var retireBy: Date?                 // non-nil once replaced by a newer identity
@@ -100,6 +103,11 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     private lazy var current = makeIdentity()
     private var retiring: [Identity] = []
     private var graveyard: [Identity] = []   // stopped, kept alive until CFNetwork's cancel has run
+    /// Stopped browsers kept alive the same way. Field crash (6 on 2026-10-17, all in the foreground): CFNetwork posts
+    /// `_BrowserCancel` as a deferred run-loop source when a browse stops; if the browser (or the CFNetServiceBrowser
+    /// a restart of the same MCNearbyServiceBrowser throws away) is gone when it runs, CFRunLoopSourceInvalidate traps.
+    /// So: a stopped browser is never started again and lives on here for `releaseDelay`.
+    private var browserGraveyard: [MCNearbyServiceBrowser] = []
     private var tick: Timer?
     private var lastDiscoveryRestart = Date.distantPast
     private var restartPending = false
@@ -147,6 +155,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         id.discovering = true
         id.advertiser.startAdvertisingPeer()
         id.browser.startBrowsingForPeers()
+        id.browsingSince = Date()
     }
 
     private func stopDiscovery(_ id: Identity) {
@@ -154,6 +163,19 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         id.discovering = false
         id.advertiser.stopAdvertisingPeer()
         id.browser.stopBrowsingForPeers()
+    }
+
+    /// Swaps in a fresh browser for the same peer ID, so the stopped one is never started again, and keeps the old
+    /// one alive until its deferred cancel has run.
+    private func retireBrowser(of id: Identity) {
+        let old = id.browser
+        old.delegate = nil
+        browserGraveyard.append(old)
+        id.browser = MCNearbyServiceBrowser(peer: id.me, serviceType: PeerLink.serviceType)
+        id.browser.delegate = self
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.releaseDelay) { [weak self] in
+            self?.browserGraveyard.removeAll { $0 === old }
+        }
     }
 
     /// Disconnects and forgets an identity, keeping its objects alive for a moment (see type comment).
@@ -180,7 +202,7 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
         tick?.invalidate()
         tick = nil
         for id in retiring { release(id, notify: false) }
-        stopDiscovery(current)
+        if current.discovering { stopDiscovery(current); retireBrowser(of: current) }  // resume() starts a fresh one
         for slot in current.slots.values { slot.session.delegate = nil; slot.session.disconnect() }
         current.slots.removeAll()
         current.found.removeAll()
@@ -285,11 +307,14 @@ final class PeerLink: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDele
     private func restartDiscovery(_ why: String) {
         guard started, !paused, !restartPending, !anyConnecting,
               Date().timeIntervalSince(lastDiscoveryRestart) >= Self.minRestartGap else { return }
+        let id = current
+        // Right after start (e.g. launch, then didBecomeActive) a stop would race CFNetwork's own start-up.
+        guard Date().timeIntervalSince(id.browsingSince) >= Self.minBrowseBeforeStop else { return }
         lastDiscoveryRestart = Date()
         restartPending = true
-        let id = current
         log("link discovery restart (\(why))")
         stopDiscovery(id)
+        retireBrowser(of: id)
         id.found.removeAll()  // foundPeer fires again for peers still around
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.restartDelay) { [weak self] in
             guard let self else { return }
