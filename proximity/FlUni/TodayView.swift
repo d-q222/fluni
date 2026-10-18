@@ -44,6 +44,7 @@ struct TodayView: View {
                 }
                 .padding(16)
             }
+            .tissueTabBarScrollRoom(alert: true)
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)
@@ -80,8 +81,14 @@ struct TodayView: View {
                 if level == .none {
                     Image("Tissue").resizable().scaledToFit().frame(width: 56, height: 56).accessibilityHidden(true)
                 } else {
-                    Image(systemName: level == .closeContact ? "exclamationmark.circle.fill" : "info.circle.fill")
-                        .font(.title).accessibilityHidden(true)
+                    // Looks like an info button, so it is one: it opens how alerts work.
+                    Button { showHow = true } label: {
+                        Image(systemName: level == .closeContact ? "exclamationmark.circle.fill" : "info.circle.fill")
+                            .font(.title).frame(minWidth: 44, minHeight: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("How alerts work")
+                    .accessibilityIdentifier("status.info")
                 }
             }
             if level != .none {
@@ -98,7 +105,7 @@ struct TodayView: View {
         .foregroundStyle(s.text)
         // All clear: paper box with a sage tint. Alerts: Lisa's peach box (ink text; fire-ink fails on peach).
         .modifier(StatusBox(level: level, fill: s.fill))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)  // not .combine: that would swallow the info button
     }
 
     private static func style(_ level: AlertLevel) -> (title: String, subtitle: String, fill: Color, text: Color) {
