@@ -89,7 +89,7 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // Zoomed out to the campus, smaller badges so the heat in the buildings under them shows through.
-const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(6, PERSON.radius - (17 - zoom) * 3)) : PERSON.radius);
+const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(4, PERSON.radius - (17 - zoom) * 4)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
@@ -1389,6 +1389,10 @@ async function main() {
     }
 
     const showDots = $('show-dots').checked && view !== 'public';
+    // People step back where something else is the subject: faded in "Air by room" (the rooms are), and
+    // translucent zoomed out to the campus (the heat is). Close up they're solid and clickable as ever.
+    const z = map.getZoom(), look = view === 'airborne' ? '0.2' : z < 15.5 ? '0.55' : z < 16.5 ? '0.8' : '';
+    if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
     if (showDots) {
