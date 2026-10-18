@@ -15,6 +15,10 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Decisions
 
+- **2026-10-17: heat shows risk above the baseline (product owner).** Heat colour and the
+  building `heat`/`high` flags use Σ max(0, P − prior) instead of Σ P, so a run with few reports
+  doesn't look like a crowd map. `expected_sick` and the popup counts stay Σ P. The
+  `building_heat.csv` columns are unchanged; see docs/building-heat-format.md.
 - **2026-10-17 — Agent timeline format.** The synthetic data workstream owns the format: one large
   CSV with one row per agent per timestamp (agent id, position, properties, sick status, …). The
   heat map adapts to it and keeps all parsing in one adapter.
@@ -178,6 +182,8 @@ Claim a row before you start. Update the status as you go. Agents should name th
     - Your script and our port differ in two places: quiet emission in dorm rooms, and the prior
       (yours decays, ours holds).
     - The doc ends with three questions for you.
+  - **2026-10-17 follow-up, GitHub issue #5 (assigned to Rio):** calibration against the sim and the
+    4 open questions (λ vs the sim's R ≈ 1.6, corroborated reports, second-hand stage, COMPARISON.md).
   - **Spec tests:** [`model/TESTS.md`](model/TESTS.md) (`node model/test.mjs`, 13/13). It has one
     test for each input in your spec, checking that the input moves P the right way, plus a check
     that we match the paper's update.
