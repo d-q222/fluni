@@ -45,8 +45,8 @@ enum PreviewHook {
     static let exposure: ExposureTracker? = {
         var t = ExposureTracker()
         switch state {
-        case .nearby: t.advance(simSeconds: 6 * 60, contacts: [(0.8, .possible)])
-        case .closeContact: t.advance(simSeconds: 18 * 60, contacts: [(0.95, .contagious)])
+        case .nearby: t.advance(simSeconds: 6 * 60, contacts: [(0.8, .possible)], doses: [DosePeer(id: "a", distance: 1.2)])
+        case .closeContact: t.advance(simSeconds: 18 * 60, contacts: [(0.95, .contagious)], doses: [DosePeer(id: "b", distance: 0.8)])
         case nil, .onboarding: return nil
         default: break
         }
