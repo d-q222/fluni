@@ -14,6 +14,7 @@ import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
+import { makeSeats } from './seats.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
@@ -45,12 +46,13 @@ const EXPOSURE_WINDOW_MS = 24 * 3600000;
 const NOTICE_WINDOW_MS = 3 * 24 * 3600000; // retroactive exposure notice: contacts who later report sick
 const CONTAGIOUS = 0.9;     // P(sick) the app treats as "contagious" (≈ a positive test)
 const QUIET_GAP_MS = 2 * 3600_000; // playback skips stretches with no samples at all (e.g. overnight)
+const SEAT_EASE_MS = 400;   // a dot glides this long (real time) between its route and its seat (seats.js)
 const SPEEDS = [2, 10, 30, 60];    // simulated minutes per real second
 const roomNames = new Map();       // room_id -> registrar room name, when the run has real class rooms
 // Default: the sim's run (needs the server started at the repo root), else the local placeholder.
 // ?data=<csv> or ?run=<sim run name>; default: the sim's real sample run, then the mock, then the
 // local placeholder.
-const DEFAULT_RUN = 'influenza_none_n1000_d14_s42_f12e71fa';
+const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
@@ -86,12 +88,16 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 // unchanged; only the drawing step adds the image. Until the image loads, the plain badge shows.
 const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
+// Zoomed out to the campus, smaller badges so the heat in the buildings under them shows through.
+const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(6, PERSON.radius - (17 - zoom) * 3)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
     this._renderer._updateCircle(this);
-    const ctx = this._renderer._ctx, p = this._point, s = PERSON.size;
-    if (!ctx || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    const ctx = this._renderer._ctx, p = this._point, s = (PERSON.size * this._radius) / PERSON.radius;
+    // Only inside the renderer's redraw pass (as _updateCircle): a moved dot's update also lands here, and
+    // drawing then put a stray badge-less tissue on screen until the next redraw cleared it.
+    if (!ctx || !this._renderer._drawing || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
     ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
   },
 });
@@ -251,15 +257,18 @@ async function loadBuildings(dataUrl) {
       ['location_id', 'name', 'type', 'source', 'indoor', 'lat', 'lon', 'footprint_wkt']);
     const names = new Map(data.filter((b) => b.location_id && b.name).map((b) => [b.location_id, b.name]));
     // No boxes for outdoor spaces; manual boxes on a real building take its outline (footprints.js).
-    const features = cleanFootprints(data).map(({ row: b, geometry }) => ({
+    const features = cleanFootprints(data).map(({ row: b, geometry, box }) => ({
       type: 'Feature',
       // buildings.js / masks.js key features by 'bld_' + the part after the slash.
-      properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name, type: b.type },
+      properties: { id: `run/${b.location_id.replace(/^bld_/, '')}`, name: b.name, type: b.type, box },
       geometry,
     }));
-    return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null };
+    // The sim's outdoor places on water (Lake Lagunita): nobody is drawn standing in them (seats.js).
+    const water = data.filter((b) => b.source === 'manual' && !/^(true|1)$/i.test(b.indoor) && /lake|lagunita|pond|reservoir/i.test(b.name) && b.footprint_wkt)
+      .map((b) => wktGeometry(b.footprint_wkt));
+    return { names, outlines: features.length ? { type: 'FeatureCollection', features } : null, water };
   } catch {
-    return { names: new Map(), outlines: null };
+    return { names: new Map(), outlines: null, water: [] };
   }
 }
 
@@ -267,9 +276,17 @@ async function loadBuildings(dataUrl) {
 // ---------- Leaflet glue ----------
 
 // A canvas pinned to geographic bounds, scaled with the map (same approach as L.ImageOverlay).
+// clip: building outlines (GeoJSON) the canvas is clipped to, so the scaled-up heat grid stops exactly at
+// the drawn walls (a CSS clip-path in the canvas's own pixels, rebuilt on zoom; it scales with zoomanim).
 const CanvasLayer = L.Layer.extend({
-  initialize(bounds) {
+  initialize(bounds, clip = null) {
     this.bounds = L.latLngBounds(bounds);
+    this.rings = clip ? clip.features.flatMap((f) => {
+      const g = f.geometry;
+      if (!g) return [];
+      // [ring, isHole]: holes are wound the other way below, so courtyards stay clear under nonzero.
+      return (g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []).flatMap((poly) => poly.map((r, k) => [r, k > 0]));
+    }) : null;
     this.canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-animated');
   },
   onAdd(map) {
@@ -295,6 +312,18 @@ const CanvasLayer = L.Layer.extend({
     L.DomUtil.setPosition(this.canvas, tl);
     this.canvas.style.width = `${br.x - tl.x}px`;
     this.canvas.style.height = `${br.y - tl.y}px`;
+    if (this.rings) {
+      const parts = [];
+      for (const [ring, hole] of this.rings) {
+        const pts = ring.map(([lon, lat]) => this._map.latLngToLayerPoint([lat, lon]));
+        let area = 0;
+        for (let i = 0; i + 1 < pts.length; i++) area += pts[i].x * pts[i + 1].y - pts[i + 1].x * pts[i].y;
+        if ((area > 0) === hole) pts.reverse(); // outer rings clockwise on screen, holes anticlockwise
+        const d = pts.map((q, i) => `${i ? 'L' : 'M'}${(q.x - tl.x).toFixed(1)} ${(q.y - tl.y).toFixed(1)}`).join('');
+        if (d) parts.push(`${d}Z`);
+      }
+      this.canvas.style.clipPath = `path('${parts.join('')}')`; // nonzero: duplicate outlines don't cancel
+    }
   },
   animate(e) {
     const scale = this._map.getZoomScale(e.zoom);
@@ -306,6 +335,9 @@ const CanvasLayer = L.Layer.extend({
 // Base maps (?basemap=sim|streets|drawn):
 // - sim: the sim viewer's look (@aidenyj): OpenFreeMap's Positron vector map, with the run's own map on
 //   top (its building footprints and the path network people walk). Loaded on first use. Default.
+//   Positron's own buildings are left out: the run's footprints are the only buildings, so the shapes
+//   people stand in and the heat clipped to them are exactly what's drawn (no doubled outlines).
+//   Offline (no unpkg or OpenFreeMap) it still shows the run's buildings and paths, which are local.
 // - streets: OSM raster tiles, greyed.
 // - drawn: the design pass's illustrated campus (assets/trace/), an image on a canvas that maps exactly
 //   onto its bounds file; a hand-drawn version can replace the same image. Needs no tile server.
@@ -317,7 +349,10 @@ const GL = {
   leaflet: 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js',
 };
 // Buildings in one neutral tint: the viewer colours them by type, but here warm tints would read as heat.
-const SIM_BUILDING = { fillColor: '#e7dfd0', fillOpacity: 0.75, color: '#a8988a', weight: 0.7, opacity: 0.8 };
+const SIM_BUILDING = { fillColor: '#e9e5de', fillOpacity: 0.8, color: '#a8988a', weight: 0.7, opacity: 0.8 }; // grey paper: heat's warm hues stand out on it
+// A hand-placed box with no OSM building near it (footprints.js): only an approximate shape, so drawn faintly.
+const SIM_BOX = { ...SIM_BUILDING, fillOpacity: 0.3, opacity: 0.5, dashArray: '3 3' };
+const SIM_BACKGROUND = '#f6f4f0'; // Positron's land colour, so the sim map looks the same before (or without) its tiles
 const STYLES = ['sim', 'streets', 'drawn'];
 const bases = new Map(); // map -> { streets, drawn, sim } layers, made on first use
 let baseStyle = STYLES.includes(PARAMS.get('basemap')) ? PARAMS.get('basemap') : 'sim';
@@ -336,9 +371,15 @@ const loadScript = (src) => new Promise((ok, fail) => document.head.append(
 function loadGl() {
   glReady ||= (async () => {
     document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: GL.css }));
+    const style = fetch(GL.style).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`style: HTTP ${r.status}`))));
+    style.catch(() => {}); // reported below, once
     await loadScript(GL.js);
     await loadScript(GL.leaflet);
-  })();
+    const json = await style;
+    json.layers = json.layers.filter((l) => l['source-layer'] !== 'building'); // the run's footprints are the buildings
+    GL.json = json;
+  })().then(() => { for (const map of bases.keys()) applyBase(map); },
+    (err) => console.warn(`Vector base map unavailable (${err.message}); showing the run's own buildings and paths.`));
   return glReady;
 }
 
@@ -355,7 +396,6 @@ async function setBaseStyle(style) {
       const b = await fetch(DRAWN.bounds).then((r) => r.json());
       drawnBounds = [[b.south, b.west], [b.north, b.east]];
     }
-    if (style === 'sim') await loadGl();
   } catch (err) {
     console.warn(`Base map "${style}" unavailable (${err.message}); using street tiles.`);
     baseStyle = 'streets';
@@ -366,11 +406,11 @@ async function setBaseStyle(style) {
 function layerFor(map, base, style) {
   if (style === 'streets') return (base.streets ||= L.tileLayer(TILES, { attribution: ATTRIBUTION, maxZoom: 19, className: 'muted-tiles' }));
   if (style === 'drawn') return drawnBounds && (base.drawn ||= L.imageOverlay(DRAWN.image, drawnBounds, { pane: 'tilePane', attribution: ATTRIBUTION }));
-  if (!window.L.maplibreGL) return null;
   if (!base.sim) {
-    base.sim = L.layerGroup([L.maplibreGL({ style: GL.style })]);
+    base.sim = L.layerGroup();
     base.simData = null;
   }
+  if (GL.json && !base.gl) base.sim.addLayer(base.gl = L.maplibreGL({ style: GL.json }));
   if (simMap && base.simData !== simMap) { // the run's buildings and paths, drawn like the sim viewer
     base.simData = simMap;
     const renderer = L.canvas({ pane: 'simPane' });
@@ -378,7 +418,7 @@ function layerFor(map, base, style) {
     if (simMap.paths) base.sim.addLayer(L.geoJSON(simMap.paths, { pane: 'simPane', renderer, interactive: false, attribution,
       style: { color: '#8aa39b', weight: 1.2, opacity: 0.55 } }));
     if (simMap.buildings) base.sim.addLayer(L.geoJSON(simMap.buildings, { pane: 'simPane', renderer, interactive: false,
-      attribution: simMap.paths ? undefined : attribution, style: SIM_BUILDING }));
+      attribution: simMap.paths ? undefined : attribution, style: (f) => (f.properties.box ? SIM_BOX : SIM_BUILDING) }));
   }
   return base.sim;
 }
@@ -387,9 +427,11 @@ function applyBase(map) {
   const base = bases.get(map);
   const layer = layerFor(map, base, baseStyle);
   if (!layer) { setBaseStyle(baseStyle); return; } // not loaded yet (first use, or ?basemap=)
+  if (baseStyle === 'sim' && !GL.json) loadGl(); // the vector tiles join the run's own map when they arrive
   for (const style of STYLES) { const l = base[style]; if (l && l !== layer) l.remove(); }
   if (!map.hasLayer(layer)) layer.addTo(map);
-  map.getContainer().style.background = baseStyle === 'drawn' ? '#fff' : ''; // the illustration's own paper colour
+  // The illustration's own paper colour; Positron's land colour under the sim map.
+  map.getContainer().style.background = baseStyle === 'drawn' ? '#fff' : baseStyle === 'sim' ? SIM_BACKGROUND : '';
 }
 
 // ---------- helpers ----------
@@ -446,24 +488,49 @@ function firstMove(tracks, t0) {
   return Number.isFinite(first) ? first : t0;
 }
 
-// Fixed colour scale shared by every frame: the 90th percentile of peaks at ~60 sampled times, so a
+// Fixed colour scale shared by every frame: a high percentile of peaks at ~60 sampled times, so a
 // single extreme moment doesn't wash out the rest. Anything above it shows as the darkest colour.
 function scaleMax(heatAt, times) {
   const step = Math.max(1, Math.floor(times.length / 60));
   const peaks = [];
   for (let i = 0; i < times.length; i += step) peaks.push(heatAt(times[i]).max());
   peaks.sort((a, b) => a - b);
-  // Above the baseline most moments can be blank: then the busiest sampled moment sets the scale.
-  return peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
+  // The 75th percentile, so outbreak buildings reach the dark end. Above the baseline most moments can be
+  // blank: then the busiest sampled moment sets the scale.
+  return peaks[Math.floor(0.75 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
 }
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
 // The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
-function* asPoints(states, truth) {
+// indoorOnly: heat lives inside building outlines only (people outdoors show by their dot's colour).
+function* asPoints(states, truth, indoorOnly = false) {
   for (const s of states) {
+    if (indoorOnly && !s.buildingId) continue;
     yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
   }
+}
+
+// The heat grid's building mask: cells whose centre is inside an outline (masks.js), plus the cells an
+// outline's corners fall in (a small building on a coarse grid had no cell, and the normalisation moved
+// its heat into other buildings), grown by one cell, so heat reaches every outline's edge and the canvas
+// clip (CanvasLayer) cuts it exactly on the drawn line.
+function heatMask(outlines, grid) {
+  const inside = rasterizeBuildings(outlines, grid).inside, { nx, ny, cellM, bounds } = grid;
+  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM;
+  for (const f of outlines.features) {
+    const g = f.geometry, polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : [];
+    for (const poly of polys) for (const [lon, lat] of poly[0]) {
+      const x = Math.floor((lon - bounds.west) * kx), y = Math.floor((bounds.north - lat) * ky);
+      if (x >= 0 && y >= 0 && x < nx && y < ny) inside[y * nx + x] = 1;
+    }
+  }
+  const out = new Uint8Array(inside.length);
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    if (!inside[y * nx + x]) continue;
+    for (let v = Math.max(0, y - 1); v <= Math.min(ny - 1, y + 1); v++) out.fill(1, v * nx + Math.max(0, x - 1), v * nx + Math.min(nx - 1, x + 1) + 1);
+  }
+  return out;
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -500,6 +567,23 @@ function formatTime(ms, numeric) {
 
 const pct = (p) => `${Math.round(p * 100)}%`;
 // FlUni's RiskEstimate.percentText: whole percent, "<1%" for small non-zero values, "0%" only for exactly zero.
+// FlUni's RiskEstimate.liveText: the live on-screen number, one decimal below 10% so it visibly moves, whole percent from 10%.
+const liveText = (p) => {
+  if (!(p > 0)) return '0%';
+  const tenths = Math.round(p * 1000) / 10;
+  return tenths < 10 ? `${tenths.toFixed(1)}%` : `${Math.min(100, Math.round(p * 100))}%`;
+};
+// FlUni's NotificationRoute.fit: whole sentences in order while they fit in 180 characters, "Tap for more details." if any are left out.
+const NOTE_BUDGET = 180, NOTE_MORE = 'Tap for more details.';
+function noteFit(sentences) {
+  if (sentences.join(' ').length <= NOTE_BUDGET) return sentences.join(' ');
+  const kept = [];
+  for (const s of sentences) {
+    if (kept.length && [...kept, s, NOTE_MORE].join(' ').length > NOTE_BUDGET) break;
+    kept.push(s);
+  }
+  return [...kept, NOTE_MORE].join(' ');
+}
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
 // The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
 // per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
@@ -531,6 +615,11 @@ const ICON = {
 };
 const ico = (name, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
 const mPerDegLon = (lat) => 111320 * Math.cos((lat * Math.PI) / 180);
+// Distance between two people where the sim has them (not their display seats, seats.js), in metres.
+const simDistM = (a, b) => {
+  const la = a.simLat ?? a.lat, lb = b.simLat ?? b.lat;
+  return Math.hypot((la - lb) * 110574, ((a.simLon ?? a.lon) - (b.simLon ?? b.lon)) * mPerDegLon(lb));
+};
 
 // ---------- app ----------
 
@@ -553,8 +642,23 @@ async function main() {
   ]);
   progress('Loading risk estimates…', 0.55);
   const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
-  setSimMap({ buildings: runBuildings.outlines,
-    paths: await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null) });
+  // Seated people are drawn inside their building's footprint, clustered by room (seats.js).
+  const roomAreas = new Map();
+  const roomArea = (id) => {
+    const i = rooms.index.get(id);
+    if (i === undefined) return undefined;
+    if (!roomAreas.has(id)) {
+      const g = wktGeometry(rooms.wkts[i]), ring = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates[0][0];
+      const kx = mPerDegLon(ring[0][1]);
+      let a = 0;
+      for (let k = 0; k + 1 < ring.length; k++) a += (ring[k][0] * ring[k + 1][1] - ring[k + 1][0] * ring[k][1]) * kx * 110574;
+      roomAreas.set(id, Math.abs(a) / 2);
+    }
+    return roomAreas.get(id);
+  };
+  const simPaths = await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null);
+  const seats = makeSeats(outlines, roomArea, simPaths, runBuildings.water);
+  setSimMap({ buildings: runBuildings.outlines, paths: simPaths });
   const data = toFrames(res.data, res.fields, runBuildings.names);
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
   const model = data.beliefFrom === 'column' ? null : await loadModel(dataUrl, [...new Set(data.samples.map((a) => a.id))]);
@@ -599,7 +703,7 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const mask = outlines ? rasterizeBuildings(outlines, probe).inside : null;
+  const mask = outlines ? heatMask(outlines, probe) : null;
   const field = new DiffusionField(bounds, DEMO.cellM, { mask });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
@@ -607,7 +711,7 @@ async function main() {
   const fieldFor = (sigma) => {
     const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
     if (!fields.has(cell)) {
-      const m = outlines ? rasterizeBuildings(outlines, new DiffusionField(bounds, cell)).inside : null;
+      const m = outlines ? heatMask(outlines, new DiffusionField(bounds, cell)) : null;
       fields.set(cell, new DiffusionField(bounds, cell, { mask: m }));
     }
     return fields.get(cell);
@@ -622,7 +726,7 @@ async function main() {
       const st = !dotSample || dotSample.has(id) ? stateNow(track, t) : stayNow(track, t);
       if (st) out.push(st);
     }
-    return out;
+    return seats.place(out);
   };
   // No people field: nothing masks by it.
   // The spread follows the zoom: 18 m (room-level) close up, about 16 screen pixels when zoomed out, so a
@@ -634,7 +738,7 @@ async function main() {
     const f = (lastField = fieldFor(sigmaM));
     f.clear();
     const states = nowStates || statesAt(t);
-    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth), 1);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, Boolean(outlines)), 1);
     return f.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
@@ -735,11 +839,15 @@ async function main() {
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
-    return Math.min(120, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6)); // 6 m steps: few cached scales
+    // 6 m steps: few cached scales. At most 30 m: with heat kept to the outlines, a wider spread only smears a
+    // building's heat into empty neighbours.
+    return Math.min(30, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
+    const r = personRadius(map.getZoom());
+    for (const m of dots.values()) if (m.getRadius() !== r) m.setRadius(r);
     const next = sigmaForZoom();
     if (next === sigmaM) return;
     sigmaM = next;
@@ -760,7 +868,7 @@ async function main() {
     const me = selected && current.get(selected);
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
-  const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
+  const heatLayer = new CanvasLayer([sw, ne], outlines).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
@@ -780,10 +888,12 @@ async function main() {
 
   function busiestMoment() {
     const sample = [...tracks.values()].slice(0, 500), DAY = 24 * 3600000;
-    // Total P at each day's noon; open on the first day with at least half the highest total.
+    // Risk above the baseline (what the heat shows) at each day's noon; open on the first day with at least
+    // a quarter of the highest: heat on screen, and in a growing outbreak days left to play (half opened the
+    // 4-day run on its last day). Plain Σ P counted everyone's 2% prior, so a quiet first day opened blank.
     const totals = [];
-    for (let d = t0; d < t1; d += DAY) totals.push(sample.reduce((sum, tr) => sum + (stateNow(tr, d + DAY / 2)?.p || 0), 0));
-    const day = Math.max(0, totals.findIndex((x) => x >= 0.5 * Math.max(...totals)));
+    for (let d = t0; d < t1; d += DAY) totals.push(sample.reduce((sum, tr) => sum + Math.max(0, (stateNow(tr, d + DAY / 2)?.p || 0) - MODEL.prior), 0));
+    const day = Math.max(0, totals.findIndex((x) => x >= 0.25 * Math.max(...totals)));
     const dayStart = t0 + day * DAY, dayEnd = Math.min(t1, dayStart + DAY);
     let best = Math.max(dayStart, firstMove(tracks, dayStart) - 10 * 60000), most = 0;
     for (let t = dayStart; t < dayEnd; t += 5 * 60000) {
@@ -797,7 +907,7 @@ async function main() {
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
-      renderer: dotRenderer, radius: PERSON.radius, weight: 2, color: COLORS.ring, fillOpacity: 1,
+      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: 2, color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -816,8 +926,7 @@ async function main() {
     for (const a of current.values()) {
       if (a.id === me.id || !test(a)) continue;
       if (data.hasRoom && !me.walking && (a.building !== me.building || a.room !== me.room)) continue;
-      const dy = (a.lat - me.lat) * 110574, dx = (a.lon - me.lon) * mPerDegLon(me.lat);
-      if (Math.hypot(dx, dy) <= radiusM) return true;
+      if (simDistM(a, me) <= radiusM) return true;
     }
     return false;
   }
@@ -847,7 +956,7 @@ async function main() {
         if (!w) continue;
         q.push([e.tMs, w * e.min]); sum += w * e.min;
         while (q[0][0] < e.tMs - EXPOSURE_WINDOW_MS) sum -= q.shift()[1];
-        if (sum >= CLOSE_CONTACT_MIN) { best = { id, tMs: e.tMs }; break; }
+        if (sum >= CLOSE_CONTACT_MIN) { best = { id, tMs: e.tMs + e.min * 60000 }; break; } // the alert lands when that contact has fully counted
       }
     }
     return best;
@@ -904,8 +1013,7 @@ async function main() {
       const hasApp = model && model.traits.get(a.id)?.has_app;
       if (hasApp !== undefined && /^(0|false|no)$/i.test(String(hasApp))) continue;
       if (data.hasRoom && !me.walking && (a.building !== me.building || a.room !== me.room)) continue;
-      const dy = (a.lat - me.lat) * 110574, dx = (a.lon - me.lon) * mPerDegLon(me.lat);
-      if (Math.hypot(dx, dy) <= 10) peers++;
+      if (simDistM(a, me) <= 10) peers++;
     }
     return { live, later, level, walkIn, peers };
   }
@@ -960,7 +1068,7 @@ async function main() {
     const note = tier === 'high' ? 'fireink' : 'ink2';
     out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
       <p class="t-title2" style="font-variant-numeric:tabular-nums">Campus model: ${percentText(p)}</p>
-      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${percentText(phoneP)}</p>
+      <p class="t-head" style="font-variant-numeric:tabular-nums">This phone's estimate: ${liveText(phoneP)}</p>
       <p class="t-sub">${advice(p)}</p>
       <p class="t-foot ${note}">Based on time near other FlUni phones in the last 24 hours. It's an estimate, not a diagnosis.</p>
       ${model ? `<button class="link ${note}" data-act="why">${ico('fn')}See how this is worked out</button>` : ''}</div>`));
@@ -1023,6 +1131,35 @@ async function main() {
     }
   }
 
+  // A lock-screen style banner, with FlUni's own notification text, when this person newly crosses into a
+  // heads-up, a close contact, or a busy building (not for the state they were already in when opened).
+  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null, noticeT = -Infinity;
+  function phoneNotice(me, st) {
+    // A new person, or time went backwards (a scrub back): start over, and drop a banner from the later moment.
+    if (noticeFor !== me.id || now < noticeT) {
+      if (now < noticeT) document.querySelector('#phone .ph-banner')?.remove();
+      noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; noticeT = now;
+      return;
+    }
+    noticeT = now;
+    const rank = { none: 0, nearby: 1, close: 2 };
+    let text = null;
+    if (rank[st.level] > rank[noticeSeen.level]) {
+      text = st.level === 'close' ? noteFit(ADVICE.close.body) : noteFit([`${ADVICE.nearby.title}.`, ...ADVICE.nearby.body]);
+    } else if (st.walkIn && st.walkIn !== noticeSeen.walkIn) {
+      text = noteFit([`${st.walkIn} has a lot of illness right now. Consider a mask, or a different spot.`]);
+    }
+    noticeSeen = { level: st.level, walkIn: st.walkIn };
+    if (!text) return;
+    const frame = document.querySelector('#phone .phone-frame');
+    frame.querySelector('.ph-banner')?.remove();
+    const b = Object.assign(document.createElement('div'), { className: 'ph-banner', role: 'alert' });
+    b.innerHTML = `<div class="ph-banner-head"><span class="ph-banner-app">FlUni</span><span>now</span></div><p>${esc(text)}</p>`;
+    frame.append(b);
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => b.remove(), 7000);
+  }
+
   function renderPhone(withHeat) {
     const me = selected && current.get(selected);
     renderMath();
@@ -1032,6 +1169,7 @@ async function main() {
       ? formatTime(now, true).split(', ')[1]
       : new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
     const st = phoneState(me);
+    phoneNotice(me, st);
     if (phoneTab === 'today') $('ph-today').innerHTML = todayHtml(me, st);
     const where = me.walking ? 'walking' : me.building;
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''}`;
@@ -1145,6 +1283,32 @@ async function main() {
     el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected sick`;
   }
 
+  // Playing, a dot glides from its route to its seat (and back) instead of jumping; the heat follows the
+  // dots. Scrubbing or a paused jump moves it straight there.
+  const shown = new Map(), eases = new Map(); // id -> { lat, lon (drawn), tLat, tLon (target), key, frame }; id -> { lat, lon, start }
+  let easeFrame = 0;
+  function easeSeats(realNow) {
+    if (!playing) eases.clear();
+    easeFrame++;
+    for (const a of current.values()) {
+      const key = a.walking || !a.buildingId ? '' : `${a.buildingId}|${a.room}`, was = shown.get(a.id);
+      // Glide when someone sits down, gets up, or is moved to another seat in the room (seats.js), from where
+      // the dot was drawn last frame, over a short distance (not someone back from off campus).
+      const jump = was && Math.hypot((a.lat - was.tLat) * 110574, (a.lon - was.tLon) * mPerDegLon(a.lat)); // target moved
+      if (playing && was && was.frame === easeFrame - 1 && (was.key !== key || key) && jump > 0.5 && jump < 80) {
+        eases.set(a.id, { lat: was.lat, lon: was.lon, start: realNow });
+      }
+      const tLat = a.lat, tLon = a.lon, e = eases.get(a.id);
+      if (e) {
+        const u = (realNow - e.start) / SEAT_EASE_MS;
+        if (u >= 1) eases.delete(a.id);
+        else { const k = u * u * (3 - 2 * u); a.lat = e.lat + k * (a.lat - e.lat); a.lon = e.lon + k * (a.lon - e.lon); }
+      }
+      if (was) Object.assign(was, { lat: a.lat, lon: a.lon, tLat, tLon, key, frame: easeFrame }); // reused: thousands a frame
+      else shown.set(a.id, { lat: a.lat, lon: a.lon, tLat, tLon, key, frame: easeFrame });
+    }
+  }
+
   // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
   function render(realNow) {
     const view = $('view').value;
@@ -1156,6 +1320,8 @@ async function main() {
         const s = !dotSample || dotSample.has(id) || id === selected ? stateNow(track, now) : stayNow(track, now);
         if (s) current.set(id, s);
       }
+      seats.place(current.values());
+      easeSeats(realNow);
     }
     $('time').textContent = dayTime(now, t0, data.numericTime);
     $('slider').value = (now - t0) / 60000;
@@ -1180,7 +1346,7 @@ async function main() {
       } else if (view !== 'public' && view !== 'airborne') {
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
         heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g));
-        paint(g, heatLayer.canvas, demoScale());
+        paint(g, heatLayer.canvas, demoScale(), { strong: true });
       }
       lastHeat = realNow;
       heatDirty = false;

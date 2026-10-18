@@ -12,3 +12,7 @@ data/osm/ways.json
 runs/influenza_none_n1000_d14_s42_*/contacts.csv.gz
 runs/influenza_none_n1000_d14_s42_*/timeline.csv.gz
 runs/influenza_none_n1000_d14_s42_*/*.parquet
+# 1,000-agent runs with population.housing.assignment=spread (see README "Sample run").
+!runs/influenza_none_n1000_d14_s42_25fe957a/
+!runs/influenza_none_n1000_d4_s42_73b8452c/
+runs/influenza_none_n1000_d4_s42_73b8452c/*.parquet

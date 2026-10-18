@@ -109,6 +109,15 @@ header.bar { gap: 10px 18px; }
   background: var(--ink); color: var(--surface); font-size: 13px; opacity: 0; transition: opacity 160ms; pointer-events: none; }
 .toast.on { opacity: .94; }
 
+#phone .phone-frame { position: relative; }
+/* notification banner on the phone (FlUni's own notification text) */
+.ph-banner { position: absolute; left: 12px; right: 12px; top: 40px; z-index: 5; padding: 10px 12px; border-radius: 18px; color: var(--ink);
+  background: rgba(255, 250, 241, .96); box-shadow: 0 8px 24px -6px rgba(51, 36, 28, .35), 0 0 0 1px var(--hairline); animation: bannerIn 360ms cubic-bezier(.2, .9, .3, 1.1); }
+.ph-banner-head { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.ph-banner-app { font-weight: 700; color: var(--ink-2); }
+.ph-banner p { margin: 3px 0 0; font-size: 13px; line-height: 1.35; }
+@keyframes bannerIn { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+
 /* the selected person */
 .sel-ring { pointer-events: none; }
 .sel-ring i { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--fire-ink);

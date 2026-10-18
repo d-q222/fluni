@@ -11,7 +11,8 @@ enum LiveClock {
 
     /// `run` is the first and last step of the data. Run day 0 starts at the local midnight of the first step.
     /// 1. Same weekday: the first run day with the device's weekday, at the device's time of day.
-    /// 2. No such weekday (a run shorter than 7 days): run day `daysSinceMonday mod runDays`.
+    /// 2. No such weekday (a run shorter than 7 days): the run's last day, the most developed outbreak
+    ///    (docs/building-heat-format.md, agreed 2026-10-17 so a weekend demo of a Mon-Thu run isn't before any report).
     /// 3. Clamp to `run`.
     /// DST: the wall clock is what is read, so on a spring-forward day the skipped hour is skipped here too, and on a
     /// fall-back day the repeated hour is read twice (the result steps back an hour once).
@@ -26,7 +27,7 @@ enum LiveClock {
         // 1970-01-01 was a Thursday (3 days after Monday).
         let startSinceMonday = ((Int(startDay) + 3) % 7 + 7) % 7
         var k = (sinceMonday - startSinceMonday + 7) % 7
-        if k >= runDays { k = sinceMonday % runDays }
+        if k >= runDays { k = runDays - 1 }
         return min(max((startDay + Double(k)) * day + timeOfDay, run.lowerBound), run.upperBound)
     }
 

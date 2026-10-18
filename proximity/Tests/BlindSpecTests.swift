@@ -799,16 +799,16 @@ final class BlindFeedTests: XCTestCase {
         XCTAssertEqual(h.state(at: t)?.t ?? .nan, sim("2026-01-10T16:45:00"), accuracy: 1e-6)
     }
 
-    // Same section, rules 3 and 4: weekday missing -> day (daysSinceMonday mod runDays); clamp to first/last step.
+    // Same section, rules 3 and 4: weekday missing -> the run's last day (rule 3 as amended 2026-10-17); clamp to first/last step.
     func testLiveClockShortRunFallbackAndClamp() {
         let cal = la()
         let run = sim("2026-01-05T08:00:00")...sim("2026-01-06T20:00:00")   // Mon 08:00 - Tue 20:00, 2 days
-        // Saturday: 5 mod 2 = 1 -> Tuesday.
+        // Saturday: no Saturday in the run -> the last day, Tuesday.
         XCTAssertEqual(LiveClock.simTime(now: localDate(2026, 10, 17, 12, 0, cal), calendar: cal, run: run),
                        sim("2026-01-06T12:00:00"), accuracy: 1)
-        // Sunday: 6 mod 2 = 0 -> Monday.
+        // Sunday: no Sunday in the run -> the last day, Tuesday.
         XCTAssertEqual(LiveClock.simTime(now: localDate(2026, 10, 18, 10, 0, cal), calendar: cal, run: run),
-                       sim("2026-01-05T10:00:00"), accuracy: 1)
+                       sim("2026-01-06T10:00:00"), accuracy: 1)
         // Monday 07:00 is before the first step -> clamp.
         XCTAssertEqual(LiveClock.simTime(now: localDate(2026, 10, 19, 7, 0, cal), calendar: cal, run: run),
                        sim("2026-01-05T08:00:00"), accuracy: 1)

@@ -186,6 +186,21 @@ def main():
         _, df3, _ = run(cfg, campus, n, seed=7)
         assert csv_bytes(df) != csv_bytes(df3)
         print("  header OK, determinism OK")
+    print("== N=1000 housing.assignment=spread")
+    scfg = json.loads(json.dumps(cfg))
+    scfg["population"]["housing"] = {"assignment": "spread"}
+    pop, df, dt = run(scfg, campus, 1000)
+    report(pop, df, dt, campus)
+    res = pop.home_b >= 0
+    per_dorm = pd.Series(pop.home_b[res]).value_counts()
+    occ = pd.Series(pop.home_room[res]).value_counts()
+    full = occ.values == campus.room_cap[occ.index.values]
+    assert per_dorm.iloc[0] / res.sum() < 0.25, f"spread: {per_dorm.iloc[0]} of {res.sum()} in one dorm"
+    assert len(per_dorm) >= min(10, len(campus.buildings_of_type("dorm")))
+    assert (~full).sum() <= 1, f"spread: {(~full).sum()} partly filled bedrooms"   # only the last room drawn
+    _, df2, _ = run(scfg, campus, 1000)
+    assert csv_bytes(df) == csv_bytes(df2), "spread non-deterministic"
+    print(f"  {len(per_dorm)} dorms, max share {per_dorm.iloc[0] / res.sum():.2f}, rooms full, determinism OK")
     print("ALL OK")
 
 

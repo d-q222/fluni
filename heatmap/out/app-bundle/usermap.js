@@ -38,7 +38,7 @@ function makeClock(totals) {
     if (P.get('at') !== null && Number.isFinite(at)) return clamp(startMs + at * 60000);
     let k = -1;
     for (let i = 0; i < runDays; i++) if (runDay(i).getDay() === d.getDay()) { k = i; break; }
-    if (k < 0) k = ((d.getDay() + 6) % 7) % runDays; // daysSinceMonday mod runDays
+    if (k < 0) k = runDays - 1; // no such weekday in the run: its last day, the most developed outbreak
     const base = runDay(k);
     return clamp(new Date(base.getFullYear(), base.getMonth(), base.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()).getTime());
   };

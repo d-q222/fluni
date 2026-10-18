@@ -37,14 +37,15 @@ the device's clock into a moment in the run:
 
 1. Take the device's current **local** weekday and time of day.
 2. Find the **first run day with the same weekday**, and use that day at the same time of day.
-3. If the run has no such weekday (e.g. a 2-day Mon-Tue run on a Saturday), use run day
-   `daysSinceMonday mod runDays`, where `daysSinceMonday` is 0 for Monday to 6 for Sunday and
-   `runDays` is the number of days the run covers. Same time of day.
+3. If the run has no such weekday (e.g. a 4-day Mon-Thu run on a Saturday), use the run's **last
+   day** (the most developed outbreak), at the same time of day. (Until 2026-10-17 this was
+   `daysSinceMonday mod runDays`, which put a Saturday demo on a quiet early day.)
 4. Clamp to the run's first and last step.
 
 Run days start at the local midnight of the run's first step (all times are local, as in `t_iso`).
 Then read the snapshot at or before that time: the latest `t_iso ≤ t` in `building_heat.csv`
 (snapshots every **15 minutes**), or the step containing t in the map bundle's `totals.json`
-(**5-minute** steps). The map re-reads as the clock advances (1 s per s). Example: the default run starts
-Monday 2026-01-05, so a Saturday 4:55 pm device shows 2026-01-10 16:55, i.e. the 16:55 step
-(the 16:45 row of `building_heat.csv`).
+(also thinned to **15-minute** steps; the precompute's own `totals.json.gz` keeps the run's step). The map
+re-reads as the clock advances (1 s per s). Examples: the demo run `influenza_none_n1000_d4_s42_73b8452c`
+covers Monday 2026-01-05 to Thursday 2026-01-08, so a Wednesday 4:55 pm device shows 2026-01-07 16:55
+(the 16:45 row of `building_heat.csv`), and a Saturday 4:55 pm device shows the last day, 2026-01-08 16:55.

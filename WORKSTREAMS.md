@@ -99,6 +99,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
 ## Requests
 
 - **heat map → synthetic data (@aidenyj), 2026-10-17: 1,000-agent runs put 77% of agents in one dorm.**
+  - **Done, with Aiden's OK (2026-10-17):** opt-in `--set population.housing.assignment=spread`
+    (40d482d) puts residents in whole bedrooms across all dorms. Default runs are unchanged: same run
+    id, byte-identical outputs. Spread runs on main: `influenza_none_n1000_d4_s42_73b8452c` (the
+    demo default) and `influenza_none_n1000_d14_s42_25fe957a`, with homes in 53 dorms and at most
+    9.7% in one.
   - In `influenza_none_n1000_d14_s42_f12e71fa`, `agents_static.csv` `home_dorm` is: Florence Moore
     Hall 774, Junipero 119, off campus 100, Trancos 7. Dorms seem to fill in order instead of
     being sampled across campus.
