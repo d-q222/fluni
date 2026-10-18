@@ -166,11 +166,22 @@
     .screen .link.how { justify-content: center; font-size: 15px; }
     .screen .link .ico { width: 14px; height: 14px; }
     .screen .link.between { justify-content: space-between; }
-    .tabbar { flex: none; display: flex; justify-content: space-around; padding: 6px 4px 4px; border-top: 1px solid var(--hairline);
-      font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; background: var(--paper); }
-    .tabbar button { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--ink-3); min-width: 64px; }
-    .tabbar button[aria-selected="true"] { color: var(--ink); font-weight: 600; }
-    .tabbar svg { width: 26px; height: 26px; }
+    /* Tab bar: Lisa's tissue box (assets/tabbar/). The bar image already shows all three tissues; each
+       tab is a button over its tissue holding the same tissue cut out, so the selected one can lift
+       (scaled up from its bottom edge, so it always covers the drawing underneath). Labels are her
+       lettering; the buttons carry text labels for screen readers. */
+    .tabbar { flex: none; position: relative; aspect-ratio: 3.0233; margin-top: -6px;
+      background: url("assets/tabbar/bar.png") bottom / 100% 100% no-repeat; }
+    .tabbar button { all: unset; position: absolute; cursor: pointer; display: block; }
+    .tabbar button[data-tab="today"] { left: 0.00%; top: 38.84%; width: 24.62%; height: 61.16%; }
+    .tabbar button[data-tab="map"] { left: 34.38%; top: 33.49%; width: 29.85%; height: 66.51%; }
+    .tabbar button[data-tab="me"] { left: 74.92%; top: 34.42%; width: 25.08%; height: 65.58%; }
+    .tabbar button img { display: block; width: 100%; height: 100%; transform-origin: 50% 100%;
+      transition: transform 160ms cubic-bezier(.3,1.6,.6,1), filter 160ms ease-out; filter: saturate(.85) brightness(.97); }
+    .tabbar button[aria-selected="true"] img { transform: scale(1.12) rotate(-2deg);
+      filter: drop-shadow(0 4px 4px rgba(51, 36, 28, 0.25)); }
+    .tabbar button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 12px; }
+    @media (prefers-reduced-motion: reduce) { .tabbar button img { transition: none; } }
 
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
       font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -315,19 +326,19 @@
             <div class="stack" id="ph-today"></div>
           </div>
           <div class="tab stack" id="ph-tab-map" hidden>
-            <h1 class="nav-title">Campus</h1>
+            <h1 class="nav-title">Map</h1>
             <div class="ph-section"><b>Now</b></div>
             <div id="ph-map"></div>
             <p class="fine"></p>
           </div>
           <div class="tab" id="ph-tab-me" hidden>
-            <h1 class="nav-title">You</h1>
+            <h1 class="nav-title">Me</h1>
           </div>
         </div>
         <nav class="tabbar" aria-label="FlUni tabs">
-          <button data-tab="today" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Today</button>
-          <button data-tab="map" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14"/></svg>Campus</button>
-          <button data-tab="me" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="10" r="3"/><path d="M5.8 18.5c1.5-3 4-4 6.2-4s4.700 1 6.200 4"/></svg>You</button>
+          <button data-tab="today" aria-selected="true" aria-label="Today"><img src="assets/tabbar/tab-today.png" alt=""></button>
+          <button data-tab="map" aria-selected="false" aria-label="Map"><img src="assets/tabbar/tab-map.png" alt=""></button>
+          <button data-tab="me" aria-selected="false" aria-label="Me"><img src="assets/tabbar/tab-me.png" alt=""></button>
         </nav>
       </div>
       <div class="presenter"><span>Presenter only: <b id="ph-truth"></b></span><button id="ph-close">Close</button></div>

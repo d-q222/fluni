@@ -109,13 +109,13 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   same as concentration × average P(sick). The colour scale is fixed across all timestamps, so a
   colour means the same thing at every moment. It is a square-root scale, so the legend's middle
   label is a quarter of its maximum.
-- **Heat → "Room-level (demo)"**: fine detail (σ = 18 m), presenter only. How the heat spreads
+- **Heat → "Room-level (demo)"**: fine detail (σ = 6 m close up), presenter only. How the heat spreads
   (`diffuse.js`, `masks.js`):
   - Indoors, heat spreads only inside the person's building outline, so it no longer spills onto
     streets. Outdoors, it spreads freely.
   - Heat is the expected number of infected people near each point now: Σ P(sick) of the people
     there, spread by a kernel that integrates to 1 (legend: per 1,000 m²). No trail of past
-    positions. The spread follows the zoom (18 m close up, ~16 screen px zoomed out), with a colour
+    positions. The spread follows the zoom (6 m close up, ~6 screen px zoomed out, at most 15 m), with a colour
     scale per spread. The heat is recomputed every frame while that costs under 8 ms (it backs off
     above that). To stay under it: with few people only the patches around them are blurred; big
     spreads use a coarser grid (about 5 cells per σ); and only people on the visible map (plus a

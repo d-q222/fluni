@@ -17,7 +17,7 @@ import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import { makeSeats } from './seats.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
-const DEMO = { cellM: 3, sigmaM: 18 };
+const DEMO = { cellM: 3, sigmaM: 6 }; // heat spread around each person close up (product owner: tight)
 // Heat is the expected number of infected people near each point right now: Σ P(sick) of the people
 // there, spread by the diffusion kernel (which integrates to 1, so a cloud holds exactly its people's
 // expected count). No trail of past positions: that counted people who had already left. Infectious
@@ -89,13 +89,20 @@ const COLORS = { healthy: '#acbc8b', infected: '#db6c59', ring: '#fffaf1', risk:
 const PERSON = { radius: 13, img: new Image(), size: 22, onload: null }; // image stays inside the badge so canvas redraws leave no trails
 PERSON.img.onload = () => PERSON.onload && PERSON.onload();
 // Zoomed out to the campus, smaller badges so the heat in the buildings under them shows through.
-const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(PERSON.radius, Math.max(6, PERSON.radius - (17 - zoom) * 3)) : PERSON.radius);
+// People are drawn at a fixed size on the ground (PERSON_M metres), so they're tiny at campus zoom and grow as
+// you zoom in, like the buildings (2 px at campus zoom, 3 px at 17, 13 px at 19).
+const PERSON_M = 3, M_PER_PX_Z0 = 156543.03 * Math.cos((37.43 * Math.PI) / 180);
+const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
+const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
     this._renderer._updateCircle(this);
     const ctx = this._renderer._ctx, p = this._point, s = (PERSON.size * this._radius) / PERSON.radius;
-    if (!ctx || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    // Only inside the renderer's redraw pass (as _updateCircle): a moved dot's update also lands here, and
+    // drawing then put a stray badge-less tissue on screen until the next redraw cleared it.
+    if (!ctx || !this._renderer._drawing || this._empty() || !PERSON.img.complete || !PERSON.img.naturalWidth) return;
+    if (this._radius < 5) return; // too small for the tissue to read: just the coloured dot
     ctx.drawImage(PERSON.img, p.x - s / 2, p.y - s / 2 - 1, s, s);
   },
 });
@@ -214,7 +221,7 @@ async function loadModel(dataUrl, agentIds) {
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
-    return { risk, contacts: contacts.data, startMs, stepMs, traits };
+    return { risk, contacts: contacts.data, reports: reports.data, startMs, stepMs, traits };
   } catch (err) {
     console.warn(`No probability model for this run (${err}); using the placeholder estimate.`);
     return null;
@@ -585,8 +592,8 @@ function noteFit(sentences) {
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
 // The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
 // per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
-// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); the peer's broadcast
-// status sets s (tested positive 0.97, possibly sick 0.6); p += (1 - p) * s * lambda from the prior.
+// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); s = max(the peer's status,
+// the peer's broadcast score above the prior) (product owner 2026-10-17; see phoneEstimate); p += (1 - p) * s * lambda.
 // No second-hand term, no recovery.
 const PHONE_DOSE = doseModel(), PHONE_STAGE = 0.352, BT_RANGE_M = 10;
 const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -837,15 +844,14 @@ async function main() {
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
-    // 6 m steps: few cached scales. At most 30 m: with heat kept to the outlines, a wider spread only smears a
-    // building's heat into empty neighbours.
-    return Math.min(30, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6));
+    // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
+    return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom());
-    for (const m of dots.values()) if (m.getRadius() !== r) m.setRadius(r);
+    const r = personRadius(map.getZoom()), weight = personRing(r);
+    for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
     const next = sigmaForZoom();
     if (next === sigmaM) return;
     sigmaM = next;
@@ -887,10 +893,11 @@ async function main() {
   function busiestMoment() {
     const sample = [...tracks.values()].slice(0, 500), DAY = 24 * 3600000;
     // Risk above the baseline (what the heat shows) at each day's noon; open on the first day with at least
-    // half the highest. Plain Σ P counted everyone's 2% prior, so a quiet first day passed and opened blank.
+    // a quarter of the highest: heat on screen, and in a growing outbreak days left to play (half opened the
+    // 4-day run on its last day). Plain Σ P counted everyone's 2% prior, so a quiet first day opened blank.
     const totals = [];
     for (let d = t0; d < t1; d += DAY) totals.push(sample.reduce((sum, tr) => sum + Math.max(0, (stateNow(tr, d + DAY / 2)?.p || 0) - MODEL.prior), 0));
-    const day = Math.max(0, totals.findIndex((x) => x >= 0.5 * Math.max(...totals)));
+    const day = Math.max(0, totals.findIndex((x) => x >= 0.25 * Math.max(...totals)));
     const dayStart = t0 + day * DAY, dayEnd = Math.min(t1, dayStart + DAY);
     let best = Math.max(dayStart, firstMove(tracks, dayStart) - 10 * 60000), most = 0;
     for (let t = dayStart; t < dayEnd; t += 5 * 60000) {
@@ -904,7 +911,7 @@ async function main() {
   function dotFor(id) {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
-      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: 2, color: COLORS.ring, fillOpacity: 1,
+      renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: personRing(personRadius(map.getZoom())), color: COLORS.ring, fillOpacity: 1,
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -971,14 +978,48 @@ async function main() {
     }
     return total;
   }
-  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h.
-  function phoneEstimate(id, t) {
+  // Each person's own status as their phone knows it (product owner, 2026-10-17): 0.97 after a positive
+  // test, 0.6 after reporting symptoms, for 7 days; a negative test or "recovered" clears it.
+  const statusLog = new Map();
+  for (const r of model?.reports || []) {
+    const v = r.event === 'test_result' ? ({ positive: 0.97, negative: 0 })[r.value]
+      : r.event === 'self_report' ? ({ tested_positive: 0.97, might_be_sick: 0.6, recovered: 0 })[r.value] : undefined;
+    if (v === undefined) continue;
+    if (!statusLog.has(r.agent_id)) statusLog.set(r.agent_id, []);
+    statusLog.get(r.agent_id).push([model.startMs + Number(r.t) * model.stepMs, v]);
+  }
+  for (const list of statusLog.values()) list.sort((a, b) => a[0] - b[0]);
+  const statusFloor = (id, t) => {
+    let v = 0, at = -Infinity;
+    for (const [tt, x] of statusLog.get(id) || []) { if (tt > t) break; v = x; at = tt; }
+    return t - at <= 7 * 86400000 ? v : 0;
+  };
+  // What a phone broadcasts: its own score, max(phone estimate, status floor), as of one step earlier (the
+  // lag breaks the self-loop), quantised to a byte as round(255·sqrt(p)). Other phones use it, never show it.
+  const quantScore = (p) => (Math.round(255 * Math.sqrt(Math.min(1, Math.max(0, p)))) / 255) ** 2;
+  const scoreMemo = new Map();
+  function broadcastScore(id, t, depth) {
+    const key = `${id}|${Math.floor(t / model.stepMs)}|${depth}`;
+    let v = scoreMemo.get(key);
+    if (v === undefined) {
+      const tb = t - model.stepMs;
+      v = quantScore(Math.max(phoneEstimate(id, tb, depth), statusFloor(id, tb)));
+      scoreMemo.set(key, v);
+    }
+    return v;
+  }
+  // This phone's estimate (see PHONE_DOSE): peers in Bluetooth range over the last 24 h. Per peer
+  // s = max(their status, their broadcast score above the prior): Rio's P_j as the phone can know it, so
+  // getting closer to anyone who may be sick raises it. depth: how many hops of shared scores to follow
+  // (peers' own scores use their status only; the loop gain is small).
+  function phoneEstimate(id, t, depth = 1) {
     const dose = new Map();
     for (const e of exposureLog.get(id) || []) {
       if (e.tMs > t) break;
       if (e.tMs < t - EXPOSURE_WINDOW_MS) continue;
-      const peer = model.risk.pAt(e.other, e.tMs), s = peer >= CONTAGIOUS ? MODEL.posTest : peer >= RISKY ? MODEL.selfReport : 0;
-      if (!s) continue;
+      const floor = statusFloor(e.other, e.tMs);
+      const s = depth > 0 ? Math.max(floor, broadcastScore(e.other, e.tMs, depth - 1) - MODEL.prior) : floor;
+      if (!(s > 0)) continue;
       const durS = 60 * Math.min(e.min, (t - e.tMs) / 60000);
       const k = dose.get(e.other) || { s: 0, dose: 0 };
       k.dose += PHONE_DOSE({ distance_m: e.d, duration_s: durS, indoor: true });
@@ -1060,7 +1101,7 @@ async function main() {
         ${st.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">' : ico(st.level === 'close' ? 'alert' : 'info', 'big')}</div>
         ${lines.length ? `<div class="vstack">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`));
 
-    const p = me.p, tier = riskTier(p), phoneP = model ? phoneEstimate(me.id, now) : MODEL.prior;
+    const p = me.p, tier = riskTier(p), phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
     const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[tier];
     const note = tier === 'high' ? 'fireink' : 'ink2';
     out.push(card('', tint, `<div class="vstack ${tier === 'high' ? 'fireink' : ''}" style="gap:6px">
@@ -1130,9 +1171,15 @@ async function main() {
 
   // A lock-screen style banner, with FlUni's own notification text, when this person newly crosses into a
   // heads-up, a close contact, or a busy building (not for the state they were already in when opened).
-  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null;
+  let noticeFor = null, noticeSeen = { level: 'none', walkIn: null }, noticeTimer = null, noticeT = -Infinity;
   function phoneNotice(me, st) {
-    if (noticeFor !== me.id) { noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; return; }
+    // A new person, or time went backwards (a scrub back): start over, and drop a banner from the later moment.
+    if (noticeFor !== me.id || now < noticeT) {
+      if (now < noticeT) document.querySelector('#phone .ph-banner')?.remove();
+      noticeFor = me.id; noticeSeen = { level: st.level, walkIn: st.walkIn }; noticeT = now;
+      return;
+    }
+    noticeT = now;
     const rank = { none: 0, nearby: 1, close: 2 };
     let text = null;
     if (rank[st.level] > rank[noticeSeen.level]) {
@@ -1346,6 +1393,10 @@ async function main() {
     }
 
     const showDots = $('show-dots').checked && view !== 'public';
+    // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
+    // (sized on the ground, PERSON_M), so no fading is needed there.
+    const look = view === 'airborne' ? '0.2' : '';
+    if (dotRenderer._container && dotRenderer._container.style.opacity !== look) dotRenderer._container.style.opacity = look;
     const mode = $('dot-mode').value;
     for (const [id, m] of dots) if (!showDots || !current.has(id) || (dotSample && !dotSample.has(id) && id !== selected)) dotLayer.removeLayer(m);
     if (showDots) {
@@ -1448,7 +1499,8 @@ async function main() {
     try { updateViewCount(performance.now(), true); } catch { /* the legend is drawn before the map exists */ }
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
-    $('horizon').hidden = !isPublic;    // forecasts are a user-map feature
+    // Forecasts are a user-map feature. Hidden but keeping its slot, so the header doesn't shift between views.
+    $('horizon').style.visibility = isPublic ? '' : 'hidden';
     if (!EMBED) document.querySelector('.legend .fine').textContent = isPublic
       ? 'Totals only: no people. May be incomplete because not everyone shares their status.'
       : 'May be incomplete: not everyone shares their status. Click a person to see their app.';
@@ -1559,7 +1611,7 @@ async function main() {
   });
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
-    publicLayer, now: () => now, current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
+    publicLayer, now: () => now, current: () => current, phoneScore: (id, t = now) => (model ? Math.max(phoneEstimate(id, t), statusFloor(id, t)) : null), heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
   };
 }
 

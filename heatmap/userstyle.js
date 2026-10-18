@@ -25,23 +25,27 @@ export function colourMax(peaks) {
 // Leaflet path style for one building, or HIDDEN when it shouldn't show.
 // n: people there, hot: expected sick above the baseline (the colour), vmax: colour max.
 export const HIDDEN = { stroke: false, fill: false };
+const RAMP_FROM = 0.12; // where on the heat ramp the coolest shown building starts
 export function buildingStyle(n, hot, vmax, { minPeople = 4, forecast = false } = {}) {
   if (n < minPeople) return HIDDEN;
   // (next to) nothing above the baseline: no fill. √ under 0.1 is where the palette is still fading in.
   if (!(hot / vmax >= 0.01)) return HIDDEN;
-  // saturated sun -> fire fill (never pale: even the lowest shown building reads), stroke in its own darker hue
-  const { color } = heatColor(0.18 + 0.82 * Math.sqrt(Math.min(1, hot / vmax)));
-  return { stroke: true, weight: 1, color: darker(color), opacity: forecast ? 0.6 : 0.9, dashArray: forecast ? '4 3' : null,
-    fill: true, fillColor: color, fillOpacity: forecast ? 0.45 : 0.82 };
+  // Light and soft like the presenter's room-level heat: the same sun -> fire ramp, translucent (more opaque as
+  // it gets hotter, so hot buildings still read clearly warm), a thin stroke in its own darker hue.
+  const x = Math.sqrt(Math.min(1, hot / vmax));
+  const { color } = heatColor(RAMP_FROM + (1 - RAMP_FROM) * x);
+  const alpha = 0.4 + 0.35 * x;
+  return { stroke: true, weight: 0.8, color: darker(color), opacity: forecast ? 0.4 : 0.55, dashArray: forecast ? '4 3' : null,
+    fill: true, fillColor: color, fillOpacity: forecast ? alpha * 0.6 : alpha };
 }
 
 // A hot building's halo has a floor on its on-screen size: radius in CSS px, gone by street zoom.
 export const haloRadius = (zoom, minZoom = 0) => Math.max(0, Math.min(9, (17.5 - zoom) * 4));
-export const GLOW = 'drop-shadow(0 0 4px rgba(233,149,105,.85))'; // CSS filter on the fill pane
+export const GLOW = 'drop-shadow(0 0 3px rgba(233,149,105,.45))'; // CSS filter on the fill pane (soft)
 export const HALO_BLUR = 'blur(2.5px)';                           // CSS filter on the halo pane
 
 // "about 3.4": integers from 10 up, one decimal below.
 export const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x * 10) / 10));
 // the gradient behind the legend strip, matching buildingStyle's colours
 export const rampCss = () => `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map((q) => {
-  const m = heatColor(0.18 + 0.82 * q).color.match(/\d+/g); return `rgb(${m[0]},${m[1]},${m[2]})`; }).join(', ')})`;
+  const m = heatColor(RAMP_FROM + (1 - RAMP_FROM) * q).color.match(/\d+/g); return `rgba(${m[0]},${m[1]},${m[2]},${0.4 + 0.35 * q})`; }).join(', ')})`;
