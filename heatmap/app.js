@@ -274,9 +274,16 @@ async function loadBuildings(dataUrl) {
 // ---------- Leaflet glue ----------
 
 // A canvas pinned to geographic bounds, scaled with the map (same approach as L.ImageOverlay).
+// clip: building outlines (GeoJSON) the canvas is clipped to, so the scaled-up heat grid stops exactly at
+// the drawn walls (a CSS clip-path in the canvas's own pixels, rebuilt on zoom; it scales with zoomanim).
 const CanvasLayer = L.Layer.extend({
-  initialize(bounds) {
+  initialize(bounds, clip = null) {
     this.bounds = L.latLngBounds(bounds);
+    this.rings = clip ? clip.features.flatMap((f) => {
+      const g = f.geometry;
+      if (!g) return [];
+      return g.type === 'Polygon' ? g.coordinates : g.type === 'MultiPolygon' ? g.coordinates.flat() : [];
+    }) : null;
     this.canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-animated');
   },
   onAdd(map) {
@@ -302,6 +309,18 @@ const CanvasLayer = L.Layer.extend({
     L.DomUtil.setPosition(this.canvas, tl);
     this.canvas.style.width = `${br.x - tl.x}px`;
     this.canvas.style.height = `${br.y - tl.y}px`;
+    if (this.rings) {
+      const parts = [];
+      for (const ring of this.rings) {
+        let d = '';
+        for (const [lon, lat] of ring) {
+          const q = this._map.latLngToLayerPoint([lat, lon]);
+          d += `${d ? 'L' : 'M'}${(q.x - tl.x).toFixed(1)} ${(q.y - tl.y).toFixed(1)}`;
+        }
+        if (d) parts.push(`${d}Z`);
+      }
+      this.canvas.style.clipPath = `path('${parts.join('')}')`; // nonzero: duplicate outlines don't cancel
+    }
   },
   animate(e) {
     const scale = this._map.getZoomScale(e.zoom);
@@ -481,8 +500,10 @@ function scaleMax(heatAt, times) {
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
 // truth = heat from who is actually infectious (sim), instead of the app's estimate.
 // The model's heat is risk above the baseline: max(0, P - prior), so a crowd at the prior is blank.
-function* asPoints(states, truth) {
+// indoorOnly: heat lives inside building outlines only (people outdoors show by their dot's colour).
+function* asPoints(states, truth, indoorOnly = false) {
   for (const s of states) {
+    if (indoorOnly && !s.buildingId) continue;
     yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
   }
 }
@@ -692,7 +713,7 @@ async function main() {
     const f = (lastField = fieldFor(sigmaM));
     f.clear();
     const states = nowStates || statesAt(t);
-    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth), 1);
+    f.deposit(asPoints(area ? [...states].filter((s) => area.contains([s.lat, s.lon])) : states, truth, Boolean(outlines)), 1);
     return f.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
@@ -820,7 +841,7 @@ async function main() {
     const me = selected && current.get(selected);
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
-  const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
+  const heatLayer = new CanvasLayer([sw, ne], outlines).addTo(map);
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
