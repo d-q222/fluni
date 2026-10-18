@@ -8,12 +8,14 @@ struct AtHomeCard: View {
     @ObservedObject var store: SelfReportStore
     @State private var blocked: String?
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let now = Date()
         let r = store.record
         let phase = store.reporter.phase(r, now: now)
         VStack(alignment: .leading, spacing: 0) {
+            SceneFlip(name: "SceneSick")
             HStack(alignment: .firstTextBaseline, spacing: 9) {
                 Circle().fill(Theme.sun).overlay(Circle().strokeBorder(Theme.ink, lineWidth: 1.5))
                     .frame(width: 10, height: 10)
@@ -58,7 +60,14 @@ struct AtHomeCard: View {
         let feverToday = r.lastFeverAt.map { cal.isDate($0, inSameDayAs: now) } ?? false
         let buttons = ForEach(Feeling.allCases, id: \.self) { f in
             Button { store.checkIn(stillSymptomatic: true, hasFever: false, feeling: f, model: model) } label: {
-                Text(f.label).font(.fredoka(15, relativeTo: .subheadline))
+                VStack(spacing: 4) {
+                    // The picked face lifts and tilts like a sticker.
+                    Image("Checkin\(f.rawValue.capitalized)").resizable().scaledToFit().frame(width: 40, height: 44)
+                        .scaleEffect(picked == f ? 1.15 : 1).rotationEffect(.degrees(picked == f ? -6 : 0))
+                        .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.5), value: picked == f)
+                        .accessibilityHidden(true)
+                    Text(f.label).font(.fredoka(15, relativeTo: .subheadline))
+                }
             }
             .buttonStyle(ChunkyButtonStyle(fill: picked == f ? Theme.sun : Theme.surface, radius: 13, lift: 2, minHeight: 44))
             .accessibilityAddTraits(picked == f ? .isSelected : [])
@@ -227,10 +236,10 @@ struct DayTrack: View {
                 let isToday = cal.isDate(d.date, inSameDayAs: now)
                 let done = d.date < cal.startOfDay(for: now)
                 VStack(spacing: 5) {
-                    Circle().fill(done ? Theme.sage : isToday ? Theme.sun : Theme.paper)
-                        .overlay(Circle().strokeBorder(Theme.ink, lineWidth: 2))
-                        .frame(width: 20, height: 20)
-                        .overlay { if isToday { Circle().strokeBorder(Theme.ink, lineWidth: 1.5).padding(-4.5) } }
+                    // Lisa's markers: done sage, today ember with a double ring (28 pt, overhanging the 22 pt slot), still to come empty.
+                    Image(done ? "TrackDone" : isToday ? "TrackToday" : "TrackUpcoming").resizable().scaledToFit()
+                        .frame(width: isToday ? 28 : 22, height: isToday ? 28 : 22).padding(.vertical, isToday ? -3 : 0)
+                        .accessibilityHidden(true)
                     Text("\(isToday ? "Today" : d.date.formatted(.dateTime.weekday(.abbreviated)))\n\(d.day == 0 ? "day 0" : "\(d.day)")")
                         .font(.nunito(12, relativeTo: .caption, weight: .semibold))
                         .foregroundStyle(isToday ? Theme.ink : Theme.ink2)
@@ -247,8 +256,8 @@ struct DayTrack: View {
             GeometryReader { g in
                 let inset = g.size.width / CGFloat(2 * max(days.count, 1))
                 Path { p in
-                    p.move(to: CGPoint(x: inset, y: 10))
-                    p.addLine(to: CGPoint(x: g.size.width - inset, y: 10))
+                    p.move(to: CGPoint(x: inset, y: 11))
+                    p.addLine(to: CGPoint(x: g.size.width - inset, y: 11))
                 }
                 .stroke(Theme.ink2, style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
             }
