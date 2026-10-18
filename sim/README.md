@@ -313,8 +313,8 @@ get the rest.
 | `influenza_none_n7000_d14_s42_f90e5e60` | 7,000 | 90 | 1.2 | 18.3% | 1.45 | small files (no contacts) |
 | `influenza_none_n1000_d14_s42_689ae9f0` | 1,000 | 5 | 1.2, old behaviour | 5.0% | 0.97 | 5 files |
 | `influenza_none_n1000_d14_s42_f4bf301c` | 1,000 | 5 | 1.446, calibrated behaviour | 9.8% | 1.38 | 5 files |
-| `influenza_none_n7500_d14_s42_9776284a` | 7,500 | 5 | 1.2, old behaviour | 5.3% | 1.54 | small files (no contacts) |
-| `influenza_none_n7500_d14_s42_17ed9cd6` | 7,500 | 5 | 1.446, calibrated behaviour | 10.3% | 2.04 | small files (no contacts) |
+| `influenza_none_n7500_d14_s42_9776284a` (**fixed**) | 7,500 | 5 | 1.2, old behaviour | 5.3% | 1.54 | small files; 5 files in the release below |
+| `influenza_none_n7500_d14_s42_17ed9cd6` (**frankenstein**) | 7,500 | 5 | 1.446, calibrated behaviour | 10.3% | 2.04 | small files; 5 files in the release below |
 | `influenza_none_n1000_d14_s42_{22a44427, 9214956b, f4573d76, 2329d271, 291f8efd, 14859125}` | 1,000 | 10, 30, 30, 30, 30, 30 | 1.5, 1.8, 2.0, 2.5, 3.0, 4.0 | 6.6%, 32%, 45%, 57%, 59%, 79% | 0.90–1.76 | 5 files |
 | `influenza_none_n1000_d21_s42_4f488dd3` (21 days) | 1,000 | 30 | 2.5 | 74% | 1.16 | 5 files |
 
@@ -325,6 +325,27 @@ get the rest.
 .venv/bin/python simulate.py --agents 7500 --days 14 --initial-seeds 5 --set personality.mode=big_five \
     --set worry.mode=on --set personality.rates_source=calibrated --set disease.transmission_scale=1.446  # calibrated
 ```
+
+### fixed and frankenstein (7,500 agents, downloadable)
+
+The two 7,500-agent runs are called **fixed** (the old, fixed rule-based behaviour) and **frankenstein**
+(behaviour calibrated from 50 Claude-driven agents). Their `contacts.parquet` (~555 MB) is too big
+for git, so each run's five `ml/` files are attached to the GitHub release
+[`sim-runs-n7500-2026-10-18`](https://github.com/aidenyj/fluni/releases/tag/sim-runs-n7500-2026-10-18):
+
+| Name | Run | Download | Infected | R |
+|---|---|---|---|---|
+| fixed | `influenza_none_n7500_d14_s42_9776284a` | [`fixed.tar`](https://github.com/aidenyj/fluni/releases/download/sim-runs-n7500-2026-10-18/fixed.tar) (561 MB) | 5.3% | 1.54 |
+| frankenstein | `influenza_none_n7500_d14_s42_17ed9cd6` | [`frankenstein.tar`](https://github.com/aidenyj/fluni/releases/download/sim-runs-n7500-2026-10-18/frankenstein.tar) (556 MB) | 10.3% | 2.04 |
+
+```bash
+gh release download sim-runs-n7500-2026-10-18 -R aidenyj/fluni -D /tmp/fluni-runs
+(cd /tmp/fluni-runs && shasum -a 256 -c SHA256SUMS.txt)
+tar -xf /tmp/fluni-runs/fixed.tar -C runs/ && tar -xf /tmp/fluni-runs/frankenstein.tar -C runs/
+```
+
+Each tar unpacks to `runs/<run id>/` next to the small files already committed there. Each run is one
+seed, so the fixed vs frankenstein difference isn't a measured behaviour effect yet.
 
 The calibrated runs read `configs/behavior_calibrated.json`, fitted from the calibration run
 `runs/influenza_fluni_n300_d7_s7_06ba2d48/` (committed in full, with its API response cache
