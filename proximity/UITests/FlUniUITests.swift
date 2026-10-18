@@ -255,7 +255,8 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(el("risk.card").exists, "healthy: the estimate is there")
         reportPositive()
         let percent = NSPredicate(format: "label MATCHES %@", #".*\d+(\.\d)?\s?%.*"#)
-        let band = NSPredicate(format: "label CONTAINS[c] 'risk estimate'")
+        // A band next to a risk estimate ("low risk estimate"); the sharing copy may name "your risk estimate".
+        let band = NSPredicate(format: "label MATCHES[c] %@", #".*\b(low|elevated|high) risk.*"#)
         func noRisk(_ screen: String) {
             XCTAssertEqual(app.descendants(matching: .any).matching(percent).count, 0, "no % on \(screen)")
             XCTAssertEqual(app.descendants(matching: .any).matching(band).count, 0, "no risk estimate on \(screen)")
