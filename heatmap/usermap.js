@@ -171,8 +171,8 @@ async function main() {
   function frame() {
     const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.09); // the slim legend strip + tab bar
     const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));
-    map.setMinZoom(z);
-    map.setMaxBounds(campus.pad(0.1));
+    map.setMinZoom(z - 1);
+    map.setMaxBounds(campus.pad(0.6));
     map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, (bottom - top) / 2]), z), z, { animate: false });
     placeLabels();
   }

@@ -1,16 +1,16 @@
 // Where a seated person's dot is drawn. The sim seats people along room rows and lays procedural rooms
 // out in a line across a building, sometimes past its real outline, so dots stood in long rows. For
-// display only, everyone indoors and not moving sits at a stable spot INSIDE their room's walls: the sim's
-// room clipped to the building's drawn footprint (a zone, zones.js), and its occupants fill a sunflower
-// (Vogel) spiral of seats around the zone's anchor, each starting from a seat chosen by a hash of agent +
-// zone. Seats are spaced for the room's capacity, so dots don't stack. The person's zone goes on the state
-// (s.zone): their heat stays in it (diffuse.js). A seat depends only on who is in the room at that moment, so nothing jitters over time.
+// display only, everyone indoors and not moving sits at a stable spot INSIDE their building's drawn footprint
+// (its zone, zones.js): each room gets an anchor inside it (chosen by a hash of the room id) and its occupants
+// fill a sunflower (Vogel) spiral of seats around it, each starting from a seat chosen by a hash of agent +
+// room, SEAT_M apart, so dots don't stack. The building's zone goes on the state (s.zone): the person's heat
+// stays in the building (diffuse.js). A seat depends only on who is in the room at that moment, so nothing jitters over time.
 // People standing at one of the sim's outdoor places (Lake Lagunita, White Plaza, the Oval, ...) are drawn on
 // the nearest footpath (the run's map/paths.geojson) instead: the sim puts them anywhere in the place's box,
 // which for the lake is in the water. Each picks a point along the path near them by a hash, so they don't stack.
 // The sim's own position stays on the state as simLat/simLon (the phone's distance checks use it).
 
-import { inZone } from './zones.js';
+import { inZone, wallDist } from './zones.js';
 
 const M_PER_DEG_LAT = 110574;
 const SEAT_M = 1.4;          // spiral constant: neighbouring seats sit ~1.8 × this apart
@@ -92,30 +92,42 @@ function pathIndex(paths, water = []) {
 // outlines: the drawn GeoJSON (properties.id 'run/<id>' ↔ building 'bld_<id>', as masks.js keys them).
 // roomArea(roomId): floor area in m², or undefined. paths: the run's footpaths (GeoJSON), or null.
 // water: geometries to keep people out of.
-export function makeSeats(Z, paths = null, water = []) {
+// Z: buildZones() (one zone per building). roomArea(roomId): floor area in m², or undefined.
+export function makeSeats(Z, roomArea = () => undefined, paths = null, water = []) {
   const onPath = pathIndex(paths, water), spots = new Map(); // id|sim position -> [lat, lon] on a path
-  const rooms = new Map(); // zone index -> { seats: [[lat, lon], ...] inside the zone, n: preferred range }
+  const rooms = new Map(); // building|room -> { seats: [[lat, lon], ...] inside the building, n: preferred range }
 
-  // A zone's seats: a sunflower spiral around its anchor, keeping only points inside the zone (its walls),
-  // spaced for its capacity so a full dorm room still fits its people.
-  function roomFor(zi) {
-    if (rooms.has(zi)) return rooms.get(zi);
+  // A room's people sit around an anchor inside their building: of the first few points a hash of the room
+  // lands on inside the footprint, the one with most room around it (up to the room's spread). Seats fill a
+  // sunflower spiral around it, keeping only points inside the footprint.
+  function roomFor(zi, room) {
+    const key = `${zi}|${room || ''}`;
+    if (rooms.has(key)) return rooms.get(key);
     const z = Z.zones[zi];
     let r = null;
     if (z) {
-      const area = z.area || DEFAULT_ROOM_M2;
-      const step = Math.min(SEAT_M, Math.max(0.45, 0.6 * Math.sqrt(area / Math.max(1, z.capacity || area / 6))));
-      const spread = Math.min(12, Math.max(1.5, 0.5 * Math.sqrt(area)));
-      const [ax, ay] = z.anchor, phase = rng(hash(z.id + z.building))() * 2 * Math.PI, seats = [];
-      for (let k = 0; seats.length < 400 && k < 4000; k++) {
-        const rad = step * Math.sqrt(k + 0.5), th = phase + k * GOLDEN;
+      const area = roomArea(room) || DEFAULT_ROOM_M2;
+      const spread = Math.min(12, Math.max(2.5, 0.5 * Math.sqrt(area)));
+      const rand = rng(hash(`${z.id}|${room || ''}`)), [x0, y0, x1, y1] = z.box;
+      let ax = null, ay = null, best = -1, found = 0;
+      for (let k = 0; k < 300 && found < 6; k++) {
+        const x = x0 + rand() * (x1 - x0), y = y0 + rand() * (y1 - y0);
+        if (!inZone(z, x, y)) continue;
+        found++;
+        const clear = Math.min(spread, wallDist(z, x, y));
+        if (clear > best) { best = clear; ax = x; ay = y; }
+      }
+      if (ax === null) [ax, ay] = z.anchor;
+      const phase = rand() * 2 * Math.PI, seats = [];
+      for (let k = 0; seats.length < 400 && k < 2000; k++) {
+        const rad = SEAT_M * Math.sqrt(k + 0.5), th = phase + k * GOLDEN;
         const x = ax + rad * Math.cos(th), y = ay + rad * Math.sin(th);
         if (inZone(z, x, y)) seats.push([z.lat0 + y / M_PER_DEG_LAT, z.lon0 + x / z.kx]);
       }
       if (!seats.length) seats.push([z.lat0 + ay / M_PER_DEG_LAT, z.lon0 + ax / z.kx]);
-      r = { seats, n: Math.max(Math.min(seats.length, z.capacity || 0), Math.min(seats.length, Math.floor((spread / step) ** 2))) || 1 };
+      r = { seats, n: Math.max(6, Math.min(seats.length, Math.floor((spread / SEAT_M) ** 2))) };
     }
-    rooms.set(zi, r);
+    rooms.set(key, r);
     return r;
   }
 
@@ -131,11 +143,11 @@ export function makeSeats(Z, paths = null, water = []) {
         continue;
       }
       if (s.walking || !s.buildingId) continue;
-      const zi = Z.zoneFor(s.buildingId, s.room);
+      const zi = Z.zoneFor(s.buildingId);
       s.zone = zi;
-      const r = zi >= 0 ? roomFor(zi) : null;
+      const r = zi >= 0 ? roomFor(zi, s.room) : null;
       if (!r || !r.seats.length) continue;
-      const key = `z${zi}`;
+      const key = `${zi}|${s.room || ''}`;
       if (!groups.has(key)) groups.set(key, { r, list: [] });
       groups.get(key).list.push({ s, h: hash(`${s.id}|${key}`) });
     }

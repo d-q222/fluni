@@ -10,6 +10,8 @@ import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from 
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
+import { addLandmarks } from './landmarks.js';
+import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
@@ -305,13 +307,11 @@ async function loadBuildings(dataUrl) {
 // ---------- Leaflet glue ----------
 
 // The heat on screen, on a canvas the size of the map view (plus a margin), redrawn when the view moves.
-// - Room-level heat (setZones): each zone's diffused patch (diffuse.js), coloured by the zone's expected sick
-//   count (its brightest cell = its total; the glow keeps its shape), is drawn clipped to that zone's own
-//   outline (its room's walls inside the building's footprint), so heat edges are crisp and exactly on the
-//   walls at any zoom and never show through into the next room. Close up (zoom >= ROOM_ZOOM) the walls of
-//   the rooms in view are drawn too, thin and faint, so the audience sees what stops the heat.
+// - Room-level heat (setZones): each building's patch (diffuse.js: a Gaussian around each person through the
+//   building) is drawn clipped to that building's own outline, so heat edges are crisp and exactly on its
+//   walls at any zoom.
 // - Airflow (setGrid): a whole grid painted by paint(), scaled onto the view, unclipped.
-const VIEW_PAD = 0.15, ROOM_ZOOM = 18; // from ROOM_ZOOM heat is per room and the room walls are drawn
+const VIEW_PAD = 0.15;
 const CanvasLayer = L.Layer.extend({
   initialize(bounds) {
     this.bounds = L.latLngBounds(bounds);
@@ -336,13 +336,19 @@ const CanvasLayer = L.Layer.extend({
   setBounds(bounds) { this.bounds = L.latLngBounds(bounds); },
   setGrid() { this.mode = 'grid'; this.draw(); },
   // field: the DiffusionField after diffuse() (field.zoneOut); zones: buildZones().zones; vmax: colour max.
-  setZones(field, zones, vmax, walls = false) {
+  setZones(field, zones, vmax) {
     this.mode = 'zones';
-    this.walls = walls;
     this.field = field; this.zones = zones;
-    // Pack every patch, padded by a cell, into one image (shelves); each patch's cells beyond its own get
-    // their own neighbours' colour, so the clip, not a fade to transparent, makes the edge at the wall.
-    const list = field.zoneOut, W = 1024;
+    // One tile per building part with heat (a wing), padded by a cell, packed into one image (shelves); a tile's
+    // cells outside its part get the part's own neighbours' colour, so the clip to that part's outline, not a
+    // fade or the next wing's heat, makes the edge at the wall.
+    const list = [], W = 1024;
+    for (const z of field.zoneOut) {
+      const parts = new Set();
+      for (let i = 0; i < z.u.length; i++) if (z.u[i] > 0) parts.add(z.own[i]);
+      for (const part of parts) list.push({ ...z, part });
+    }
+    this.tiles = list;
     let x = 0, y = 0, rowH = 0;
     for (const p of list) {
       const w = p.w + 2, h = p.h + 2;
@@ -354,13 +360,7 @@ const CanvasLayer = L.Layer.extend({
     const ctx = a.getContext('2d');
     const img = ctx.createImageData(W, H), px = new Uint32Array(img.data.buffer);
     for (const p of list) {
-      // Colour by the room's count: its brightest cell shows its expected sick (the scale is per room), the
-      // rest of the room keeps the glow's shape around the people in it.
-      const { w, h, own, u, total } = p;
-      let top = 0;
-      for (let i = 0; i < u.length; i++) if (own[i] && u[i] > top) top = u[i];
-      const k = top > 0 ? total / top : 0;
-      const val = (i, j) => (i >= 0 && j >= 0 && i < w && j < h && own[j * w + i] ? u[j * w + i] * k : -1);
+      const { w, h, own, u, part } = p, val = (i, j) => (i >= 0 && j >= 0 && i < w && j < h && own[j * w + i] === part ? u[j * w + i] : -1);
       for (let j = -1; j <= h; j++) for (let i = -1; i <= w; i++) {
         let v = val(i, j);
         if (v < 0) { // outside the zone's cells: the mean of its own neighbours (for the edge between centre and wall)
@@ -391,6 +391,7 @@ const CanvasLayer = L.Layer.extend({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     const toPx = (lat, lon) => map.latLngToLayerPoint([lat, lon]).subtract(min);
     if (this.mode === 'grid' && this.grid.width) {
       const tl = toPx(this.bounds.getNorth(), this.bounds.getWest()), br = toPx(this.bounds.getSouth(), this.bounds.getEast());
@@ -400,33 +401,25 @@ const CanvasLayer = L.Layer.extend({
     if (this.mode !== 'zones' || !this.field) return;
     const key = `${this.zoom}:${min.x}:${min.y}`;
     if (key !== this.pathKey) { this.paths.clear(); this.pathKey = key; }
-    const pathOf = (zi) => {
-      let p = this.paths.get(zi);
+    const pathOf = (zi, part) => { // one part of a building: its outer ring and courtyards
+      const k = `${zi}:${part}`;
+      let p = this.paths.get(k);
       if (!p) {
         p = new Path2D();
-        for (const ring of this.zones[zi].ll) ring.forEach(([lon, lat], i) => { const q = toPx(lat, lon); i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y); });
-        this.paths.set(zi, p);
+        for (const ring of this.zones[zi].parts[part - 1].ll) ring.forEach(([lon, lat], i) => { const q = toPx(lat, lon); i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y); });
+        this.paths.set(k, p);
       }
       return p;
     };
     const f = this.field, b = f.bounds, kx = f.cellM / f.mPerDegLon, ky = f.cellM / 110574;
-    for (const z of f.zoneOut) {
+    for (const z of this.tiles || []) {
       // The patch's cell (i, j) covers lon west + i·kx .. , lat north - j·ky ..; plus its one-cell pad.
       const tl = toPx(b.north - (z.y0 - 1) * ky, b.west + (z.x0 - 1) * kx), br = toPx(b.north - (z.y0 + z.h + 1) * ky, b.west + (z.x0 + z.w + 1) * kx);
       if (br.x < 0 || br.y < 0 || tl.x > w || tl.y > h) continue;
       ctx.save();
-      ctx.clip(pathOf(z.z), 'evenodd');
+      ctx.clip(pathOf(z.z, z.part), 'evenodd');
       ctx.drawImage(this.atlas, z.ax, z.ay, z.w + 2, z.h + 2, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
       ctx.restore();
-    }
-    if (this.walls && this.zones) {
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = 'rgba(110, 96, 86, 0.35)';
-      for (let zi = 0; zi < this.zones.length; zi++) {
-        const z = this.zones[zi];
-        if (!z.ground || !this.view.intersects(z.llBox)) continue;
-        ctx.stroke(pathOf(zi));
-      }
     }
   },
   animate(e) {
@@ -453,10 +446,22 @@ const GL = {
   js: 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
   leaflet: 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js',
 };
-// Buildings in one neutral tint: the viewer colours them by type, but here warm tints would read as heat.
-const SIM_BUILDING = { fillColor: '#e9e5de', fillOpacity: 0.8, color: '#a8988a', weight: 0.7, opacity: 0.8 }; // grey paper: heat's warm hues stand out on it
+// Buildings in pale washes of Lisa's palette, by what they're for (design pass). Heat owns the warm
+// colours (sun → ember → fire), so building fills stay on the cool side: sage washes, deeper for housing.
+// The palette's warm colours appear only in the thin inked outlines (study sun, food and social ember,
+// health fire), which never read as heat. Unlabelled kinds stay plain warm paper.
+const SIM_BUILDING = { fillColor: '#e6e0d3', fillOpacity: 0.95, color: '#ad9e8b', weight: 1, opacity: 0.95 };
+const TINT = {
+  housing: { fillColor: '#cfdcb6', color: '#869c63' },  // --sage wash, sage ink
+  study: { fillColor: '#dbe3c8', color: '#c4a552' },    // faint sage wash, --sun ink
+  social: { fillColor: '#e1e5d2', color: '#d27f55' },   // faintest sage wash, --ember ink
+  care: { fillColor: '#e1e5d2', color: '#c9604d' },     // faintest sage wash, --fire ink
+};
+const TINT_OF = { dorm: 'housing', classroom: 'study', lab: 'study', lecture_hall: 'study', library: 'study',
+  dining: 'social', common_room: 'social', party_venue: 'social', event_venue: 'social', gym: 'social', health_center: 'care' };
+const buildingStyle = (f) => ({ ...SIM_BUILDING, ...TINT[TINT_OF[f.properties.type]] });
 // A hand-placed box with no OSM building near it (footprints.js): only an approximate shape, so drawn faintly.
-const SIM_BOX = { ...SIM_BUILDING, fillOpacity: 0.3, opacity: 0.5, dashArray: '3 3' };
+const SIM_BOX_FAINT = { fillOpacity: 0.35, opacity: 0.5, dashArray: '3 3' };
 const SIM_BACKGROUND = '#f6f4f0'; // Positron's land colour, so the sim map looks the same before (or without) its tiles
 const STYLES = ['sim', 'streets', 'drawn'];
 const bases = new Map(); // map -> { streets, drawn, sim } layers, made on first use
@@ -525,7 +530,7 @@ function layerFor(map, base, style) {
     if (simMap.paths) base.sim.addLayer(L.geoJSON(simMap.paths, { pane: 'simPane', renderer, interactive: false, attribution,
       style: { color: '#8aa39b', weight: 1.2, opacity: 0.55 } }));
     if (simMap.buildings) base.sim.addLayer(L.geoJSON(simMap.buildings, { pane: 'simPane', renderer, interactive: false,
-      attribution: simMap.paths ? undefined : attribution, style: (f) => (f.properties.box ? SIM_BOX : SIM_BUILDING) }));
+      attribution: simMap.paths ? undefined : attribution, style: (f) => (f.properties.box ? { ...buildingStyle(f), ...SIM_BOX_FAINT } : buildingStyle(f)) }));
   }
   return base.sim;
 }
@@ -595,16 +600,14 @@ function firstMove(tracks, t0) {
   return Number.isFinite(first) ? first : t0;
 }
 
-// Colour max from typical moments: per sampled moment the 90th percentile of what is coloured (each warm
-// room's or building's expected sick when heat is coloured by count, else each warm cell), then the median
-// moment. Typical hot rooms reach the dark end; the extreme ones (one crowded small room) simply max out.
+// Colour max from typical moments: per sampled moment the 90th percentile of the warm cells, then the median
+// moment. Typical hot spots reach the dark end; the extreme ones simply max out.
 function scaleMax(heatAt, times) {
   const step = Math.max(1, Math.floor(times.length / 60));
   const levels = [];
   for (let i = 0; i < times.length; i += step) {
     const g = heatAt(times[i]), warm = [];
-    if (g.zoneOut) { for (const z of g.zoneOut) if (z.total > 0) warm.push(z.total); }
-    else for (let k = 0; k < g.heat.length; k += 2) if (g.heat[k] > 0) warm.push(g.heat[k]);
+    for (let k = 0; k < g.heat.length; k += 2) if (g.heat[k] > 0) warm.push(g.heat[k]);
     if (!warm.length) continue;
     warm.sort((x, y) => x - y);
     levels.push(warm[Math.floor(0.9 * (warm.length - 1))]);
@@ -742,15 +745,23 @@ async function main() {
   ]);
   progress('Loading risk estimates…', 0.55);
   const outlines = runBuildings.outlines || osmOutlines; // the run's own footprints when it has them
-  // Heat zones: the sim's rooms clipped to their building's footprint (zones.js). People sit inside theirs
-  // (seats.js) and their heat stays in it (diffuse.js).
-  // Close up (zoom >= ROOM_ZOOM) each room is a zone; further out each building is (rooms are a few pixels
-  // there), still spread only through the building, never across its gaps or courtyards.
-  const Z = buildZones(outlines, rooms.rows), ZB = buildZones(outlines, []), zoneHeat = Z.zones.length > 0;
-  let roomMode = false;
-  if (Z.fallback) console.info(`${Z.fallback} rooms lie mostly outside their building: they share it by a Voronoi split.`);
+  // Heat zones: one per building footprint (zones.js). People sit inside their building, clustered by room
+  // (seats.js), and their heat spreads only through it (diffuse.js).
+  const Z = buildZones(outlines), zoneHeat = Z.zones.length > 0;
   const simPaths = await fetch(new URL('map/paths.geojson', new URL(dataUrl, location.href))).then((r) => r.json()).catch(() => null);
-  const seats = makeSeats(Z, simPaths, runBuildings.water);
+  const roomAreas = new Map(); // room id -> floor area in m² (map/rooms.csv), for how far its people spread
+  const roomArea = (id) => {
+    const i = rooms.index.get(id);
+    if (i === undefined) return undefined;
+    if (!roomAreas.has(id)) {
+      const g = wktGeometry(rooms.wkts[i]), ring = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates[0][0];
+      let a = 0;
+      for (let k = 0; k + 1 < ring.length; k++) a += (ring[k][0] * ring[k + 1][1] - ring[k + 1][0] * ring[k][1]) * mPerDegLon(ring[0][1]) * 110574;
+      roomAreas.set(id, Math.abs(a) / 2);
+    }
+    return roomAreas.get(id);
+  };
+  const seats = makeSeats(Z, roomArea, simPaths, runBuildings.water);
   setSimMap({ buildings: runBuildings.outlines, paths: simPaths });
   const data = toFrames(res.data, res.fields, runBuildings.names);
   // Replace the placeholder P(sick) with the model's, before tracks, totals and forecasts are built.
@@ -797,17 +808,21 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const zoneRaster = (set) => (set.zones.length ? (zi, grid) => rasterZone(set.zones[zi], grid) : null);
-  const field = new DiffusionField(bounds, DEMO.cellM, { zones: zoneRaster(ZB) });
+  const zoneRaster = zoneHeat ? (zi, grid) => rasterZone(Z.zones[zi], grid) : null;
+  const field = new DiffusionField(bounds, DEMO.cellM, { zones: zoneRaster });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
-  const fields = new Map([[`${DEMO.cellM}:false`, field]]); // "cell:roomMode" -> field
+  const fields = new Map([[DEMO.cellM, field]]);
+  const coarseCell = (sigma) => DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
+  // Building heat close up (zoom >= FINE_ZOOM) on a 1.5 m grid, so a person's glow is smooth at street zoom.
+  const FINE_ZOOM = 18, FINE_CELL_M = 1.5;
+  let fine = false;
   const fieldFor = (sigma) => {
-    const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM))), key = `${cell}:${roomMode}`;
-    if (!fields.has(key)) fields.set(key, new DiffusionField(bounds, cell, { zones: zoneRaster(roomMode ? Z : ZB) }));
-    return fields.get(key);
+    const cell = zoneHeat && fine ? FINE_CELL_M : coarseCell(sigma);
+    if (!fields.has(cell)) fields.set(cell, new DiffusionField(bounds, cell, { zones: zoneRaster }));
+    return fields.get(cell);
   };
-  const zoneOf = (s) => (roomMode ? s.zone : s.buildingId ? ZB.zoneFor(s.buildingId, '') : -1);
+  const zoneOf = (s) => (s.buildingId ? Z.zoneFor(s.buildingId) : -1);
   // The geographic extent a grid covers (whole cells, so a little past the data bounds).
   const gridBounds = (g) => [[g.bounds.north - (g.ny * g.cellM) / 110574, g.bounds.west],
     [g.bounds.north, g.bounds.west + (g.nx * g.cellM) / g.mPerDegLon]];
@@ -834,9 +849,11 @@ async function main() {
     return f.diffuse(sigmaM, { people: false });
   };
   // People outdoors (only when indoor heat is kept to outlines): a plain grid of their own, drawn unclipped.
+  // Half the indoor cell: the outdoor spread is half the indoor one, and at ~1 cell per σ the box blurs
+  // give each person a 3×3 square, so overlapping people show blocky seams instead of smooth blobs.
   const outFields = new Map();
   const outdoorAt = (t, nowStates = null, truth = false, area = null) => {
-    const cell = fieldFor(sigmaM).cellM;
+    const cell = coarseCell(sigmaM) / 2;
     if (!outFields.has(cell)) outFields.set(cell, new DiffusionField(bounds, cell));
     const f = outFields.get(cell);
     f.clear();
@@ -939,22 +956,28 @@ async function main() {
     }
   }
 
-  const vmax = { demo: scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
+  const ZONE_VMAX = 0.5;
+  const vmax = { demo: zoneHeat ? ZONE_VMAX : scaleMax(heatAt, times), public: buildingScaleMax(totals), truth: null };
   // "True status (sim)" colouring also switches the demo heat to actual infections.
   const truthMode = () => data.hasTruth && $('dot-mode').value === 'truth';
-  const scales = new Map([[`false:${sigmaM}:false`, vmax.demo]]); // "truth:sigma:roomMode" -> colour max
+  const scales = new Map([[`false:${sigmaM}`, vmax.demo]]); // "truth:sigma" -> colour max
   const demoScale = () => {
-    const truth = truthMode(), key = `${truth}:${sigmaM}:${roomMode}`;
-    if (!scales.has(key)) scales.set(key, scaleMax((t) => heatAt(t, null, truth), times)); // on first use
+    const truth = truthMode(), key = `${truth}:${sigmaM}`;
+    // Building heat is each person's chance above the baseline, peaking at them: a fixed scale (dark at 50%), so
+    // a likely-sick person's peak reads dark and fades around them instead of saturating a wide disc.
+    if (!scales.has(key)) scales.set(key, zoneHeat && !truth ? ZONE_VMAX : scaleMax((t) => heatAt(t, null, truth), times)); // on first use
     vmax[truth ? 'truth' : 'demo'] = scales.get(key);
     return scales.get(key);
   };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
-  const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
+  const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
+  addLandmarks(map); // Lisa's drawings under the heat (assets/landmarks/)
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
     // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
+    // Close up a softer glow: 8 m at zoom 18 up to 10 m at 20 (building heat only; whole metres, few scales).
+    if (zoneHeat && map.getZoom() >= FINE_ZOOM) return Math.min(10, 8 + Math.round(map.getZoom() - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
@@ -962,10 +985,10 @@ async function main() {
   map.on('zoomend', () => {
     const r = personRadius(map.getZoom()), weight = personRing(r);
     for (const m of dots.values()) if (m.getRadius() !== r) { m.setRadius(r); m.setStyle({ weight }); }
-    const next = sigmaForZoom(), rooms = zoneHeat && map.getZoom() >= ROOM_ZOOM;
-    if (next === sigmaM && rooms === roomMode) return;
+    const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
+    if (next === sigmaM && nextFine === fine) return;
     sigmaM = next;
-    roomMode = rooms;
+    fine = nextFine;
     heatDirty = true;
     renderLegend();
     render(performance.now());
@@ -977,7 +1000,7 @@ async function main() {
     if (fitted || !map.getSize().x || !map.getSize().y) return; // wait for real width *and* height
     fitted = true;
     map.fitBounds(viewBounds(frames) || [sw, ne]);
-    map.setMinZoom(map.getZoom() - 1);
+    map.setMinZoom(map.getZoom() - 2);
     // ?zoom=19 (with ?agent=…) opens close up on that person, e.g. to watch airflow in their room.
     const zoom = Number(new URLSearchParams(location.search).get('zoom'));
     const me = selected && current.get(selected);
@@ -1368,18 +1391,35 @@ async function main() {
   // The phone's Campus tab: FlUni's own user map look (usermap.js): paper, pale outlines, faint roads, soft green and water,
   // anchor labels; no tiles. Heat comes from the same BuildingTotalsLayer as "What users see".
   let phoneAnchors = null;
+  const NIGHT_INK = '#f1e2c6';
+  const NIGHT_CONTEXT = { green: { fillColor: '#5f6e45', fillOpacity: 0.55 }, water: { fillColor: '#4d6a70', fillOpacity: 0.75 },
+    road: { color: NIGHT_INK, opacity: 0.22 }, street: { color: NIGHT_INK, opacity: 0.12 }, rail: { color: NIGHT_INK, opacity: 0.2 },
+    town: { color: NIGHT_INK, opacity: 0.15 }, shopping: { color: NIGHT_INK, fillColor: NIGHT_INK, opacity: 0.2 }, hospital: { color: NIGHT_INK, opacity: 0.2 } };
+  const NIGHT_NEUTRAL = { color: NIGHT_INK, opacity: 0.2, fillColor: '#33281f' };
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
   function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
   function buildPhoneMap() {
     const map = L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 });
     const pane = (name, z) => { const p = map.createPane(name); p.style.zIndex = z; p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
     const PC = pane('pctx', 410), PN = pane('pneu', 420);
-    map.getContainer().style.background = '#f4ead6';
+    // Night mode (theme.js): the same map in Lisa's night palette, cream lines on cocoa; heat keeps its colours.
+    const ctxLayers = {};
+    let neutral = null;
+    const styleMap = () => {
+      const night = $('phone').dataset.theme === 'night';
+      map.getContainer().style.background = night ? '#2a211c' : '#f4ead6';
+      for (const [k, l] of Object.entries(ctxLayers)) l.setStyle(night ? { ...CONTEXT_STYLE[k], ...NIGHT_CONTEXT[k] } : CONTEXT_STYLE[k]);
+      neutral?.setStyle(night ? { ...NEUTRAL_BUILDING, ...NIGHT_NEUTRAL } : NEUTRAL_BUILDING);
+    };
+    $('phone').addEventListener('fluni-theme', styleMap);
+    styleMap();
     fetch('data/context.geojson').then((r) => (r.ok ? r.json() : null)).then((ctx) => {
       if (!ctx) return;
-      for (const k of CONTEXT_ORDER) L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
+      for (const k of CONTEXT_ORDER) ctxLayers[k] = L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
+      styleMap();
     }).catch(() => {});
-    if (outlines) L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
+    if (outlines) neutral = L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
+    styleMap();
     phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false }).addTo(map);
     const labels = new LabelLayer(map, { pane: 'ph-labels', avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] });
     fetch('out/app-bundle/data/labels.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
@@ -1591,12 +1631,12 @@ async function main() {
         if (truthMode() !== airflowTruth) { airflowTruth = truthMode(); aeroT = null; } // source changed: re-warm
       } else if (view !== 'public' && view !== 'airborne') {
         const g = heatAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null); // no view yet: all
-        if (g.zoneOut) heatLayer.setZones(g, (roomMode ? Z : ZB).zones, demoScale(), roomMode);
+        if (g.zoneOut) heatLayer.setZones(g, Z.zones, demoScale());
         else { heatLayer.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, heatLayer.grid, demoScale(), { strong: true }); heatLayer.setGrid(); }
         if (outdoorLayer) {
           const o = outdoorAt(now, current.values(), truthMode(), map._loaded ? map.getBounds().pad(0.5) : null);
           outdoorLayer.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
-          paint(o, outdoorLayer.grid, demoScale() * outdoorPeak(o));
+          paint(o, outdoorLayer.grid, demoScale() * outdoorPeak(o), { soft: true });
           outdoorLayer.setGrid();
         }
       }
@@ -1684,9 +1724,9 @@ async function main() {
     map.getContainer().classList.toggle('muted-base', v === 'public'); // heat is the strongest colour on screen
     $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
     // Colour scale is √, so the midpoint is a quarter of the maximum.
-    const unit = v === 'public' || zoneHeat ? 1 : 1000; // sick people per building / per room; else per 1,000 m²
+    const unit = v === 'public' || zoneHeat ? 1 : 1000; // sick people per building / P above baseline at a person; else per 1,000 m²
     const top = v === 'public' ? vmax.public : demoScale();
-    const num = (x) => (x >= 1 ? x.toFixed(1) : x.toPrecision(2)); // a room's count is often a fraction of a person
+    const num = (x) => (x >= 1 ? x.toFixed(1) : x.toPrecision(2)); // a building's count can be a fraction of a person
     $('vmid').textContent = v === 'airflow' ? '' : num(top * unit / 4);
     $('vmax').textContent = v === 'airflow' ? 'strongest so far' : `${num(top * unit)}+`;
     if (v === 'airborne') {
@@ -1699,8 +1739,8 @@ async function main() {
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : truthMode() ? `Infectiousness <span>${zoneHeat ? `per ${roomMode ? 'room' : 'building'}` : 'per 1,000 m²'}, from the simulation (truth)</span>`
-      : zoneHeat ? `<span id="view-count"></span> people in view <span>Colour: expected sick people per ${roomMode ? 'room' : 'building'} (above the ${Math.round(MODEL.prior * 100)}% baseline)</span>`
+      : truthMode() ? `Infectiousness <span>${zoneHeat ? 'at each person, fading through the building' : 'per 1,000 m²'}, from the simulation (truth)</span>`
+      : zoneHeat ? `<span id="view-count"></span> people in view <span>Colour: chance of being sick above the ${Math.round(MODEL.prior * 100)}% baseline at each person, fading through the building; people add up</span>`
       : `<span id="view-count"></span> people in view <span>Colour: expected infected above the ${Math.round(MODEL.prior * 100)}% baseline, per 1,000 m²</span>`;
     if ($('view-count')) $('view-count').textContent = viewCountText;
     const showDots = $('show-dots').checked && v !== 'public';
@@ -1796,6 +1836,7 @@ async function main() {
   for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => setPhoneTab(b.dataset.tab));
   for (const x of document.querySelectorAll('#ph-hseg button')) x.addEventListener('click', () => { $('horizon').value = x.dataset.h; $('horizon').dispatchEvent(new Event('change')); });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
+  initNightMode($('phone'), $('ph-night')); // Lisa's night palette and drawings for the phone
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });
 
   progress('Almost there…', 0.95);

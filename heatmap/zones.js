@@ -1,14 +1,9 @@
-// Heat zones: the walls heat may not pass. Each of the sim's rooms (map/rooms.csv), clipped to its building's
-// drawn footprint, is a zone; a person's heat stays in their zone (diffuse.js spreads it cell to cell through
-// the zone only), their dot sits inside it (seats.js) and the presenter draws its outline close up.
-// Rooms that lie mostly outside their footprint (the sim lays procedural rooms out in a line) share the
-// footprint by a Voronoi split around anchors inside it. A building with no rooms is one zone.
+// Heat zones: the walls heat may not pass. Each building's drawn footprint is a zone; a person's heat stays in
+// their building (diffuse.js spreads it cell to cell through the building only: never across an outdoor gap,
+// a courtyard or the space between a C's arms) and their dot sits inside it (seats.js).
 // Pure data in, plain objects out; no DOM. Shared by app.js and seats.js.
 
-import { wktGeometry } from './footprints.js';
-
 const M_PER_DEG_LAT = 110574;
-const FIT = 0.5;  // a room at least this much inside its footprint keeps its own walls; else the Voronoi fallback
 const SAMPLE = 7; // grid of candidate anchors per side
 
 function hash(s) {
@@ -17,18 +12,6 @@ function hash(s) {
   return h >>> 0;
 }
 
-// Sutherland-Hodgman: keep the part of ring (closed, [x, y]) where a·x + b·y <= c.
-function clipHalf(ring, a, b, c) {
-  const pts = ring.slice(0, -1), out = [];
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i], q = pts[(i + 1) % pts.length];
-    const fp = a * p[0] + b * p[1] - c, fq = a * q[0] + b * q[1] - c;
-    if (fp <= 0) out.push(p);
-    if ((fp <= 0) !== (fq <= 0)) { const t = fp / (fp - fq); out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]); }
-  }
-  return out.length >= 3 ? [...out, out[0]] : null;
-}
-const clipAll = (ring, halves) => halves.reduce((r, [a, b, c]) => r && clipHalf(r, a, b, c), ring);
 const ringArea = (r) => { let s = 0; for (let i = 0; i + 1 < r.length; i++) s += r[i][0] * r[i + 1][1] - r[i + 1][0] * r[i][1]; return s / 2; };
 
 export function inRing(x, y, ring) {
@@ -41,7 +24,7 @@ export function inRing(x, y, ring) {
 }
 // Even-odd over all of a zone's rings (clipped outer rings and clipped courtyards).
 export const inZone = (z, x, y) => z.rings.reduce((acc, r) => (inRing(x, y, r) ? !acc : acc), false);
-function wallDist(z, x, y) {
+export function wallDist(z, x, y) {
   let best = Infinity;
   for (const r of z.rings) for (let i = 0; i + 1 < r.length; i++) {
     const [ax, ay] = r[i], [bx, by] = r[i + 1], dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy;
@@ -69,93 +52,89 @@ function boxOf(rings) {
 }
 
 // outlines: the drawn footprints (GeoJSON, properties.id 'run/<id>' for building 'bld_<id>').
-// rooms: rows with room_id, location_id, polygon_wkt, capacity (map/rooms.csv), or [].
-// Returns { zones, zoneFor(buildingId, roomId) -> index or -1, fallback: rooms on the Voronoi fallback }.
-// A zone: { id, building, rings (local metres), box, anchor, area, capacity, ll (rings as [lon, lat]), lon0, lat0, kx }.
-export function buildZones(outlines, rooms = []) {
-  const zones = [], index = new Map(), feet = new Map();
+// One zone per building: all of its footprint's parts (a multipolygon's wings) and courtyards. Heat moves only
+// through its cells, so wings separated by outdoor space stay separate.
+// Returns { zones, zoneFor(buildingId) -> index or -1 }.
+// A zone: { id, building, rings (local metres; holes flagged), box, anchor, area, ll (rings as [lon, lat]), llBox, lon0, lat0, kx }.
+export function buildZones(outlines) {
+  const zones = [], index = new Map();
   for (const f of outlines?.features || []) {
     const id = `bld_${String(f.properties.id).split('/').pop()}`, g = f.geometry;
     const polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : [];
-    if (feet.has(id) || !polys.length) continue;
+    if (index.has(id) || !polys.length) continue;
     const [lon0, lat0] = polys[0][0][0], kx = 111320 * Math.cos((lat0 * Math.PI) / 180);
-    const local = polys.map((p) => p.map((r) => r.map(([lon, lat]) => [(lon - lon0) * kx, (lat - lat0) * M_PER_DEG_LAT])));
-    feet.set(id, { lon0, lat0, kx, polys: local });
-  }
-  const byB = new Map();
-  for (const r of rooms) if (r.room_id && r.location_id && feet.has(r.location_id)) {
-    if (!byB.has(r.location_id)) byB.set(r.location_id, []);
-    byB.get(r.location_id).push(r);
-  }
-  const add = (b, id, rings, ft, capacity, floor = 1) => {
-    const z = { id, building: b, rings, box: boxOf(rings), lon0: ft.lon0, lat0: ft.lat0, kx: ft.kx, capacity };
-    z.area = areaOf(rings);
+    const rings = polys.flatMap((p) => p.map((r, k) => {
+      const ring = r.map(([lon, lat]) => [(lon - lon0) * kx, (lat - lat0) * M_PER_DEG_LAT]);
+      ring.hole = k > 0;
+      return ring;
+    }));
+    const z = { id, building: id, rings, box: boxOf(rings), lon0, lat0, kx };
+    z.area = rings.reduce((sum, r) => sum + (r.hole ? -1 : 1) * Math.abs(ringArea(r)), 0);
     z.anchor = anchorOf(z, id);
-    if (!z.anchor) return;
-    z.ll = rings.map((r) => r.map(([x, y]) => [ft.lon0 + x / ft.kx, ft.lat0 + y / M_PER_DEG_LAT]));
+    if (!z.anchor) continue;
+    z.ll = polys.flatMap((p) => p);
+    // Each part (a MultiPolygon's polygon: Lucie Stern's wings) with its own courtyards. Heat stays in the part
+    // it starts in: wings a metre apart share no air (rasterZone labels cells by part, diffuse.js walks one).
+    let k = 0;
+    z.parts = polys.map((p) => { const r = rings.slice(k, k + p.length); k += p.length; return { rings: r, ll: p }; });
     const lons = z.ll.flat().map((q) => q[0]), lats = z.ll.flat().map((q) => q[1]);
     z.llBox = [[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]];
-    z.floor = floor;
-    index.set(`${b}|${id}`, zones.length);
+    index.set(id, zones.length);
     zones.push(z);
-  };
-  // Every ring of a footprint (outer rings and courtyards) clipped to some half-planes; holes flagged.
-  const clipFoot = (ft, halves) => ft.polys.flatMap((p) => p.map((r, k) => { const c = clipAll(r, halves); if (c) c.hole = k > 0; return c; }).filter(Boolean));
-  const areaOf = (rings) => rings.reduce((s, r) => s + (r.hole ? -1 : 1) * Math.abs(ringArea(r)), 0);
-  let fallback = 0;
-  for (const [b, ft] of feet) {
-    const list = byB.get(b) || [], loose = [];
-    for (const r of list) {
-      let rect;
-      try { rect = wktGeometry(r.polygon_wkt).coordinates[0].map(([lon, lat]) => [(lon - ft.lon0) * ft.kx, (lat - ft.lat0) * M_PER_DEG_LAT]); } catch { loose.push(r); continue; }
-      const [x0, y0, x1, y1] = boxOf([rect]);
-      const rings = clipFoot(ft, [[-1, 0, -x0], [1, 0, x1], [0, -1, -y0], [0, 1, y1]]);
-      const share = areaOf(rings) / Math.max(1e-6, (x1 - x0) * (y1 - y0));
-      if (rings.length && share >= FIT) add(b, r.room_id, rings, ft, Number(r.capacity) || 0, Number(r.floor) || 1);
-      else loose.push(r);
-    }
-    if (!list.length) { add(b, '', clipFoot(ft, []), ft, 0); continue; } // no rooms: the building is one zone
-    fallback += loose.length;
-    // Voronoi among the loose rooms, around anchors spread over the footprint.
-    const whole = { rings: clipFoot(ft, []) };
-    whole.box = boxOf(whole.rings);
-    const seeds = loose.map((r) => anchorOf(whole, r.room_id) || [(whole.box[0] + whole.box[2]) / 2, (whole.box[1] + whole.box[3]) / 2]);
-    loose.forEach((r, i) => {
-      const halves = [];
-      seeds.forEach((s, j) => {
-        if (j === i || (s[0] === seeds[i][0] && s[1] === seeds[i][1])) return;
-        const [ax, ay] = seeds[i], [bx, by] = s; // closer to a than b: (b - a)·p <= (|b|² - |a|²) / 2
-        halves.push([bx - ax, by - ay, (bx * bx + by * by - ax * ax - ay * ay) / 2]);
-      });
-      add(b, r.room_id, clipFoot(ft, halves), ft, Number(r.capacity) || 0, Number(r.floor) || 1);
-    });
   }
-  // Walls drawn close up are each building's lowest floor (upper floors would draw over it).
-  const ground = new Map();
-  for (const z of zones) ground.set(z.building, Math.min(ground.get(z.building) ?? Infinity, z.floor));
-  for (const z of zones) z.ground = z.floor === ground.get(z.building);
-  const zoneFor = (b, room) => index.get(`${b}|${room || ''}`) ?? index.get(`${b}|`) ?? -1;
-  return { zones, zoneFor, fallback };
+  return { zones, zoneFor: (b) => index.get(b) ?? -1 };
 }
 
-// The zone's cells on a heat grid ({ bounds, nx, ny, cellM, mPerDegLon }): every cell the zone touches (3 x 3
-// samples per cell, plus the cells its corners fall in), as a patch { x0, y0, w, h, own: Uint8Array(w*h) }.
+// The zone's cells on a heat grid ({ bounds, nx, ny, cellM, mPerDegLon }) as a patch { x0, y0, w, h, own }, own
+// = 1 + the index of the part containing each cell's centre (0 = outside). Cells the outline only grazes are not
+// its own (heat would step through them across a gap narrower than a cell); the painter fills them from their
+// own neighbours and the clip makes the edge. A building smaller than a cell gets the cells its corners fall in.
+// And `cut`: per cell, the links to its neighbours (bits: right, down, down-right, down-left) whose centres a
+// wall separates, so heat can't jump a notch narrower than a cell (Lucie Stern's wings are one polygon).
 export function rasterZone(z, grid) {
   const { bounds, nx, ny, cellM } = grid, kx = grid.mPerDegLon / cellM, ky = M_PER_DEG_LAT / cellM;
   const toCell = (x, y) => [((z.lon0 + x / z.kx) - bounds.west) * kx, (bounds.north - (z.lat0 + y / M_PER_DEG_LAT)) * ky];
   const [a0, b0] = toCell(z.box[0], z.box[3]), [a1, b1] = toCell(z.box[2], z.box[1]);
   const x0 = Math.max(0, Math.floor(a0)), y0 = Math.max(0, Math.floor(b0)), x1 = Math.min(nx - 1, Math.floor(a1)), y1 = Math.min(ny - 1, Math.floor(b1));
   if (x1 < x0 || y1 < y0) return null;
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, own = new Uint8Array(w * h);
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, own = new Uint16Array(w * h);
   const toLocal = (cx, cy) => [((bounds.west + cx / kx) - z.lon0) * z.kx, ((bounds.north - cy / ky) - z.lat0) * M_PER_DEG_LAT];
+  const partAt = (px, py) => z.parts.findIndex((p) => inZone(p, px, py));
+  const centre = new Uint8Array(w * h); // 1 = the cell's centre is inside the building
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    let hit = false;
-    for (let s = 0; s < 9 && !hit; s++) { const [px, py] = toLocal(x0 + x + ((s % 3) + 0.5) / 3, y0 + y + (Math.floor(s / 3) + 0.5) / 3); hit = inZone(z, px, py); }
-    if (hit) own[y * w + x] = 1;
+    const [cx, cy] = toLocal(x0 + x + 0.5, y0 + y + 0.5);
+    const part = partAt(cx, cy);
+    if (part >= 0) { centre[y * w + x] = 1; own[y * w + x] = part + 1; }
   }
-  for (const r of z.rings) for (const [px, py] of r) {
-    const [cx, cy] = toCell(px, py), x = Math.floor(cx) - x0, y = Math.floor(cy) - y0;
-    if (x >= 0 && y >= 0 && x < w && y < h) own[y * w + x] = 1;
+  z.parts.forEach((p, k) => { // a part with no cell centre inside (smaller than a cell): its corners' cells
+    if (own.includes(k + 1)) return;
+    for (const [px, py] of p.rings[0]) {
+      const [cx, cy] = toCell(px, py), x = Math.floor(cx) - x0, y = Math.floor(cy) - y0;
+      if (x >= 0 && y >= 0 && x < w && y < h && !own[y * w + x]) own[y * w + x] = k + 1;
+    }
+  });
+  // Links between two inside cells whose centres a wall separates (a notch narrower than a cell).
+  const cut = new Uint8Array(w * h), LINKS = [[1, 0, 1], [0, 1, 2], [1, 1, 4], [-1, 1, 8]];
+  const cross = (ax, ay, bx, by, cx, cy, dx, dy) => {
+    const d = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx);
+    if (!d) return false;
+    const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / d, u = ((cx - ax) * (by - ay) - (cy - ay) * (bx - ax)) / d;
+    return t > 0 && t < 1 && u >= 0 && u <= 1;
+  };
+  for (const r of z.rings) for (let e = 0; e + 1 < r.length; e++) {
+    const [p, q] = [r[e], r[e + 1]], [pa, pb] = toCell(p[0], p[1]), [qa, qb] = toCell(q[0], q[1]);
+    const ex0 = Math.max(0, Math.floor(Math.min(pa, qa)) - x0 - 1), ex1 = Math.min(w - 1, Math.floor(Math.max(pa, qa)) - x0 + 1);
+    const ey0 = Math.max(0, Math.floor(Math.min(pb, qb)) - y0 - 1), ey1 = Math.min(h - 1, Math.floor(Math.max(pb, qb)) - y0 + 1);
+    for (let y = ey0; y <= ey1; y++) for (let x = ex0; x <= ex1; x++) {
+      if (!centre[y * w + x]) continue;
+      const [ax, ay] = toLocal(x0 + x + 0.5, y0 + y + 0.5);
+      for (const [dx, dy, bit] of LINKS) {
+        const u = x + dx, v = y + dy;
+        if (u < 0 || v < 0 || u >= w || v >= h || !centre[v * w + u]) continue;
+        const [bx, by] = toLocal(x0 + u + 0.5, y0 + v + 0.5);
+        if (cross(ax, ay, bx, by, p[0], p[1], q[0], q[1])) cut[y * w + x] |= bit;
+      }
+    }
   }
-  return { x0, y0, w, h, own };
+  return { x0, y0, w, h, own, cut };
 }
