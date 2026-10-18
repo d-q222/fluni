@@ -95,7 +95,17 @@ calibrated default so more of campus gets infected:
 - `runs/influenza_none_n1000_d14_s42_183f262b/`: `--initial-seeds 50`, `transmission_scale=2.0`.
   50.3% infected by day 14, measured R 1.32, still growing at the end.
 
-Their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
+Two 1,000-agent runs (seed 42, `--initial-seeds 50`, `transmission_scale=2.0`,
+`output.by_agent=false`) use `--set population.housing.assignment=spread`, so the 900 residents
+live in 53 dorms (at most 97 in one, Florence Moore Hall) instead of 77% in one:
+
+- `runs/influenza_none_n1000_d4_s42_73b8452c/`: 4 days, for the live demo. 10.6% infected by day 4
+  (50 seeded), new infections by day 52, 13, 17, 24. Files are under 40 MB, so nothing is split.
+- `runs/influenza_none_n1000_d14_s42_25fe957a/`: 14 days. 22.3% infected by day 14, measured R
+  0.86. Same settings as 183f262b (50.3%), but with residents spread out far fewer people catch it
+  in dorms (69 vs 161) and common rooms (15 vs 96).
+
+Except the 4-day spread run, their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
 `scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
 
 ## Calibration
