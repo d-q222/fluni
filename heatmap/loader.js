@@ -81,10 +81,26 @@ async function* lines(stream) {
   }
 }
 
-// columns: header names to keep (missing ones yield undefined).
+// Full-size runs keep files over 40 MB as parts (sim/scripts/run_parts.py): <run>/parts/manifest.json
+// lists <name>.csv.gz's parts, each a standalone gzipped CSV with the header. Their URLs, or null.
+async function partsOf(url, fetchImpl) {
+  const u = new URL(url, globalThis.location?.href);
+  const name = u.pathname.split('/').pop();
+  if (!name.endsWith('.csv.gz')) return null;
+  const res = await fetchImpl(new URL('parts/manifest.json', u)).catch(() => null);
+  const entry = res?.ok ? (await res.json()).files?.[name] : null;
+  return entry ? entry.parts.map((p) => new URL(p.path, u)) : null;
+}
+
+// columns: header names to keep (missing ones yield undefined). A missing <name>.csv.gz is read from
+// its parts when the run has them (as one file: later parts' headers are skipped).
 // Returns { fields: all header names, rows: AsyncIterable of plain objects with only `columns` }.
 export async function streamCsv(url, columns, { fetchImpl = fetch } = {}) {
-  const res = await fetchImpl(url);
+  let res = await fetchImpl(url), more = [];
+  if (res.status === 404) {
+    const parts = await partsOf(url, fetchImpl);
+    if (parts) { more = parts.slice(1); res = await fetchImpl(parts[0]); }
+  }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   const it = lines(await openBytes(res.body));
   const head = await it.next();
@@ -93,8 +109,8 @@ export async function streamCsv(url, columns, { fetchImpl = fetch } = {}) {
   const n = columns.length;
   // Repeated values (timestamps, ids, states) share one string; also stops slices pinning whole lines.
   const seen = columns.map(() => new Map());
-  async function* rows() {
-    for await (const line of it) {
+  async function* rowsOf(lineIt) {
+    for await (const line of lineIt) {
       const cells = splitLine(line);
       const row = {};
       for (let k = 0; k < n; k++) {
@@ -106,6 +122,16 @@ export async function streamCsv(url, columns, { fetchImpl = fetch } = {}) {
         row[columns[k]] = v;
       }
       yield row;
+    }
+  }
+  async function* rows() {
+    yield* rowsOf(it);
+    for (const part of more) {
+      const r = await fetchImpl(part);
+      if (!r.ok) throw new Error(`${part}: ${r.status} ${r.statusText}`);
+      const next = lines(await openBytes(r.body));
+      await next.next(); // the part's own copy of the header
+      yield* rowsOf(next);
     }
   }
   return { fields, rows: rows() };
