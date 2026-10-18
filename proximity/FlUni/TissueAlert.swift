@@ -17,6 +17,9 @@ import SwiftUI
 struct TissueAlert: View {
     let level: AlertLevel
     let visible: Bool
+    /// flu-persist: whether this level's alert was already read (saved across relaunches), and how to record a read.
+    var isRead: (AlertLevel) -> Bool = { _ in false }
+    var onRead: (AlertLevel) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Phase { case hidden, popped, pulling(Int), open }
@@ -124,7 +127,7 @@ struct TissueAlert: View {
         case .pulling, .open:
             if !visible || level == .none { phase = .hidden }
         default:
-            let want = visible && level != .none && level != readLevel
+            let want = visible && level != .none && level != readLevel && !isRead(level)  // flu-persist: isRead
             phase = want ? .popped : .hidden
         }
     }
@@ -215,7 +218,9 @@ struct TissueAlert: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(([level == .closeContact ? "Close contact" : "Heads-up", Advice.title(level)] + lines).joined(separator: ". "))
             .accessibilityFocused($sheetFocused)
-            Button("Got it") { putBack() }
+            // Got it closes at once (no reverse, no fade; the owner asked) and records the alert as read, saved
+            // across a relaunch. Dragging the sheet down still runs the pull in reverse.
+            Button("Got it") { readLevel = level; onRead(level); phase = .hidden }
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
                 .accessibilityIdentifier("tissueAlert.ok")
         }

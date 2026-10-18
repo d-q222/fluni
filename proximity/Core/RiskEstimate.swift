@@ -177,7 +177,7 @@ enum RiskEstimate {
 
     /// One source (rotating peer ID) over the window: its summed unit dose, its stage-weighted dose
     /// Σ stage · unitDose (infer.js pair dose) and its evidence level.
-    struct Source: Equatable {
+    struct Source: Equatable, Codable {
         var dose = 0.0
         var s = 0.0
         var weighted: Double
@@ -252,8 +252,9 @@ struct OwnScoreLag: Equatable {
     /// What the beacon carries: `current` as it was at the previous tick.
     private(set) var broadcast: Double
 
-    init(status: Risk = .none) {
-        current = RiskEstimate.ownScore(liveRisk: RiskEstimate.prior, status: status)
+    /// `liveRisk`: the estimate to start from (the prior, or the one restored after a relaunch, RiskStateStore).
+    init(liveRisk: Double = RiskEstimate.prior, status: Risk = .none) {
+        current = RiskEstimate.ownScore(liveRisk: liveRisk, status: status)
         broadcast = current
     }
 
