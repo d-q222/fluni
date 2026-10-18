@@ -1,3 +1,4 @@
+import CoreBluetooth
 import SwiftUI
 
 /// The student's home screen: one calm status card, a gentle progress bar, a count. No IDs, no
@@ -6,7 +7,10 @@ struct TodayView: View {
     @ObservedObject var model: ProximityModel
     @State private var showHow = false
     @State private var showCalc = false
+    /// One line when iOS settings would stop alerts while FlUni is closed.
+    @State private var backgroundHint: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     private var level: AlertLevel { model.exposure.level }
 
@@ -16,6 +20,11 @@ struct TodayView: View {
                 VStack(spacing: 16) {
                     DemoTimeBadge()
                     PausedBanner(model: model)
+                    if let backgroundHint {
+                        Label(backgroundHint, systemImage: "info.circle")
+                            .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     WalkInBanner(model: model)
                     UnusualSignalsBanner(model: model)
                     if level == .nearby { NearbyBanner().transition(.opacity) }
@@ -38,7 +47,21 @@ struct TodayView: View {
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
+            .onAppear(perform: checkBackground)
+            .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
+            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
+        }
+    }
+
+    private func checkBackground() {
+        let bt = CBManager.authorization
+        if bt == .denied || bt == .restricted {
+            backgroundHint = "Bluetooth is off for FlUni in iPhone Settings, so it can't notice nearby phones."
+        } else if UIApplication.shared.backgroundRefreshStatus != .available {
+            backgroundHint = "Background App Refresh is off, so nearby alerts may stop while FlUni is closed."
+        } else {
+            backgroundHint = nil
         }
     }
 
@@ -149,7 +172,7 @@ struct HowItWorksSheet: View {
                     block("What it doesn't share",
                           "Your location is never sent to other people or to a server. Matching happens on your phone, and the map shows building totals, not people.")
                     block("Good to know",
-                          "FlUni works while the app is open. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
+                          "FlUni works best while the app is open, and keeps checking over Bluetooth in the background, less often. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
                 }
                 .padding(20)
             }

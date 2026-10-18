@@ -12,6 +12,8 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
 
     @Published private(set) var status: CLAuthorizationStatus
     private let manager = CLLocationManager()
+    /// Region entries waiting for a fresh fix (building id -> when). Main actor only.
+    private var pendingEntries: [String: Date] = [:]
 
     private override init() {
         status = manager.authorizationStatus
@@ -29,10 +31,13 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
 
     var canWatchInBackground: Bool { status == .authorizedAlways }
 
-    /// Bring monitoring in line with permission and pause state.
-    func sync() {
+    /// Bring monitoring in line with permission and pause state. A pause subscriber fires before the new value
+    /// is stored, so it passes the new state in `paused`; other callers read the saved one.
+    func sync(paused: Bool? = nil) {
         status = manager.authorizationStatus
-        guard status == .authorizedAlways, !WalkInMonitor.pausedOnDisk, let heat = BuildingHeatStore.shared.heat else {
+        let isPaused = paused ?? WalkInMonitor.pausedOnDisk
+        guard status == .authorizedAlways, !isPaused, let heat = BuildingHeatStore.shared.heat else {
+            pendingEntries = [:]
             manager.stopMonitoringSignificantLocationChanges()
             for r in manager.monitoredRegions { manager.stopMonitoring(for: r) }
             return
@@ -46,11 +51,16 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
             here.distance(from: CLLocation(latitude: $0.lat!, longitude: $0.lon!)) < here.distance(from: CLLocation(latitude: $1.lat!, longitude: $1.lon!))
         }.prefix(Self.maxRegions)
         let ids = Set(ranked.map(\.id))
-        for r in manager.monitoredRegions where !ids.contains(r.identifier) { manager.stopMonitoring(for: r) }
+        let maxR = manager.maximumRegionMonitoringDistance
+        // Regions left over from an older, smaller size are replaced.
+        for r in manager.monitoredRegions {
+            let want = ranked.first { $0.id == r.identifier }.map { GeofenceEntry.regionRadius(for: $0.radius, maximum: maxR) }
+            if !ids.contains(r.identifier) || (r as? CLCircularRegion).map({ $0.radius != want }) == true { manager.stopMonitoring(for: r) }
+        }
         let have = Set(manager.monitoredRegions.map(\.identifier))
         for b in ranked where !have.contains(b.id) {
             let r = CLCircularRegion(center: .init(latitude: b.lat!, longitude: b.lon!),
-                                     radius: min(b.radius, manager.maximumRegionMonitoringDistance), identifier: b.id)
+                                     radius: GeofenceEntry.regionRadius(for: b.radius, maximum: maxR), identifier: b.id)
             r.notifyOnEntry = true; r.notifyOnExit = false
             manager.startMonitoring(for: r)  // didDetermineState then reports if we are already inside
         }
@@ -64,20 +74,44 @@ final class BuildingWatcher: NSObject, ObservableObject, CLLocationManagerDelega
         Task { @MainActor in
             guard self.status == .authorizedAlways, !WalkInMonitor.pausedOnDisk,
                   let heat = BuildingHeatStore.shared.heat, let here = locations.last else { return }
+            self.confirmEntries(heat, with: here)
             self.pick(heat, near: here)
+        }
+    }
+
+    /// The region is bigger than the building: post only if the fresh fix is inside the real circle.
+    private func confirmEntries(_ heat: BuildingHeat, with fix: CLLocation) {
+        let now = Date()
+        pendingEntries = GeofenceEntry.pruned(pendingEntries, now: now)
+        guard !pendingEntries.isEmpty else { return }
+        let ids = GeofenceEntry.confirmed(pending: pendingEntries, fixLat: fix.coordinate.latitude, fixLon: fix.coordinate.longitude,
+                                          accuracy: fix.horizontalAccuracy, fixTime: fix.timestamp, now: now, heat: heat)
+        for id in ids { pendingEntries[id] = nil; WalkInMonitor.shared.enteredRegion(id) }
+    }
+
+    /// An entry or "already inside" report: ask for a fresh fix; with none within ~10 s nothing is posted.
+    private func entered(_ id: String) {
+        guard status == .authorizedAlways, !WalkInMonitor.pausedOnDisk else { return }
+        pendingEntries[id] = Date()
+        manager.requestLocation()
+        DispatchQueue.main.asyncAfter(deadline: .now() + GeofenceEntry.fixTimeout + 1) { [weak self] in
+            guard let self else { return }
+            self.pendingEntries = GeofenceEntry.pruned(self.pendingEntries, now: Date())
         }
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
         guard state == .inside else { return }
         let id = region.identifier
-        Task { @MainActor in WalkInMonitor.shared.enteredRegion(id) }
+        Task { @MainActor in self.entered(id) }
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didEnterRegion region: CLRegion) {
         let id = region.identifier
-        Task { @MainActor in WalkInMonitor.shared.enteredRegion(id) }
+        Task { @MainActor in self.entered(id) }
     }
 
-    nonisolated func locationManager(_ m: CLLocationManager, didFailWithError error: Error) {}
+    nonisolated func locationManager(_ m: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in self.pendingEntries = [:] }  // no fix, no notification
+    }
 }

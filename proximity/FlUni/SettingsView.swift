@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import WebKit
 
 /// Detection on/off, what is shared, notifications, the map address, deleting local data, and About.
 struct SettingsView: View {
@@ -17,6 +18,7 @@ struct SettingsView: View {
             detectionSection
             sharedSection
             notificationsSection
+            closedSection
             BackgroundWarningsSection()
             mapSection
             dataSection
@@ -115,6 +117,18 @@ struct SettingsView: View {
         .listRowBackground(Theme.surface)
     }
 
+    // MARK: When FlUni is closed
+
+    private var closedSection: some View {
+        Section("When FlUni is closed") {
+            Text("Nearby alerts keep working in the background using Bluetooth; they're less frequent than with FlUni open.")
+            Text("If you swipe FlUni away, iOS stops nearby alerts until you open it again; building warnings still work.")
+        }
+        .font(.fluni(.footnote))
+        .foregroundStyle(Theme.ink)
+        .listRowBackground(Theme.surface)
+    }
+
     private var notificationText: String {
         switch notificationStatus {
         case .authorized, .provisional, .ephemeral: return "On"
@@ -163,8 +177,22 @@ struct SettingsView: View {
     private func deleteEverything() {
         hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
         heatmapURL = ""
-        Self.eraseLocalData()
-        model.forgetEverything()
+        model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
+        BuildingWatcher.shared.sync(paused: true)
+        WalkInMonitor.shared.forgetEverything()
+        PSickStore.shared.forget()
+        NotificationCenter.default.post(name: SelfReportStore.didDeleteData, object: nil)
+        Self.eraseSystemData()
+        Self.eraseLocalData()  // last, so nothing above can write a key back
+    }
+
+    /// Notifications already shown or waiting, the map's web data (cookies, storage, caches) and cached downloads.
+    static func eraseSystemData() {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllDeliveredNotifications()
+        center.removeAllPendingNotificationRequests()
+        WKWebsiteDataStore.default().removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast) {}
+        URLCache.shared.removeAllCachedResponses()
     }
 
     /// Deletes the contents of Application Support (exposure history and anything else saved there)

@@ -113,7 +113,9 @@ private struct PretendSection: View {
                     Text(monitor.pretend.flatMap { heat.heat?.buildings[$0]?.name } ?? "Real location").foregroundStyle(Theme.ink2)
                 }
             }
-        } footer: { Text("Changes the walk-in warning only. Nothing else uses it.").foregroundStyle(Theme.ink2) }
+            // A rehearsal starts each building's 2-hour cooldown; clear it before the live demo.
+            Button("Reset warnings") { monitor.resetCooldowns() }.frame(minHeight: 44)
+        } footer: { Text("Changes the walk-in warning only. Nothing else uses it. Reset warnings so a rehearsal doesn't silence the live demo.").foregroundStyle(Theme.ink2) }
     }
 }
 

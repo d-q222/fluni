@@ -27,6 +27,14 @@ enum AlertLevel: Int, Comparable {
     static func < (a: AlertLevel, b: AlertLevel) -> Bool { a.rawValue < b.rawValue }
 }
 
+/// When to send a notification for the alert level. The notified level follows the level down as well as up,
+/// so a later nearby or close contact notifies again; it never notifies for the same or a lower level.
+enum AlertNotifier {
+    static func next(level: AlertLevel, notified: AlertLevel) -> (notified: AlertLevel, notify: AlertLevel?) {
+        level > notified ? (level, level) : (level, nil)
+    }
+}
+
 /// Accumulates close-contact minutes with risky phones (summed across them, so ID rotation
 /// does not reset it) over a rolling 24 h — the rule agreed with the heat map (WORKSTREAMS) —
 /// and decides the alert level.
