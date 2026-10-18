@@ -49,7 +49,7 @@ WORKSTREAMS.md.)
 
 | Channel | What it carries | Distance quality |
 |---|---|---|
-| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±50–70 % |
+| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
 | **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
 | **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk + UWB capability), UWB tokens; GPS fixes **only in the harness**. New random link name on every ID rotation; every message size-capped (4 KB), rate-limited and validated; max 8 peers. The link's risk is never used (Bluetooth's is), and a hello ID counts only if Bluetooth heard it in the last 30 s | — |
 | **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link; keeps ranging through link drops (30 s grace); extended distance when both phones have the U2 chip | ~10 cm |
