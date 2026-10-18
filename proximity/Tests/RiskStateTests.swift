@@ -446,4 +446,37 @@ final class RiskStateTests: XCTestCase {
         m3.forgetEverything()
         XCTAssertFalse(ProximityModel(riskStore: store()).isAlertRead(.closeContact))
     }
+    /// The owner's case exactly: a close contact notifies, FlUni is swiped away (the process and all memory gone),
+    /// launched cold, and the same sick peer is sighted again. The new process restores in ProximityModel.init,
+    /// before any tick, so it posts nothing.
+    func testColdLaunchAfterASwipeAwayDoesNotNotifyTheSamePeerAgain() throws {
+        let base = Date().addingTimeInterval(-1000)                     // real clock: ProximityModel.init reads Date()
+        var first = Run()
+        first.ticks(from: base, seconds: 16 * 60)
+        XCTAssertEqual(first.posted, [.nearby, .closeContact])
+        // What the model writes on that tick (levelChanged: a notification posted), before any swipe-away.
+        let s = store()
+        s.saveIfDue(first.exposure, gate: first.gate, now: base.addingTimeInterval(960), levelChanged: true)
+        XCTAssertEqual(s.writes, 1)
+
+        var model: ProximityModel? = ProximityModel(riskStore: store())
+        weak var gone = model
+        model = nil                                                     // the old process is gone
+        XCTAssertNil(gone)
+
+        let reopen = Date()
+        let cold = ProximityModel(riskStore: store())                   // cold launch
+        XCTAssertEqual(cold.exposure.level, .closeContact)
+        XCTAssertEqual(cold.alertGate, first.gate)
+        // Its first ticks, then the same peer is back (first sighting credits nothing, then it accrues).
+        var second = Run(exposure: try XCTUnwrap(store().load(now: reopen)).exposure, gate: cold.alertGate)
+        second.ticks(from: reopen, seconds: 600) { $0 > 4 }
+        XCTAssertEqual(second.posted, [], "zero notifications after the cold launch")
+        XCTAssertGreaterThan(second.exposure.minutes, first.exposure.minutes)
+
+        // The same cold launch without a saved state posts both alerts again.
+        var lost = Run()
+        lost.ticks(from: reopen, seconds: 16 * 60) { $0 > 4 }
+        XCTAssertEqual(lost.posted, [.nearby, .closeContact])
+    }
 }

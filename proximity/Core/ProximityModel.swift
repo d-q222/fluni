@@ -179,9 +179,11 @@ final class ProximityModel: ObservableObject {
         // rather than on the timer's next fire.
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in self?.tick() }
-        // flu-persist: iOS may end FlUni while it is in the background; save the risk state on the way out.
-        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil,
-                                               queue: .main) { [weak self] _ in self?.saveRiskState() }
+        // flu-persist: iOS may end FlUni in the background and a swipe-away in the app switcher gives no
+        // termination callback, so save on the way out (resign active, then background).
+        for name in [UIApplication.willResignActiveNotification, UIApplication.didEnterBackgroundNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.saveRiskState() }
+        }
     }
 
     /// @Published fires on every set, even an equal one; skip those.
@@ -625,14 +627,16 @@ final class ProximityModel: ObservableObject {
         setExposure(e)  // unchanged ticks don't republish; any change in p does
         tickOwnScore()
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        if let kind = alertGate.step(exposure.level, now: now) {
+        let kind = alertGate.step(exposure.level, now: now)
+        if let kind {
             log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")")
             if UIApplication.shared.applicationState == .active {
                 UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
             }
             alertPoster.post(kind)
         }
-        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before)  // flu-persist
+        // flu-persist: a level change or a notification is written at once (a swipe-away gives no callback).
+        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before || kind != nil)
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
         // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
         // once per background scan; a restart lets phones that came near be found again).
