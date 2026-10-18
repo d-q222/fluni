@@ -50,7 +50,10 @@ final class ProximityModel: ObservableObject {
     private let gps = GPSRanger()
 
     private var byID: [String: PeerState] = [:]
-    private var linkIDs: [MCPeerID: String] = [:]
+    /// The ID each link peer claims in its hello. Used only while Bluetooth also hears that ID (`boundID`).
+    private var linkIDs: [LinkPeer: String] = [:]
+    /// When the link that carried this ID's UWB dropped, for the `link metric uwb_resume` line.
+    private var uwbDropAt: [String: Date] = [:]
     private var myFix: CLLocation?
     /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
     @Published private(set) var lastFix: CLLocation?
@@ -90,13 +93,14 @@ final class ProximityModel: ObservableObject {
         ble.worksInBackground = worksInBackground
 
         link.onConnected = { [weak self] peer in self?.linked(peer) }
-        link.onDisconnected = { [weak self] peer in self?.unlinked(peer) }
+        link.onDisconnected = { [weak self] peer, final in self?.unlinked(peer, final: final) }
         link.onMessage = { [weak self] peer, w in self?.received(w, from: peer) }
         status["Link"] = "searching"
 
         uwb.onState = { [weak self] in self?.setStatus("UWB", $0); self?.log("uwb \($0)") }
         uwb.onToken = { [weak self] peer, data in self?.link.send(Wire(kind: .uwbToken, token: data), to: [peer]) }
         uwb.onDistance = { [weak self] peer, d in self?.uwbDistance(peer: peer, d: d) }
+        uwb.onStopped = { [weak self] peer in self?.linkIDs[peer] = nil }
         status["UWB"] = UWBRanger.isSupported ? "waiting for peer" : "not supported on this device"
 
         gps.onState = { [weak self] in self?.setStatus("GPS", $0) }
@@ -223,7 +227,9 @@ final class ProximityModel: ObservableObject {
     /// FlUni turns it off so "your precise location never leaves this phone" is literally true
     /// (indoors GPS was 7–10 m off at 0.5 m anyway, so detection loses next to nothing).
     /// Fails closed: false unless the harness opts in.
-    var sharesLocationWithPeers = false
+    var sharesLocationWithPeers = false {
+        didSet { gps.rangesWithPeers = sharesLocationWithPeers }  // GPS may only relax while it ranges
+    }
     /// Harness only: keep the screen on during link tests. FlUni lets the phone lock.
     var keepsScreenOn = false
 
@@ -282,13 +288,20 @@ final class ProximityModel: ObservableObject {
         myID = Data(bytes)
         lastRotation = Date()
         log("rotate me=\(myID.hex.prefix(6))")
+        // New link identity too, so the link can't tie the old ID to the new one. The new ID is only ever
+        // sent over links made under the new identity (announce() sends to those; there are none yet).
+        link.rotateIdentity()
         announce()
     }
 
     private func announce() {
         guard myID.count == 11, !isPaused else { return }  // -risk is applied before the first ID exists
         ble.advertise(id: myID, risk: myRisk)
-        link.send(Wire(kind: .hello, id: myID.hex, risk: myRisk))
+        link.send(hello())
+    }
+
+    private func hello() -> Wire {
+        Wire(kind: .hello, id: myID.hex, risk: myRisk, ext: UWBRanger.isSupported && UWBRanger.supportsExtendedDistance)
     }
 
     // MARK: Channel inputs
@@ -316,40 +329,54 @@ final class ProximityModel: ObservableObject {
         }
     }
 
-    private func linked(_ peer: MCPeerID) {
+    private func linked(_ peer: LinkPeer) {
         guard !isPaused else { return }
         setStatus("Link", "\(link.connectedPeers.count) connected")
-        log("link connected \(peer.displayName)")
-        link.send(Wire(kind: .hello, id: myID.hex, risk: myRisk), to: [peer])
+        log("link connected \(peer)")
+        link.send(hello(), to: [peer])
         if sharesLocationWithPeers, let f = myFix { link.send(fixWire(f), to: [peer]) }
-        uwb.start(for: peer)
+        uwb.linkUp(peer)  // reuses a session still ranging from before a drop, and re-sends our token
     }
 
-    private func unlinked(_ peer: MCPeerID) {
+    /// A drop keeps UWB ranging (and the claimed ID) for a grace period while the link reconnects;
+    /// a retired identity's link is final, so its UWB stops now.
+    private func unlinked(_ peer: LinkPeer, final: Bool) {
         setStatus("Link", link.connectedPeers.isEmpty ? "searching" : "\(link.connectedPeers.count) connected")
-        log("link lost \(peer.displayName)")
-        uwb.stop(for: peer)
-        linkIDs[peer] = nil
+        if final {
+            log("link retired \(peer)")
+            uwb.stop(for: peer)
+            linkIDs[peer] = nil
+        } else {
+            log("link lost \(peer)")
+            if let id = linkIDs[peer] { uwbDropAt[id] = Date() }
+            uwb.linkDown(peer)
+        }
     }
 
-    private func received(_ w: Wire, from peer: MCPeerID) {
+    /// The ID a link peer claimed, if Bluetooth also heard that ID in the last 30 s. The link is
+    /// unauthenticated; a claim nobody hears on Bluetooth gets no UWB or GPS readings and creates no peer.
+    private func boundID(_ peer: LinkPeer) -> String? {
+        guard let id = linkIDs[peer], LinkGuard.isHeardOnBluetooth(lastHeard: byID[id]?.ble?.at, now: Date()) else { return nil }
+        return id
+    }
+
+    private func received(_ w: Wire, from peer: LinkPeer) {
         guard !isPaused else { return }
         switch w.kind {
         case .hello:
+            // PeerLink has validated it (22 lowercase hex ID). No state is carried from the peer's previous
+            // ID (that would link its rotating IDs), and the link's risk is never used: Bluetooth's risk for
+            // the same ID always stands, so a link can neither raise nor hide anyone's status.
             guard let id = w.id else { return }
-            // The peer rotated its ID: carry its state over instead of counting it twice.
-            if let old = linkIDs[peer], old != id, let p = byID.removeValue(forKey: old), byID[id] == nil {
-                byID[id] = PeerState(id: id, rssi: p.rssi, peerFix: p.peerFix, calibrator: p.calibrator)
-                accrual.rename(from: old, to: id)
-            }
             linkIDs[peer] = id
-            if let old = byID[id]?.risk, old != (w.risk ?? .none) { log("peer \(id.prefix(6)) risk=\(w.risk ?? .none) via=link") }
-            update(id) { p in p.risk = w.risk ?? .none }
+            let ext = LinkGuard.useExtendedDistance(mine: UWBRanger.supportsExtendedDistance, theirs: w.ext)
+            uwb.setExtended(ext, for: peer)
+            log("link hello \(id.prefix(6)) from \(peer) heard=\(boundID(peer) != nil ? "yes" : "no") ext=\(ext ? "yes" : "no")")
         case .uwbToken:
             if let t = w.token { uwb.receive(tokenData: t, from: peer) }
         case .gps:
             guard sharesLocationWithPeers else { return }  // FlUni doesn't take others' locations either
-            guard let id = linkIDs[peer], let lat = w.lat, let lon = w.lon, let acc = w.acc else { return }
+            guard let id = boundID(peer), let lat = w.lat, let lon = w.lon, let acc = w.acc else { return }
             let fix = CLLocation(coordinate: .init(latitude: lat, longitude: lon), altitude: 0,
                                  horizontalAccuracy: acc, verticalAccuracy: -1, timestamp: Date())
             update(id) { p in p.peerFix = fix }
@@ -357,12 +384,20 @@ final class ProximityModel: ObservableObject {
         }
     }
 
-    private func uwbDistance(peer: MCPeerID, d: Double) {
+    private func uwbDistance(peer: LinkPeer, d: Double) {
         guard !isPaused else { return }
-        guard let id = linkIDs[peer] else { return }
+        guard let id = boundID(peer) else { return }
+        let now = Date()
+        // Metric for tools/stress.py: how long UWB was missing (gap) and, after a link drop, how long
+        // until it was back (after_drop; ~0 when ranging carried on through the drop).
+        let gap = byID[id]?.uwb.map { now.timeIntervalSince($0.at) }
+        let drop = uwbDropAt.removeValue(forKey: id).map { now.timeIntervalSince($0) }.flatMap { $0 < 120 ? $0 : nil }
+        if drop != nil || (gap ?? 0) > 1 {
+            log("link metric uwb_resume gap=\(gap.map(fmt) ?? "-") after_drop=\(drop.map(fmt) ?? "-") peer=\(id.prefix(6))")
+        }
         var newlyCalibrated: Double?
         update(id) { p in
-            p.uwb = Reading(source: .uwb, distance: d, sigma: 0.1, at: Date())
+            p.uwb = Reading(source: .uwb, distance: d, sigma: 0.1, at: now)
             // UWB is ground truth for this phone pair: teach the BLE model while we have it.
             if let rssi = p.rssi {
                 let was = p.calibrator.isCalibrated
@@ -458,7 +493,7 @@ final class ProximityModel: ObservableObject {
         if accrues {
             var credits: [AccrualCredit] = []
             for g in guarded where fresh.contains(g.id) {
-                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, tier: g.tier) else { continue }
+                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, distance: g.distance) else { continue }
                 credits.append(c)
                 if c.risk != .none, c.pClose > 0,
                    c.seconds >= 5 || UIApplication.shared.applicationState != .active {
@@ -467,7 +502,7 @@ final class ProximityModel: ObservableObject {
             }
             accrual.prune(now: now)
             let feed = AccrualFeed.contacts(credits, wallSeconds: dt)
-            e.advance(simSeconds: dt * speed, contacts: feed.contacts, tiers: feed.tiers)
+            e.advance(simSeconds: dt * speed, contacts: feed.contacts, doses: feed.doses)
             exposureHistory.record(simSeconds: dt * speed, contacts: feed.contacts, at: now)
         }
         // The heads-up level from everyone in range now (adds nothing: zero seconds).

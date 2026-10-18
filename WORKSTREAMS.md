@@ -85,7 +85,46 @@ Claim a row before you start. Update the status as you go. Agents should name th
   leaves the phone and is never seen by anyone. To make that true, FlUni no longer sends GPS fixes to
   nearby phones (GPS ranging between phones stays in the test harness only).
 
+- **2026-10-17 — FlUni anti-spoofing (proximity).** Bluetooth beacons aren't authenticated, so a ContactGuard
+  limits what they can add: at most the top 2 risky contacts count per tick, a burst of more than 4 new contagious
+  IDs in 5 minutes pauses Bluetooth-only alerts ("unusual signals"), implausible RSSI (> -30 dBm or a > 20 dB jump
+  in 2 s) is ignored, and an ID whose risk reverses direction within 15 minutes is ignored. A one-way climb
+  (symptoms, then positive) is trusted. Open product question: should a full close-contact alert require UWB?
+
 ## Requests
+
+- **heat map + FlUni → synthetic data (@aidenyj), 2026-10-17: a busier default run for the demo.**
+  - **Why:** the live map looks sparse. On `..._bc5cae7a` (10 agents, 3 infections), the live moment
+    has data for only 4 buildings.
+  - **What FlUni found:** it scored candidate configs in a scratch folder. The best is 400 agents,
+    3 days, seed 5, 25 initial seeds, `disease.transmission_scale=4`. At the live moment it has
+    50 buildings with data and 2–7 elevated or high between 08:00 and 22:00, and its app bundle is
+    1.6 MB.
+  - **Could you generate and commit it?**
+    `python simulate.py --agents 400 --days 3 --seed 5 --initial-seeds 25 --set disease.transmission_scale=4 --disease influenza --intervention none --out runs/`.
+    FlUni expects `influenza_none_n400_d3_s5_1513ab3f`; please confirm the id. Include `trips.csv.gz`
+    and the compact timeline.
+  - **When it lands:** the heat map and FlUni switch the default run together, and the model,
+    building heat and app bundle are regenerated.
+  - **Possible blocker:** if `transmission_scale=4` is unrealistic for the sim, suggest the closest
+    realistic busy config.
+
+- **heat map → synthetic data (@aidenyj), 2026-10-17: hand-placed boxes in `map/buildings.csv`.** The
+  11 `source = manual` places have rectangular `footprint_wkt` boxes that look odd on the map.
+  - The product owner noticed people "standing in Lake Lagunita". It is the 45,000 m² box of the
+    outdoor venue `bld_m_lake_lagunita`.
+  - Seven are outdoor spaces with boxes: Lake Lagunita, Main Quad Courtyard, White Plaza, Meyer Green,
+    The Oval, Engineering Quad and Frost Amphitheater.
+  - Two indoor boxes sit on top of real OSM buildings: Stern Dining on Lucie Stern Hall, and Florence
+    Moore Dining on Florence Moore Hall.
+  - Two have no building under them: Green Library and Wilbur Dining.
+  - The heat map now skips outdoor boxes and draws manual boxes with the outline of the OSM building
+    under them (`heatmap/footprints.js`).
+  - **Could the sim:**
+    1. leave outdoor venues without a footprint, or give them their real OSM area polygons;
+    2. map the dining halls to their OSM buildings;
+    3. use the OSM footprints for Green Library (way 30754881 "Cecil H. Green Library") and Wilbur
+       Hall?
 
 - **probability model → exposure calculator (@rioschillmoeller), 2026-10-17: review of `exposure/`.**
   The product owner asked for an independent check before the heat map builds on it.

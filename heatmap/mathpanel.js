@@ -139,8 +139,8 @@ function formula(c, explain, params) {
   const near = c.indoor ? `30·${num(d, 2)}²` : `30·${num(d, 2)}²·${num(params.outdoorNearDilution)}`;
   const f1 = el('p', { class: 'mp-f' }, c.indoor
     ? ['dose = q·B·t·(1/q', sub('near'), ' + 1/(V·loss)) = ', num(q), '·', num(B), '·', num(h, 2),
-      '·(1/', near, ' + 1/(', num(c.roomVolume, 0), '·', num(c.roomLoss, 2), ')) = ', el('b', { text: num(c.dose, 4) })]
-    : ['dose = q·B·t/q', sub('near'), ' = ', num(q), '·', num(B), '·', num(h, 2), '/', near, ' (outdoors) = ',
+      '·(1/(', near, ') + 1/(', num(c.roomVolume, 0), '·', num(c.roomLoss, 2), ')) = ', el('b', { text: num(c.dose, 4) })]
+    : ['dose = q·B·t/q', sub('near'), ' = ', num(q), '·', num(B), '·', num(h, 2), '/(', near, ') (outdoors) = ',
       el('b', { text: num(c.dose, 4) })]);
   const f2 = el('p', { class: 'mp-f' }, ['λ = 1 − e', sup('−dose'), ' = 1 − e', sup(`−${num(c.dose, 4)}`), ' = ',
     el('b', { text: num(c.transmission, 4) })]);

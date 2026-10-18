@@ -59,10 +59,12 @@ const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x * 10) 
 const clock12 = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`);
 
 async function main() {
-  const [totals, geo, bounds] = await Promise.all([
+  const getJson = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const [totals, geo, bounds, ctx, paths, labels] = await Promise.all([
     fetchTotals(),
     fetch('data/buildings.geojson').then((r) => r.json()),
-    fetch('assets/trace/campus_trace_bounds.json').then((r) => r.json()).catch(() => null),
+    getJson('assets/trace/campus_trace_bounds.json'),
+    getJson('data/context.geojson'), getJson('data/paths.geojson'), getJson('data/labels.json'),
   ]);
   const { stepMs, startMs, minPeople, scale } = totals;
   const names = totals.buildings.map((b) => b.name || '');
@@ -80,27 +82,111 @@ async function main() {
   $('fine').textContent = `Buildings with fewer than ${minPeople} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`;
 
   // ---- map ----
-  const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 20 });
-  if (bounds) {
-    const b = L.latLngBounds([bounds.south, bounds.west], [bounds.north, bounds.east]);
-    L.imageOverlay('assets/trace/campus_trace.webp', b, { pane: 'tilePane' }).addTo(map);
-    map.setMaxBounds(b.pad(0.1));
+  // Bounded to the campus extent + 250 m. Beyond that the user never goes, but a few roads, the Shopping
+  // Center and downtown are drawn faintly in the margin (data/context.geojson, from OSM).
+  const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19,
+    preferCanvas: true, maxBoundsViscosity: 1.0, worldCopyJump: false, inertia: true });
+  const pane = (name, z, events) => { const p = map.createPane(name); p.style.zIndex = z; if (!events) p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
+  const PCTX = pane('ctx', 410), PPATH = pane('paths', 415), PNEU = pane('neutral', 420), PHEAT = pane('heat', 430, true), PVIG = pane('vig', 440);
+  const lblPane = map.createPane('labels'); lblPane.style.zIndex = 450; lblPane.style.pointerEvents = 'none';
+  const NEUTRAL = { stroke: true, color: INK, weight: 0.8, opacity: 0.32, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
+  const CTX = {
+    green: { stroke: false, fill: true, fillColor: '#c3cf9c', fillOpacity: 0.5 },
+    water: { stroke: false, fill: true, fillColor: '#adc9cc', fillOpacity: 0.7 },
+    road: { color: INK, weight: 1.4, opacity: 0.3, fill: false },
+    street: { color: INK, weight: 0.7, opacity: 0.16, fill: false },
+    rail: { color: INK, weight: 1.2, opacity: 0.3, dashArray: '5 4', fill: false },
+    town: { color: INK, weight: 0.7, opacity: 0.22, fill: false },
+    shopping: { color: INK, weight: 0.8, opacity: 0.3, fill: true, fillColor: INK, fillOpacity: 0.05 },
+    hospital: { color: INK, weight: 0.8, opacity: 0.3, fill: false },
+  };
+  const B = bounds || { south: 37.417142, west: -122.183335, north: 37.437912, east: -122.156460 };
+  const campus = L.latLngBounds([B.south, B.west], [B.north, B.east]);
+  if (ctx) for (const k of ['green', 'water', 'street', 'road', 'rail', 'town', 'shopping', 'hospital']) { // fills first, lines on top
+    L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) },
+      { style: () => CTX[k], interactive: false, ...PCTX }).addTo(map);
   }
+  if (paths) L.geoJSON(paths, { style: () => ({ color: INK, weight: 0.8, opacity: 0.2, fill: false }), interactive: false, ...PPATH }).addTo(map);
+  L.geoJSON(geo, { style: () => NEUTRAL, interactive: false, ...PNEU }).addTo(map);
+
   const items = [];
-  const all = L.featureGroup();
   for (const f of geo.features) {
     const idx = ids.get(f.properties.id);
     if (idx === undefined) continue;
-    const layer = L.geoJSON(f, { style: () => ({ stroke: false, fill: false }) });
+    const layer = L.geoJSON(f, { style: () => ({ stroke: false, fill: false }), ...PHEAT });
     layer.on('click', (e) => { L.DomEvent.stopPropagation(e); popup(idx, e.latlng); });
     items.push({ idx, layer, key: '' });
-    layer.addTo(all);
+    layer.addTo(map);
   }
-  all.addTo(map);
-  const view = all.getBounds().isValid() ? all.getBounds() : L.latLngBounds([37.417, -122.183], [37.438, -122.156]);
-  map.fitBounds(view, { padding: [8, 8] });
-  map.setMinZoom(map.getZoom()); // never smaller than the whole campus
-  map.setView(view.getCenter(), map.getBoundsZoom(view, true)); // cover the screen: a tall phone shows campus top to bottom
+
+  // anchor labels, thinned by priority, zoom and collision with each other, the legend and the top chip
+  const lbls = (labels || []).map((l) => {
+    const m = L.marker([l.lat, l.lon], { interactive: false, keyboard: false, pane: 'labels',
+      icon: L.divIcon({ className: `lbl lbl-${l.c}`, html: `<span>${l.t}</span>`, iconSize: null }) }).addTo(map);
+    return { ...l, m, w: 0, h: 0 };
+  });
+  const rectOf = (el) => el.getBoundingClientRect();
+  function placeLabels() {
+    const mapBox = rectOf($('map')), avoid = [rectOf(document.querySelector('.legend')), rectOf(document.querySelector('.chip'))];
+    const mb = map.options.maxBounds, z = map.getZoom(), z0 = map.getMinZoom();
+    const placed = [];
+    for (const l of lbls.slice().sort((a, b) => a.p - b.p)) {
+      const el = l.m.getElement();
+      if (!el) continue;
+      const span = el.firstChild;
+      if (!l.w) { l.w = span.offsetWidth + 6; l.h = span.offsetHeight + 4; }
+      const pt = map.latLngToContainerPoint([l.lat, l.lon]);
+      const r = { l: mapBox.left + pt.x - l.w / 2, t: mapBox.top + pt.y - l.h / 2, r: mapBox.left + pt.x + l.w / 2, b: mapBox.top + pt.y + l.h / 2 };
+      const hit = (o) => r.l < o.right && r.r > o.left && r.t < o.bottom && r.b > o.top;
+      const ok = z >= z0 + (l.p - 1) * 0.75 && (!mb || mb.contains([l.lat, l.lon]))
+        && r.l >= mapBox.left + 4 && r.r <= mapBox.right - 4 && r.t >= mapBox.top && r.b <= mapBox.bottom
+        && !avoid.some(hit) && !placed.some((o) => hit({ left: o.l, right: o.r, top: o.t, bottom: o.b }));
+      el.style.visibility = ok ? 'visible' : 'hidden';
+      if (ok) placed.push(r);
+    }
+  }
+
+  // the bounded view: on load the whole campus fits between the top chip and the legend; that zoom is
+  // also the furthest out the user can go, and the pan limit is campus + 250 m (grown only as much as the
+  // screen needs to stay filled, never leaving a void)
+  const vig = L.layerGroup().addTo(map);
+  const pad = (b, dLat, dLon) => L.latLngBounds([b.getSouth() - dLat, b.getWest() - dLon], [b.getNorth() + dLat, b.getEast() + dLon]);
+  const padded = pad(campus, 0.00225, 0.0028);
+  let shiftY = 0;
+  // Pan limit at the current zoom: campus + 250 m, grown only where the screen itself is bigger (zoomed all
+  // the way out on a tall phone), so zoomed in the user can never reach the margin.
+  function limits() {
+    const z = map.getZoom(), size = map.getSize();
+    const c = map.project(campus.getCenter(), z).add([0, shiftY]);
+    const box = L.bounds(map.project(padded.getSouthWest(), z), map.project(padded.getNorthEast(), z))
+      .extend(c.subtract(size.divideBy(2).add([1, 1]))).extend(c.add(size.divideBy(2).add([1, 1])));
+    map.setMaxBounds(L.latLngBounds(map.unproject(box.min, z), map.unproject(box.max, z)));
+    vignette();
+  }
+  function vignette() { // soft paper vignette over the last ~250 m before the edge
+    const mb = map.options.maxBounds;
+    vig.clearLayers();
+    const ring = (b) => [b.getNorthWest(), b.getNorthEast(), b.getSouthEast(), b.getSouthWest()];
+    for (const m of [30, 70, 120, 190]) {
+      const d = m * 0.000009, h = pad(mb, -d, -d * 1.26);
+      L.polygon([ring(mb), ring(h)], { stroke: false, fillColor: '#faf4e8', fillOpacity: 0.16, interactive: false, ...PVIG }).addTo(vig);
+    }
+  }
+  function frame() {
+    const size = map.getSize(), top = 56, bottom = Math.round(size.y * 0.2);
+    const z = map.getBoundsZoom(campus, false, L.point(16, top + bottom));
+    shiftY = (bottom - top) / 2;
+    map.setMinZoom(z);
+    map.setMaxBounds(null);
+    map.setView(map.unproject(map.project(campus.getCenter(), z).add([0, shiftY]), z), z, { animate: false });
+    limits();
+    placeLabels();
+  }
+  frame();
+  if (P.get('debug') !== null) window.__map = map; // for the bounds test
+  map.on('zoomend', () => { limits(); map.panInsideBounds(map.options.maxBounds, { animate: false }); });
+  map.on('moveend zoomend', placeLabels);
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { map.invalidateSize(); frame(); }, 150); });
 
   // ---- state ----
   let step = -1, horizon = Number(P.get('horizon')) > 0 ? 60 : 0, cur = new Map(), shown = new Map(), openIdx = -1;
@@ -125,7 +211,7 @@ async function main() {
     if (n < minPeople) return { stroke: false, fill: false };
     const { color, alpha } = heatColor(Math.sqrt(Math.min(1, sick / vmax)));
     const op = alpha * MAX_FILL * (forecast ? FORECAST_FILL : 1);
-    return { stroke: true, weight: 1, color: INK, opacity: 0.45, dashArray: forecast ? '4 3' : null, fill: true, fillColor: color, fillOpacity: op };
+    return { stroke: true, weight: 1.5, color: INK, opacity: 0.6, dashArray: forecast ? '4 3' : null, fill: true, fillColor: color, fillOpacity: op };
   }
 
   function render(force) {

@@ -114,8 +114,17 @@ async function loadContacts(file, ids) {
   const names = ids.slice();
   let cap = 1 << 20, n = 0;
   let t = new Int32Array(cap), a = new Int32Array(cap), b = new Int32Array(cap), tier = new Uint8Array(cap), dur = new Int32Array(cap);
+  // Rio's dose needs distance, room and indoor (model/README.md). Empty room_id stays '' (across a wall).
+  let dist = new Float32Array(cap), room = new Int32Array(cap), ind = new Uint8Array(cap);
+  const rIntern = new Map(), rNames = [];
+  const rid = (s) => {
+    if (!s) return -1;
+    let i = rIntern.get(s);
+    if (i === undefined) { i = rNames.length; rNames.push(s); rIntern.set(s, i); }
+    return i;
+  };
   const grow = (x) => { const y = new x.constructor(cap); y.set(x); return y; };
-  let head = null, iT, iA, iB, iTier, iDur, sorted = true;
+  let head = null, iT, iA, iB, iTier, iDur, iDist, iRoom, iInd, sorted = true;
   const id = (s) => {
     let i = intern.get(s);
     if (i === undefined) { i = names.length; names.push(s); intern.set(s, i); }
@@ -127,11 +136,16 @@ async function loadContacts(file, ids) {
       const f = line.replace(/\r$/, '').split(',');
       if (!head) {
         head = f;
-        [iT, iA, iB, iTier, iDur] = ['t', 'agent_a', 'agent_b', 'distance_tier', 'duration_s'].map((c) => head.indexOf(c));
+        [iT, iA, iB, iTier, iDur, iDist, iRoom, iInd] = ['t', 'agent_a', 'agent_b', 'distance_tier', 'duration_s', 'distance_m', 'room_id', 'indoor']
+          .map((c) => head.indexOf(c));
         continue;
       }
-      if (n === cap) { cap *= 2; t = grow(t); a = grow(a); b = grow(b); tier = grow(tier); dur = grow(dur); }
+      if (n === cap) {
+        cap *= 2; t = grow(t); a = grow(a); b = grow(b); tier = grow(tier); dur = grow(dur);
+        dist = grow(dist); room = grow(room); ind = grow(ind);
+      }
       t[n] = +f[iT]; a[n] = id(f[iA]); b[n] = id(f[iB]); tier[n] = +f[iTier]; dur[n] = +f[iDur];
+      dist[n] = iDist >= 0 ? +f[iDist] : NaN; room[n] = iRoom >= 0 ? rid(f[iRoom]) : -2; ind[n] = iInd >= 0 && f[iInd] === 'True' ? 1 : 0;
       if (n && t[n] < t[n - 1]) sorted = false;
       n++;
     }
@@ -142,7 +156,8 @@ async function loadContacts(file, ids) {
     get(target, k) {
       if (typeof k !== 'string' || k.charCodeAt(0) > 57) return target[k]; // 'length' etc.
       const i = order ? order[+k] : +k;
-      return { t: t[i], agent_a: names[a[i]], agent_b: names[b[i]], distance_tier: tier[i], duration_s: dur[i] };
+      return { t: t[i], agent_a: names[a[i]], agent_b: names[b[i]], distance_tier: tier[i], duration_s: dur[i],
+        distance_m: dist[i], room_id: room[i] === -2 ? undefined : room[i] < 0 ? '' : rNames[room[i]], indoor: ind[i] === 1 };
     },
   });
 }
@@ -155,7 +170,9 @@ if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   const contacts = await loadContacts(join(runDir, 'contacts.csv.gz'), agentIds);
   const reports = parseCsv(readFileSync(join(runDir, 'reports_tests.csv'), 'utf8'));
   for (const r of reports) { r.t = +r.t; r.target_agent_id = r.target_agent_id || null; }
-  risk = inferRisk({ contacts, reports, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start) });
+  const roomsFile = join(runDir, 'map', 'rooms.csv');
+  const rooms = existsSync(roomsFile) ? new Map(parseCsv(readFileSync(roomsFile, 'utf8')).map((r) => [r.room_id, r])) : null;
+  risk = inferRisk({ contacts, reports, rooms, agentIds, stepMin: config.step_min, startMs: Date.parse(config.start) });
   console.log(`model: ${contacts.length} contacts, ${reports.length} reports (${lap()} ms)`);
 } else {
   console.warn(`Missing ${modelFiles.filter((f) => !existsSync(join(runDir, f))).join(', ')}: using the appBelief fallback for P(sick).`);

@@ -19,6 +19,6 @@ For a demo it is served from the laptop with the rest of the repo, at
 - Built only from what a phone could know (contacts, self-reports, reports about others, tests),
   never from the sim's true disease state. It includes retroactive tracing: a row can raise P at the
   moment a later report arrived, never before.
-- Changes to the model's parameters (`DEFAULTS` in `model/infer.js`: β, distance weights, the 0.3
-  contact cap, the 0.02 prior) are announced to the proximity workstream so the phone's own estimate
+- Changes to the model's parameters (`DEFAULTS` in `model/infer.js`: Rio's exposure constants, the
+  dorm-room `quietQuanta`, humidity defaults, the 0.02 prior) are announced to the proximity workstream so the phone's own estimate
   matches.

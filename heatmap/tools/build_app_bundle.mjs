@@ -7,6 +7,7 @@ import { gunzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cleanFootprints } from '../footprints.js';
 
 const here = dirname(fileURLToPath(import.meta.url)), hm = resolve(here, '..');
 const args = process.argv.slice(2);
@@ -25,9 +26,10 @@ const put = (rel, from) => { mkdirSync(dirname(join(out, rel)), { recursive: tru
 put('index.html', join(hm, 'usermap.html'));
 for (const f of ['usermap.js', 'heat.js']) put(f, join(hm, f)); // heat.js: the colour stops, no imports
 put('vendor/leaflet', join(hm, 'vendor/leaflet'));
-put('assets/trace/campus_trace.webp', join(hm, 'assets/trace/campus_trace.webp'));
+// (the illustrated assets/trace/campus_trace.webp is no longer bundled: the vector layers read better and save 0.37 MB)
 put('assets/trace/campus_trace_bounds.json', join(hm, 'assets/trace/campus_trace_bounds.json'));
 put('assets/containers/box-paper.png', join(hm, 'assets/containers/box-paper.png'));
+put('data/context.geojson', join(hm, 'data/context.geojson'));
 put('data/totals.json.gz', join(tmp, 'totals.json.gz'));
 // Plain copy as a fallback for webviews without DecompressionStream (usermap.js tries the .gz first).
 const totalsJson = gunzipSync(readFileSync(join(tmp, 'totals.json.gz')));
@@ -50,17 +52,46 @@ function parseCsv(text) {
   return rows.filter((r) => r.length === head.length).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i]])));
 }
 const r6 = (n) => Math.round(n * 1e6) / 1e6;
-function wktGeometry(wkt) {
-  const body = String(wkt).replace(/^[A-Z ]+/i, '').trim().replace(/^\(+|\)+$/g, '');
-  const polys = body.split(/\)\s*\)\s*,\s*\(\s*\(/).map((poly) => poly.split(/\)\s*,\s*\(/)
-    .map((ring) => ring.split(',').map((pt) => pt.trim().split(/\s+/).map(Number).map(r6))));
-  return polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys };
-}
+const round6 = (c) => (typeof c[0] === 'number' ? c.map(r6) : c.map(round6));
+const rows = parseCsv(readFileSync(join(runDir, 'map/buildings.csv'), 'utf8'));
+// Same cleanup as the presenter map: no boxes for outdoor spaces, manual boxes take a real outline.
+// Every mapped building is drawn (neutral paper when it has no data); only those in the totals get heat.
+const features = cleanFootprints(rows)
+  .map(({ row, geometry }) => ({ type: 'Feature', properties: { id: row.location_id },
+    geometry: { type: geometry.type, coordinates: round6(geometry.coordinates) } }));
 const wanted = new Set(totals.buildings.map((b) => b.id));
-const features = parseCsv(readFileSync(join(runDir, 'map/buildings.csv'), 'utf8'))
-  .filter((b) => wanted.has(b.location_id) && b.footprint_wkt)
-  .map((b) => ({ type: 'Feature', properties: { id: b.location_id }, geometry: wktGeometry(b.footprint_wkt) }));
 writeFileSync(join(out, 'data/buildings.geojson'), JSON.stringify({ type: 'FeatureCollection', features }));
+
+// footpaths: the run's own network, flattened to one MultiLineString at 5 decimals (~1 m)
+const r5 = (n) => Math.round(n * 1e5) / 1e5;
+const pg = JSON.parse(readFileSync(join(runDir, 'map/paths.geojson'), 'utf8'));
+const lines = [], seen = new Set();
+for (const f of pg.features) {
+  if (f.geometry?.type !== 'LineString') continue;
+  const c = f.geometry.coordinates.map(([x, y]) => [r5(x), r5(y)]).filter((p, i, a) => i === 0 || p[0] !== a[i - 1][0] || p[1] !== a[i - 1][1]);
+  const key = JSON.stringify(c);
+  if (c.length < 2 || seen.has(key)) continue;
+  seen.add(key); lines.push(c);
+}
+writeFileSync(join(out, 'data/paths.geojson'), JSON.stringify({ type: 'Feature', properties: {}, geometry: { type: 'MultiLineString', coordinates: lines } }));
+
+// anchor labels: p = priority (1 shows first and at every zoom), c = b building / g green or water / x outside campus
+const find = (re) => rows.find((r) => re.test(r.name));
+const anchors = [
+  ['Main Quad', /^Main Quad$/, 1, 'b'], ['Green Library', /^Green Library$/, 1, 'b'], ['The Oval', /^The Oval$/, 1, 'g'],
+  ['Lake Lagunita', /^Lake Lagunita$/, 1, 'g'], ['Tresidder', /^Tresidder Memorial Union$/, 2, 'b'],
+  ['Memorial Church', null, 2, 'b', 37.42703, -122.17053], ['Cantor', /^Cantor Arts Center$/, 2, 'b'],
+  ['Arrillaga Dining', /^Arrillaga Family Dining Commons$/, 3, 'b'], ['Roble', /^Roble Hall$/, 3, 'b'],
+  ['Wilbur', /^Wilbur Dining$/, 3, 'b'], ['Stern', /^Stern Dining$/, 3, 'b'], ['Lagunita Ct', null, 3, 'b', 37.4224, -122.1727],
+  ['Arrillaga Gym', /^Arrillaga Gymnasium and Weight Room$/, 3, 'b'], ['Engineering Quad', /^Engineering Quad$/, 2, 'g'],
+  ['Stanford Shopping Center', null, 2, 'x', 37.4437, -122.1717], ['El Camino Real', null, 3, 'x', 37.4195, -122.1495],
+].flatMap(([t, re, p, c, lat, lon]) => {
+  const r = re && find(re);
+  const la = r ? Number(r.lat) : lat, lo = r ? Number(r.lon) : lon;
+  if (!Number.isFinite(la)) { console.warn('no label position for', t); return []; }
+  return [{ t, lat: r5(la), lon: r5(lo), p, c }];
+});
+writeFileSync(join(out, 'data/labels.json'), JSON.stringify(anchors));
 rmSync(tmp, { recursive: true, force: true });
 
 let total = 0, count = 0;
@@ -70,4 +101,4 @@ let total = 0, count = 0;
     if (e.isDirectory()) walk(p); else { total += statSync(p).size; count++; }
   }
 })(out);
-console.log(`${out}: ${count} files, ${(total / 1e6).toFixed(2)} MB; ${features.length}/${wanted.size} buildings with outlines`);
+console.log(`${out}: ${count} files, ${(total / 1e6).toFixed(2)} MB; ${features.length} building outlines, ${wanted.size} with data, ${lines.length} paths`);

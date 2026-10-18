@@ -49,14 +49,15 @@ WORKSTREAMS.md.)
 
 | Channel | What it carries | Distance quality |
 |---|---|---|
-| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±50–70 % |
+| **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±(70 % of the distance + 0.3 m); ±(40 % + 0.3 m) once calibrated against UWB |
 | **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
-| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk), UWB tokens; GPS fixes **only in the harness** | — |
-| **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link | ~10 cm |
+| **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk + UWB capability), UWB tokens; GPS fixes **only in the harness**. New random link name on every ID rotation; every message size-capped (4 KB), rate-limited and validated; max 8 peers. The link's risk is never used (Bluetooth's is), and a hello ID counts only if Bluetooth heard it in the last 30 s | — |
+| **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link; keeps ranging through link drops (30 s grace); extended distance when both phones have the U2 chip | ~10 cm |
 | **GPS** | FlUni: your own fix, used **only on your phone** (building warnings); never sent. Harness: also sent to the linked phone for GPS ranging tests | 5–20 m, poor indoors |
 
 **Fusion** (`Fusion.swift`): fresh readings are averaged, each weighted by 1/σ². UWB dominates when
-present; Bluetooth and GPS take over when it drops out. While UWB is live, it **calibrates the
+present; Bluetooth and GPS take over when it drops out. A UWB reading keeps full weight for 3 s, then
+stays usable to 6 s with its σ growing 1 m/s, so one dropped frame doesn't snap the distance to Bluetooth. While UWB is live, it **calibrates the
 Bluetooth model** for that phone pair, so Bluetooth-only ranging improves afterwards. The result is
 P(within 6 ft), not a yes/no.
 
@@ -89,6 +90,19 @@ overflow adverts while the scanning phone's screen is on).
 contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risky phone is probably
 within 6 ft, and a **close-contact alert with advice at 15 cumulative minutes** (the CDC rule).
 Demo speed (1×, 10× or 60×) scales time, so 60× gets there in 15 seconds. In Debug builds the speed is saved across launches.
+
+**Risk estimate** (`RiskEstimate.swift`, "This phone's estimate"): Rio's exposure formula (Baker et al. 2021) as
+`model/infer.js` computes it, with what a phone knows. Each tick, a risky peer with a fused distance d ≤ 10 m
+(Bluetooth range; no estimate or coarse GPS alone adds nothing) adds the unit dose
+q·B·(dt/3600)·(1/(30·max(d, 0.3)²) + 1/(V·loss)): q 10 quanta/h, B 0.5 m³/h, the default room V = 50 m² × 2.7 m,
+loss = 2 ach + 0.3 settling + virus decay at the January indoor humidity (Magnus). `ExposureTracker` sums it per
+rotating peer ID over the 24 h window, with the ID's highest status (tested positive s = 0.97, symptoms 0.6). Then
+p = 0.02, and per ID p ← p + (1 − p)·s·(1 − e^(−0.352·dose)), 0.352 being the illness-average stage. ContactGuard's
+rules limit the dose as they limit minutes. The constants come from infer.js `DEFAULTS` and are checked against it
+by `Tests/CrossCheckTests.swift` (golden vectors from the real infer.js: `node Tests/Fixtures/xcheck/make_golden.mjs`).
+What the phone can't do: real rooms and ventilation, indoor/outdoor, walls, the source's days since onset,
+second-hand risk, look-back after a report, recovery, negative tests. One person seen under two rotating IDs
+counts as two sources, a slight over-estimate.
 
 **Clock.** Students see live time only: the device's local weekday and time of day mapped onto the run
 (`Core/LiveClock.swift`, rule in `docs/building-heat-format.md`), recomputed every 15 s and on any system clock,
@@ -145,6 +159,11 @@ run `fused` with the phones in different rooms.
 Launch arguments (also usable from Xcode's scheme): `-risk none|possible|contagious`, `-speed 60`,
 `-sources UWB,BLE,GPS`, `-heatmapURL http://…`, `-skipOnboarding`.
 
+**Link and UWB uptime.** One MPC handshake at a time per phone (field logs: concurrent handshakes
+mostly hung), 6 s invite timeout, discovery restarts only when nothing is connecting. The app logs
+`[fluni] link metric handshake=…` per link and `link metric uwb_resume gap=… after_drop=…` when UWB comes
+back; `tools/stress.py` reports them (`handshake_med`, `link_failed`, `uwb_gap_max`, `uwb_after_drop_max`).
+
 ## Demo
 
 Live 5-minute demo on 3 iPhones: [DEMO.md](DEMO.md) (runbook, troubleshooting). `tools/demo_reset.sh` reinstalls FlUni on the
@@ -163,7 +182,8 @@ phones to wipe them between runs (`DRY_RUN=1` previews it).
 Conventions for anything user-facing in `FlUni/` (the Developer screen is exempt from the plain-English rule).
 
 - **Tone:** calm, specific, actionable; short sentences. No jargon outside Developer: say "precise distance
-  sensing", not UWB; "weighted minutes", not dose.
+  sensing", not UWB; "weighted minutes" for close-contact time; "exposure dose" only in "How is this calculated?", where it
+  is explained.
 - **Terms, used the same everywhere:** "close contact", "someone with symptoms" / "someone who tested
   positive", "detection" (on/off/paused), "FlUni" (exact capitalisation). The three shared statuses are always
   "healthy", "possibly sick", "contagious".

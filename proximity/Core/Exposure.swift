@@ -35,60 +35,92 @@ enum AlertNotifier {
     }
 }
 
+/// One contact's input to the risk dose: the peer's rotating ID, its fused distance in metres, and the
+/// share of the tick it covers (AccrualFeed splits a long background credit into whole ticks plus a part).
+struct DosePeer: Equatable {
+    var id: String
+    var distance: Double
+    var share = 1.0
+}
+
 /// Accumulates close-contact minutes with risky phones (summed across them, so ID rotation
 /// does not reset it) over a rolling 24 h — the rule agreed with the heat map (WORKSTREAMS) —
-/// and decides the alert level.
+/// and decides the alert level. Alongside, it keeps Rio's dose per peer ID over the same window for
+/// the risk estimate (RiskEstimate).
 struct ExposureTracker: Equatable {
     static let closeContactMinutes = 15.0
     static let window = 24 * 3600.0  // simulated seconds, so the demo speed-up applies
     private(set) var minutes = 0.0
-    /// Infection "dose" for the risk estimate: Σ sickness × distance tier × minutes (model/infer.js),
-    /// over the same 24 h window. Separate from `minutes`, which drives the 15-min close-contact alert.
+    /// Rio's unit dose per peer ID (with its evidence level s), over the 24 h window.
+    /// Separate from `minutes`, which drives the 15-min close-contact alert.
+    private(set) var sources: [String: RiskEstimate.Source] = [:]
+    /// Σ unit dose over every ID in the window (shown to the user).
     private(set) var dose = 0.0
+    /// The phone's risk estimate from `sources` (RiskEstimate.probability); the prior with no contacts.
+    private(set) var probability = RiskEstimate.prior
     private(set) var level = AlertLevel.none
 
     /// Simulated seconds since start, and per-simulated-minute totals (≤ 1440 buckets).
     private var clock = 0.0
     private var buckets: [Bucket] = []
-    private struct Bucket: Equatable { var minute: Int; var minutes: Double; var dose: Double }
+    private struct Bucket: Equatable { var minute: Int; var minutes: Double; var sources: [String: RiskEstimate.Source] }
 
     /// `contacts`: (P(within 6 ft), their risk) for each peer seen this tick.
     /// `simSeconds`: elapsed time after the demo speed-up.
     /// Within the window minutes only grow: a backwards clock step (negative time), NaN/inf, or a
     /// pClose outside [0, 1] is ignored or clamped rather than allowed to erase or poison the total.
-    /// `tiers`: each contact's distance-tier weight (Fusion.tierWeight), same order as `contacts`;
-    /// without it the tier falls back to pClose.
-    mutating func advance(simSeconds: Double, contacts: [(pClose: Double, risk: Risk)], tiers: [Double]? = nil) {
+    /// `doses`: each contact's peer ID and fused distance, same order as `contacts`; nil (or a missing
+    /// entry) means no dose: no distance estimate, coarse GPS only, or dropped by ContactGuard.
+    /// Healthy peers add no dose; nor does a distance beyond RiskEstimate.doseRange.
+    mutating func advance(simSeconds: Double, contacts: [(pClose: Double, risk: Risk)], doses: [DosePeer?]? = nil) {
         let dt = simSeconds.isFinite ? min(max(simSeconds, 0), Self.window) : 0
         clock += dt
-        var added = 0.0, addedDose = 0.0
-        for (i, c) in contacts.enumerated() where c.pClose.isFinite && c.risk != .none {
-            let p = min(max(c.pClose, 0), 1)
-            added += dt / 60 * p * c.risk.weight
-            let t = tiers.flatMap { i < $0.count && $0[i].isFinite ? min(max($0[i], 0), 1) : nil } ?? p
-            addedDose += dt / 60 * t * c.risk.weight
+        var added = 0.0
+        var addedDose: [String: RiskEstimate.Source] = [:]
+        for (i, c) in contacts.enumerated() where c.risk != .none {
+            if c.pClose.isFinite {
+                let p = min(max(c.pClose, 0), 1)
+                added += dt / 60 * p * c.risk.weight
+            }
+            guard let ds = doses, i < ds.count, let x = ds[i] else { continue }
+            let share = x.share.isFinite ? min(max(x.share, 0), 1) : 0
+            let u = RiskEstimate.contactDose(distance: x.distance, seconds: dt * share)
+            guard u > 0 else { continue }
+            addedDose[x.id, default: .init()].dose += u
+            addedDose[x.id]!.s = max(addedDose[x.id]!.s, RiskEstimate.evidence(c.risk))
         }
-        if added > 0 || addedDose > 0 {
-            let m = Int(clock / 60)
+        if added > 0 || !addedDose.isEmpty {
+            let m = Int(floor(clock / 60))
             if buckets.last?.minute == m {
                 buckets[buckets.count - 1].minutes += added
-                buckets[buckets.count - 1].dose += addedDose
+                Self.merge(addedDose, into: &buckets[buckets.count - 1].sources)
             } else {
-                buckets.append(Bucket(minute: m, minutes: added, dose: addedDose))
+                buckets.append(Bucket(minute: m, minutes: added, sources: addedDose))
             }
             minutes += added
-            dose += addedDose
+            Self.merge(addedDose, into: &sources)
         }
-        // Expire whole minutes that fell out of the 24 h window.
-        let oldest = Int((clock - Self.window) / 60)
+        // Expire whole minutes that fell out of the 24 h window. floor, not Int(): truncating toward zero
+        // made a first-minute contact expire up to ~1.5 min early while the clock was just under 24 h.
+        let oldest = Int(floor((clock - Self.window) / 60))
+        var expired = false
         if let cut = buckets.firstIndex(where: { $0.minute > oldest }), cut > 0 {
             minutes -= buckets[..<cut].reduce(0) { $0 + $1.minutes }
-            dose -= buckets[..<cut].reduce(0) { $0 + $1.dose }
             buckets.removeFirst(cut)
+            expired = true
         } else if let last = buckets.last, last.minute <= oldest {
             buckets.removeAll()
+            expired = true
         }
-        if buckets.isEmpty { minutes = 0; dose = 0 }  // no float residue once everything expired
+        if buckets.isEmpty { minutes = 0 }  // no float residue once everything expired
+        if expired {  // rebuild the per-ID sums and the highest s from what is left
+            sources = [:]
+            for b in buckets { Self.merge(b.sources, into: &sources) }
+        }
+        if expired || !addedDose.isEmpty {
+            dose = sources.values.reduce(0) { $0 + $1.dose }
+            probability = RiskEstimate.probability(sources)
+        }
         // Hysteresis: warn at P >= 0.5, clear only below 0.3, so noisy BLE doesn't flicker the banner.
         let threshold = level == .nearby ? 0.3 : 0.5
         let riskyNearby = contacts.contains { $0.risk != .none && $0.pClose >= threshold }
@@ -96,6 +128,14 @@ struct ExposureTracker: Equatable {
             level = .closeContact
         } else {
             level = riskyNearby ? .nearby : .none
+        }
+    }
+
+    /// Adds doses per ID and keeps the highest evidence level.
+    private static func merge(_ add: [String: RiskEstimate.Source], into total: inout [String: RiskEstimate.Source]) {
+        for (id, a) in add {
+            total[id, default: .init()].dose += a.dose
+            total[id]!.s = max(total[id]!.s, a.s)
         }
     }
 

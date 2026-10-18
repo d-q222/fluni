@@ -10,7 +10,9 @@ import Foundation
 ///    give more than real time, and two real sick people beside you is the realistic maximum.
 /// 2. Burst: more than `burstLimit` (4) IDs first seen as risky within `window` (5 min) raises `flagged`;
 ///    while flagged, Bluetooth-only contacts add nothing. A phone rotates its ID every 15 min, so normal
-///    rotation adds at most 1 new ID per window and cannot trip it. Clears when the window has passed.
+///    rotation adds at most 1 new ID per window and cannot trip it. Every ID first seen during a burst stays
+///    suspect while it keeps showing up (and for `flipWindow` after), so its Bluetooth-only contacts never count,
+///    even after the window has passed. `flagged` stays set while any suspect ID is around.
 /// 3. Implausible signal (Bluetooth-only): RSSI above `maxRSSI` (-30 dBm) or a jump over `maxJump` (20 dB)
 ///    within `jumpWithin` (2 s) counts as not close for that tick. Field data: 0.3-0.8 m reads -60..-50 dBm,
 ///    the strongest at ~0.2 m was -42, so -30 leaves 12 dB margin; BLE noise is a few dB, so 20 dB is not noise.
@@ -18,6 +20,10 @@ import Foundation
 ///    `flipWindow` (15 min) -> ID ignored. A real phone changes risk only when its user reports, and reports
 ///    escalate (healthy -> possibly sick -> tested positive) far more than they bounce; a one-way climb is fine.
 /// 5. `corroborated` = a fresh UWB reading exists for the ID. Reported only; no rule requires it.
+/// A contact's `distance` (for the risk dose) is dropped (nil) whenever its pClose is zeroed by a rule, so
+/// the same rules limit the dose. Rule 1 also lets a risky contact with a distance but pClose 0 (beyond
+/// 6 ft, precisely ranged) fill a free top-2 slot for the dose; it ranks below every pClose > 0 contact,
+/// so it never displaces one.
 struct ContactGuard {
     static let topContacts = 2
     static let window: TimeInterval = 300
@@ -31,7 +37,8 @@ struct ContactGuard {
         var id: String
         var risk: Risk
         var pClose: Double
-        var tier: Double
+        /// Fused distance in metres for the risk dose; nil without an estimate or with coarse GPS only.
+        var distance: Double?
         var rssi: Double? = nil
         var sources: [Source] = [.ble]
         var uwbAt: Date? = nil
@@ -41,7 +48,7 @@ struct ContactGuard {
         var id: String
         var risk: Risk
         var pClose: Double
-        var tier: Double
+        var distance: Double?
         var corroborated: Bool
     }
 
@@ -50,6 +57,8 @@ struct ContactGuard {
 
     private var now = Date.distantPast
     private var firstRisky: [String: Date] = [:]
+    private var lastSeen: [String: Date] = [:]
+    private var suspect: Set<String> = []  // IDs first seen during a burst
     private var lastRSSI: [String: (rssi: Double, at: Date)] = [:]
     private var lastRisk: [String: Risk] = [:]
     private var lastRiskRose: [String: Bool] = [:]  // direction of each ID's last risk change
@@ -63,6 +72,7 @@ struct ContactGuard {
         // Rule 4 and 2 bookkeeping.
         var ignored: Set<String> = []
         for p in peers {
+            lastSeen[p.id] = now
             if let old = lastRisk[p.id], old != p.risk {
                 let rose = p.risk.rawValue > old.rawValue
                 if let prev = lastRiskRose[p.id], prev != rose { flips[p.id, default: []].append(now) }  // a reversal
@@ -78,10 +88,13 @@ struct ContactGuard {
             }
             if p.risk != .none, firstRisky[p.id] == nil { firstRisky[p.id] = now }
         }
-        let fresh = firstRisky.values.filter { now.timeIntervalSince($0) < Self.window }.count
-        let wasFlagged = flagged
-        flagged = fresh > Self.burstLimit
-        if flagged && !wasFlagged { log("guard burst ids=\(fresh)") }
+        let fresh = firstRisky.filter { now.timeIntervalSince($0.value) < Self.window }
+        let burstNow = fresh.count > Self.burstLimit
+        if burstNow {
+            if suspect.isEmpty { log("guard burst ids=\(fresh.count)") }
+            suspect.formUnion(fresh.keys)
+        }
+        flagged = !suspect.isEmpty
 
         // Rules 3 and 5, then rule 1 over what is left.
         var out: [Output] = []
@@ -89,8 +102,8 @@ struct ContactGuard {
             let uwbFresh = p.uwbAt.map { now.timeIntervalSince($0) < Source.uwb.maxAge && $0 <= now.addingTimeInterval(1) } ?? false
             let bleOnly = !uwbFresh && Set(p.sources) == [.ble]
             var pClose = p.pClose.isFinite ? min(max(p.pClose, 0), 1) : 0
-            var tier = p.tier.isFinite ? min(max(p.tier, 0), 1) : 0
-            var bad = ignored.contains(p.id) || (flagged && bleOnly)
+            var distance = p.distance.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+            var bad = ignored.contains(p.id) || (bleOnly && (burstNow || suspect.contains(p.id)))
             if let r = p.rssi, r.isFinite {
                 if bleOnly {
                     if r > Self.maxRSSI { bad = true }
@@ -99,20 +112,23 @@ struct ContactGuard {
                 }
                 lastRSSI[p.id] = (r, now)
             }
-            if bad { pClose = 0; tier = 0 }
-            out.append(Output(id: p.id, risk: p.risk, pClose: pClose, tier: tier, corroborated: uwbFresh))
+            if bad { pClose = 0; distance = nil }
+            out.append(Output(id: p.id, risk: p.risk, pClose: pClose, distance: distance, corroborated: uwbFresh))
         }
-        let keep = Set(out.indices.filter { out[$0].risk != .none && out[$0].pClose > 0 }
+        let keep = Set(out.indices.filter { out[$0].risk != .none && (out[$0].pClose > 0 || out[$0].distance != nil) }
             .sorted {
                 let a = out[$0].pClose * out[$0].risk.weight, b = out[$1].pClose * out[$1].risk.weight
                 return a != b ? a > b : out[$0].id < out[$1].id
             }.prefix(Self.topContacts))
-        for i in out.indices where out[i].risk != .none && !keep.contains(i) { out[i].pClose = 0; out[i].tier = 0 }
+        for i in out.indices where out[i].risk != .none && !keep.contains(i) { out[i].pClose = 0; out[i].distance = nil }
         return out
     }
 
     private mutating func prune() {
-        firstRisky = firstRisky.filter { now.timeIntervalSince($0.value) < Self.flipWindow }
+        // An ID is forgotten only once it has been gone for `flipWindow`; one that lingers is never "new" again.
+        lastSeen = lastSeen.filter { now.timeIntervalSince($0.value) < Self.flipWindow }
+        firstRisky = firstRisky.filter { lastSeen[$0.key] != nil }
+        suspect = suspect.filter { lastSeen[$0] != nil }
         lastRSSI = lastRSSI.filter { now.timeIntervalSince($0.value.at) < Self.window }
         flips = flips.filter { $0.value.contains { now.timeIntervalSince($0) < Self.flipWindow } }
         if lastRisk.count > 500 { lastRisk.removeAll() }

@@ -5,10 +5,11 @@ import Foundation
 enum Source: String, CaseIterable {
     case uwb = "UWB", ble = "BLE", gps = "GPS"
 
-    /// How long a reading stays usable.
+    /// How long a reading stays usable. UWB's last 3 s of it is a grace period with a growing error
+    /// (see `Fusion.agedSigma`).
     var maxAge: TimeInterval {
         switch self {
-        case .uwb: return 3
+        case .uwb: return 6
         case .ble: return 6
         case .gps: return 20
         }
@@ -49,7 +50,7 @@ enum Fusion {
         guard !fresh.isEmpty else { return nil }
         var wSum = 0.0, dSum = 0.0
         for r in fresh {
-            let s = max(r.sigma, 1e-9)  // avoids 1/0 for sigma 0 without degrading any real reading
+            let s = max(agedSigma(r, age: now.timeIntervalSince(r.at)), 1e-9)  // avoids 1/0 for sigma 0
             let w = 1 / (s * s)
             wSum += w
             dSum += w * r.distance
@@ -57,6 +58,18 @@ enum Fusion {
         return Estimate(distance: max(0, dSum / wSum),
                         sigma: (1 / wSum).squareRoot(),
                         sources: fresh.map(\.source))
+    }
+
+    /// UWB drops single frames and whole seconds (bodies in the way, a session re-run, the peer link
+    /// reconnecting). Rather than snapping to Bluetooth (±10 dB, ~1.5x off) the moment it does, the last
+    /// UWB distance keeps full weight for 3 s and then stays usable to 6 s (`Source.uwb.maxAge`) with its
+    /// error growing 1 m/s, about a slow walk, so Bluetooth takes over smoothly. Other sources: unchanged.
+    static let uwbFullTrust: TimeInterval = 3
+    static let uwbGraceGrowth = 1.0  // metres of sigma per second past uwbFullTrust
+
+    static func agedSigma(_ r: Reading, age: TimeInterval) -> Double {
+        guard r.source == .uwb, age > uwbFullTrust else { return r.sigma }
+        return r.sigma + uwbGraceGrowth * (age - uwbFullTrust)
     }
 
     /// GPS alone indoors is ±10–30 m: it can't tell 2 m from 25 m, so on its own it must not count
@@ -72,16 +85,10 @@ enum Fusion {
         !e.sources.isEmpty && e.sources.allSatisfy { $0 == .gps } && e.sigma > maxGPSOnlySigma
     }
 
-    /// Distance-tier weight for the risk dose, as in model/infer.js: <1 m → 1, 1–2 m → 0.6,
-    /// 2–5 m → 0.1, farther (still in radio range, ~same room) → 0.02. Coarse GPS alone → 0.
-    static func tierWeight(_ e: Estimate) -> Double {
-        if isCoarseGPSOnly(e) || !e.distance.isFinite { return 0 }
-        switch e.distance {
-        case ..<1: return 1
-        case ..<2: return 0.6
-        case ..<5: return 0.1
-        default: return 0.02
-        }
+    /// The distance the risk dose uses (RiskEstimate): the fused distance, or nil when the only evidence is
+    /// coarse GPS (it can't tell 2 m from 25 m) or the distance isn't a finite, non-negative number.
+    static func doseDistance(_ e: Estimate) -> Double? {
+        isCoarseGPSOnly(e) || !e.distance.isFinite || e.distance < 0 ? nil : e.distance
     }
 
     /// P(true distance <= 6 ft) under a normal error model.
