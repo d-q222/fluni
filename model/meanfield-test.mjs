@@ -47,7 +47,7 @@ check('time since meeting: an infection caught shows as P(flu), then the illness
 // run(reports, contacts) -> the model; meet(h, a, b) = an hour together, 1 m apart, in the small room.
 const meet = (h, a = 'A', b = 'B') => Array.from({ length: 12 }, (_, k) => ({ t: h * H + k, agent_a: a, agent_b: b, distance_m: 1, duration_s: 300, room_id: 'small', indoor: 'True' }));
 const rep = (h, who, event, value) => ({ t: h * H, agent_id: who, event, value });
-const run = (reports, contacts = []) => meanFieldRisk({ contacts, reports, rooms, agentIds: ['A', 'B'], stepMin, startMs, days: 14 });
+const run = (reports, contacts = [], params = {}) => meanFieldRisk({ contacts, reports, rooms, agentIds: ['A', 'B'], stepMin, startMs, days: 14 }, params);
 const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
 { // 1. a symptom report sets P_I to the posterior once; repeating it the next day adds nothing
   const once = at(run([rep(48, 'A', 'self_report', 'might_be_sick')]), 'A', 60);
@@ -56,10 +56,14 @@ const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
   check('symptom report: a repeat within the illness adds nothing (|twice - once| < 1e-6)', 1e-6, Math.abs(twice - onceLater));
   check('symptom report: P_I is the posterior, well below certainty', 0.9, once);
 }
-{ // 2. recovered: no longer susceptible, a later meeting with a case can't infect
-  const contacts = meet(100);
-  const recB = at(run([rep(60, 'B', 'self_report', 'recovered'), rep(110, 'A', 'test_result', 'positive')], contacts), 'B', 130);
-  check('recovered: a later meeting with a case leaves P(flu) at 0', 1e-9, recB);
+{ // 2. recovered ends a current infection but doesn't assert one (false sick reports are later "recovered"):
+  //    P(ever infected) doesn't jump to 1. With recoveredCertain (the SI's P_R = 1) a later case can't infect.
+  const contacts = meet(100), reps = [rep(48, 'B', 'self_report', 'might_be_sick'), rep(60, 'B', 'self_report', 'recovered'), rep(110, 'A', 'test_result', 'positive')];
+  const m = run(reps, contacts), before = m.everAt('B', startMs + 59 * 3600000), after = m.everAt('B', startMs + 61 * 3600000);
+  check('recovered: P(ever infected) stays put, not 1 (|after - before| < 0.01)', 0.01, Math.abs(after - before));
+  check('recovered: P(ever infected) stays below certainty', 0.9, after);
+  const certain = at(run(reps, contacts, { recoveredCertain: true }), 'B', 130);
+  check('recovered, recoveredCertain: a later meeting with a case leaves P(flu) at 0', 1e-9, certain);
 }
 { // 3. negative test: P_S = 1 back to 3 days before it, so what A "passed on" then is gone
   const contacts = meet(40);

@@ -17,3 +17,9 @@ Means over the 12 runs (per-run numbers in the commit messages):
 | oracle constant | 0.3426 | | | | |
 | before: prior = seed count / N (from the sim's config), lambdaScale 0.901 | 0.3331 | 0.5014 | 0.670 | 0.751 | 0.46 |
 | 1: self-calibrated online from reports (prior, lambdaScale), mass-rescaled, `priorAge=new` | 0.3243 | 0.4438 | 0.654 | 0.752 | 0.13 |
+
+## Iterations after the first full run (each tested on a randomly chosen run, against the previous version there)
+
+| # | Change | Test run | mean KL before → after | final AUC before → after |
+|---|---|---|---|---|
+| 2 | "recovered" ends an infection without asserting one (keeps P_S; `recoveredCertain` restores the SI's P_R = 1); likelihood ratios 60 / 20 (were 20 / 4) | `689ae9f0` (fixed 1k) | 0.1345 → 0.1038 (oracle const 0.1164) | 0.710 → 0.691 |

@@ -45,8 +45,9 @@ export const MF_DEFAULTS = {
   asymRel: 0.5,           // ... at this relative infectiousness
   tauPosDays: 3,          // positive test: infected this long before the result
   tauSymDays: 2.5,        // "might be sick": infected this long before the report (onset now)
-  lrSym: 20,              // likelihood ratio of a symptom self-report
-  lrOther: 4,             // ... of a report by someone else
+  lrSym: 60,              // likelihood ratio of a symptom self-report (was 20; on 3 sim runs 60 beat 20 and the
+  lrOther: 20,            // ... of a report by someone else (was 4)       measured per-day ratios, 270 and 90)
+  recoveredCertain: false, // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
   negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
                           //   the online pass can rerun this far back)
   // Self-calibration (calibrateFromReports): the reporting process, fitted on twelve 1,000-agent sim runs with
@@ -361,8 +362,10 @@ export function meanFieldRisk(input, params = {}) {
       if (k0 < K) A[o + k0] = wgt; else Rr[i] += wgt;
     } else if (c[0] === 'sus') { // negative test (SI eq. 4): P_S = 1 at this step, so nothing was caught or passed on
       S[i] = 1; Rr[i] = 0; A.fill(0, o, o + K);
-    } else if (c[0] === 'rec') { // recovered (SI eq. 6): P_R = 1, no longer susceptible
-      S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1;
+    } else if (c[0] === 'rec') { // recovered: an infection, if there was one, is over
+      if (P.recoveredCertain) { S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1; } // SI eq. 6: P_R = 1
+      else { let a = 0; for (let k = 0; k < K; k++) { a += A[o + k]; A[o + k] = 0; } Rr[i] += a; } // keeps P_S: the
+      // claim says nothing about whether they were ever infected (in the sim, false sick reports are later "recovered")
     }
   }
 
