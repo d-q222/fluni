@@ -193,6 +193,44 @@
       .options > * { flex: none; }
       .legend { left: 12px; right: 12px; width: auto; bottom: 24px; }
     }
+
+    /* ---------- "What users see": the app's map look (usermap.html), plus count badges and names ---------- */
+    .lbl { pointer-events: none; }
+    .lbl span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 500 10px/1 var(--font);
+      color: var(--ink-3); text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 5px var(--paper); }
+    .lbl.ub-badge span { font-weight: 700; font-size: 11px; color: #fff; background: var(--fire-ink); border-radius: 999px;
+      padding: 2px 6px; text-shadow: none; box-shadow: 0 0 0 1.5px rgba(255, 250, 241, 0.9); transform: translate(-50%, -135%); }
+    .lbl.ub-name span { transform: translate(-50%, 70%); }
+    .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 1px 2px rgba(51,36,28,.07), 0 8px 24px -6px rgba(51,36,28,.2);
+      background: var(--surface); color: var(--ink); }
+    .leaflet-popup-content { margin: 9px 12px; font: 13px/1.4 var(--font); }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-container.muted-base .leaflet-tile-pane, .leaflet-container.muted-base .leaflet-simPane-pane { opacity: .5; }
+    #ulegend { position: absolute; z-index: 500; left: 16px; bottom: 28px; width: 330px; padding: 3px 8px 0 6px; font-size: 12px;
+      border-style: solid; border-width: 9px 8px 21px 17px;
+      border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch;
+      filter: drop-shadow(0 6px 10px rgba(51, 36, 28, 0.10)); }
+    #ulegend[hidden] { display: none; }
+    #ulegend .strip { display: flex; align-items: center; gap: 8px; color: var(--ink-2); white-space: nowrap; }
+    #ulegend .ramp { flex: 1; min-width: 40px; height: 10px; border-radius: 5px; }
+    #ulegend .info { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ink-3); background: none;
+      color: var(--ink-2); font: italic 600 13px/1 Georgia, serif; padding: 0; cursor: pointer; }
+    #ulegend .more { margin-top: 6px; }
+    #ulegend .more[hidden] { display: none; }
+    #ulegend .scale { display: flex; justify-content: space-between; color: var(--ink-3); margin-top: 4px; font-variant-numeric: tabular-nums; }
+    #ulegend .fine { margin: 8px 0 0; color: var(--ink-3); line-height: 1.4; font-size: 11px; }
+    #view-count { font-weight: 600 !important; color: var(--ink) !important; }
+    .bld-pop { min-width: 220px; }
+    .bld-pop h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+    .bld-pop .row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    .bld-pop .row b { color: var(--ink); font-weight: 600; }
+    .bld-pop h4 { margin: 8px 0 2px; font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+    .bld-pop button.who { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; color: var(--ink); background: none;
+      border: 0; border-top: 1px solid var(--hairline); padding: 5px 0; cursor: pointer; }
+    .bld-pop button.who:hover { background: var(--surface-2); }
+    .bld-pop button.who small { display: block; color: var(--ink-3); font-size: 11px; }
+    .bld-pop .tiers3 { display: flex; gap: 6px; margin-top: 2px; }
+    .bld-pop .tiers3 span { flex: 1; border-top: 4px solid var(--c); padding-top: 3px; font-size: 11px; color: var(--ink-2); }
     /* ---------- hand-drawn containers (Lisa's Procreate box, assets/containers/) ----------
        9-slice border image: corners and the hatched left/bottom edges keep their shape, the middle
        stretches. Used on the presenter panels and the phone's cards.

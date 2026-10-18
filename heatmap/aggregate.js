@@ -1,3 +1,4 @@
+import { colourMax } from './userstyle.js'; // the same colour max the FlUni bundle computes
 // Totals are all the user-facing map may see: for each time step, per building and per room, how
 // many people are there and how many of them are expected to be sick (Σ P(sick)). No agent ids,
 // positions or properties leave this module.
@@ -43,6 +44,5 @@ export function totalsAt(totals, t) {
 // Fixed colour scale for building fills: 90th percentile of each step's busiest building (by excess
 // over the baseline; the busiest moment when most are blank).
 export function buildingScaleMax(totals) {
-  const peaks = totals.steps.map((s) => Math.max(0, ...[...s.buildings.values()].map((b) => b.excess ?? b.expected))).sort((a, b) => a - b);
-  return peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
+  return colourMax(totals.steps.map((s) => Math.max(0, ...[...s.buildings.values()].map((b) => b.excess ?? b.expected))));
 }
