@@ -24,6 +24,10 @@ struct SettingsView: View {
             dataSection
             aboutSection
         }
+        // Visual only: the type roles and a calmer rhythm, with no changes to what any row does.
+        .font(.fluni(.reading))
+        .headerProminence(.increased)
+        .listSectionSpacing(Space.l)
         .scrollContentBackground(.hidden)
         .background(Theme.paper)
         .navigationTitle("Settings")

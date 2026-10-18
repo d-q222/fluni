@@ -241,17 +241,20 @@ struct HowItWorksSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: Space.m) {
                     block("How it works",
                           "Your phone and other phones running FlUni notice each other over Bluetooth, and with precise distance sensing on newer iPhones. Together they estimate whether you're within 6 feet. If someone with symptoms or who tested positive is close for about 15 minutes in total, you get a heads-up with advice.")
+                    HandRule()
                     block("What your phone shares",
                           "Only a 3-level status (healthy, possibly sick or contagious) and a random ID that changes every 15 minutes. No name, no phone number, no account.")
+                    HandRule()
                     block("What it doesn't share",
                           "Your location is never sent to other people or to a server. Matching happens on your phone, and the map shows building totals, not people.")
+                    HandRule()
                     block("Good to know",
                           "FlUni works best while the app is open, and keeps checking over Bluetooth in the background, less often. It's a nudge, not a diagnosis. If you feel unwell or are worried, get tested and follow campus health guidance.")
                 }
-                .padding(20)
+                .padding(.horizontal, Space.m).padding(.vertical, Space.l)
             }
             .background(Theme.paper)
             .navigationTitle("How this works")
@@ -262,9 +265,9 @@ struct HowItWorksSheet: View {
     }
 
     private func block(_ title: String, _ body: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.fluni(.headline)).accessibilityAddTraits(.isHeader)
-            Text(body).font(.fluni(.body)).foregroundStyle(Theme.ink2)
+        VStack(alignment: .leading, spacing: Space.xs) {
+            Text(title).font(.fluni(.section)).accessibilityAddTraits(.isHeader)
+            Text(body).font(.fluni(.reading)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(Theme.ink)
     }
@@ -284,7 +287,7 @@ struct CalculationSheet: View {
         let d = String(format: "%.1f", dose)
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: Space.l) {
                     block("Close contact",
                           "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, FlUni tells you it's a close contact.",
                           "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
@@ -300,9 +303,9 @@ struct CalculationSheet: View {
                           "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick). This phone's estimate uses only what this phone detected in the last 24 hours, in a simplified form of the same formula, so the two can differ.",
                           store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone: \(RiskEstimate.percentText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
-                        .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                        .font(.fluni(.fine)).foregroundStyle(Theme.ink2)
                 }
-                .padding(20)
+                .padding(.horizontal, Space.m).padding(.vertical, Space.l)
             }
             .background(Theme.paper)
             .navigationTitle("How is this calculated?")
@@ -312,13 +315,12 @@ struct CalculationSheet: View {
     }
 
     private func block(_ title: String, _ body: String, _ numbers: String?) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.fluni(.headline))
-            Text(body).font(.fluni(.body)).foregroundStyle(Theme.ink2)
+        VStack(alignment: .leading, spacing: Space.xs) {
+            Text(title).font(.fluni(.section)).accessibilityAddTraits(.isHeader)
+            Text(body).font(.fluni(.reading)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
             if let numbers {
-                Text(numbers).font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
-                    .padding(10).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.surface2, in: RoundedRectangle(cornerRadius: Theme.radius))
+                // Your own numbers, set apart as a quiet panel so they're easy to find again.
+                Text(numbers).font(.fluni(.strong)).monospacedDigit().panel()
             }
         }
         .foregroundStyle(Theme.ink)
