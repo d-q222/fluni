@@ -64,45 +64,6 @@ const card = (cls, tint, inner) => `<div class="card ${cls}"${tint ? ` style="--
 
 // ---------- Today ----------
 
-function statusCard(d) {
-  const [title, subtitle] = STATUS[d.level];
-  const lines = d.level === 'none' ? [] : ADVICE[d.level].body;
-  const mark = d.level === 'none' ? '<img class="tissue" src="assets/illustrations/tissue.png" alt="">'
-    : `<button class="ibtn" data-act="how" aria-label="How alerts work">${ico(d.level === 'close' ? 'alert' : 'info', 'big')}</button>`;
-  return card(d.level === 'none' ? '' : 'peach', d.level === 'none' ? 'rgba(172,188,139,.45)' : '', `
-    <div class="vstack" style="gap:12px"><div class="row"><div class="grow vstack" style="gap:6px"><p class="t-title2">${esc(title)}</p><p class="t-sub">${esc(subtitle)}</p></div>${mark}</div>
-      ${lines.length ? `<div class="vstack" style="gap:8px">${lines.map((l) => `<div class="bullet">${ico('arrow')}<span class="t-sub">${esc(l)}</span></div>`).join('')}</div>` : ''}</div>`);
-}
-
-function riskCard(d) {
-  const b = band(d.p), hi = b === 'high';
-  const tint = { low: 'rgba(172,188,139,.45)', elevated: 'rgba(235,209,135,.5)', high: 'rgba(219,108,89,.22)' }[b];
-  const note = hi ? 'fireink' : 'ink2';
-  return card('', tint, `<div class="vstack ${hi ? 'fireink' : ''}" style="gap:8px">
-    <p class="t-head">Your risk estimate</p>
-    <p class="t-large" data-live="risk">${esc(liveText(d.p))}</p>
-    <p class="t-sub">${esc(summary(d.p))}</p>
-    <p class="t-foot ${note}">Based on the last 24 hours: time near each person, how close (closer counts much more), shared room air, and whether they reported symptoms or a positive test. It's an estimate, not a diagnosis.</p>
-    <button class="link ${note}" data-act="calc">${ico('fn')}See how this is worked out</button></div>`);
-}
-
-function minutesCard(d) {
-  const mins = d.minutes, done = mins >= CLOSE_MIN;
-  const caption = done ? `You've reached the ${CLOSE_MIN}-minute close-contact mark.`
-    : mins > 0 ? `About ${Math.ceil(CLOSE_MIN - d.exactMinutes)} more minutes would make this a close contact.` : 'No time near someone with symptoms or a positive test.';
-  return card('', '', `<div class="vstack" style="gap:10px"><p class="t-head">Close-contact time</p>
-    <div style="display:flex;align-items:baseline;gap:6px"><span class="t-large">${mins}</span><span class="t-sub ink2">of ${CLOSE_MIN} min</span></div>
-    <div class="progress ${done ? 'done' : ''}" role="progressbar" aria-valuenow="${Math.min(d.exactMinutes, CLOSE_MIN).toFixed(0)}" aria-valuemax="${CLOSE_MIN}"><i style="width:${Math.min(1, d.exactMinutes / CLOSE_MIN) * 100}%"></i></div>
-    <p class="t-foot ink2">${esc(caption)}</p></div>`);
-}
-
-function historyCard(d) {
-  const rows = d.contacts.slice(0, 3).map((c) => `<div class="crow"><span class="w">${esc(`${wkd(c.startMs)} ${clock(c.startMs)}`)}</span><div>${esc(c.text)}${c.close ? '<br><span class="cc">Close contact</span>' : ''}</div></div>`).join('');
-  return `<div class="vstack" style="gap:10px"><p class="t-title3">Recent contacts</p>${d.contacts.length
-    ? `${rows}<span class="link between">See the last 14 days${ico('chevron')}</span>`
-    : `<div class="contacts-empty"><img src="${ASSET}tissue.png" alt=""><div><b>No one sick nearby lately</b><span class="t-foot ink2">No time near someone with symptoms or a positive test in the last 14 days.</span></div></div>`}</div>`;
-}
-
 // the stay-home card (AtHomeCard): shown instead of the status, risk and minutes cards while someone is sick
 function atHomeCard(d) {
   const s = d.stay;
@@ -123,19 +84,88 @@ function atHomeCard(d) {
     + `<p class="t-foot ink2" style="margin:0">${d.status === 'contagious' ? 'Phones near you see: tested positive.' : 'Phones near you see: possibly sick.'}</p>`;
 }
 
+// ---- the new home (owner-approved mock v4): speech bubble + tissue, one hand-drawn card with the %, the calculation link,
+// "Your day so far" (a timeline of today's places) and, while sick, "Your recovery" ----
+
+const SAY = { none: 'All calm nearby.', nearby: "I'm keeping watch.", close: 'What to do is below.', sick: 'Rest up.' };
+const BAND = { low: 'Low', elevated: 'Elevated', high: 'High' };
+const bubble = (key, sick) => `<div class="perch"><span class="say">${esc(SAY[key])}</span><img src="${ASSET}${sick ? 'illo-sick@600.png' : 'tissue.png'}" alt="" class="${sick ? 'sickc' : ''}"></div>`;
+const pluralPhones = (n) => (n === 1 ? '1 other FlUni phone' : `${n} other FlUni phones`);
+const dur = (ms) => { const m = Math.max(1, Math.round(ms / 60000)); return m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`; };
+const howLink = () => `<button class="howlink" data-act="calc"><i>f(x)</i>How your risk estimate is worked out</button>`;
+
+function strip(d) {
+  const close = d.level === 'close', a = close ? ADVICE.close : ADVICE.nearby;
+  return `<div class="strip ${close ? 'cc' : ''}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.500" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.800"/><path d="M12 6.800v6.200M12 16.800v.2" stroke="var(--ink)" stroke-width="2.600" stroke-linecap="round"/></svg>
+    <div><p class="st">${esc(a.title)}</p><p class="sl">${esc(close ? a.body[1] : a.body[0])}</p></div></div>`;
+}
+
+function heroCard(d) {
+  const b = band(d.p), flagged = d.level !== 'none';
+  const up = flagged && d.p > PRIOR * 1.05 ? `<small>up from ${esc(liveText(PRIOR))}</small>` : '';
+  const steps = flagged && b === 'low' ? `<p class="lowtxt">Low, but follow the ${d.level === 'close' ? 'close-contact' : 'heads-up'} steps</p>` : '';
+  return `${bubble(d.level, false)}${card('hero', '', `${flagged ? strip(d) : ''}
+    <div class="numrow"><span class="big" data-live="risk">${esc(liveText(d.p))}</span><span class="ind"><span class="dot ${b}"></span>${BAND[b]}${up}</span></div>${steps}
+    <button class="fbtn" data-act="report">I don't feel well</button>`)}${howLink()}`;
+}
+
+const stopRow = (t, inner, cls = '') => `<div class="stop ${cls}"><div class="t">${esc(t)}</div><div class="rail"><span class="pin"></span></div><div class="body">${inner}</div></div>`;
+
+function closeBox(d, ep) {
+  const when = ep ? `${esc(d.fmt(ep.startMs))} to ${esc(d.fmt(ep.endMs))}, within 6 ft of someone who may be sick.` : 'Within 6 ft of someone who may be sick.';
+  return `<details class="opened card" open><summary>Close contact</summary><p class="when">${when}</p>
+    <ol class="steps">${ADVICE.close.body.slice(1).map((l, i) => `<li><em>${i + 1}</em><span>${esc(l)}</span></li>`).join('')}</ol></details>`;
+}
+
+function dayHistory(d) {
+  const stays = d.stays || [];
+  const shown = stays.slice(0, 4);
+  const rows = shown.map((st) => {
+    const evs = d.episodes.filter((e) => e.startMs >= st.startMs - 60000 && e.startMs <= st.endMs + 60000);
+    let detail;
+    if (st.now) detail = `Since ${esc(d.fmt(st.startMs))}, ${st.peers ? `near ${pluralPhones(st.peers)}` : 'no other FlUni phones nearby'}.${!evs.length && st.peers ? (st.sick ? ` ${st.sick} may be sick.` : ' None of them sick.') : ''}`;
+    else detail = `${dur(st.endMs - st.startMs)}${st.peers ? `, near up to ${st.peers} phones.` : '. No other FlUni phones nearby.'}${!evs.length && st.peers ? (st.sick ? ` ${st.sick} may be sick.` : ' All healthy.') : ''}`;
+    const events = evs.slice(0, 2).map((e, k) => {
+      const prog = st.now && k === 0 && d.level === 'nearby' && !e.close ? ` ${Math.min(CLOSE_MIN, d.minutes)} of ${CLOSE_MIN} min so far.` : '';
+      return `<div class="event">${ico('alert', 'ev')}<span>${esc(d.fmt(e.startMs))}. Someone within 6 ft said they ${e.contagious ? 'tested positive' : 'may be sick'}.${prog}</span></div>`;
+    }).join('');
+    const cc = evs.find((e) => e.close);
+    const open = d.level === 'close' && cc && cc === d.episodes.find((e) => e.close) ? closeBox(d, cc) : '';
+    return stopRow(st.now ? 'Now' : d.fmt(st.startMs).replace(/ [ap]m$/, ''), `<p class="place">${esc(st.name)}</p><p class="detail">${detail}</p>${events}${open}`, `${st.now ? 'now' : ''} ${evs.length ? 'alert' : ''}`);
+  }).join('');
+  return `<div class="section"><h2>Your day so far</h2><span>${esc(d.dayLabel || '')}</span></div>
+    <div class="timeline">${rows || '<p class="detail" style="padding-left:4px">No places yet today.</p>'}</div>
+    ${stays.length > 4 ? `<span class="more">See your whole day${ico('chevron')}</span>` : ''}`;
+}
+
+// sick mode: the card (no %), then "Your recovery"
+function sickHome(d, walk) {
+  const s = d.stay, day = s ? Math.min(s.day, 5) : 0, over = s && s.over;
+  const wk = (ms) => new Date(ms).toLocaleDateString('en-US', { weekday: 'short' });
+  const card1 = card('hero sickcard', '', `<p class="status"><span class="dot sun"></span>You're staying home</p>
+    <p class="daybig">${over ? 'Day 5 is done' : `Day ${day} of 5`}</p>
+    <div class="checkin"><p>${over ? 'How are you feeling now?' : 'How are you feeling today?'}</p>
+    <div class="choices"><button>Better</button><button>The same</button><button>Worse</button></div></div>`);
+  const track = s ? `<div class="trackline"><div class="track">${s.days.map((x, i) => `<div class="d ${i < day ? 'done' : i === day ? 'today' : ''}"><i></i>${i === day ? 'Today' : wk(x.ms)}<br>${i === 0 ? 'day 0' : i}</div>`).join('')}</div></div>` : '';
+  const started = s ? new Date(s.startMs).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : '';
+  const hist = s ? stopRow(wk(s.startMs), d.status === 'contagious'
+    ? '<p class="place">Tested positive</p><p class="detail">Phones nearby see “tested positive”.</p>'
+    : '<p class="place">Reported symptoms</p><p class="detail">Phones nearby only see “possibly sick”.</p>') : '';
+  return `${bubble('sick', true)}${card1}${walk}
+    <div class="section"><h2>Your recovery</h2><span>${d.dayLabel ? `Started ${esc(started)}` : ''}</span></div>${track}
+    <div class="timeline" style="margin-top:16px">${hist}</div>
+    <ul class="tips">${AT_HOME_STEPS.slice(0, 2).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+    <p class="vaden">Vaden Health · (650) 498-2336 · Mon–Fri 8:15–5</p>
+    <p class="privacy"><svg viewBox="0 0 14 17" width="14" height="17" aria-hidden="true"><rect x="1" y="7" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.800"/><path d="M3.800 7V4.800a3.200 3.200 0 0 1 6.400 0V7" fill="none" stroke="currentColor" stroke-width="1.800"/></svg>Your precise location never leaves this phone and is never seen by anyone.</p>`;
+}
+
 export function todayHtml(d) {
-  const out = [];
   const sick = d.status !== 'none';
-  if (d.walkIn) out.push(card('peach', '', `<div class="row">${ico('building')}<p class="grow t-sub semi">${esc(d.walkIn)} has a lot of illness right now. Consider a mask, or a different spot.</p></div>`));
-  if (sick) out.push(atHomeCard(d));
-  else {
-    if (d.level === 'nearby') out.push(card('peach', '', `<div class="row">${ico('walk')}<div class="grow"><p class="t-sub semi">${esc(ADVICE.nearby.title)}</p><p class="t-foot">${esc(ADVICE.nearby.body.join(' '))}</p></div></div>`));
-    out.push(statusCard(d), riskCard(d), minutesCard(d));
-    out.push(card('', '', `<div class="row" style="align-items:center"><span class="ink2">${ico('people')}</span><p class="grow t-body semi">${d.peers === 0 ? 'No other FlUni phones nearby' : d.peers === 1 ? '1 other FlUni phone nearby' : `${d.peers} other FlUni phones nearby`}</p></div>`));
-    out.push(historyCard(d));
-  }
-  out.push(`<button class="link how" data-act="how">${ico('info2')}How FlUni works and what it shares</button>`);
-  return out.join('');
+  const walk = d.walkIn ? (sick
+    ? card('peach', '', `<div class="row">${ico('house')}<p class="grow t-sub semi">${esc(`You're out at ${d.walkIn} while you're unwell. Head home and rest up when you can.`)}</p></div>`)
+    : card('peach', '', `<div class="row">${ico('building')}<p class="grow t-sub semi">${esc(d.walkIn)} has a lot of illness right now. Consider a mask, or a different spot.</p></div>`)) : '';
+  return `${sick ? sickHome(d, walk) : heroCard(d) + walk + dayHistory(d)}
+    <button class="link how" data-act="how">${ico('info2')}How FlUni works and what it shares</button>`;
 }
 
 // ---------- Me ----------

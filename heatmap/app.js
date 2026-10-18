@@ -1516,6 +1516,38 @@ async function main() {
     return `${when} · about ${Math.max(1, Math.round(ep.min))} min near ${ep.contagious ? 'someone who tested positive' : 'someone with symptoms'}${ep.weighted >= CLOSE_CONTACT_MIN ? ' · close contact' : ''}`;
   };
 
+  // "Your day so far": today's stays from this person's track (consecutive samples in one place), newest first, with the
+  // phones heard nearby during each stay (exposure log, Bluetooth range) and how many of them were sick (risky or worse).
+  const stayCache = { key: '', list: [] };
+  function todayStays(id) {
+    const key = `${id}@${Math.floor(now / (5 * 60000))}`;
+    if (stayCache.key === key) return stayCache.list;
+    const day0 = midnight(now), out = [];
+    for (const s of tracks.get(id) || []) {
+      if (s.t > now) break;
+      if (s.moving) { out.length && (out[out.length - 1].open = false); continue; }
+      const name = s.building || 'Outside', last = out[out.length - 1];
+      if (last && last.open && last.name === name && last.bid === s.buildingId) continue;
+      if (last) last.open = false;
+      out.push({ name, bid: s.buildingId, startMs: s.t, endMs: now, open: true });
+    }
+    for (let i = 0; i < out.length; i++) { // a stay ends where the next one starts (or at a walk, or now)
+      if (i + 1 < out.length) out[i].endMs = out[i + 1].startMs;
+    }
+    const log = model ? exposureLog.get(id) || [] : [];
+    const list = out.filter((st) => st.endMs > day0).map((st, i, a) => {
+      const others = new Set(), sickOnes = new Set();
+      for (const e of log) {
+        if (e.tMs < st.startMs || e.tMs >= st.endMs) continue;
+        others.add(e.other);
+        if (model.risk.pAt(e.other, e.tMs) >= RISKY) sickOnes.add(e.other);
+      }
+      return { name: st.name, startMs: Math.max(st.startMs, day0), endMs: st.endMs, now: i === a.length - 1, peers: others.size, sick: sickOnes.size };
+    }).reverse();
+    stayCache.key = key;
+    return (stayCache.list = list);
+  }
+
   // ---- The phone mock's data: what FlUni's Today / You show for the selected person, from the sim ----
   // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
   const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
@@ -1546,6 +1578,9 @@ async function main() {
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
       p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt): the same number the presenter bar and the dot's tooltip show
       status: sr.status, stamp: sr.status === 'possible', stay,
+      stays: todayStays(me.id), dayLabel: data.numericTime ? '' : new Date(now).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+      fmt: (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : PV.clock(ms)),
+      episodes: recentEpisodes(me.id).filter((e) => e.start >= midnight(now)).map((e) => ({ startMs: e.start, endMs: e.start + e.min * 60000, contagious: e.contagious, close: e.weighted >= CLOSE_CONTACT_MIN })),
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
         text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
     };
