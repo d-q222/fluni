@@ -10,6 +10,7 @@ import { Router, buildTracks, buildTrips, attachTrips, stateAt, sampleAt } from 
 import { buildTotals, totalsAt, buildingScaleMax } from './aggregate.js';
 import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
+import { addLandmarks } from './landmarks.js';
 import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
@@ -453,10 +454,22 @@ const GL = {
   js: 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
   leaflet: 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js',
 };
-// Buildings in one neutral tint: the viewer colours them by type, but here warm tints would read as heat.
-const SIM_BUILDING = { fillColor: '#e9e5de', fillOpacity: 0.8, color: '#a8988a', weight: 0.7, opacity: 0.8 }; // grey paper: heat's warm hues stand out on it
+// Buildings in pale washes of Lisa's palette, by what they're for (design pass). Heat owns the warm
+// colours (sun → ember → fire), so building fills stay on the cool side: sage washes, deeper for housing.
+// The palette's warm colours appear only in the thin inked outlines (study sun, food and social ember,
+// health fire), which never read as heat. Unlabelled kinds stay plain warm paper.
+const SIM_BUILDING = { fillColor: '#ebe7df', fillOpacity: 0.9, color: '#b5a898', weight: 0.8, opacity: 0.9 };
+const TINT = {
+  housing: { fillColor: '#dce4cc', color: '#93a674' },  // --sage wash, sage ink
+  study: { fillColor: '#e6e9dc', color: '#c9ad62' },    // faint sage wash, --sun ink
+  social: { fillColor: '#e9e8de', color: '#d48a63' },   // faintest sage wash, --ember ink
+  care: { fillColor: '#e9e8de', color: '#cf6f5d' },     // faintest sage wash, --fire ink
+};
+const TINT_OF = { dorm: 'housing', classroom: 'study', lab: 'study', lecture_hall: 'study', library: 'study',
+  dining: 'social', common_room: 'social', party_venue: 'social', event_venue: 'social', gym: 'social', health_center: 'care' };
+const buildingStyle = (f) => ({ ...SIM_BUILDING, ...TINT[TINT_OF[f.properties.type]] });
 // A hand-placed box with no OSM building near it (footprints.js): only an approximate shape, so drawn faintly.
-const SIM_BOX = { ...SIM_BUILDING, fillOpacity: 0.3, opacity: 0.5, dashArray: '3 3' };
+const SIM_BOX_FAINT = { fillOpacity: 0.35, opacity: 0.5, dashArray: '3 3' };
 const SIM_BACKGROUND = '#f6f4f0'; // Positron's land colour, so the sim map looks the same before (or without) its tiles
 const STYLES = ['sim', 'streets', 'drawn'];
 const bases = new Map(); // map -> { streets, drawn, sim } layers, made on first use
@@ -525,7 +538,7 @@ function layerFor(map, base, style) {
     if (simMap.paths) base.sim.addLayer(L.geoJSON(simMap.paths, { pane: 'simPane', renderer, interactive: false, attribution,
       style: { color: '#8aa39b', weight: 1.2, opacity: 0.55 } }));
     if (simMap.buildings) base.sim.addLayer(L.geoJSON(simMap.buildings, { pane: 'simPane', renderer, interactive: false,
-      attribution: simMap.paths ? undefined : attribution, style: (f) => (f.properties.box ? SIM_BOX : SIM_BUILDING) }));
+      attribution: simMap.paths ? undefined : attribution, style: (f) => (f.properties.box ? { ...buildingStyle(f), ...SIM_BOX_FAINT } : buildingStyle(f)) }));
   }
   return base.sim;
 }
@@ -954,6 +967,7 @@ async function main() {
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
+  addLandmarks(map); // Lisa's drawings under the heat (assets/landmarks/)
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
     // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
