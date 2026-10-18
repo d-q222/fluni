@@ -64,14 +64,14 @@ async function* lineBatches(file) {
   if (rest) yield [rest];
 }
 
-// Plain CSV (small files only; no quoted commas).
+// Small CSV files, quoted fields honoured (a building name like "Mechanical Engineering, TSG" has a comma).
 function parseCsv(text) {
   const lines = text.split('\n');
-  const head = lines[0].trim().split(',');
+  const head = splitQuoted(lines[0].trim());
   const rows = [];
   for (let k = 1; k < lines.length; k++) {
     if (!lines[k].trim()) continue;
-    const f = lines[k].replace(/\r$/, '').split(',');
+    const f = splitQuoted(lines[k].replace(/\r$/, ''));
     const r = {};
     for (let c = 0; c < head.length; c++) r[head[c]] = f[c];
     rows.push(r);
