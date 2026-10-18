@@ -667,7 +667,7 @@ final class ProximityModel: ObservableObject {
             byID[id] = p
         }
 
-        let before = exposure.level
+        let before = exposure.alert
         var e = exposure
         // Spoof guard first, over every peer (it needs to see bursts); then background-safe accrual credits
         // only peers with a fresh estimate, each for [lastCreditedAt, now].
@@ -690,18 +690,18 @@ final class ProximityModel: ObservableObject {
         if let fed { exposureHistory.record(simSeconds: dt * speed, contacts: fed, at: now) }
         setExposure(e)  // unchanged ticks don't republish; any change in p does
         tickOwnScore()
-        if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        let kind = alertGate.step(exposure.level, now: now)
+        if exposure.alert != before { log("ALERT \(exposure.alert) minutes=\(fmt(exposure.minutes))") }
+        let kind = alertGate.step(exposure.alert, now: now)
         if let kind {
             log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")"
                 + (SystemNotifier.shared.prefs.allows(kind) ? "" : " setting=off"))
             if UIApplication.shared.applicationState == .active {
                 UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
             }
-            alertPoster.post(kind)
+            alertPoster.post(kind, level: exposure.alert)
         }
         // flu-persist: a level change or a notification is written at once (a swipe-away gives no callback).
-        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before || kind != nil)
+        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.alert != before || kind != nil)
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
         // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
         // once per background scan; a restart lets phones that came near be found again).
@@ -878,7 +878,9 @@ final class UNPoster: AlertPosting {
     let notifier: SystemNotifier
     init(notifier: SystemNotifier = .shared) { self.notifier = notifier }
 
-    func post(_ kind: NotificationKind) {
-        notifier.post(kind, content: AppNotifications.content(kind: kind))  // category + userInfo + neutral text
+    func post(_ kind: NotificationKind) { post(kind, level: .nearby) }
+
+    func post(_ kind: NotificationKind, level: AlertLevel) {
+        notifier.post(kind, content: AppNotifications.content(kind: kind, level: level))  // category + userInfo + neutral text
     }
 }

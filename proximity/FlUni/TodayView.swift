@@ -21,7 +21,7 @@ struct TodayView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    private var level: AlertLevel { model.exposure.level }
+    private var level: AlertLevel { model.exposure.alert }
     private var sick: Bool { model.selfStatusOverridesRisk }
 
     var body: some View {
@@ -73,7 +73,7 @@ struct TodayView: View {
         if model.isPaused { return "Taking a break." }
         switch level {
         case .none: return "All calm nearby."
-        case .nearby: return "I'm keeping watch."
+        case .nearby, .nearbyContagious: return "I'm keeping watch."
         case .closeContact: return "What to do is below."
         }
     }

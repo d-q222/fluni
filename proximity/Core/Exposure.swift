@@ -24,7 +24,20 @@ enum Risk: Int, Codable, CaseIterable {
 
 enum AlertLevel: Int, Comparable, Codable {
     case none = 0, nearby = 1, closeContact = 2
-    static func < (a: AlertLevel, b: AlertLevel) -> Bool { a.rawValue < b.rawValue }
+    /// flu-expo: a heads-up with a contagious (tested positive) person in range. Above `nearby`, so going from
+    /// possibly sick to contagious is a new, stronger alert; below close contact. Raw 3 keeps saved values; order by rank.
+    case nearbyContagious = 3
+    private var rank: Int {
+        switch self {
+        case .none: return 0
+        case .nearby: return 1
+        case .nearbyContagious: return 2
+        case .closeContact: return 3
+        }
+    }
+    /// Either heads-up (possibly sick or contagious nearby).
+    var isHeadsUp: Bool { self == .nearby || self == .nearbyContagious }
+    static func < (a: AlertLevel, b: AlertLevel) -> Bool { a.rank < b.rank }
 }
 
 /// When to send a notification for the alert level. The notified level follows the level down as well as up,
@@ -75,6 +88,11 @@ struct ExposureTracker: Equatable, Codable {
     /// The phone's risk estimate from `sources` (RiskEstimate.probability); the prior with no contacts.
     private(set) var probability = RiskEstimate.prior
     private(set) var level = AlertLevel.none
+    /// flu-expo: a contagious peer is what keeps the heads-up up now (nil in a state saved before it existed).
+    private var contagiousNearby: Bool?
+    /// What the user is alerted to: `level`, with a heads-up upgraded to `.nearbyContagious` while someone who tested
+    /// positive is in range. Drives notifications, the tissue alert and Today's strip; `level` keeps the episode rules.
+    var alert: AlertLevel { level == .nearby && contagiousNearby == true ? .nearbyContagious : level }
 
     /// Simulated seconds since start, and per-simulated-minute totals (≤ 1440 buckets).
     private var clock = 0.0
@@ -159,6 +177,7 @@ struct ExposureTracker: Equatable, Codable {
         // Hysteresis: warn at P >= 0.5, clear only below 0.3, so noisy BLE doesn't flicker the banner.
         let threshold = level == .nearby ? 0.3 : 0.5
         let riskyNearby = contacts.contains { $0.risk != .none && $0.pClose >= threshold }
+        contagiousNearby = contacts.contains { $0.risk == .contagious && $0.pClose >= threshold }
         if minutes >= Self.closeContactMinutes - 1e-6 {  // float sums of many small ticks land a hair under 15
             level = .closeContact
         } else {
@@ -224,7 +243,7 @@ struct ExposureTracker: Equatable, Codable {
     /// Same on screen: equal in everything a view can read. Unlike `==` it ignores the clock and the minute
     /// buckets, which move on every tick even with nobody around.
     func showsSame(as o: ExposureTracker) -> Bool {
-        minutes == o.minutes && dose == o.dose && probability == o.probability && level == o.level && sources == o.sources
+        minutes == o.minutes && dose == o.dose && probability == o.probability && alert == o.alert && sources == o.sources
     }
 }
 
@@ -233,6 +252,7 @@ enum Advice {
         switch level {
         case .none: return ""
         case .nearby: return "Someone within 6 ft may be sick"
+        case .nearbyContagious: return "Someone within 6 ft has tested positive"
         case .closeContact: return "You were close to someone who may be sick"
         }
     }
@@ -244,6 +264,9 @@ enum Advice {
         case .nearby:
             return ["Put 6 ft or more between you, or step outside.",
                     "Consider wearing a mask while you're here."]
+        case .nearbyContagious:
+            return ["Put 6 ft or more between you now, or step outside.",
+                    "Wear a mask while you're here, and wash your hands."]
         case .closeContact:
             return ["You've spent about 15 minutes within 6 ft of someone who may be sick.",
                     "Leave the room now, or move well away and put on a mask.",

@@ -42,10 +42,10 @@ struct DeveloperView: View {
         let close = model.exposure.level == .closeContact
         return Section {
             VStack(alignment: .leading, spacing: 10) {
-                Label(Advice.title(model.exposure.level),
+                Label(Advice.title(model.exposure.alert),
                       systemImage: close ? "exclamationmark.octagon.fill" : "exclamationmark.triangle.fill")
                     .font(.title3.bold())
-                ForEach(Advice.body(model.exposure.level), id: \.self) { line in
+                ForEach(Advice.body(model.exposure.alert), id: \.self) { line in
                     Label(line, systemImage: "arrow.right.circle")
                         .font(.subheadline)
                         .labelStyle(AdviceLabelStyle())
