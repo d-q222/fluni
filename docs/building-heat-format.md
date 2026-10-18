@@ -15,7 +15,7 @@ served from the laptop with the rest of the repo, at
 | `building_id` | Sim `location_id`, e.g. `bld_232805707` |
 | `name` | Building name, quoted if it contains a comma |
 | `lat`, `lon` | Building centre, from the run's `map/buildings.csv` (empty if unknown) |
-| `people` | People inside, scaled the same way as the user map to a ~7,000-person campus: each agent counts as 50 in runs under 500 agents, as round(7000 / agents) up to 5,000 agents (×7 at 1,000), else as 1 |
+| `people` | People inside, scaled the same way as the user map: each agent counts as 50 in runs under 500 agents, else as 1 (the sim's own count) |
 | `expected_sick` | Σ P(sick) of the people inside, scaled the same way. The plain count, for popups and messages |
 | `heat` | 0–1, the map's own colour scale, from risk **above the model's baseline**: excess = Σ max(0, P(sick) − prior) of the people inside (prior = `DEFAULTS.prior` in `model/infer.js`, 2%), scaled the same way; heat = √(excess / colour max), capped at 1. The colour max is the 90th percentile of each snapshot's highest building excess (the highest of all when that is 0). A crowd at the baseline is not heat |
 | `high` | `1` if `heat ≥ 0.5`, i.e. past the legend's midpoint, the buildings the map shows dark; else `0` |

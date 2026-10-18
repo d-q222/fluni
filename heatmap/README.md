@@ -59,10 +59,9 @@ Demo scenes on the sim's mock run:
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
     (`buildings.js`).
-  - Runs are scaled to a ~7,000-person campus. Under 500 agents (like the 10-agent mock) each agent
-    stands for 50 people. Up to 5,000 agents each stands for round(7000 / agents), e.g. ×7 at 1,000
-    and ×14 at 500. Full runs (the sim's ~7,000 agents) show real counts. See `SMALL_RUN_*`,
-    `CAMPUS_PEOPLE` and `FULL_RUN_AGENTS` in `app.js` (same rule in `tools/precompute.mjs`).
+  - Under 500 agents (like the 10-agent mock) each agent stands for 50 people; from 500 agents on the
+    counts are the sim's own (no scaling). The rule is `userScale` in `userscale.js`, shared by
+    `app.js`, `tools/precompute.mjs` and the app bundle.
   - Buildings with only 1–3 people are shown as outlines only; 4 or more are always shown
     (`MIN_PEOPLE`). The rule applies to the scaled count, so in ×50 small runs it never hides
     anything.
