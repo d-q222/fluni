@@ -16,6 +16,7 @@ struct SettingsView: View {
             detectionSection
             sharedSection
             notificationsSection
+            closedSection
             BackgroundWarningsSection()
             mapSection
             dataSection
@@ -105,6 +106,18 @@ struct SettingsView: View {
         } footer: {
             Text("FlUni sends a notification when someone nearby may be sick or you have a close contact.")
         }
+        .listRowBackground(Theme.surface)
+    }
+
+    // MARK: When FlUni is closed
+
+    private var closedSection: some View {
+        Section("When FlUni is closed") {
+            Text("Nearby alerts keep working in the background using Bluetooth; they're less frequent than with FlUni open.")
+            Text("If you swipe FlUni away, iOS stops nearby alerts until you open it again; building warnings still work.")
+        }
+        .font(.fluni(.footnote))
+        .foregroundStyle(Theme.ink)
         .listRowBackground(Theme.surface)
     }
 
