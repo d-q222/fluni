@@ -2140,7 +2140,7 @@ async function main() {
     const isPublic = v === 'public';
     const ul = userLegend();
     ul.hidden = !isPublic;
-    document.querySelector('.legend').hidden = isPublic;
+    document.querySelector('.legend').hidden = true; // the presenter's legend box is off (owner); the user map keeps its own
     ul.querySelector('.mid').textContent = (vmax.public / 4).toFixed(1);
     ul.querySelector('.max').textContent = `${vmax.public.toFixed(1)}+`;
     ul.querySelector('.fine').textContent = `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
