@@ -33,7 +33,6 @@ struct TodayView: View {
                         // Someone who reported being sick never sees "All clear" or a risk percentage.
                         stayHome
                     } else {
-                        if level == .nearby { NearbyBanner().transition(.opacity) }
                         statusCard
                         riskCard
                         minutesCard
@@ -131,7 +130,8 @@ struct TodayView: View {
         case .none:
             return ("All clear", "Nobody nearby has reported symptoms or a positive test.", Theme.sage.opacity(0.45), Theme.ink)
         case .nearby:
-            return ("Someone nearby may be sick", "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
+            // One heads-up on Today: the status card, in Advice's words (the separate banner above it is gone).
+            return (Advice.title(.nearby), "A few things that help right now.", Theme.sun.opacity(0.5), Theme.ink)
         case .closeContact:
             return ("Close contact", "You spent about 15 minutes near someone who may be sick.", Theme.fire.opacity(0.22), Theme.ink)
         }
