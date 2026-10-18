@@ -6,6 +6,11 @@ phone-detected contacts, self-reports, reports about others and test results. It
 
 - `infer.js`: ES module, no dependencies, no DOM; runs in the browser and Node.
 - `cli.mjs`: Node runner for a sim run folder.
+- `test.mjs`: one test per input of Rio's spec, Baker equivalence, calibration, real-run sanity
+  (`node model/test.mjs`; results in [TESTS.md](TESTS.md)).
+- `compare.mjs`: the same meetings through Rio's `exposure/flu_risk.py`, this port and `alt/`
+  (`node model/compare.mjs`; results for Rio in [COMPARISON.md](COMPARISON.md)).
+- `alt/`: an independent alternative model (two-zone dose, S/E/I/R), for comparison only.
 
 ```
 node model/cli.mjs sim/runs/mock_boring10 [out.csv]
@@ -176,10 +181,14 @@ look-back recomputes the dose from the row. Pair doses live in two Maps of expos
 - Room size and ventilation come from the map, which a real app would need too.
 - `explain` keeps only each person's largest contributions, and `changes` ends at the last data time.
 - Reports are trusted unless flagged; a coordinated false-report campaign is not modelled.
+- Change points are written only when P moves by `minDelta` (0.01), so a very weak exposure may not
+  show in `pAt`. Recovery is written only up to the last data time.
+- Second-hand sources use the illness-average stage, not the time since they were exposed.
+- The prior is one global value, held constant (Rio's script lets it decay).
 
 ## Use in the heat map
 
-`heatmap/app.js` has a placeholder `appBelief(reported, test)` that looks only at a person's own report
-and test. Replace it with `risk.pAt(agentId, tMs)` (or load `changes` / the `p_sick` CSV, which the
-loader already accepts as a `p_sick` column). `aggregate.js` then sums P per building and room as it
-does now; nothing else changes.
+`heatmap/app.js` calls `inferRisk` in the browser (contacts, reports and `map/rooms.csv` of the run)
+and reads `risk.pAt(agentId, tMs)`; big runs load the precomputed `model/out/<run>/p_sick.csv`. The heat
+is Σ P(sick) of the people near each point. The phone panel's own estimate uses `doseModel()` with
+FlUni's on-device rule, matched by `proximity/Tests/Fixtures/xcheck/golden.json`.
