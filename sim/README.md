@@ -68,6 +68,51 @@ Every run also writes `timeline_changes.csv.gz`, the compact timeline the heat m
 ([docs/timeline-changes-format.md](../docs/timeline-changes-format.md)): only rows where something
 changes plus the last row of each stay. It's about 5× smaller than `timeline.csv.gz`.
 
+## Claude-driven agents
+
+By default every agent follows the scheduler's plan (`plans.py`) and a scripted sick response.
+`--set llm_agents.n_agents=K` hands K agents (picked from the seed) to Claude, which decides their
+day. The rest of the population is unchanged.
+
+```bash
+.venv/bin/pip install -r requirements-llm.txt        # anthropic SDK; needs ANTHROPIC_API_KEY
+.venv/bin/python simulate.py --agents 100 --days 3 --initial-seeds 5 --set llm_agents.n_agents=10 \
+    --set llm_agents.pick=friend_groups
+```
+
+- **Daily plan.** At `day_start_h` (4 AM) each agent gets its persona (archetype, dorm, team,
+  how often it follows advice, wears masks, is honest, and what it usually does when sick), its diary from
+  earlier days, how it feels (symptoms only when symptomatic, so asymptomatic agents feel fine), test results and app
+  status, its app notifications, the scheduler's default plan, and a menu of places (home, dining,
+  libraries, gyms, outdoor spots, common rooms, friends' dorms, Vaden, today's classes and events).
+  It returns timed blocks (activity + place) and a diary line. The blocks replace that agent's plan
+  for the next 24 h. Transit is inserted as in `plans.py`, so agents still walk or bike the path network.
+- **Re-planning.** Symptom onset, a test result or FlUni app advice re-plans the rest of the day
+  (`replan_on`, at most `max_replans_per_day`).
+- **They talk to each other.** When two Claude agents are within 3 m (no wall between them), or in
+  the same small room such as a dorm room, for 10 minutes, they have a conversation: alternating
+  lines, one call per line, each written from the speaker's own prompt. A speaker knows its own
+  symptoms, test result and app status (and can hide them), sees only what is visible about the
+  other (a mask, coughing), and is told how they know each other (friends, roommate, dormmate,
+  teammate, classmate, stranger). Strangers often just nod. Afterwards each one writes a memory and
+  says whether the talk changes its day. If it does, the agent re-plans with the transcript in its
+  notifications (trigger `conversation`), so a friend can talk it into a party or into getting tested.
+  The memories go into later daily plans. Knobs are under `llm_agents.conversations` (`radius_m`,
+  `small_room_max_capacity`, `min_minutes`, `max_turns`, `cooldown_h`, `max_per_agent_per_day`).
+  Agents picked at random rarely meet, so use `llm_agents.pick=friend_groups`, which hands whole
+  friend groups to Claude. Transcripts are written to `llm_conversations.jsonl`.
+- **They decide for themselves.** For these agents the scripted response (isolate / Vaden / carry on)
+  is off, and intervention actions become notifications instead of being applied (timeline `action`
+  = `advised:<kind>`). Going to Vaden in a plan books a test. Self-reports still follow `reports.py`.
+- **Output.** `llm_agents.jsonl`: one row per call (`t, agent_id, trigger, applied, prompt, response`).
+- **Reproducible.** Each response is cached under `llm_cache/` by request hash. A rerun with the same
+  seed and config makes no API calls and is byte-identical. Commit `llm_cache/` with a run so others can
+  rebuild it without a key. `llm_agents.offline=true` never calls the API (a cache miss keeps the default plan).
+  Without `llm_agents` the run id and output are exactly as before.
+- **Cost.** One call per agent per day, plus re-plans, plus up to `max_turns` + 2 calls per conversation. Defaults: `claude-opus-5-5`, effort `low`.
+  Change `llm_agents.model` / `llm_agents.effort` to trade cost for quality.
+- `scripts/smoke_llm_agents.py` checks the plumbing with a fake client (no key needed).
+
 ## Sample run
 
 `runs/influenza_none_n10_d14_s2_bc5cae7a/` is a real 10-agent, 14-day run (one dorm plus one
@@ -171,6 +216,7 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 | `campussim/reports.py` | sick-behavior choice, Vaden tests, honest/dishonest self-reports, report_other |
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
 | `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
+| `campussim/llm_agents.py` | Claude-driven agents: daily plans and re-plans from the Claude API, cached |
 | `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |
 | `campussim/engine.py`, `simulate.py` | main loop and CLI |

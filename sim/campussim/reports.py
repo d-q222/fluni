@@ -51,6 +51,7 @@ class Reports:
 
         self.self_status = np.zeros(N, dtype=np.int8)
         self.test_status = np.zeros(N, dtype=np.int8)
+        self.llm_controlled = np.zeros(N, dtype=bool)  # llm_agents.py: these agents choose their own sick response
         self.events = []
 
         # per-agent attributes
@@ -226,7 +227,9 @@ class Reports:
         self.episode[i] = True
         self.response[i] = r
         iso_until = self._iso_end(disease, i, t)
-        if r == STAY_HOME:
+        if self.llm_controlled[i]:
+            pass
+        elif r == STAY_HOME:
             beh.set_isolation(i, iso_until)
             self.iso_owned[i] = True
         elif r == VADEN:
@@ -299,7 +302,7 @@ class Reports:
                 ss[i] = SS_REC
             self.false_sick[i] = False
         elif kind == "isolate_after_visit":
-            if self.episode[i] and self.response[i] == VADEN:
+            if self.episode[i] and self.response[i] == VADEN and not self.llm_controlled[i]:
                 beh.set_carry_on(i, None)
                 beh.set_isolation(i, max(int(payload), t + 1))
                 self.iso_owned[i] = True

@@ -38,7 +38,14 @@ def recorded_config(cfg):
     rec["run"].pop("out_dir", None)
     if rec["run"].get("intervention") != "fluni":  # keeps run ids of non-app runs as before the app policy
         rec.get("interventions", {}).pop("fluni", None)
+    if not _llm_on(rec):  # keeps run ids of runs without Claude-driven agents unchanged
+        rec.pop("llm_agents", None)
     return rec
+
+
+def _llm_on(cfg):
+    c = cfg.get("llm_agents", {})
+    return bool(c.get("n_agents") or c.get("agent_ids"))
 
 
 def make_run_id(cfg):
@@ -51,9 +58,10 @@ def _log(msg, t0):
     print(f"[{time.perf_counter() - t0:7.1f}s] {msg}", flush=True)
 
 
-def run(cfg, external_provider=None, quiet=False):
+def run(cfg, external_provider=None, quiet=False, llm_client=None):
     """Run one simulation; returns the run directory. external_provider(t) -> dict is passed to
-    the intervention through ObservableState.external (downstream closed-loop hook)."""
+    the intervention through ObservableState.external (downstream closed-loop hook). llm_client
+    replaces the Anthropic client of Claude-driven agents (tests)."""
     t_start = time.perf_counter()
     log = (lambda m: None) if quiet else (lambda m: _log(m, t_start))
     rc = cfg["run"]
@@ -78,6 +86,11 @@ def run(cfg, external_provider=None, quiet=False):
     if rc.get("initial_seeds", 0):
         dis.seed_initial(rc["initial_seeds"], 0)
     rep = Reports(cfg, campus, pop, rngs["reports"])
+    llm = None
+    if _llm_on(cfg):
+        from .llm_agents import LLMAgents
+        llm = LLMAgents(cfg, campus, pop, plans, sections, events, beh, rep, client=llm_client)
+        log(f"Claude-driven agents: {', '.join(pop.agent_id[i] for i in llm.idx)} ({cfg['llm_agents']['model']})")
     intervention = REGISTRY[rc["intervention"]]()
     if hasattr(intervention, "reset"):
         intervention.reset({"cfg": cfg, "campus": campus, "pop": pop, "n_agents": pop.N, "step_min": step_min})
@@ -109,6 +122,8 @@ def run(cfg, external_provider=None, quiet=False):
 
     for t in range(T):
         k = t % spd
+        if llm is not None:
+            llm.before_step(t, dis)
         beh.step(t, dis.symptomatic)
         contacts = find_contacts(campus, beh.room, beh.x, beh.y, cfg["contacts"], floor=beh.floor)
         dev = dis.step(t, beh, contacts)
@@ -119,10 +134,16 @@ def run(cfg, external_provider=None, quiet=False):
                                contacts=contacts, has_app=has_app, report_events=rep.events[n_events:])
         n_events = len(rep.events)
         actions = intervention.step(obs)
+        llm_notes = {}
+        if llm is not None:
+            actions, llm_notes = llm.after_step(t, dev, actions, contacts=contacts, dis=dis)
         action_col = np.array(apply_actions(actions, beh, pop, rngs["intervention"], t, reports=rep,
                                             cfg_interventions=cfg["interventions"],
                                             compliance_scale=comp_scale), dtype=object) \
             if actions else no_action
+        for i, note in llm_notes.items():
+            action_col = action_col.copy() if action_col is no_action else action_col
+            action_col[i] = note
         action_col = np.where(action_col == "", None, action_col)
 
         for name, val in (("room", beh.room), ("b", beh.b), ("x", beh.x), ("y", beh.y),
@@ -159,6 +180,9 @@ def run(cfg, external_provider=None, quiet=False):
     inf_df = pd.DataFrame(dis.infections, columns=["t", "infectee", "infector", "route", "r", "b", "contribution"])
     writer.write_table("infections.csv", infections_frame(dis, campus, pop))
     writer.write_table("reports_tests.csv", reports_frame(rep.events, pop))
+    if llm is not None:
+        (run_dir / "llm_agents.jsonl").write_text("".join(line + "\n" for line in llm.log_lines()))
+        (run_dir / "llm_conversations.jsonl").write_text("".join(line + "\n" for line in llm.convo_lines()))
     if hasattr(intervention, "log_frame"):
         writer.write_table("app_alerts.csv", intervention.log_frame(pop.agent_id))
     summary = compute_summary(cfg, campus, pop, inf_df, T)
