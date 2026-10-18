@@ -73,4 +73,21 @@ final class ExposureTests: XCTestCase {
         t.reset()
         XCTAssertEqual(t.level, .none)
     }
+
+    /// The model republishes only when `showsSame` is false: an idle tick moves the clock (so `==` differs)
+    /// but nothing a view shows; any dose, minute or level change must count as a visible change.
+    func testShowsSameIgnoresOnlyTheClock() {
+        var t = ExposureTracker()
+        let before = t
+        t.advance(simSeconds: 1, contacts: [])
+        XCTAssertNotEqual(t, before)
+        XCTAssertTrue(t.showsSame(as: before))
+        let idle = t
+        t.advance(simSeconds: 1, contacts: [(1, .contagious)], doses: [DosePeer(id: "A", distance: 0.5)])
+        XCTAssertFalse(t.showsSame(as: idle), "minutes, dose and p moved")
+        let near = t
+        t.advance(simSeconds: 0, contacts: [])
+        XCTAssertNotEqual(t.level, near.level)
+        XCTAssertFalse(t.showsSame(as: near), "the heads-up level cleared")
+    }
 }
