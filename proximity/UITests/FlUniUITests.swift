@@ -239,4 +239,36 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(scrollTo(el("symptom.fever")).isHittable)
         XCTAssertTrue(scrollTo(app.buttons["report.submit"]).isHittable, "submit reachable by scrolling")
     }
+
+    // MARK: Tissue alert
+
+    /// Lisa's tissue alert near a pretend sick peer: a short drag snaps the tissue back, a long one pulls out the
+    /// sheet, "Got it" puts it away, and the status card's (i) and the Today footnote open How this works.
+    func testTissueAlertPullsOutAndGotItPutsItAway() {
+        app.launchArguments += ["-hasOnboarded", "YES", "-demoPeer", "contagious@0.5"]
+        app.launch()
+        let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
+        if allow.waitForExistence(timeout: 4) { allow.tap() }
+
+        let pop = el("tissueAlert.pop"), ok = el("tissueAlert.ok")
+        XCTAssertTrue(pop.waitForExistence(timeout: 20), "the tissue pops for a heads-up")
+        if allow.exists { allow.tap() }
+        let start = pop.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.2, thenDragTo: start.withOffset(CGVector(dx: 0, dy: -30)), withVelocity: .slow, thenHoldForDuration: 0.3)
+        XCTAssertFalse(ok.waitForExistence(timeout: 1), "a short drag snaps back")
+        XCTAssertTrue(pop.exists)
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: -260)))
+        XCTAssertTrue(ok.waitForExistence(timeout: 5), "a long drag pulls out the sheet")
+        ok.tap()
+        XCTAssertTrue(ok.waitForNonExistence(timeout: 3))
+        XCTAssertFalse(pop.exists, "Got it puts it away")
+
+        el("status.info").tap()
+        XCTAssertTrue(app.navigationBars["How this works"].waitForExistence(timeout: 5), "status (i)")
+        app.buttons["Done"].tap()
+        let how = scrollTo(app.buttons["How FlUni works and what it shares"])
+        XCTAssertTrue(how.isHittable, "footnote clears the tissue box")
+        how.tap()
+        XCTAssertTrue(app.navigationBars["How this works"].waitForExistence(timeout: 5), "footnote")
+    }
 }
