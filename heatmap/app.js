@@ -103,6 +103,36 @@ let hoverDot = null; // the person under the pointer: drawn solid
 const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
 const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
+// People's canvas renderer: a click or hover goes to the NEAREST dot within reach (its radius + the tolerance),
+// not the one drawn last, so a click between two close dots never opens the neighbour's phone.
+const NearestCanvas = L.Canvas.extend({
+  _nearest(point, e) {
+    let best = null, bd = Infinity;
+    for (let o = this._drawFirst; o; o = o.next) {
+      const l = o.layer;
+      if (!l.options.interactive || !l._containsPoint(point)) continue;
+      if (e && (e.type === 'click' || e.type === 'preclick') && this._map._draggableMoved(l)) continue;
+      const d = point.distanceTo(l._point);
+      if (d <= bd) { bd = d; best = l; } // a tie goes to the one on top
+    }
+    return best;
+  },
+  _onClick(e) {
+    const l = this._nearest(this._map.mouseEventToLayerPoint(e), e);
+    this._fireEvent(l ? [l] : false, e);
+  },
+  _handleMouseHover(e, point) {
+    if (this._mouseHoverThrottled) return;
+    const l = this._nearest(point);
+    if (l !== this._hoveredLayer) {
+      this._handleMouseOut(e);
+      if (l) { L.DomUtil.addClass(this._container, 'leaflet-interactive'); this._fireEvent([l], e, 'mouseover'); this._hoveredLayer = l; }
+    }
+    this._fireEvent(this._hoveredLayer ? [this._hoveredLayer] : false, e);
+    this._mouseHoverThrottled = true;
+    setTimeout(() => { this._mouseHoverThrottled = false; }, 32);
+  },
+});
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
     this._renderer._updateCircle(this);
@@ -1042,7 +1072,8 @@ async function main() {
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
   }
-  const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
+  // 8 px of reach beyond each dot, so the 2 px dots at campus zoom are easy to hit (the nearest wins).
+  const dotRenderer = new NearestCanvas({ padding: 0.5, tolerance: 8 });
   const dotLayer = L.layerGroup().addTo(map);
   const dots = new Map(); // agent id -> person marker
   PERSON.onload = () => { for (const m of dots.values()) if (m._map) m.redraw(); };
@@ -1077,6 +1108,7 @@ async function main() {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
       renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: personRing(personRadius(map.getZoom())), color: COLORS.ring, fillOpacity: 1,
+      bubblingMouseEvents: false, // a click on a person opens their phone, not the building under them
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -1563,6 +1595,7 @@ async function main() {
     moveQueued = true;
     requestAnimationFrame(() => {
       moveQueued = false;
+      if (hoverDot) { if (hover) { map.closeTooltip(hoverTip); hover = null; } return; } // over a person: their tooltip only
       const h = buildingAt(e.latlng);
       if (!h) { if (hover) { map.closeTooltip(hoverTip); hover = null; } return; }
       if (h !== hover) { hover = h; hoverAt = performance.now(); hoverTip.setContent(buildingCard(h, false)); }
