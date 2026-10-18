@@ -6,9 +6,9 @@ import SwiftUI
 /// may be sick, or a close contact), a tissue pops out of the box on the Today tab and sways gently. Dragging it
 /// up pulls it out: her pull frames follow the finger (hard cuts, like hand animation), and letting go past
 /// halfway finishes the pull until the tissue becomes a sheet of paper with the alert on it; before that it
-/// slips back. VoiceOver gets the same as a button action. "Got it" (or dragging the sheet back down) plays the
-/// pull in reverse and puts it away until a different alert; after an all-clear, the next alert pops again.
-/// Reduce Motion skips the frames both ways.
+/// slips back. VoiceOver gets the same as a button action. "Got it" puts it away at once; dragging the sheet back
+/// down plays the pull in reverse, following the finger. Either way it stays away until a different alert; after
+/// an all-clear, the next alert pops again. Reduce Motion skips the frames both ways.
 ///
 /// Every layer is 650 x 1123 and covers the screen width from the top of the sheet down to the bottom of
 /// the tab bar, so it lines up with the box in `TissueTabBar`. The layers only hold what differs from the
@@ -90,6 +90,8 @@ struct TissueAlert: View {
         .ignoresSafeArea(edges: .bottom)
         .opacity(isShown ? 1 : 0)
         .allowsHitTesting(isShown)
+        // Hard cuts only: no animation from anywhere (a parent's, a button's) may cross-fade a frame swap.
+        .transaction { $0.animation = nil }
         .onAppear(perform: sync)
         .onChange(of: level) { _, _ in sync() }
         .onChange(of: visible) { _, _ in sync() }
@@ -129,36 +131,40 @@ struct TissueAlert: View {
         }
     }
 
-    /// Finishes a pull from frame `from` (0 = not started), e.g. after the finger lets go past halfway.
+    /// Finishes a pull from frame `from` (0 = not started), e.g. after the finger lets go past halfway: only the
+    /// frames the finger didn't reach, quickly (none if it reached the last), then the sheet and its text at once.
     private func pull(from: Int = 0) {
         guard isPopped else { return }
+        let frames = Array(stride(from: max(1, from + 1), through: 6, by: 1))
+        play(reduceMotion ? [] : frames, ms: Self.finishMs) { phase = .open; sheetFocused = true }
         dragFrame = nil
-        if reduceMotion { phase = .open; sheetFocused = true; return }
-        Task { @MainActor in
-            // Only the frames the finger didn't reach, quickly; none if it reached the last one. `stride`, not a
-            // closed range, so from 6 plays nothing. Then the sheet and its text at once, no fade.
-            for i in stride(from: max(1, from + 1), through: 6, by: 1) {
-                phase = .pulling(i)
-                try? await Task.sleep(for: .milliseconds(Self.finishMs))
-            }
-            phase = .open
-            sheetFocused = true
-        }
     }
 
-    /// The pull in reverse, at the pull's own frame rate with hard cuts: from the sheet (or the frame a push
-    /// down reached) back through the frames to the tissue in the box, then away (it has been read).
-    private func putBack(from: Int = 7) {
+    /// The pull in reverse after the sheet is pushed down, at the pull's own frame rate: from the frame the finger
+    /// reached back through the frames to the tissue in the box, then away (it has been read).
+    private func putBack(from: Int) {
         guard case .open = phase else { return }
         readLevel = level
+        play(reduceMotion ? [] : Array(stride(from: from - 1, through: 0, by: -1)), ms: Self.frameMs) {
+            phase = .hidden
+        }
         pushFrame = nil
-        if reduceMotion { phase = .hidden; return }
+    }
+
+    /// Shows `frames` as hard cuts, `ms` apart, then runs `end`. The first frame (or `end`) is set right away, in
+    /// the same update that ends the drag, so no stale frame (the popped tissue, the sheet) flashes in between.
+    private func play(_ frames: [Int], ms: Int, end: @escaping @MainActor () -> Void) {
+        guard let first = frames.first else { end(); return }
+        phase = .pulling(first)
         Task { @MainActor in
-            for i in stride(from: min(from, 7) - 1, through: 0, by: -1) {
+            for i in frames.dropFirst() {
+                try? await Task.sleep(for: .milliseconds(ms))
+                guard case .pulling = phase else { return }  // hidden meanwhile (tab switch, all-clear)
                 phase = .pulling(i)
-                try? await Task.sleep(for: .milliseconds(Self.frameMs))
             }
-            if isPulling(0) { phase = .hidden }
+            try? await Task.sleep(for: .milliseconds(ms))
+            guard case .pulling = phase else { return }
+            end()
         }
     }
 
@@ -188,7 +194,7 @@ struct TissueAlert: View {
                     let frame = min(6, Int(up / perFrame))
                     // A fling counts only after a real pull (a frame's worth), so a quick nudge snaps back.
                     if frame >= 3 || (frame >= 1 && fling > perFrame * 5) { pull(from: frame) }
-                    else { withAnimation(.easeOut(duration: 0.15)) { dragFrame = nil } }
+                    else { dragFrame = nil }  // a hard cut back, like every frame change
                 }
         )
         .offset(x: w * 0.2, y: h * 0.73)
@@ -215,7 +221,8 @@ struct TissueAlert: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(([level == .closeContact ? "Close contact" : "Heads-up", Advice.title(level)] + lines).joined(separator: ". "))
             .accessibilityFocused($sheetFocused)
-            Button("Got it") { putBack() }
+            // Closes at once: no frames, no fade (the owner found a reversed pull here too slow).
+            Button("Got it") { readLevel = level; pushFrame = nil; phase = .hidden }
                 .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
                 .accessibilityIdentifier("tissueAlert.ok")
         }
