@@ -17,9 +17,7 @@ struct FlUniApp: App {
     @Environment(\.scenePhase) private var phase
     /// Lisa's opening animation, played each time the student opens FlUni (Core/IntroGate.swift); off for UI
     /// tests and unit-test hosts so they never wait on it.
-    @State private var showIntro: Bool
-    /// The intro is showing its still poster and waiting to play (see LaunchIntro.held).
-    @State private var introHeld = true
+    @State private var showIntro = false
     @State private var introGate = IntroGate()
     private let introAllowed: Bool
 
@@ -43,51 +41,20 @@ struct FlUniApp: App {
                                                    object: nil, queue: nil) { _ in
                 // Posted on the main thread (queue nil runs it right there).
                 MainActor.assumeIsolated {
-                    // A launch someone will see: decode the intro's poster off the main thread before the first frame.
-                    if UIApplication.shared.applicationState != .background { IntroArt.shared.preparePoster() }
                     if UserDefaults.standard.bool(forKey: "hasOnboarded") { FlUniApp.startDetection() }
                 }
             }
         }
         introAllowed = !skipRadios && !LaunchMode.isUnitTestHost
-        _showIntro = State(initialValue: introAllowed)  // the poster covers the very first frame, held until active
     }
     private let skipRadios: Bool  // test-only: UI tests never broadcast
     @State private var introRun = 0
 
     private func introPhase(_ p: ScenePhase) {
         let phase: IntroGate.Phase = p == .active ? .active : p == .background ? .background : .inactive
-        if phase == .background { coverWithPoster() }
-        if phase == .active { IntroArt.shared.uncover() }  // SwiftUI's held poster is on screen beneath it by now
         guard introGate.phase(phase), introAllowed else { return }
-        if !(showIntro && introHeld) { introRun += 1 }  // a held poster plays as it is; otherwise start one
-        showIntro = true
-        introHeld = false
-    }
-
-    private func introFailsafe() async {
-        var activeFor = 0.0, shownFor = 0.0
-        while !Task.isCancelled {
-            try? await Task.sleep(for: .milliseconds(500))
-            let active = UIApplication.shared.applicationState == .active
-            activeFor = active ? activeFor + 0.5 : 0
-            shownFor = showIntro && active ? shownFor + 0.5 : 0
-            guard activeFor >= 1 else { continue }
-            IntroArt.shared.uncover()
-            if showIntro && introHeld { introHeld = false }                     // a held poster plays now
-            if shownFor >= IntroArt.maxOnScreen { showIntro = false; introHeld = false }  // never stuck
-        }
-    }
-
-    /// Covers the app with the intro's still poster as it leaves, so the app-switcher snapshot and the first frame of
-    /// the next open are the poster rather than the app. It only plays once IntroGate says so.
-    private func coverWithPoster() {
-        // A late didEnterBackground after the app is already active again must not hold a poster no phase change
-        // would ever release (the "stuck on the poster" bug).
-        guard introAllowed, !(showIntro && introHeld), UIApplication.shared.applicationState != .active else { return }
         introRun += 1
         showIntro = true
-        introHeld = true
     }
 
     private var needsOnboarding: Bool { !hasOnboarded && !LaunchMode.isUnitTestHost }
@@ -131,19 +98,8 @@ struct FlUniApp: App {
             }
             // Lisa's opening animation over whatever the first screen is (design pass).
             // A new id each time restarts it from the poster, however quickly the app came up.
-            .overlay { if showIntro { LaunchIntro(held: introHeld) { showIntro = false; Signposts.poi.emitEvent("intro done") }.id(introRun) } }
+            .overlay { if showIntro { LaunchIntro { showIntro = false }.id(introRun) } }
             .onAppear { introPhase(phase) }
-            // Failsafe: whatever the order of lifecycle events, once the app has been active for a moment the poster
-            // plays, and nothing covers the app for more than a few seconds.
-            .task { await introFailsafe() }
-            // SwiftUI draws the held poster only after iOS has taken the app-switcher snapshot, so a plain UIKit copy of
-            // the poster covers the window at once (IntroArt.cover) and comes off when the app is active again.
-            .onReceive(NotificationCenter.default.publisher(for: UIScene.didEnterBackgroundNotification)) { n in
-                coverWithPoster()
-                if introAllowed, UIApplication.shared.applicationState != .active, let scene = n.object as? UIWindowScene {
-                    IntroArt.shared.cover(scene)
-                }
-            }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
