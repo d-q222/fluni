@@ -49,7 +49,7 @@ struct TodayView: View {
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .onAppear(perform: checkBackground)
             .onChange(of: scenePhase) { _, p in if p == .active { checkBackground() } }
-            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose, p: model.exposure.probability) }
+            .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose, p: model.liveRisk) }
             .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
         }
     }
@@ -114,7 +114,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(p: model.exposure.probability) { showCalc = true }
+        RiskCardView(p: model.liveRisk) { showCalc = true }
     }
 
     // MARK: Minutes
@@ -216,12 +216,12 @@ struct CalculationSheet: View {
                           "Your exposure dose: \(d)")
                     block("The estimate",
                           "Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at \(pos)%, someone with symptoms at \(sym)%. Those chances are added on top of a \(Int((RiskEstimate.prior * 100).rounded()))% everyday baseline. It's the same exposure formula as the campus model.",
-                          "This phone's estimate: \(RiskEstimate.percentText(p))")
+                          "This phone's estimate: \(RiskEstimate.liveText(p))")
                     block("What counts",
                           "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model vs this phone",
                           "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick) and the actual rooms. This phone's estimate uses only what this phone detected in the last 24 hours, assumes a standard classroom-sized room and an average day of illness, so the two can differ.",
-                          store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone's estimate: \(RiskEstimate.percentText(p))" })
+                          store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone's estimate: \(RiskEstimate.liveText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
                 }

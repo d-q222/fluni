@@ -1,11 +1,13 @@
 import SwiftUI
 
-/// The Today risk card: the phone's own estimate, plus the official campus-model number when a demo persona is set.
+/// The Today risk card: the phone's own live estimate as the headline, always; the campus-model number (Debug
+/// "Play as" persona only) is an extra line under it, never in its place.
 struct RiskCardView: View {
-    /// This phone's estimate (ExposureTracker.probability).
+    /// This phone's live estimate (ProximityModel.liveRisk); it changes every tick near someone sick.
     let p: Double
     let onHow: () -> Void
     @ObservedObject private var store = PSickStore.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Same tiers as the map: low = sage, elevated = sun, high = fire. Text is ink, or fire-ink on fire.
     private static func fill(_ b: RiskEstimate.Band) -> Color {
@@ -20,22 +22,20 @@ struct RiskCardView: View {
     private static func noteColor(_ b: RiskEstimate.Band) -> Color { b == .high ? Theme.fireInk : Theme.ink2 }
 
     var body: some View {
-        // The headline number sets the tier colour: the campus model's when there is one, else this phone's.
-        let band = RiskEstimate.band(store.campusP ?? p)
+        // Colour and advice follow the live number the card leads with, so they can never disagree.
+        let band = RiskEstimate.band(p)
         let text = Self.textColor(band)
         VStack(alignment: .leading, spacing: 8) {
             VStack(alignment: .leading, spacing: 8) {
+                Text("Your risk estimate").font(.fluni(.headline))
+                Text(RiskEstimate.liveText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                    .contentTransition(reduceMotion ? .identity : .numericText(value: p))
+                    .animation(reduceMotion ? nil : .smooth, value: p)
                 if let official = store.campusP {
                     Text("Campus model: \(RiskEstimate.percentText(official))")
-                        .font(.fluni(.title2, weight: .bold)).monospacedDigit()
-                    Text("This phone's estimate: \(RiskEstimate.percentText(p))")
-                        .font(.fluni(.headline)).monospacedDigit()
-                } else {
-                    Text("Your risk estimate").font(.fluni(.headline))
-                    Text(RiskEstimate.percentText(p)).font(.fluni(.largeTitle, weight: .bold)).monospacedDigit()
+                        .font(.fluni(.subheadline, weight: .semibold)).monospacedDigit()
                 }
-                // Same number for colour and advice, so they can never disagree.
-                Text(RiskEstimate.summary(store.campusP ?? p)).font(.fluni(.subheadline))
+                Text(RiskEstimate.summary(p)).font(.fluni(.subheadline))
                 Text("Based on the last 24 hours: time near each person, how close (closer counts much more), shared room air, and whether they reported symptoms or a positive test. It's an estimate, not a diagnosis.")
                     .font(.fluni(.footnote)).foregroundStyle(Self.noteColor(band))
             }

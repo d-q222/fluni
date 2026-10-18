@@ -65,7 +65,12 @@ struct FlUniApp: App {
                             .accessibilityIdentifier("tab.me")
                     }
                     .tint(Theme.ink)
-                    .onAppear { startOnce(); router.becomeReady() }
+                    .onAppear {
+                        startOnce(); router.becomeReady()
+                        #if DEBUG
+                        model.startDemoPeerFromLaunchArguments()  // -demoPeer contagious@0.5: watch p climb live
+                        #endif
+                    }
                     // At the tab level so the close-contact moment shows whichever tab is open.
                     .onChange(of: model.exposure.level) { old, new in
                         if new == .closeContact && old < .closeContact { router.showCloseContact() }
