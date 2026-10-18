@@ -32,6 +32,7 @@ struct FlUniApp: App {
         #else
         skipRadios = false
         #endif
+        FluniType.styleNavigationBars()   // Fredoka titles (design pass)
         RouteInbox.handler = { AppRouter.shared.handle($0) }  // also delivers a tap that cold-launched the app
         // iOS may relaunch the app for a building entry; UI tests never start location work.
         if !skipRadios { BuildingWatcher.shared.start() }

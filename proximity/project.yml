@@ -47,6 +47,8 @@ targets:
       properties:
         <<: *radioInfo
         CFBundleDisplayName: FlUni
+        # Lisa's type (design pass): Nunito + Fredoka, static instances in FlUni/Fonts (SIL OFL).
+        UIAppFonts: [Nunito-Regular.ttf, Nunito-SemiBold.ttf, Nunito-Bold.ttf, Fredoka-Medium.ttf, Fredoka-SemiBold.ttf]
         NSLocationWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         NSLocationAlwaysAndWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         # Bluetooth modes: detection keeps running in the background and iOS can relaunch FlUni for
