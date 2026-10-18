@@ -82,6 +82,42 @@ final class HardeningTests: XCTestCase {
         XCTAssertEqual(third.episodes.count, 1)
     }
 
+    /// Bug hunt: the newest Recent contacts entry vanished after a reinstall. A kill in the foreground never runs
+    /// saveOngoing; the open episode must survive anyway (losing at most the last `openSaveInterval`).
+    func testOngoingEpisodeSurvivesAKillInTheForeground() throws {
+        let url = tmp("exposure-history.json")
+        let s = riskyStore(url, minutes: 2)  // no saveOngoing: killed while open on screen
+        let start = try XCTUnwrap(s.ongoing).start
+        let again = ExposureHistoryStore(url: url, now: t0.addingTimeInterval(120 + 30))
+        XCTAssertEqual(again.ongoing?.start, start, "the open episode came back")
+        XCTAssertEqual(again.ongoing?.weightedMinutes ?? 0, 2, accuracy: ExposureHistoryStore.openSaveInterval / 60 + 1e-6)
+
+        // Killed and away longer than the gap: the episode is finished and listed, once.
+        let url2 = tmp("exposure-history.json")
+        _ = riskyStore(url2, minutes: 2)
+        let later = ExposureHistoryStore(url: url2, now: t0.addingTimeInterval(3600))
+        XCTAssertNil(later.ongoing)
+        XCTAssertEqual(later.episodes.count, 1)
+        XCTAssertEqual(later.episodes.first?.start, start)
+        XCTAssertEqual(ExposureHistoryStore(url: url2, now: t0.addingTimeInterval(7200)).episodes.count, 1)
+    }
+
+    /// An episode that finishes while the app runs is in the log once; its saved open copy is gone, so a
+    /// relaunch doesn't restore and list it a second time.
+    func testFinishedEpisodeIsNotRestoredAgainOnRelaunch() {
+        let url = tmp("exposure-history.json")
+        let s = riskyStore(url, minutes: 2)
+        s.saveOngoing(now: t0.addingTimeInterval(120))  // went to the background...
+        for i in 1...130 { s.record(simSeconds: 1, contacts: [], at: t0.addingTimeInterval(120 + Double(i))) }  // ...and it ended there
+        XCTAssertEqual(s.episodes.count, 1)
+        XCTAssertNil(s.ongoing)
+        let open = url.deletingLastPathComponent().appendingPathComponent("exposure-open.json")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: open.path))
+        let again = ExposureHistoryStore(url: url, now: t0.addingTimeInterval(3600))
+        XCTAssertEqual(again.episodes.count, 1, "listed once")
+        XCTAssertNil(again.ongoing)
+    }
+
     func testRestoreHandlesClockGoingBackwards() {
         var h = ExposureHistory()
         _ = h.advance(simSeconds: 60, contacts: [(1, .contagious)], at: t0)

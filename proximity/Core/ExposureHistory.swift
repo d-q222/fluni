@@ -165,17 +165,41 @@ final class ExposureHistoryStore: ObservableObject {
         let done = history.advance(simSeconds: simSeconds, contacts: contacts, at: now)
         if !done.isEmpty { add(done, now: now) }
         if history.ongoing != ongoing { ongoing = history.ongoing }
+        keepOpenSaved(now: now)
     }
+
+    /// How often the episode in progress is saved while it runs.
+    static let openSaveInterval = 15.0
+    private var lastOpenSave: Date?
 
     /// The app is going to the background and may be killed: save the episode in progress instead of closing it,
     /// so a relaunch continues it. It is finished only when the 2-minute gap rule says so (see `restore`).
     func saveOngoing(now: Date = Date()) {
         guard let openURL else { return }
-        guard let o = history.openSnapshot else { try? FileManager.default.removeItem(at: openURL); return }
+        guard let o = history.openSnapshot else { removeOpenFile(); return }
         let enc = JSONEncoder(); enc.dateEncodingStrategy = .secondsSince1970
         if let data = try? enc.encode(SavedOpen(open: o, savedAt: now)) {
             try? data.write(to: openURL, options: [.atomic, .completeFileProtectionUnlessOpen])
+            lastOpenSave = now
         }
+    }
+
+    /// A kill in the foreground (Xcode reinstalling, a crash, a UI test relaunching) never reaches `saveOngoing`,
+    /// and the bug hunt lost the newest Recent contacts entry that way. So the open episode is also saved while it
+    /// runs, at most every `openSaveInterval`; and the saved copy goes as soon as it finishes, so a relaunch can't
+    /// restore an episode that is already in the log and list it twice.
+    private func keepOpenSaved(now: Date) {
+        if history.openSnapshot == nil {
+            if lastOpenSave != nil { removeOpenFile() }
+            return
+        }
+        if let last = lastOpenSave, abs(now.timeIntervalSince(last)) < Self.openSaveInterval { return }
+        saveOngoing(now: now)
+    }
+
+    private func removeOpenFile() {
+        if let openURL { try? FileManager.default.removeItem(at: openURL) }
+        lastOpenSave = nil
     }
 
     private func restoreOpen(now: Date) {
@@ -193,6 +217,7 @@ final class ExposureHistoryStore: ObservableObject {
         history = ExposureHistory()
         episodes = []
         ongoing = nil
+        lastOpenSave = nil
         for u in [url, openURL] { if let u { try? FileManager.default.removeItem(at: u) } }
     }
 
@@ -201,6 +226,7 @@ final class ExposureHistoryStore: ObservableObject {
         let done = history.finishOpen()
         if !done.isEmpty { add(done, now: now) }
         ongoing = nil
+        keepOpenSaved(now: now)  // drops the saved open copy
     }
 
     private func add(_ done: [ExposureEpisode], now: Date) {
