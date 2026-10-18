@@ -64,11 +64,15 @@ enum NotificationRoute {
     /// Lock-screen wording. The title is always just "FlUni" (iOS shows it even when previews are hidden); with details
     /// off the body says nothing about health. With details on, the body is the advice itself, the same lines as in
     /// the app, cut at a whole sentence so it fits a collapsed banner, with `more` added when anything was cut.
-    static func text(kind: NotificationKind, detailed: Bool, buildingName: String? = nil, sick: Bool = false) -> (title: String, body: String) {
+    /// `level`: for a heads-up, `.nearbyContagious` gives the stronger wording.
+    static func text(kind: NotificationKind, detailed: Bool, buildingName: String? = nil, sick: Bool = false,
+                     level: AlertLevel = .nearby) -> (title: String, body: String) {
         guard detailed else { return ("FlUni", "You have an update. Open FlUni to see it.") }
         switch kind {
         case .closeContact: return ("FlUni", fit(Advice.body(.closeContact)))  // its first line already says what happened
-        case .nearby: return ("FlUni", fit([Advice.title(.nearby) + "."] + Advice.body(.nearby)))
+        case .nearby:
+            let l: AlertLevel = level == .nearbyContagious ? .nearbyContagious : .nearby
+            return ("FlUni", fit([Advice.title(l) + "."] + Advice.body(l)))
         case .building:
             return ("FlUni", fit([WalkInWarning.message(for: buildingName ?? "This building", sick: sick)]))
         }

@@ -245,7 +245,7 @@ enum RiskEstimate {
         guard band(p) == .low else { return summary(p) }
         switch alert {
         case .none: return summary(p)
-        case .nearby: return "Low, but follow the heads-up steps."
+        case .nearby, .nearbyContagious: return "Low, but follow the heads-up steps."
         case .closeContact: return "Low, but follow the close-contact steps."
         }
     }
