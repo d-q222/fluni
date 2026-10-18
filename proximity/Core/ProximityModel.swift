@@ -46,7 +46,7 @@ final class ProximityModel: ObservableObject {
         didSet { if liveRisk != exposure.probability { liveRisk = exposure.probability } }
     }
     /// This phone's risk estimate p (RiskEstimate, Rio's formula), recomputed on every 1 s tick while a
-    /// risky peer's dose accrues, on return to the foreground, and when the 24 h window drops old dose.
+    /// risky peer's dose accrues, on return to the foreground, and when the 24 h dose window drops old dose.
     /// Bind the on-screen number to this.
     @Published private(set) var liveRisk = RiskEstimate.prior
     /// This user's own score: max(liveRisk, status floor), so someone who reported a positive test reads at

@@ -108,8 +108,8 @@ final class RiskTests: XCTestCase {
         XCTAssertEqual(t.sources["c"]?.s, 0.97); XCTAssertEqual(t.sources["p"]?.s, 0.6)
         XCTAssertEqual(t.dose, c + q, accuracy: 1e-12)
         XCTAssertEqual(t.probability, RiskEstimate.probability(["c": .init(dose: c, s: 0.97), "p": .init(dose: q, s: 0.6)]), accuracy: 1e-12)
-        XCTAssertEqual(t.minutes, 10 * (0.6 + 0.5), accuracy: 1e-9)
-        t.advance(simSeconds: 24 * 3600 + 60, contacts: [])
+        XCTAssertEqual(t.minutes, 10 * 0.6, accuracy: 1e-9)  // the strongest peer: max(0.6 × 1, 1 × 0.5) = 0.6/min
+        t.advance(simSeconds: 24 * 3600 + 60, contacts: [])  // the dose window is still 24 h; the minutes reset at 2 h
         XCTAssertEqual(t.dose, 0)
         XCTAssertEqual(t.sources, [:])
         XCTAssertEqual(t.probability, RiskEstimate.prior)

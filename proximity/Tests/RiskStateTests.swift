@@ -123,6 +123,91 @@ final class RiskStateTests: XCTestCase {
         XCTAssertTrue(r.exposure.isEmpty)
     }
 
+    // MARK: The 2 h episode clock across a relaunch
+
+    func testRelaunchInTheMiddleOfAGapKeepsTheClockRight() throws {
+        var e = ExposureTracker()
+        contact(&e, seconds: 10 * 60)
+        store().save(e, gate: AlertGate(), now: t0)
+        // Swiped away for 1 h: the minutes stand (bridged), saved again, relaunched 59 min later: that is 1 h 59 min.
+        let r1 = try XCTUnwrap(store().load(now: t0.addingTimeInterval(3600)))
+        XCTAssertEqual(r1.exposure.minutes, 10, accuracy: 1e-6)
+        store().save(r1.exposure, gate: r1.gate, now: t0.addingTimeInterval(3600))
+        let r2 = try XCTUnwrap(store().load(now: t0.addingTimeInterval(7140)))
+        XCTAssertEqual(r2.exposure.minutes, 10, accuracy: 1e-6, "1 h 59 min since the last contact")
+        store().save(r2.exposure, gate: r2.gate, now: t0.addingTimeInterval(7140))
+        let r3 = try XCTUnwrap(store().load(now: t0.addingTimeInterval(7200)))
+        XCTAssertEqual(r3.exposure.minutes, 0, "2 h since the last contact, counted across both relaunches")
+        XCTAssertNil(r3.exposure.lastContact)
+    }
+
+    func testRelaunchWithinTheGapThenContactIsOneEpisode() throws {
+        var e = ExposureTracker()
+        contact(&e, seconds: 10 * 60)
+        store().save(e, gate: AlertGate(), now: t0)
+        var r = try XCTUnwrap(store().load(now: t0.addingTimeInterval(90 * 60))).exposure
+        contact(&r, seconds: 5 * 60)
+        XCTAssertEqual(r.minutes, 15, accuracy: 0.05)
+        XCTAssertEqual(r.level, .closeContact)
+    }
+
+    /// A state saved by the 24 h-window build: no lastContact key.
+    private func oldFormat(_ e: ExposureTracker, savedAt: Date) throws -> Data {
+        let data = try RiskStateFile.encode(RiskState(savedAt: savedAt, exposure: e, gate: AlertGate()))
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var ex = try XCTUnwrap(obj["exposure"] as? [String: Any])
+        XCTAssertNotNil(ex.removeValue(forKey: "lastContact") ?? NSNull())
+        obj["exposure"] = ex
+        return try JSONSerialization.data(withJSONObject: obj)
+    }
+
+    func testOldStateWithoutALastContactMigrates() throws {
+        var e = ExposureTracker()
+        contact(&e, seconds: 10 * 60)
+        try oldFormat(e, savedAt: t0).write(to: file)
+        let fresh = try XCTUnwrap(RiskStateFile.decode(Data(contentsOf: file)))
+        XCTAssertEqual(fresh.exposure.minutes, 10, accuracy: 1e-6, "kept")
+        XCTAssertNotNil(fresh.exposure.lastContact, "derived from the newest bucket with contact")
+        // Relaunched 1 h later: still counted; 2 h later: reset.
+        XCTAssertEqual(try XCTUnwrap(store().load(now: t0.addingTimeInterval(3600))).exposure.minutes, 10, accuracy: 1e-6)
+        XCTAssertEqual(try XCTUnwrap(store().load(now: t0.addingTimeInterval(3 * 3600))).exposure.minutes, 0)
+    }
+
+    func testOldStateWithMinutesButNoBucketStartsAtZero() throws {
+        var e = ExposureTracker()
+        contact(&e, seconds: 60)
+        let data = try oldFormat(e, savedAt: t0)
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var ex = try XCTUnwrap(obj["exposure"] as? [String: Any])
+        ex["buckets"] = []
+        obj["exposure"] = ex
+        let s = try XCTUnwrap(RiskStateFile.decode(JSONSerialization.data(withJSONObject: obj)))
+        XCTAssertEqual(s.exposure.minutes, 0)
+        XCTAssertNil(s.exposure.lastContact)
+    }
+
+    func testAResetNeverRefiresAnAlertWithinItsCooldown() {
+        var e = ExposureTracker()
+        var gate = AlertGate()
+        var now = t0
+        var posted: [NotificationKind] = []
+        func tick(contact c: Bool) {
+            now = now.addingTimeInterval(60)
+            e.advance(simSeconds: 60, contacts: c ? [(1, .contagious)] : [])
+            if let k = gate.step(e.level, now: now) { posted.append(k) }
+        }
+        for _ in 0..<16 { tick(contact: true) }
+        XCTAssertEqual(posted, [.nearby, .closeContact])
+        gate.markRead(.closeContact, now: now)
+        for _ in 0..<125 { tick(contact: false) }                       // 2 h away: minutes reset
+        XCTAssertEqual(e.minutes, 0)
+        XCTAssertEqual(e.level, .none)
+        for _ in 0..<16 { tick(contact: true) }                         // climbs to 15 again within 12 h
+        XCTAssertEqual(e.level, .closeContact)
+        XCTAssertEqual(posted, [.nearby, .closeContact, .nearby], "heads-up (30 min cooldown) fires again; no second close contact within 12 h")
+        XCTAssertTrue(gate.isRead(.closeContact, now: now), "and the read alert stays read")
+    }
+
     func testAHeadsUpNeedsSomeoneInRangeAfterARelaunchButACloseContactStays() throws {
         var e = ExposureTracker()
         contact(&e, seconds: 60)

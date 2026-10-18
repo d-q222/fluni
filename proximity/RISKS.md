@@ -47,7 +47,9 @@ mention it in the presentation. Last updated 2026-10-17.
 - **Days since the source's symptoms began:** broadcast by FLU2 peers; old FLU1 builds and healthy peers use the
   0.352 average stage.
 - **Second-hand risk and look-back after a report:** need everyone's contacts.
-- **Window:** 24 h on the phone vs 7-day evidence in the campus model.
+- **Window:** the phone keeps the campus model's close-contact rule (weighted minutes within 6 ft of someone who may be
+  sick, running until 2 h pass with no such contact), but its dose uses only the last 24 h on the phone vs 7-day
+  evidence in the campus model.
 - **Bluetooth-only distance:** about ±(70% + 0.3 m), or ±(40% + 0.3 m) once calibrated against UWB. UWB (best,
   about ±10 cm) only works while FlUni is open and a peer link exists.
 

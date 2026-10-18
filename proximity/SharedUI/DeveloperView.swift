@@ -91,7 +91,10 @@ struct DeveloperView: View {
         } header: {
             Text("Time near someone risky")
         } footer: {
-            Text("Counts time within 6 ft of phones marked sick. Possibly sick counts half.")
+            Text(mins >= 60
+                 ? "\(ExposureTracker.durationText(mins)) since your last 2-hour break. Counts time within 6 ft of phones marked sick; possibly sick counts half."
+                 : mins > 0 ? "Counts time within 6 ft of phones marked sick; possibly sick counts half. Resets after 2 hours away from them."
+                 : "No time near someone with symptoms or a positive test. Resets after 2 hours away from them.")
         }
     }
 
