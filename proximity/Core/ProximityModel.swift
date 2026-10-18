@@ -60,13 +60,22 @@ final class ProximityModel: ObservableObject {
     private var lastFixSent = Date.distantPast
     private var timer: Timer?
     private var notifiedLevel = AlertLevel.none
+    /// Per-peer "credited up to" times: exposure accrues from sightings, so it keeps counting while iOS
+    /// only wakes FlUni for Bluetooth events, and the timer and those wake-ups never count a second twice.
+    private var accrual = SightingAccrual()
+    private var started = false
+    private var backgroundTickPending = false
     /// Local-only list of past exposure episodes (14 days), shown on Today.
     let exposureHistory = ExposureHistoryStore()
 
     /// Ephemeral IDs rotate like GAEN's rolling proximity IDs (shorter via -rotate for tests).
     private var rotationInterval: TimeInterval = 15 * 60
 
+    /// Safe to call more than once (FlUni starts it on a background relaunch and again when a window appears).
     func start() {
+        guard !started else { return }
+        started = true
+        if UIApplication.shared.applicationState == .background { log("bg launch") }
         UIApplication.shared.isIdleTimerDisabled = true  // keep the screen on during the demo
         restoreSavedStatus()
         restorePause()
@@ -76,6 +85,9 @@ final class ProximityModel: ObservableObject {
 
         ble.onState = { [weak self] in self?.setStatus("BLE", $0) }
         ble.onSighting = { [weak self] id, risk, rssi in self?.bleSighting(id: id, risk: risk, rssi: rssi) }
+        ble.onLog = { [weak self] in self?.log($0) }
+        ble.onRead = { [weak self] in self?.rotateIfDue(Date()) }  // a read may be our only wake-up for a while
+        ble.worksInBackground = worksInBackground
 
         link.onConnected = { [weak self] peer in self?.linked(peer) }
         link.onDisconnected = { [weak self] peer in self?.unlinked(peer) }
@@ -140,6 +152,7 @@ final class ProximityModel: ObservableObject {
         uwb.stopAll()
         gps.stop()
         byID.removeAll()
+        accrual.reset()  // nothing is credited across a pause
         linkIDs.removeAll()
         myFix = nil
         peers = []
@@ -195,6 +208,7 @@ final class ProximityModel: ObservableObject {
 
     func resetExposure() {
         exposure.reset()
+        accrual.reset()
         notifiedLevel = .none
     }
 
@@ -206,6 +220,11 @@ final class ProximityModel: ObservableObject {
     /// FlUni turns it off so "your precise location never leaves this phone" is literally true
     /// (indoors GPS was 7–10 m off at 0.5 m anyway, so detection loses next to nothing).
     var sharesLocationWithPeers = true
+
+    /// FlUni sets this before start(): Bluetooth keeps working in the background (fixed service UUID +
+    /// GATT read, state restoration) and sightings drive exposure while the timer is asleep. The harness
+    /// leaves it off (no Bluetooth background modes there).
+    var worksInBackground = false
 
     /// Lets tests drive the phones from the Mac, e.g.
     ///   devicectl ... launch --console com.fluni.proxtest -risk contagious -speed 60 -sources UWB,BLE
@@ -247,6 +266,10 @@ final class ProximityModel: ObservableObject {
 
     // MARK: Identity and status broadcast
 
+    private func rotateIfDue(_ now: Date) {
+        if !isPaused, now.timeIntervalSince(lastRotation) >= rotationInterval { rotateID() }
+    }
+
     private func rotateID() {
         var bytes = [UInt8](repeating: 0, count: 11)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
@@ -272,6 +295,18 @@ final class ProximityModel: ObservableObject {
             p.risk = risk
             p.rssi = rssi
             p.ble = p.calibrator.reading(rssi: rssi, at: Date())
+        }
+        if worksInBackground, UIApplication.shared.applicationState != .active { scheduleBackgroundTick() }
+    }
+
+    /// The 1 s timer doesn't run while iOS has FlUni in the background; a sighting wakes it briefly, so
+    /// fuse and accrue shortly after (1 s lets a burst of sightings land in one tick).
+    private func scheduleBackgroundTick() {
+        guard !backgroundTickPending else { return }
+        backgroundTickPending = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.backgroundTickPending = false
+            self?.tick()
         }
     }
 
@@ -299,6 +334,7 @@ final class ProximityModel: ObservableObject {
             // The peer rotated its ID: carry its state over instead of counting it twice.
             if let old = linkIDs[peer], old != id, let p = byID.removeValue(forKey: old), byID[id] == nil {
                 byID[id] = PeerState(id: id, rssi: p.rssi, peerFix: p.peerFix, calibrator: p.calibrator)
+                accrual.rename(from: old, to: id)
             }
             linkIDs[peer] = id
             if let old = byID[id]?.risk, old != (w.risk ?? .none) { log("peer \(id.prefix(6)) risk=\(w.risk ?? .none) via=link") }
@@ -375,7 +411,7 @@ final class ProximityModel: ObservableObject {
         if isNew { DispatchQueue.main.async { [weak self] in self?.tick() } }
     }
 
-    // MARK: Fusion + exposure, once a second
+    // MARK: Fusion + exposure, once a second (and after background sightings)
 
     private func tick() {
         let now = Date()
@@ -384,9 +420,13 @@ final class ProximityModel: ObservableObject {
             if PauseSchedule.shouldResume(p, now: now) { resume() }
             return
         }
-        if now.timeIntervalSince(lastRotation) >= rotationInterval { rotateID() }
-        let dt = min(now.timeIntervalSince(lastTick), 2)  // no jump after a pause
-        lastTick = now
+        rotateIfDue(now)
+        // Wall time since the last accrual. It moves the exposure clock (so the 24 h window is real time,
+        // background included); capping at the window is enough to expire everything older.
+        let wall = now.timeIntervalSince(lastTick)
+        let accrues = wall >= SightingAccrual.minStep
+        if accrues || wall < 0 { lastTick = now }  // a backwards clock re-anchors without crediting
+        let dt = min(max(wall, 0), ExposureTracker.window / speed)
 
         byID = byID.filter { now.timeIntervalSince($0.value.lastSeen) < 30 }
         if sharesLocationWithPeers, let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
@@ -404,10 +444,28 @@ final class ProximityModel: ObservableObject {
 
         let before = exposure.level
         var e = exposure
-        let ps = contactGuard.apply(now: now, byID.values.map(\.guardInput), log: log)
+        // Spoof guard first, over every peer (it needs to see bursts); then background-safe accrual credits
+        // only peers with a fresh estimate, each for [lastCreditedAt, now].
+        let guarded = contactGuard.apply(now: now, byID.values.map(\.guardInput), log: log)
         if unusualSignals != contactGuard.flagged { unusualSignals = contactGuard.flagged }
-        e.advance(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, tiers: ps.map(\.tier))
-        exposureHistory.record(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, at: now)
+        let fresh = Set(byID.values.filter { $0.estimate != nil }.map(\.id))
+        if accrues {
+            var credits: [AccrualCredit] = []
+            for g in guarded where fresh.contains(g.id) {
+                guard let c = accrual.observe(g.id, at: now, pClose: g.pClose, risk: g.risk, tier: g.tier) else { continue }
+                credits.append(c)
+                if c.risk != .none, c.pClose > 0,
+                   c.seconds >= 5 || UIApplication.shared.applicationState != .active {
+                    log("bg credit peer=\(c.id.prefix(6)) secs=\(fmt(c.seconds)) p=\(fmt(c.pClose)) risk=\(c.risk)")
+                }
+            }
+            accrual.prune(now: now)
+            let feed = AccrualFeed.contacts(credits, wallSeconds: dt)
+            e.advance(simSeconds: dt * speed, contacts: feed.contacts, tiers: feed.tiers)
+            exposureHistory.record(simSeconds: dt * speed, contacts: feed.contacts, at: now)
+        }
+        // The heads-up level from everyone in range now (adds nothing: zero seconds).
+        e.advance(simSeconds: 0, contacts: guarded.map { ($0.pClose, $0.risk) })
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
         if exposure.level > notifiedLevel {

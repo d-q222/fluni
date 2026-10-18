@@ -50,6 +50,7 @@ WORKSTREAMS.md.)
 | Channel | What it carries | Distance quality |
 |---|---|---|
 | **Bluetooth LE** beacon | ID + risk packed into one 128-bit service UUID (`FLU1`, risk, 11-byte ID). Needs no connection. | RSSI, ±50–70 % |
+| **Bluetooth LE, background** (FlUni only) | The same 16 bytes, read over GATT: fixed service `142C3940-E33C-4D62-BE25-1C4A883EE402`, read-only characteristic `2F02CED2-60A0-41AC-A335-07D1603177E4`. Nothing more than the advert carries. | RSSI of the advert |
 | **Peer link** (MultipeerConnectivity, encrypted) | hello (ID + risk), UWB tokens; GPS fixes **only in the harness** | — |
 | **UWB** (Nearby Interaction, U1 chip) | needs tokens swapped over the peer link | ~10 cm |
 | **GPS** | FlUni: your own fix, used **only on your phone** (building warnings); never sent. Harness: also sent to the linked phone for GPS ranging tests | 5–20 m, poor indoors |
@@ -58,6 +59,31 @@ WORKSTREAMS.md.)
 present; Bluetooth and GPS take over when it drops out. While UWB is live, it **calibrates the
 Bluetooth model** for that phone pair, so Bluetooth-only ranging improves afterwards. The result is
 P(within 6 ft), not a yes/no.
+
+**Background** (FlUni only; `BLEBeacon.swift`, `BeaconGATT.swift`, `BackgroundAccrual.swift`). In the
+background iOS hides the payload UUID (it moves to the "overflow" area, matched only by scans that name
+it). So FlUni also advertises a fixed service UUID and serves the payload from a GATT characteristic. A
+second scanner names that UUID (required in the background; also catches backgrounded phones while FlUni
+is open). When an advert has the fixed UUID but no payload, it connects, reads the 16 bytes, keeps the
+advert's RSSI and disconnects: at most once per 20 s per peripheral and 3 connections at a time.
+Bluetooth state restoration (`fluni.advertiser`, `fluni.scanner`) lets iOS relaunch FlUni in the
+background for a Bluetooth event after the *system* ended it, not after the user swiped it away.
+UWB and the peer link are foreground-only.
+
+Exposure in the background comes from sightings rather than the 1 s timer: each peer remembers when it
+was last credited, and a re-sighting within 5 min credits the whole gap at its latest P(≤ 6 ft); a
+longer gap credits nothing. The timer goes through the same per-peer bookkeeping, so no second counts
+twice. Log lines: `bg launch`, `bg restore …`, `bg gatt read …`, `bg gatt served …`, `bg credit …`.
+
+| | Nearby alerts | Building warnings |
+|---|---|---|
+| FlUni open | yes, every second | yes |
+| In the background | yes, via Bluetooth, less often (when iOS delivers a sighting); a phone with FlUni open sees it best | yes (geofences) |
+| Ended by iOS (memory) | yes: iOS keeps advertising/scanning and relaunches FlUni on a Bluetooth event | yes (relaunched on region entry) |
+| Swiped away by the user | no, until FlUni is opened again | yes (region monitoring still relaunches it) |
+
+Two phones that are both in the background find each other only now and then (iOS mostly matches
+overflow adverts while the scanning phone's screen is on).
 
 **Exposure** (`Exposure.swift`): minutes += dt × P(≤ 6 ft) × weight, where weight is 1 for
 contagious and 0.5 for possibly sick. The app shows a heads-up as soon as a risky phone is probably
@@ -126,8 +152,8 @@ phones to wipe them between runs (`DRY_RUN=1` previews it).
 
 ## Limits
 
-- Foreground only. iOS hides custom Bluetooth beacons from scanners in the background, and UWB needs
-  the app open. The app keeps the screen on.
+- Best in the foreground: in the background only Bluetooth works (no UWB, no peer link), sightings are
+  sparser, and two backgrounded phones rarely see each other. The app keeps the screen on while open.
 - Free Apple developer teams sign builds for 7 days; reinstall after that.
 - Privacy: in a room with just two people, the risk bit identifies the sick one. Acceptable for the
   demo, but it needs a fix (anonymity threshold or server-side matching) before real use.

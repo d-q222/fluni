@@ -49,7 +49,9 @@ targets:
         CFBundleDisplayName: FlUni
         NSLocationWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         NSLocationAlwaysAndWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
-        UIBackgroundModes: [location]
+        # Bluetooth modes: detection keeps running in the background and iOS can relaunch FlUni for
+        # Bluetooth events after the system (not the user) ended it. See Core/BeaconGATT.swift.
+        UIBackgroundModes: [location, bluetooth-central, bluetooth-peripheral]
 
   # Test harness: same Core, developer view first, obeys test launch arguments. tools/ drive it.
   FluniProx:
