@@ -200,6 +200,8 @@ struct SectionHeader: View {
 
 /// One entry on a timeline: the time on the left, a pin on a rail, the content on the right. The rail runs down
 /// to the next pin (fading out after the last); it turns ember where someone who may be sick was close.
+/// The time starts at the heading's margin, in a column as wide as the widest label either timeline uses ("12:35"
+/// on the day, "Today" on the recovery), so the day and the recovery rails line up.
 struct TimelineRow<Content: View>: View {
     enum Pin { case plain, now }
     let time: String
@@ -208,16 +210,15 @@ struct TimelineRow<Content: View>: View {
     var alert = false
     var isLast = false
     @ViewBuilder let content: Content
-    @ScaledMetric(relativeTo: .footnote) private var timeWidth: CGFloat = 50
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         let stacked = typeSize.isAccessibilitySize
         VStack(alignment: .leading, spacing: 2) {
             if stacked { timeText.padding(.leading, 28) }
-            HStack(alignment: .top, spacing: 12) {
-                if !stacked { timeText.frame(width: timeWidth, alignment: .trailing).padding(.top, 2) }
-                rail
+            HStack(alignment: .top, spacing: 0) {
+                if !stacked { timeColumn.padding(.top, 2).padding(.trailing, 8) }
+                rail.padding(.trailing, 12)
                 VStack(alignment: .leading, spacing: 0) { content }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom, 18)
@@ -227,8 +228,18 @@ struct TimelineRow<Content: View>: View {
         .padding(.horizontal, 4)
     }
 
+    /// Sized by hidden copies of the widest labels, so it scales with Dynamic Type and never wider than needed.
+    private var timeColumn: some View {
+        ZStack(alignment: .leading) {
+            ForEach(["12:35", "Today"], id: \.self) { Text($0).font(Self.timeFont).monospacedDigit().hidden() }
+            timeText
+        }
+    }
+
+    private static var timeFont: Font { .nunito(14, relativeTo: .footnote, weight: .semibold) }
+
     private var timeText: some View {
-        Text(time).font(.nunito(14, relativeTo: .footnote, weight: .semibold)).monospacedDigit()
+        Text(time).font(Self.timeFont).monospacedDigit()
             .foregroundStyle(Theme.ink2)
             .accessibilityLabel(spokenTime ?? time)
     }
