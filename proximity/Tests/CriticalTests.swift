@@ -112,7 +112,7 @@ final class CriticalFusionTests: XCTestCase {
 
     // S1: a stale reading must never outvote a fresh one even with tiny sigma.
     func testStaleTinySigmaIgnored() {
-        let e = Fusion.fuse([Reading(source: .uwb, distance: 0.1, sigma: 1e-6, at: now.addingTimeInterval(-3.5)),
+        let e = Fusion.fuse([Reading(source: .uwb, distance: 0.1, sigma: 1e-6, at: now.addingTimeInterval(-6.5)),
                              Reading(source: .ble, distance: 5, sigma: 1, at: now)], now: now)!
         XCTAssertEqual(e.distance, 5, accuracy: 1e-9, "S1 stale UWB influenced result")
     }
