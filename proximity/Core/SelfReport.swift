@@ -19,6 +19,18 @@ enum Symptom: String, Codable, CaseIterable {
     }
 }
 
+/// The one-tap answer to the daily check-in while staying home.
+enum Feeling: String, Codable, CaseIterable {
+    case better, same, worse
+    var label: String {
+        switch self {
+        case .better: return "Better"
+        case .same: return "The same"
+        case .worse: return "Worse"
+        }
+    }
+}
+
 enum TestKind: String, Codable, CaseIterable {
     case rapid, pcr
     var label: String { self == .rapid ? "Rapid (home) test" : "PCR test" }
@@ -62,6 +74,8 @@ struct SelfReportRecord: Codable, Equatable {
     /// Last moment the user said they had a fever (nil = none reported).
     var lastFeverAt: Date?
     var lastCheckIn: Date?
+    /// The answer to the last daily check-in (nil until the first one).
+    var lastFeeling: Feeling?
 
     /// Day 0 of isolation: the earlier of symptom onset and positive test.
     var dayZero: Date? { [onset, positiveDate].compactMap { $0 }.min() }
@@ -91,6 +105,22 @@ struct SelfReporter {
     func dayNumber(_ r: SelfReportRecord, now: Date) -> Int? {
         guard r.risk != .none, let zero = r.dayZero else { return nil }
         return calendar.dateComponents([.day], from: zero, to: startOfDay(now)).day
+    }
+
+    /// The day number `now` would be if symptoms started on `onset` (day 0 = that day). Never negative.
+    func dayCount(from onset: Date, now: Date) -> Int {
+        max(0, calendar.dateComponents([.day], from: startOfDay(onset), to: startOfDay(now)).day ?? 0)
+    }
+
+    /// The last day at home if day 0 were `zero`: day 5.
+    func lastDay(from zero: Date) -> Date {
+        calendar.date(byAdding: .day, value: IsolationPolicy.days, to: startOfDay(zero))!
+    }
+
+    /// Day 0 through day 5 as dates (start of each day), for the stay-home track. Empty with no status.
+    func trackDays(_ r: SelfReportRecord) -> [(day: Int, date: Date)] {
+        guard r.risk != .none, let zero = r.dayZero else { return [] }
+        return (0...IsolationPolicy.days).map { ($0, calendar.date(byAdding: .day, value: $0, to: startOfDay(zero))!) }
     }
 
     /// First moment the minimum period is over: the start of day 6 (calendar-day maths, so a 23 or 25 hour day doesn't shift it).
@@ -162,12 +192,14 @@ struct SelfReporter {
 
     /// The daily check-in. Fever resets the 24 h clock. "No symptoms" clears `possible`; contagious stays
     /// until the period is over (then `reportFine`).
-    func checkIn(_ r: SelfReportRecord, stillSymptomatic: Bool, hasFever: Bool, now: Date) -> SelfReportRecord {
+    /// `feeling` is the one-tap Better / The same / Worse answer, kept to show today's check-in.
+    func checkIn(_ r: SelfReportRecord, stillSymptomatic: Bool, hasFever: Bool, feeling: Feeling? = nil, now: Date) -> SelfReportRecord {
         guard r.risk != .none else { return r }
         if !stillSymptomatic && r.risk == .possible { return SelfReportRecord() }
         var n = r
         if stillSymptomatic && hasFever { n.lastFeverAt = now }
         n.lastCheckIn = now
+        if let feeling { n.lastFeeling = feeling }
         return n
     }
 

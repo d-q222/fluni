@@ -47,6 +47,9 @@ targets:
       properties:
         <<: *radioInfo
         CFBundleDisplayName: FlUni
+        # OFL fonts from Google Fonts (licences next to them in FlUni/Resources/Fonts/). Fraunces 28pt optical size,
+        # SemiBold + SemiBold Italic: the wordmark, headings and numbers. Shantell Sans Medium: the tissue's voice.
+        UIAppFonts: [Fraunces-SemiBold.ttf, Fraunces-SemiBoldItalic.ttf, ShantellSans-Medium.ttf]
         NSLocationWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         NSLocationAlwaysAndWhenInUseUsageDescription: Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.
         # Bluetooth modes: detection keeps running in the background and iOS can relaunch FlUni for
@@ -71,7 +74,9 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - Tests
+      # xcheck is read from the source tree (CrossCheckTests); bundling it collides with building_heat.csv below.
+      - path: Tests
+        excludes: ["Fixtures/xcheck/**"]
       # Fixtures as bundle resources so the data tests also run on a phone (see Tests/Fixture.swift).
       - path: FlUni/Resources/building_heat.csv
         buildPhase: resources

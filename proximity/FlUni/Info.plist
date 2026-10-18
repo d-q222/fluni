@@ -40,6 +40,12 @@
 	<string>Your precise location never leaves this phone and is never seen by anyone. FlUni only uses it on your phone to warn you about busy buildings.</string>
 	<key>NSNearbyInteractionUsageDescription</key>
 	<string>Measures precise distance to nearby FlUni phones with ultra wideband.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fraunces-SemiBold.ttf</string>
+		<string>Fraunces-SemiBoldItalic.ttf</string>
+		<string>ShantellSans-Medium.ttf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

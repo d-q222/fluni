@@ -48,6 +48,8 @@ enum Theme {
     // MARK: Shape
     /// One corner for every flat shape (buttons, fields, quiet panels, chips). Drawn boxes bring their own.
     static let radius: CGFloat = 12
+    /// Buttons are a little rounder than panels, so an action never reads as a card.
+    static let buttonRadius: CGFloat = 16
     /// Strokes: `hairline` 1 pt between rows; 1.5 pt ink on secondary buttons and unchecked boxes;
     /// 2 pt ink marks the selected choice. No shadows anywhere: depth comes from Lisa's drawn edge.
     static let stroke: CGFloat = 1.5
@@ -76,41 +78,156 @@ enum Space {
 ///   peach strip    `.panel(.peach)`: a short heads-up that isn't the hero (walk-in).
 enum Surface {}
 
-/// Type roles. System rounded so Dynamic Type works; pick a role, never a raw size.
+/// Type roles: pick a role, never a raw size. Every role follows Dynamic Type (custom faces through `relativeTo:`).
+///
+/// Three voices, no more:
+///   Fraunces SemiBold (OFL, bundled in FlUni)  the wordmark, places, headlines and the numbers that are the point.
+///                                             Its serifed "l" is why "FlUni" can't read as "FIUni".
+///   SF Pro (system)                           everything you read or tap: body, labels, buttons.
+///   Shantell Sans Medium (OFL, bundled)       only the tissue's speech bubble.
+/// Timeline times use SF Mono digits (system, nothing bundled). The harness has no bundled fonts, so the serif
+/// roles fall back to New York (the system serif) and the voice to SF Rounded.
 enum TextRole {
-    /// Today's status, a sheet's lead headline. largeTitle bold.
+    /// The one big headline of a screen (the place you're at now, "Day 2 of 5"). Fraunces 34, largeTitle.
     case display
-    /// A long headline that would be too heavy at display size (the close-contact moment). title2 bold.
+    /// A long headline that would be too heavy at display size (the close-contact moment). Fraunces 24, title2.
     case lead
-    /// Screen part titles ("Recent contacts", "What to do"). title3 bold, a header for VoiceOver.
+    /// Screen part titles and timeline places. Fraunces 21, title3.
     case section
-    /// Card titles, row titles, the question being asked. headline.
+    /// Card titles, row titles, the question being asked. SF headline.
     case heading
-    /// Reading text. body.
+    /// Reading text. SF body.
     case reading
-    /// Row titles that are also the tap target. body semibold.
+    /// Row titles that are also the tap target. SF body semibold.
     case strong
-    /// Supporting text under a heading. subheadline.
+    /// Supporting text under a heading. SF subheadline.
     case note
-    /// Fine print: privacy lines, timestamps. footnote.
+    /// Fine print: privacy lines, captions. SF footnote.
     case fine
-    /// Numbers that are the point (minutes, %, day). largeTitle bold, tabular.
+    /// Numbers that are the point (minutes, %, day). Fraunces 34, largeTitle, tabular.
     case figure
+    /// Timeline times ("12:10"). SF Mono footnote.
+    case time
+    /// The tissue speaking. Shantell Sans 17, body.
+    case voice
+}
+
+/// The bundled faces (FlUni only; see project.yml UIAppFonts). `available` is false in the harness.
+enum Face {
+    static let serif = "Fraunces28pt-SemiBold"
+    static let serifItalic = "Fraunces28pt-SemiBoldItalic"
+    static let hand = "ShantellSans-Medium"
+    private static var cache: [String: Bool] = [:]
+    static func available(_ name: String) -> Bool {
+        if let v = cache[name] { return v }
+        let v = UIFont(name: name, size: 12) != nil
+        cache[name] = v
+        return v
+    }
+
+    /// Default (Large) point size of a text style, so a custom face sits at the same size as SF would.
+    static func size(_ style: Font.TextStyle) -> CGFloat {
+        switch style {
+        case .largeTitle: return 34
+        case .title: return 28
+        case .title2: return 22
+        case .title3: return 20
+        case .headline, .body: return 17
+        case .callout: return 16
+        case .subheadline: return 15
+        case .footnote: return 13
+        case .caption: return 12
+        case .caption2: return 11
+        default: return 17
+        }
+    }
+
+    /// Fraunces at `size`, scaling with `style`; New York semibold when it isn't bundled.
+    static func serif(_ size: CGFloat, _ style: Font.TextStyle, italic: Bool = false) -> Font {
+        let name = italic ? serifItalic : serif
+        if available(name) { return .custom(name, size: size, relativeTo: style) }
+        let f = Font.system(style, design: .serif, weight: .semibold)
+        return italic ? f.italic() : f
+    }
 }
 
 extension Font {
     static func fluni(_ role: TextRole) -> Font {
         switch role {
-        case .display: return .system(.largeTitle, design: .rounded, weight: .bold)
-        case .lead: return .system(.title2, design: .rounded, weight: .bold)
-        case .section: return .system(.title3, design: .rounded, weight: .bold)
-        case .heading: return .system(.headline, design: .rounded, weight: .semibold)
-        case .reading: return .system(.body, design: .rounded)
-        case .strong: return .system(.body, design: .rounded, weight: .semibold)
-        case .note: return .system(.subheadline, design: .rounded)
-        case .fine: return .system(.footnote, design: .rounded)
-        case .figure: return .system(.largeTitle, design: .rounded, weight: .bold).monospacedDigit()
+        case .display: return Face.serif(34, .largeTitle)
+        case .lead: return Face.serif(24, .title2)
+        case .section: return Face.serif(21, .title3)
+        case .heading: return .system(.headline, weight: .semibold)
+        case .reading: return .system(.body)
+        case .strong: return .system(.body, weight: .semibold)
+        case .note: return .system(.subheadline)
+        case .fine: return .system(.footnote)
+        case .figure: return Face.serif(34, .largeTitle).monospacedDigit()
+        case .time: return .system(.footnote, design: .monospaced).weight(.medium)
+        case .voice:
+            return Face.available(Face.hand) ? .custom(Face.hand, size: 17, relativeTo: .body) : .system(.body, design: .rounded, weight: .medium)
         }
+    }
+
+    /// "FlUni" inside a sentence of `style`: the wordmark serif at the same size.
+    static func brand(_ style: Font.TextStyle) -> Font { Face.serif(Face.size(style) * 1.04, style) }
+}
+
+extension AttributedString {
+    /// Sets every "FlUni" in the wordmark serif (sized for `style`); the rest keeps the view's font.
+    static func brand(_ s: String, style: Font.TextStyle = .body) -> AttributedString {
+        var a = AttributedString(s)
+        var from = a.startIndex
+        while from < a.endIndex, let r = a[from...].range(of: "FlUni") {
+            a[r].font = .brand(style)
+            from = r.upperBound
+        }
+        return a
+    }
+}
+
+extension Text {
+    /// A sentence that may mention FlUni: the name is set in the wordmark serif so its "l" never reads as "I".
+    init(brand s: String, style: Font.TextStyle = .body) {
+        self.init(AttributedString.brand(s, style: style))
+    }
+}
+
+/// The wordmark: "FlUni" in Fraunces SemiBold Italic with a hand-drawn ember squiggle under it (Lisa's
+/// campfire ember; decorative). VoiceOver reads "FlUni".
+struct Wordmark: View {
+    var size: CGFloat = 30
+    @ScaledMetric(relativeTo: .title) private var scale: CGFloat = 1
+
+    var body: some View {
+        Text("FlUni")
+            .font(Face.serif(size, .title, italic: true))
+            .foregroundStyle(Theme.ink)
+            .padding(.bottom, size * 0.22)
+            .overlay(alignment: .bottomLeading) {
+                Squiggle().stroke(Theme.ember, style: StrokeStyle(lineWidth: max(2, size * 0.08), lineCap: .round, lineJoin: .round))
+                    .frame(width: size * 1.9 * scale, height: size * 0.2)
+                    .offset(x: size * 0.12)
+            }
+            .accessibilityLabel("FlUni")
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// Three soft waves, like a pen underline.
+struct Squiggle: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        let waves = 3.0
+        let w = r.width / waves
+        p.move(to: CGPoint(x: r.minX, y: r.midY))
+        for i in 0..<Int(waves) {
+            let x0 = r.minX + Double(i) * w
+            p.addCurve(to: CGPoint(x: x0 + w, y: r.midY),
+                       control1: CGPoint(x: x0 + w * 0.3, y: r.minY - r.height * 0.2),
+                       control2: CGPoint(x: x0 + w * 0.7, y: r.maxY + r.height * 0.2))
+        }
+        return p
     }
 }
 
@@ -121,10 +238,9 @@ extension Color {
 }
 
 extension Font {
-    /// System rounded, so it follows Dynamic Type. (Hanken Grotesk, the web font, is a variable TTF whose
-    /// weights SwiftUI can't be verified to select without running the app, so it isn't bundled.)
+    /// SF Pro at a text style, for places that pick a style directly (Settings rows, banners).
     static func fluni(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-        .system(style, design: .rounded, weight: weight)
+        .system(style, weight: weight)
     }
 }
 
@@ -246,19 +362,21 @@ struct HandRule: View {
     }()
 }
 
-/// The one filled action per state.
+/// The one filled action per state: paper text on an ink fill (13.6:1), in the thumb zone.
 struct PrimaryButtonStyle: ButtonStyle {
-    var fill: Color = Theme.sage
-    var text: Color = Theme.ink
+    var fill: Color = Theme.ink
+    var text: Color = Theme.paper
+    @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.fluni(.heading))
             .foregroundStyle(text)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, Space.m).padding(.vertical, Space.xs)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
-            .opacity(configuration.isPressed ? 0.8 : 1)
+            .padding(.horizontal, Space.m).padding(.vertical, Space.s)
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(fill.opacity(enabled ? 1 : 0.35), in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
+            .opacity(configuration.isPressed ? 0.82 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
     }
 }
 
@@ -270,9 +388,9 @@ struct SecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(Theme.ink)
             .multilineTextAlignment(.center)
             .padding(.horizontal, Space.m).padding(.vertical, Space.xs)
-            .frame(maxWidth: .infinity, minHeight: 48)
-            .background(configuration.isPressed ? Theme.surface2 : .clear, in: RoundedRectangle(cornerRadius: Theme.radius))
-            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.ink, lineWidth: Theme.stroke))
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(configuration.isPressed ? Theme.surface2 : Theme.surface, in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
+            .overlay(RoundedRectangle(cornerRadius: Theme.buttonRadius).stroke(Theme.ink, lineWidth: Theme.stroke))
     }
 }
 
