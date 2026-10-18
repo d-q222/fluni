@@ -44,12 +44,13 @@ final class UWBRanger: NSObject, NISessionDelegate {
         var restarts = 0           // consecutive invalidations without a distance in between
     }
 
-    /// Whether to ask NI for extended distance. Apple: only if this phone AND the peer's token say they
-    /// support it. The hello alone was not enough: on 2026-10-17 every extended run with an iPhone 15 failed
-    /// at once with NIERROR_INVALID_CONFIGURATION_DESCRIPTION (19 times, no distance ever), so after one
-    /// rejection the pair ranges without it.
-    static func wantsExtended(helloSaysBoth: Bool, mine: Bool, tokenSupports: Bool, rejected: Bool) -> Bool {
-        helloSaysBoth && mine && tokenSupports && !rejected
+    /// Whether to ask NI for extended distance. The hellos saying both phones support it was not enough: on
+    /// 2026-10-17 every extended run with an ext=yes peer failed at once with
+    /// NIERROR_INVALID_CONFIGURATION_DESCRIPTION (19 times, no distance ever), so after one rejection the pair
+    /// ranges without it. (The peer token's `deviceCapabilities` can't be used to check first: it is nil on a
+    /// token unarchived from a peer, and Swift imports it as non-optional, so reading it crashes.)
+    static func wantsExtended(helloSaysBoth: Bool, mine: Bool, rejected: Bool) -> Bool {
+        helloSaysBoth && mine && !rejected
     }
 
     private var peers: [LinkPeer: Peer] = [:]
@@ -134,7 +135,6 @@ final class UWBRanger: NSObject, NISessionDelegate {
     private func run(_ s: NISession, _ token: NIDiscoveryToken, _ p: LinkPeer) {
         let config = NINearbyPeerConfiguration(peerToken: token)
         let ext = Self.wantsExtended(helloSaysBoth: peers[p]?.extended ?? false, mine: Self.supportsExtendedDistance,
-                                     tokenSupports: token.deviceCapabilities.supportsExtendedDistanceMeasurement,
                                      rejected: peers[p]?.extendedRejected ?? false)
         peers[p]?.ranExtended = ext
         if ext { config.isExtendedDistanceMeasurementEnabled = true }
