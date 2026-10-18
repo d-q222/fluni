@@ -30,7 +30,12 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
   dies off in each room, using the same formula as `model/` and `exposure/`. Example:
   `--set 'weather.daily=[{"outdoor_rh_pct":80},{"outdoor_rh_pct":40}]'`.
 - `--intervention`: `none` (baseline), `self_report_isolate` (acts only on what the app can see),
-  `symptomatic_isolate_oracle` (reads ground truth; flagged as an oracle).
+  `symptomatic_isolate_oracle` (reads ground truth; flagged as an oracle), `fluni` (the FlUni app in
+  the loop: phone close-contact alerts, P(sick) advice from a Python port of `model/infer.js`, and
+  self-report advice, each with a configurable action list, followed w.p. compliance; settings in
+  `configs/interventions.json` → `fluni`, adoption is `population.has_app_rate`). A `fluni` run also
+  writes `app_alerts.csv` (`t, agent_id, alert, p_sick, weighted_min`; one row per alert, followed or not).
+  `scripts/check_psick.py <run>` checks the Python P(sick) against `model/cli.mjs` on a finished run.
 - Same seed + config → byte-identical output. The run id is
   `{disease}_{intervention}_n{N}_d{days}_s{seed}_{confighash}`, with no wall-clock time.
 
@@ -103,6 +108,8 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 | `campussim/disease.py` | S→E→I_pre→I_sym/I_asym→R, viral load, close-contact + Wells-Riley aerosol, imports |
 | `campussim/reports.py` | sick-behavior choice, Vaden tests, honest/dishonest self-reports, report_other |
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
+| `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
+| `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |
 | `campussim/engine.py`, `simulate.py` | main loop and CLI |
 | `view.py` | map animation viewer (MapLibre + OpenFreeMap) |

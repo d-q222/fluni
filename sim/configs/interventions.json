@@ -2,6 +2,52 @@
   "isolation_days": 5,
   "mask_days": 1,
   "vaden_visit_min": 45,
-  "self_report_isolate": {"statuses": ["might_be_sick", "tested_positive"]},
-  "symptomatic_isolate_oracle": {}
+  "self_report_isolate": {
+    "statuses": [
+      "might_be_sick",
+      "tested_positive"
+    ]
+  },
+  "symptomatic_isolate_oracle": {},
+  "fluni": {
+    "_doc": "FlUni app policy (campussim/app_policy.py). App adoption is population.has_app_rate. Actions: isolate:<days>, mask:<days>, leave, vaden. cooldown_h = minimum gap between two alerts of one kind for one agent. risk.p_threshold null turns the P(sick) model off. psick overrides campussim/psick.py DEFAULTS (= model/infer.js DEFAULTS).",
+    "compliance_scale": 1.0,
+    "broadcast_weight": {
+      "might_be_sick": 0.5,
+      "tested_positive": 1.0
+    },
+    "self_report": {
+      "statuses": [
+        "might_be_sick",
+        "tested_positive"
+      ],
+      "actions": [
+        "isolate:5"
+      ],
+      "cooldown_h": 72
+    },
+    "nearby": {
+      "distance_m": 1.83,
+      "actions": [],
+      "cooldown_h": 1
+    },
+    "close_contact": {
+      "distance_m": 1.83,
+      "minutes": 15,
+      "window_h": 24,
+      "actions": [
+        "leave",
+        "mask:1"
+      ],
+      "cooldown_h": 24
+    },
+    "risk": {
+      "p_threshold": 0.3,
+      "actions": [
+        "vaden"
+      ],
+      "cooldown_h": 72
+    },
+    "psick": {}
+  }
 }

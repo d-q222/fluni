@@ -57,6 +57,8 @@ class ObservableState:
     test_status: np.ndarray          # codes.TEST_STATUS indices (app-visible)
     external: dict = field(default_factory=dict)
     truth: Truth | None = None
+    contacts: dict = field(default_factory=dict)   # this step's pairs where both phones have the app
+    reports: tuple = ()                             # this step's report/test events (no `truthful`)
 
 
 class Intervention:
@@ -127,9 +129,19 @@ class SymptomaticIsolateOracle(Intervention):
 REGISTRY = {c.name: c for c in (NoIntervention, SelfReportIsolate, SymptomaticIsolateOracle)}
 
 
-def build_observable(t, timestamp, beh, reports, disease, intervention, external=None) -> ObservableState:
+def app_contacts(contacts, has_app):
+    """Contacts a phone could detect: both agents have the app."""
+    if has_app is None or not len(contacts["a"]):
+        return {k: _ro(v) for k, v in contacts.items()}
+    m = has_app[contacts["a"]] & has_app[contacts["b"]]
+    return {k: _ro(np.asarray(v)[m]) for k, v in contacts.items()}
+
+
+def build_observable(t, timestamp, beh, reports, disease, intervention, external=None,
+                     contacts=None, has_app=None, report_events=()) -> ObservableState:
     """Observable-safe snapshot. The disease object is never handed over; truth arrays only when
-    the intervention's class is explicitly flagged oracle."""
+    the intervention's class is explicitly flagged oracle. Contacts are cut to app-to-app pairs and
+    report events lose their `truthful` flag."""
     truth = None
     if getattr(type(intervention), "oracle", False) is True:
         state = np.asarray(disease.state)
@@ -142,6 +154,8 @@ def build_observable(t, timestamp, beh, reports, disease, intervention, external
         x=_ro(beh.x), y=_ro(beh.y), room=_ro(beh.room), b=_ro(beh.b), off_map=_ro(beh.off_map),
         self_status=_ro(reports.self_status), test_status=_ro(reports.test_status),
         external=dict(external or {}), truth=truth,
+        contacts=app_contacts(contacts, has_app) if contacts is not None else {},
+        reports=tuple({k: v for k, v in e.items() if k != "truthful"} for e in report_events),
     )
 
 
@@ -149,8 +163,9 @@ def _cfg_defaults():
     return json.loads(_CFG_PATH.read_text())
 
 
-def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=None) -> list:
-    """Apply {agent_idx: [Action]} in sorted agent order; each action accepted w.p. pop.compliance[i].
+def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=None, compliance_scale=1.0) -> list:
+    """Apply {agent_idx: [Action]} in sorted agent order; each action accepted w.p.
+    pop.compliance[i] * compliance_scale (capped at 1). isolate_until never shortens an isolation.
     Returns len-N list of timeline strings ("" = no action), multiple joined with "|".
     Pass `reports` so isolate_until survives recovery handling and go_to_vaden yields a test."""
     out = [""] * pop.N
@@ -159,7 +174,7 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
     icfg = cfg_interventions or _cfg_defaults()
     step_min = getattr(reports, "step_min", 5)
     spd = 1440 // step_min
-    comp = np.asarray(pop.compliance, dtype=float)
+    comp = np.minimum(np.asarray(pop.compliance, dtype=float) * float(compliance_scale), 1.0)
     for i in sorted(int(k) for k in actions):
         parts = []
         for a in actions[i]:
@@ -168,6 +183,9 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
                 continue
             if a.kind == "isolate_until":
                 until = int(a.until_t) if a.until_t >= 0 else t + int(icfg.get("isolation_days", 5) * spd)
+                cur = getattr(beh, "_iso_until", None)
+                if cur is not None:
+                    until = max(until, int(cur[i]))
                 beh.set_isolation(i, until)
                 if reports is not None:
                     reports.intervention_iso_until[i] = max(int(reports.intervention_iso_until[i]), until)
@@ -188,3 +206,8 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
                 parts.append("go_to_vaden")
         out[i] = "|".join(parts)
     return out
+
+
+from .app_policy import FluniApp  # noqa: E402  (imports Action/Intervention from this module)
+
+REGISTRY[FluniApp.name] = FluniApp
