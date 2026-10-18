@@ -193,7 +193,8 @@ def add_dz(df, mu):
     df = df[df["archetype"].isin(codes.ARCHETYPES)].copy()
     df["has_bf"] = df[TRAITS].notna().all(axis=1)
     for t in TRAITS:
-        df["dz_" + t] = (df[t] - df["archetype"].map(lambda a: mu[a][t])).fillna(0.0)
+        df["dz_" + t] = (pd.to_numeric(df[t], errors="coerce")
+                         - df["archetype"].map(lambda a: mu[a][t]).astype(float)).fillna(0.0)
     return df
 
 

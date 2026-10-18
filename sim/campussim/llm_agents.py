@@ -213,6 +213,7 @@ class LLMAgents:
         self._last_talk = {}     # (i, j) -> step of their last conversation
         self._talks_day = {}     # (agent, day) -> conversations
         self.convos = []
+        self.agent_models = {}   # agent -> model overriding `model` (calibration --opus-subset)
         self.seed = int(rc["seed"])
         self.worry = None        # set by the engine when worry is on (worry.py): bump / set_measured / level
         self.notice = {**NOTICE_DEFAULTS, **c.get("notice", {})}
@@ -497,9 +498,9 @@ class LLMAgents:
         return {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}
 
     # ------------------------------------------------------------------ API + cache
-    def _request(self, user, schema, system=SYSTEM):
+    def _request(self, user, schema, system=SYSTEM, i=None):
         c = self.cfg
-        return {"model": c["model"], "max_tokens": int(c["max_tokens"]),
+        return {"model": self.agent_models.get(i, c["model"]), "max_tokens": int(c["max_tokens"]),
                 "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                 "messages": [{"role": "user", "content": user}],
                 "output_config": {"effort": c["effort"], "format": {"type": "json_schema", "schema": schema}}}
@@ -734,7 +735,7 @@ class LLMAgents:
         for k in range(int(self.talk["max_turns"])):
             sp, other = order[k % 2], order[1 - k % 2]
             user = f"{heads[sp]}\n\n{self._transcript(sp, other, lines)}\n\nYour turn: say your next line, or end."
-            resp, models[sp] = self._call_m(self._request(user, TALK_SCHEMA, TALK_SYSTEM))
+            resp, models[sp] = self._call_m(self._request(user, TALK_SCHEMA, TALK_SYSTEM, i=sp))
             if resp is None:
                 break
             say = str(resp.get("say", "")).strip()
@@ -753,7 +754,7 @@ class LLMAgents:
                              "\n".join(f"- {k}: {v[4]}" for k, v in menu.items()))
                 user = (f"{heads[sp]}\n\n{self._transcript(sp, other, lines)}{extra}\n\n"
                         "The conversation is over. Reflect: what will you remember, and does it change your day?")
-                refl[sp], m = self._call_m(self._request(user, self._reflect_schema(sp, menu), TALK_SYSTEM))
+                refl[sp], m = self._call_m(self._request(user, self._reflect_schema(sp, menu), TALK_SYSTEM, i=sp))
                 models[sp] = m or models.get(sp, "")
         return lines, refl, models, menus
 
@@ -859,7 +860,7 @@ class LLMAgents:
             self._plan_rooms(i, t0, t1, menu)
             user = self._user_text(i, t0, t1, d, menu, dis, reason)
             prepared.append((i, t0, t1, reason, menu, user, list(self._awaiting[i]),
-                             self._request(user, self._schema(i, menu))))
+                             self._request(user, self._schema(i, menu), i=i)))
         with ThreadPoolExecutor(max_workers=int(self.cfg["max_workers"])) as ex:
             resps = list(ex.map(self._call_m, [p[-1] for p in prepared]))
         P = self.plans

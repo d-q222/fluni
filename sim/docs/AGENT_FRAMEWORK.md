@@ -156,11 +156,12 @@ silently tuned away.
      day plan.
 6. **Calibration scenario**: oversampled events, a cost estimate and a cap. **Done**: `scripts/calibration_run.py`,
    `configs/calibration.json`, `campussim/calibration.py`, `campussim/budget.py` (see the README's
-   "Calibration run"). Per-agent models for `--opus-subset` still need `LLMAgents.agent_models`.
+   "Calibration run"). `--opus-subset K` runs K Claude agents on Opus (`LLMAgents.agent_models`).
 7. **Fit script** and `behavior_calibrated.json`. **Done** (`scripts/calibrate_agents.py`,
    `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; the validation
    report from step 8 is `scripts/validation_report.py`, waiting on `configs/published_rates.json`).
-8. **Published-rate table** with citations, and the validation report.
+8. **Published-rate table** with citations, and the validation report. **Done** (`configs/published_rates.json`,
+   `docs/PUBLISHED_RATES.md`, `scripts/validation_report.py`).
 
 ## Open questions
 
