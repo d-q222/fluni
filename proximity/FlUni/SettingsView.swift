@@ -55,7 +55,7 @@ struct SettingsView: View {
             }
             Menu {
                 Button("For 1 hour") { model.pause(.oneHour) }
-                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until tomorrow, 6 AM") { model.pause(.untilTomorrow) }
                 Button("Until I turn it back on") { model.pause(.untilResumed) }
             } label: {
                 Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
