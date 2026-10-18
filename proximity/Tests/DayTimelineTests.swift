@@ -22,6 +22,14 @@ final class DayTimelineTests: XCTestCase {
         XCTAssertEqual(m.map(\.kind), [.headsUp, .closeContact, .headsUp], "only the crossing one is the moment")
     }
 
+    func testTheTotalStartsAgainAfterTwoHoursAway() {
+        // 8 + 8 minutes, but 3 h apart: like the live count, the second starts from 0, so no close contact.
+        let m = DayTimeline.moments([ep(0, 8), ep(8 + 180, 8)], visits: [], now: at(300))
+        XCTAssertEqual(m.map(\.kind), [.headsUp, .headsUp])
+        let near = DayTimeline.moments([ep(0, 8), ep(8 + 100, 8)], visits: [], now: at(300))
+        XCTAssertEqual(near.map(\.kind), [.headsUp, .closeContact], "under 2 h apart they add up")
+    }
+
     func testHalfWeightedSymptomsDoNotCrossEarly() {
         // 20 minutes near someone with symptoms counts 10 weighted minutes: still a heads-up.
         let m = DayTimeline.moments([ep(0, 20, weighted: 10, .possible)], visits: [], now: at(60))

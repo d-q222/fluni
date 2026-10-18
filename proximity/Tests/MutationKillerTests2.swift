@@ -330,11 +330,11 @@ final class MutationKillerTests2: XCTestCase {
 
     // MARK: Exposure window and dose
 
-    // A tick that ended at 60 s leaves the 24 h window at exactly 86460 s: still counted at 86459, gone at 86460.
-    func testMinuteBucketExpiresExactly24HoursAfterItsTick() {
+    // A tick that ended at 60 s: the episode resets exactly 2 h after it (7200 s later), not a second before.
+    func testMinutesResetExactlyTwoHoursAfterTheLastContact() {
         var t = ExposureTracker()
         t.advance(simSeconds: 60, contacts: [(pClose: 1.0, risk: Risk.contagious)])
-        t.advance(simSeconds: 86_399, contacts: [])
+        t.advance(simSeconds: 7_199, contacts: [])
         XCTAssertEqual(t.minutes, 1.0, accuracy: 1e-12)
         t.advance(simSeconds: 1, contacts: [])
         XCTAssertEqual(t.minutes, 0)

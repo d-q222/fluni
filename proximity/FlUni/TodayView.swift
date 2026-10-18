@@ -415,7 +415,7 @@ struct CalculationSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     block("Close contact",
-                          "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At \(Int(ExposureTracker.closeContactMinutes)) of these in a day, FlUni tells you it's a close contact.",
+                          "Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. The minutes keep adding up and reset to zero only after 2 hours away from anyone like that. At \(Int(ExposureTracker.closeContactMinutes)) of them, FlUni tells you it's a close contact.",
                           "You: \(m) of \(Int(ExposureTracker.closeContactMinutes))")
                     block("What adds to your risk",
                           "Time near each person, how close you were (closer counts much more), the room air you shared, and whether they reported symptoms or a positive test. Together these make your exposure dose. Phones up to about 10 m away (Bluetooth range) count.",
@@ -424,9 +424,9 @@ struct CalculationSheet: View {
                           "Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at \(pos)%, someone with symptoms at \(sym)%. Those chances are added on top of a \(Int((RiskEstimate.prior * 100).rounded()))% everyday baseline. It's the same exposure formula as the campus model.",
                           "This phone's estimate: \(RiskEstimate.liveText(p))")
                     block("What counts",
-                          "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
+                          "Close-contact minutes run until 2 hours pass with nobody like that nearby; your exposure dose counts the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", nil)
                     block("Campus model vs this phone",
-                          "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick) and the actual rooms. This phone's estimate uses only what this phone detected in the last 24 hours, assumes a standard classroom-sized room and an average day of illness, so the two can differ.",
+                          "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick) and the actual rooms. This phone's estimate uses only what this phone detected, assumes a standard classroom-sized room and an average day of illness, so the two can differ.",
                           store.campusP.map { "Campus model: \(RiskEstimate.percentText($0)) \u{00B7} This phone's estimate: \(RiskEstimate.liveText(p))" })
                     Text("This is an estimate to help you decide what to do. It isn't a diagnosis.")
                         .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)

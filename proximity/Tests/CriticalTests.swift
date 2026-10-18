@@ -485,12 +485,12 @@ final class CriticalExposureTests: XCTestCase {
         XCTAssertEqual(u.level, .none, "S6 healthy contacts at p=1 must not enter")
     }
 
-    // S6: demo speed-up arithmetic: contributions add exactly across simultaneous contacts.
-    func testSimultaneousContactsAdd() {
+    // S6: simultaneous contacts don't double-count: only the strongest peer in range adds (campus rule).
+    func testSimultaneousContactsDoNotAdd() {
         var t = ExposureTracker()
         t.advance(simSeconds: 300, contacts: [(1, .contagious), (1, .contagious), (1, .contagious)])
-        XCTAssertEqual(t.minutes, 15, accuracy: 1e-9, "S6 three contacts x 5 min")
-        XCTAssertEqual(t.level, .closeContact)
+        XCTAssertEqual(t.minutes, 5, accuracy: 1e-9, "S6 three contacts at once = 5 min, not 15")
+        XCTAssertEqual(t.level, .nearby)
     }
 }
 

@@ -31,8 +31,9 @@ enum DayTimeline {
     }
 
     /// Episodes (finished plus the ongoing one) that ended in the last 24 hours, oldest first, each labelled:
-    /// a close contact when it alone reached 15 weighted minutes, or when the running total over the window
-    /// crossed 15 during it (the same mark the live alert uses); otherwise a heads-up.
+    /// a close contact when it alone reached 15 weighted minutes, or when the running total crossed 15 during it;
+    /// otherwise a heads-up. Like the live count (ExposureTracker), the total starts again from 0 after
+    /// `episodeGap` (2 h) with nobody sick close by.
     static func moments(_ episodes: [ExposureEpisode], visits: [PlaceVisit], now: Date) -> [TimelineMoment] {
         let goal = ExposureTracker.closeContactMinutes - 1e-6
         var seen = Set<Date>()
@@ -41,7 +42,10 @@ enum DayTimeline {
             .sorted { $0.start < $1.start }
             .filter { seen.insert($0.start).inserted }
         var total = 0.0
+        var lastEnd: Date?
         return recent.map { e in
+            if let l = lastEnd, e.start.timeIntervalSince(l) >= ExposureTracker.episodeGap { total = 0 }
+            lastEnd = max(lastEnd ?? e.end, e.end)
             let before = total
             total += e.weightedMinutes
             let crossed = before < goal && total >= goal

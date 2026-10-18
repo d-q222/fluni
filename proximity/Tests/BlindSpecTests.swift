@@ -307,28 +307,27 @@ final class BlindPipelineTests: XCTestCase {
         XCTAssertNil(p.firstClose)
     }
 
-    // Product rule: close contact = 15 weighted minutes in a rolling 24 h of simulated time
-    // (WORKSTREAMS "Demo phone alerts follow the proximity app"; heatmap/app.js EXPOSURE_WINDOW_MS).
-    func testCloseContactExpiresAfter24Hours() {
+    // Product rule: close contact = 15 weighted minutes of one episode, which resets to 0 after 2 h with nobody
+    // possibly sick within 6 ft (the campus model's rule).
+    func testCloseContactExpiresAfter2HoursAway() {
         var p = Pipeline()
         p.run([uwbPeer("peerA", .contagious, meters: 0.5)], seconds: 16 * 60)
         XCTAssertEqual(p.tracker.level, .closeContact)
-        for _ in 0..<(24 * 60 + 20) { p.tracker.advance(simSeconds: 60, contacts: []) }
-        XCTAssertEqual(p.tracker.minutes, 0, accuracy: 0.1, "minutes older than 24 h must drop out")
+        for _ in 0..<(2 * 60 + 2) { p.tracker.advance(simSeconds: 60, contacts: []) }
+        XCTAssertEqual(p.tracker.minutes, 0, accuracy: 1e-9, "2 h without contact ends the episode")
         XCTAssertEqual(p.tracker.level, .none)
     }
 
-    // Same rule, the window is rolling: 10 min, a 23 h gap, 6 min -> 16 in the last 24 h -> close contact;
-    // once the first 10 min are older than 24 h only 6 remain -> no longer a close contact.
-    func testRollingWindowAddsAcrossGapAndDropsOldMinutes() {
+    // Same rule: 10 min, a 1 h gap (bridged), 6 min -> one episode of 16 -> close contact; then 2 h away -> 0.
+    func testEpisodeAddsAcrossShortGapAndResetsAfterTwoHours() {
         var tr = ExposureTracker()
         for _ in 0..<600 { tr.advance(simSeconds: 1, contacts: [(pClose: 1, risk: .contagious)]) }
-        for _ in 0..<(23 * 60 - 10) { tr.advance(simSeconds: 60, contacts: []) }
+        for _ in 0..<60 { tr.advance(simSeconds: 60, contacts: []) }
         for _ in 0..<360 { tr.advance(simSeconds: 1, contacts: [(pClose: 1, risk: .contagious)]) }
         XCTAssertEqual(tr.minutes, 16, accuracy: 0.2)
         XCTAssertEqual(tr.level, .closeContact)
-        for _ in 0..<70 { tr.advance(simSeconds: 60, contacts: []) }   // now 24 h 16 min after the start
-        XCTAssertEqual(tr.minutes, 6, accuracy: 0.2)
+        for _ in 0..<121 { tr.advance(simSeconds: 60, contacts: []) }
+        XCTAssertEqual(tr.minutes, 0, accuracy: 1e-9)
         XCTAssertNotEqual(tr.level, .closeContact)
     }
 

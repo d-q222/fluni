@@ -20,7 +20,7 @@ final class RioDoseTests: XCTestCase {
         var t = ExposureTracker()
         tick(&t, 30, "a", 1)  // clock 0-30 s
         t.advance(simSeconds: 86_399 - 30, contacts: [])
-        XCTAssertEqual(t.minutes, 0.5, accuracy: 1e-12, "still inside 24 h at 86399 s")
+        XCTAssertEqual(t.minutes, 0, accuracy: 1e-12, "the minutes reset after 2 h; the dose below keeps its 24 h")
         XCTAssertEqual(t.sources["a"]?.dose ?? 0, U(1, 30), accuracy: 1e-15)
         XCTAssertGreaterThan(t.probability, RiskEstimate.prior)
         t.advance(simSeconds: 86_460 - 86_399, contacts: [])
@@ -116,7 +116,7 @@ final class RioDoseTests: XCTestCase {
         t.advance(simSeconds: 60, contacts: [(1, .contagious), (1, .contagious)], doses: [nil])
         t.advance(simSeconds: 60, contacts: [(1, .contagious)])
         XCTAssertEqual(t.sources, [:])
-        XCTAssertEqual(t.minutes, 3, accuracy: 1e-12)
+        XCTAssertEqual(t.minutes, 2, accuracy: 1e-12)  // 1 (strongest of the two) + 1
     }
 
     /// Re-targeted from mutation review round 2 (testDoseAccumulatesWithZeroPClose / ...UsesTierNotPClose):

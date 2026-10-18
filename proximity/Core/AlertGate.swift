@@ -12,8 +12,9 @@ import Foundation
 enum BackgroundAlert {
     /// "Someone within 6 ft may be sick": at most once per 30 min.
     static let nearbyCooldown: TimeInterval = 30 * 60
-    /// Close contact (15 weighted minutes): at most once per 12 h. The level stays up while the minutes are in
-    /// the 24 h window, so this only matters if they drop below 15 and climb back.
+    /// Close contact (15 weighted minutes): at most once per 12 h. The level stays up while the episode's
+    /// minutes stand, so this only matters if they reset (2 h away) and climb back to 15: a reset never re-fires a
+    /// close contact notified or read within the 12 h.
     static let closeContactCooldown: TimeInterval = 12 * 3600
 
     static func cooldown(_ level: AlertLevel) -> TimeInterval {

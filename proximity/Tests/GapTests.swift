@@ -69,18 +69,18 @@ final class BeaconAndWireTests: XCTestCase {
 }
 
 final class ExposureGapTests: XCTestCase {
-    func testSimultaneousContactsSum() {
+    func testSimultaneousContactsDoNotSum() {
         var t = ExposureTracker()
         t.advance(simSeconds: 450, contacts: [(1, .contagious), (1, .contagious)])
-        XCTAssertEqual(t.minutes, 15, accuracy: 1e-9)
-        XCTAssertEqual(t.level, .closeContact)
+        XCTAssertEqual(t.minutes, 7.5, accuracy: 1e-9)
+        XCTAssertEqual(t.level, .nearby)
     }
 
     func testMixedRisksWeighted() {
         var t = ExposureTracker()
         t.advance(simSeconds: 600, contacts: [(1, .contagious), (1, .possible), (1, .none)])
-        XCTAssertEqual(t.minutes, 15, accuracy: 1e-9)  // 10 + 5 + 0
-        XCTAssertEqual(t.level, .closeContact)
+        XCTAssertEqual(t.minutes, 10, accuracy: 1e-9)  // the largest weight in range counts: max(10, 5, 0)
+        XCTAssertEqual(t.level, .nearby)
     }
 
     func testLevelDropsToNoneWhenRiskyPeerLeaves() {
