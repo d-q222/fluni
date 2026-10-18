@@ -17,6 +17,7 @@ Means over the 12 runs (per-run numbers in the commit messages):
 | oracle constant | 0.3426 | | | | |
 | before: prior = seed count / N (from the sim's config), lambdaScale 0.901 | 0.3331 | 0.5014 | 0.670 | 0.751 | 0.46 |
 | 1: self-calibrated online from reports (prior, lambdaScale), mass-rescaled, `priorAge=new` | 0.3243 | 0.4438 | 0.654 | 0.752 | 0.13 |
+| 8: + recovered keeps P_S, LR 60/20, soft negatives, test_taken, positives override, report censoring | 0.2890 | 0.3792 | 0.686 | 0.786 | 0.13 |
 
 ## Iterations after the first full run (each tested on a randomly chosen run, against the previous version there)
 
