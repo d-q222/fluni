@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Umi told me Dakota and Chris tested positive in the dorm; I said I feel fine and am staying masked in my room. Plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

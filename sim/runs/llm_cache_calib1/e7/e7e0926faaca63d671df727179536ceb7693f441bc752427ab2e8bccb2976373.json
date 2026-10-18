@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, let's walk over together. I'm keeping mine on too, those rumors have me a little anxious. I'm feeling fine though, how about you?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:55",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:30",
+    "place": "bld:bld_232805662",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:40",
+    "place": "class:DESIGN1_WKS01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "bld:bld_232805662",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:30"
+   },
+   {
+    "activity": "gym",
+    "end": "18:55",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "18:05"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:10",
+    "place": "bld:bld_232841950",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Wed Jan 7: Normal classes and study, then gym and the basketball game, Taper after. Feeling fine, still a little cautious about illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit cautious about illness but still social. I'll follow my usual routine, and go to the basketball game in the evening since I love being around people. Eden was masked, so I'll keep some distance but not stress.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

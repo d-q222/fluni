@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Scout told me they're also a Wesley close contact and feel fine, wearing a mask. We agreed to keep masking and text each other if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

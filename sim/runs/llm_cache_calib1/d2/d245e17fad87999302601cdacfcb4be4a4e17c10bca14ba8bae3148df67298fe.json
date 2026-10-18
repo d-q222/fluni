@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:BIO84_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:COLLEGE102_SEM16",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "12:15",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "class",
+    "end": "13:05",
+    "place": "class:CS106A_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "17:55",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "home",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "22:35",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_203",
+    "start": "22:40"
+   },
+   {
+    "activity": "relax",
+    "end": "01:40",
+    "place": "home",
+    "start": "00:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:40"
+   }
+  ],
+  "diary": "Friday: followed my usual routine with classes, Stern meals and quiet time in my room, masking in crowded spots. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine: classes, meals at Stern, quiet time in my room. I'll keep masking in crowded places and keep a bit of distance from Scout.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

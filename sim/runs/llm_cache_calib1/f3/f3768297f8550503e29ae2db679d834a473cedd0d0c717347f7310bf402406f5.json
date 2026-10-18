@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, it's been a lot. I'm fine so far, just staying masked and sticking to meals, lab, and my room. Hope you stay healthy.",
+  "shared_health": true
+ }
+}

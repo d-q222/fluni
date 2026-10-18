@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Carter at Lakeside dinner; they're skipping the gym but will come to Taper later after a study block. We're both feeling fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

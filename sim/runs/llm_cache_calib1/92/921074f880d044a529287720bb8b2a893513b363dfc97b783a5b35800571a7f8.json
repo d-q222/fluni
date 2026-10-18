@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Late-night check-in with Devon: both feel fine, I'm anxious but masking. Still no new word from Wesley. Going to sleep and we'll text if anything changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

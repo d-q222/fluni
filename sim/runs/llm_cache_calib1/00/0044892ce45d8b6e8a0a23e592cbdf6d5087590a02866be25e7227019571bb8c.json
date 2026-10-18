@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, feeling totally fine, thanks! Negative test and no symptoms. How about you, you feeling okay? Hadley and Sidney looked kinda rough in the dorm so I've been keeping a little distance.",
+  "shared_health": true
+ }
+}

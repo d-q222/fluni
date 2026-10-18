@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same here. Heads up, Scout might be a close contact of someone sick, so I'm keeping my distance. If you hear anything, let me know? Okay, I'm off to lab, take care!",
+  "shared_health": false
+ }
+}

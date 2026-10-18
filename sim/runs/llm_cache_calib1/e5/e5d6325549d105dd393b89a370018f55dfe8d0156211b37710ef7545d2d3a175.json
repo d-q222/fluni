@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter. Glad you're masked too. I'm just grabbing a quick dinner and heading back to my room. How are you feeling?",
+  "shared_health": false
+ }
+}

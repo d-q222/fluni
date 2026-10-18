@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:45",
+    "place": "home",
+    "start": "08:25"
+   },
+   {
+    "activity": "lab",
+    "end": "09:25",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:10",
+    "place": "class:PWR2LS_SEM01",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "home",
+    "start": "11:20"
+   },
+   {
+    "activity": "class",
+    "end": "13:05",
+    "place": "class:EE179_LEC01",
+    "start": "12:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "lab",
+    "end": "15:10",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "13:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:20",
+    "place": "bld:bld_232841950",
+    "start": "15:20"
+   },
+   {
+    "activity": "class",
+    "end": "19:15",
+    "place": "class:ENGR148_LEC02",
+    "start": "16:30"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "home",
+    "start": "23:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:35"
+   }
+  ],
+  "diary": "Followed my usual Tuesday schedule and wore a mask indoors. Feeling fine but still a little anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Tuesday. I feel fine, so I'll follow my routine and keep a mask on indoors since I'm a bit anxious about illness going around. Organized and disciplined, so stick to the schedule.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Yeah, I'm in for Taper, just doing a quick gym session first. Should be there by like 8:30. Save me a spot!",
+  "shared_health": false
+ }
+}

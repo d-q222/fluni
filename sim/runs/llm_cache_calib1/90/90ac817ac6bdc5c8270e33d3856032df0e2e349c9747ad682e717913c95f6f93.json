@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "16:10",
+    "place": "bld:bld_232841950",
+    "start": "15:25"
+   },
+   {
+    "activity": "class",
+    "end": "17:55",
+    "place": "class:STATS100_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wesley warned that they are a close contact after our Monday breakfast. I feel fine but am more anxious; I'll mask in crowded places, skip the gym and watch for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Wesley. I feel fine too but will watch symptoms and mask up. Rest up, let us know if you need anything.",
+    "time": "",
+    "to": "A0247"
+   }
+  ],
+  "thoughts": "Wesley was a close contact from Monday breakfast with me, but I feel fine and I am not the one flagged. Still, I'm anxious, so I'll be careful. I'll keep my routine and class since I care about grades, but skip the crowded gym and avoid extra contact. I'll reply to Wesley with thanks and wear a mask in class to be safe. I'll monitor symptoms and FlUni.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

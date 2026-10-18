@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! What's up? Heads up, I'm waiting on a flu test result but I feel totally fine, so I'm keeping a little distance just in case.",
+  "shared_health": true
+ }
+}

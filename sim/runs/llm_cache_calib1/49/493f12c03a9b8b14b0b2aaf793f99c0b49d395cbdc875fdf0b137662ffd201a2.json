@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer, how's it going? Dining's packed tonight.",
+  "shared_health": false
+ }
+}

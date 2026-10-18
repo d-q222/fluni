@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah, I'm starving, it's so packed. Did you hear Eden saying people have fevers in our dorm? Kinda sketchy, but I feel fine. You doing okay?",
+  "shared_health": true
+ }
+}

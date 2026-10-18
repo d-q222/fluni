@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, just trying to be careful. I feel fine, but better safe than sorry. Good luck at practice later!",
+  "shared_health": true
+ }
+}

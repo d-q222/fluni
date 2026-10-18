@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief lunch chat with Chris from my dorm at Stern; both masked and feeling fine. I mentioned a couple people I know might be sick. Nothing changes, sticking with my routine and mask.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

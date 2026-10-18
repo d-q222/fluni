@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Lake told me True heard a rumor at the game about someone in a dorm with a fever, no names. I feel fine and will keep masking and staying careful; plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler. Any word on your flu test yet? No pressure, just wondering.",
+  "shared_health": false
+ }
+}

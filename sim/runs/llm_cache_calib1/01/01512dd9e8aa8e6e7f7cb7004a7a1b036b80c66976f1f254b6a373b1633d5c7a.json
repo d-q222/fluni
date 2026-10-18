@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Zuri. Yeah, I've got a couple classes later, but I'm heading back to the dorm for a bit first. You doing okay? I noticed the mask.",
+  "shared_health": false
+ }
+}

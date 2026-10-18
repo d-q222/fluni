@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Aspen! Good to see you masked too. How are you feeling? Jesse's still got a fever and is waiting on a test, so I'm just being careful.",
+  "shared_health": false
+ }
+}

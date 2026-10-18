@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika. Did you hear Dakota and Chris tested positive? How'd your test at Vaden go?",
+  "shared_health": false
+ }
+}

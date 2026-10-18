@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "12:05",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "12:45",
+    "place": "home",
+    "start": "12:05"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "12:50"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "bld:bld_232841950",
+    "start": "13:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:40",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "14:55"
+   },
+   {
+    "activity": "relax",
+    "end": "18:40",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:50",
+    "place": "event:EV00144",
+    "start": "20:10"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "20:55"
+   }
+  ],
+  "diary": "Sun Jan 11: Dakota and Chris are positive, I feel fine but more worried. Doing my usual day, but only a short stop at the dorm hangout and then staying in.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "",
+    "time": "",
+    "to": "A0056"
+   }
+  ],
+  "thoughts": "Dakota's positive test makes it real. I wasn't around Dakota Thu or Fri as far as I recall, but I was at Taper with Carter. I feel fine. I'm social and rarely follow advice, but I'll skip the crowded dorm hangout and stay low-key. I'll keep my routine mostly, with outdoor time, dinner, and a quiet evening. I'll text Dakota to feel better.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

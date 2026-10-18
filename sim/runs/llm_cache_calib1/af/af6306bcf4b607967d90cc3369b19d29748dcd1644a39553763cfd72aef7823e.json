@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Shared the study room with Armani, a stranger, who is quietly catching up on reading. Nothing health-related came up, and I'm sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

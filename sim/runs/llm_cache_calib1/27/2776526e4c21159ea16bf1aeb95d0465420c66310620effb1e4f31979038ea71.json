@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Aspen at Wilbur Dining; both masked and feeling fine. I promised to text Aspen when I hear Jesse's test result.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

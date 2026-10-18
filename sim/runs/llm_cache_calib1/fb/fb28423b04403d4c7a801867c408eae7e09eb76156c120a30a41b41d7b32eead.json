@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:15",
+    "place": "home",
+    "start": "07:45"
+   },
+   {
+    "activity": "lab",
+    "end": "10:20",
+    "place": "class:CHEM33_LBS11",
+    "start": "08:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:AFRICAAM47_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:40",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "study",
+    "end": "14:20",
+    "place": "home",
+    "start": "13:20"
+   },
+   {
+    "activity": "relax",
+    "end": "16:40",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "17:30",
+    "place": "bld:bld_232715666",
+    "start": "17:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:35",
+    "place": "home",
+    "start": "17:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:35"
+   }
+  ],
+  "diary": "Stuck to my routine today, masked in lab, class and at meals. Feeling fine, still a bit wary about Wallace being a close contact.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine. Wallace is still a close contact, so I'll wear a mask in lab, class and at meals and keep things low-key. I'll eat dinner at Ricker as usual and spend the evening in my room.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

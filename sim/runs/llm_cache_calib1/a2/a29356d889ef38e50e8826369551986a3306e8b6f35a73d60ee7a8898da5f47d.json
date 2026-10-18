@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dakota at Coupa; we both feel fine and are a bit worried about illness. Dakota suggested hanging out in the dorm sometime, which I'm open to if we stay healthy.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

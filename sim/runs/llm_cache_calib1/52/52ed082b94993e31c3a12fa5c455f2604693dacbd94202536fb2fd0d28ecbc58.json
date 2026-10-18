@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "09:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "11:35",
+    "place": "class:PWR2NK_SEM01",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "home",
+    "start": "12:15"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS109_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:20",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "00:05",
+    "place": "plan:bld_m_green_library_f3_302",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "02:10",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:10"
+   }
+  ],
+  "diary": "Sidney texted that they have a fever and cough. I feel fine but I'm more worried now, so I'm keeping my usual schedule, keeping distance, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Sidney. Hope Vaden helps, rest up. Let us know if you need anything.",
+    "time": "",
+    "to": "A0168"
+   }
+  ],
+  "thoughts": "Sidney is sick and I work with them in lab, so I'm a bit more careful. I feel fine, so I'll keep my routine of classes, CS109 and lab, and skip the dorm hangout. I'll reply to Sidney kindly, keep my distance from anyone symptomatic and watch for symptoms. If anything changes I'll go to Vaden.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

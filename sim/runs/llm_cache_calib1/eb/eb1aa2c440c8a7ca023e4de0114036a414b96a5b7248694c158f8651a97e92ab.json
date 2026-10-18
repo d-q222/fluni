@@ -1,0 +1,63 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_333374283",
+    "start": "12:35"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "plan:bld_m_green_library_f4_401",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:15",
+    "place": "home",
+    "start": "15:40"
+   },
+   {
+    "activity": "lab",
+    "end": "22:20",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Teagan and Chris have fevers and are awaiting flu tests. I feel fine, skipped the gym and courtyard, keeping my mask on, and doing Green, home and lab. Worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up. Hope the test comes back fine. Text if you need anything dropped off.",
+    "time": "",
+    "to": "A0175"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Teagan has fever and cough, and Chris from Stern has the same and is also waiting on a flu test. Rumors look real. Keep your mask on.",
+    "time": "",
+    "to": "A0022"
+   }
+  ],
+  "thoughts": "Teagan has a fever and Chris from the dorm too, so the Stern rumors look real. I feel fine, but I've been near people in the dorm hangout. I'll keep the mask on in crowded spaces, skip the gym since it's shared breathing air, and study at Green. Lab is needed, so I'll keep it. I'll skip the courtyard and go home to relax instead, avoiding the dorm lounge. I'll text Rain as they asked, and thank Teagan.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Jesse in the lobby; both masked and staying at the edge of the hangout because of fever rumors. Plan to keep the stay short and head to bed.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

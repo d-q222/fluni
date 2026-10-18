@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Yeah, Mika and Umi both told me, so glad it's negative. I feel fine, just been a little paranoid. You doing okay? You're still masked though, huh?",
+  "shared_health": true
+ }
+}

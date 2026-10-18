@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, yeah I'm planning on Taper later too, after a study block. I'll see you there! Gym sounds good but I'm skipping it tonight.",
+  "shared_health": false
+ }
+}

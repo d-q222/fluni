@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told roommate Carter that Scout may be a close contact; Carter feels fine and will watch for symptoms. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

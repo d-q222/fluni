@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Still feeling okay? I'm good, just keeping the mask on. Want to sit near the door again?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Armani said Teagan, Dakota and Chris in our dorm are sick or tested positive. I feel fine but will keep my mask on, skip the dorm hangout, and test if anything feels off.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Armani says Teagan, Dakota and Chris in our dorm are sick or tested positive. I feel fine but I'm skipping the dorm hangout and keeping my mask on. Stay careful!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": true,
+  "worry": 4
+ }
+}

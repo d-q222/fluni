@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan! Just being careful, I feel fine. Scout told me yesterday they're a close contact of someone sick, so I'm watching for symptoms just in case. You feeling okay?",
+  "shared_health": true
+ }
+}

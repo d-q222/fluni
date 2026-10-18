@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika! Yeah, I'm fine, just being careful too. Skyler's waiting on a flu test and Sidney's apparently sick, so I'm keeping the mask on. Are you going to the 8pm hangout?",
+  "shared_health": true
+ }
+}

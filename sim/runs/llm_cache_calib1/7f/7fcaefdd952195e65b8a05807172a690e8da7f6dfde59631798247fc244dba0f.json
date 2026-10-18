@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Still on for dinner here tonight before study group?",
+  "shared_health": false
+ }
+}

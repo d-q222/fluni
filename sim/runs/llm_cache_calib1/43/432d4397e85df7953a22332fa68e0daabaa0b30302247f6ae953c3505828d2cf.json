@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Campbell! Just being careful, I feel fine. I'll see you at study group at 7:50, but I'll probably head back to my room after to study.",
+  "shared_health": true
+ }
+}

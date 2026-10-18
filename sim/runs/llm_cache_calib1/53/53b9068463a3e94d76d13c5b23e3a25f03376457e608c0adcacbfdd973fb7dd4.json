@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Yeah, just grabbing dinner. Study group sounds rough, I'm good on that, but maybe I'll swing by after if I'm not wiped from practice.",
+  "shared_health": false
+ }
+}

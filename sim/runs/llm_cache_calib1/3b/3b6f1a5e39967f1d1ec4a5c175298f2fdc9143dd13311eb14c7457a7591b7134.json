@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dakota joined me and Onyx for dinner at Lakeside; they feel fine and don't want a mask. We agreed to do Taper, then decide on a brief lounge stop and bail if people are coughing.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Mika at Stern breakfast; we both feel fine and Mika is masked because people in the dorm are sick. No change to my plan: gym, class, practice, keep some distance from sick dorm folks.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

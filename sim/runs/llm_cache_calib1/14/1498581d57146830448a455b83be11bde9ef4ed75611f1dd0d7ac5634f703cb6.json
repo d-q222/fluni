@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Pretty much the same, class at 11:15 then back home to study. Okay, I'll let you finish eating. See you around!",
+  "shared_health": false
+ }
+}

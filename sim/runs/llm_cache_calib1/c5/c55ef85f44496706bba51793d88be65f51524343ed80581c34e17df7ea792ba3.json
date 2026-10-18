@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "11:15",
+    "place": "class:CHEM31B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "11:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:20"
+   },
+   {
+    "activity": "study",
+    "end": "14:50",
+    "place": "home",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "14:55"
+   },
+   {
+    "activity": "gym",
+    "end": "18:35",
+    "place": "bld:bld_232805671",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_232715666",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:40",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Fri Jan 9: Val is sick with fever and cough. I feel fine but am masking in crowds, skipping tonight's Green session with Oli, and studying in a quieter spot. Hoping Val's test is okay.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Oli. I'll keep my distance and mask in crowds. Let's skip studying together tonight and catch up soon.",
+    "time": "",
+    "to": "A0055"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Val, hope you feel better soon. Let us know your test result, and rest up!",
+    "time": "",
+    "to": "A0143"
+   }
+  ],
+  "thoughts": "Val is sick and getting tested. I feel fine and my test was negative, but I've been in contact with Oli, so I'll stay careful. I'll keep class and my routine, but study at less crowded spots and keep my distance from Oli tonight. I'll reply to Oli and check in with Val.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

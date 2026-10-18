@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ari (masked, negative test) told me Bailey has flu symptoms despite a negative test, and Sidney still has fever and cough. I feel fine and am keeping my lab and study plans, but I'm a bit more aware of illness around.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

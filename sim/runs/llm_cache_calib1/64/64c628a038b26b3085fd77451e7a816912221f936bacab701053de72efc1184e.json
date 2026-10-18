@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "18:00",
+    "place": "bld:bld_m_white_plaza",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "bld:bld_232841950",
+    "start": "19:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:40"
+   },
+   {
+    "activity": "hangout",
+    "end": "01:00",
+    "place": "dorm_lounge",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Skipping gym for the Cal game, then plaza, Flomo dinner and Taper with friends. Feeling fine, a bit wary of the coughy dorm.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "event:EV00113",
+    "text": "Cal game today, who's in? Outdoors so less germy lol",
+    "time": "13:00",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Saturday, I feel fine. Sleep in, then the Football vs Cal game sounds way more fun than the gym, and I'm social. Dorm is a bit coughy so I'll keep it outdoors where I can and skip the packed hangout. Dinner at Flomo, then hang out at White Plaza, and a low-key evening with friends.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

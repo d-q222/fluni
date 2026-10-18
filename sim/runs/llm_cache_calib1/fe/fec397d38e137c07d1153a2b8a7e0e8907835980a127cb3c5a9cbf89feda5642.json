@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "lab",
+    "end": "22:15",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "bld:bld_232805662",
+    "start": "22:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Stern Dining was crowded so I ate fast and masked up, then lab as usual. Feeling fine but still a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 49 people and I'm anxious, so I'll wear my mask and finish eating quickly. Then I'll head to lab as planned, since I have problem sets and lab work. Afterward I'll relax at Coupa briefly, then go home early to sleep.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

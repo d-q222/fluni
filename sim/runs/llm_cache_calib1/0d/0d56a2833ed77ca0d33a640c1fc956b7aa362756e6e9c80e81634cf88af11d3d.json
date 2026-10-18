@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:00",
+    "place": "home",
+    "start": "10:45"
+   },
+   {
+    "activity": "study",
+    "end": "12:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "11:05"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "12:50"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "plan:bld_m_green_library_f1_102",
+    "start": "13:25"
+   },
+   {
+    "activity": "study",
+    "end": "18:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_232715666",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:25",
+    "place": "bld:bld_232841950",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:00",
+    "place": "event:EV00146",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:00"
+   }
+  ],
+  "diary": "Sunday: stuck to my usual study routine, kept the dorm hangout short because of flu going around. Feeling fine, a little careful.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit careful with flu going around the dorm. Sunday, so I'll stick to my usual routine of study blocks and sleep. I'll go to the dorm hangout briefly since it's in my dorm, but it's a bit risky with flu around. I'm introverted, so I'll keep it short. No mask needed outside crowded spots, though I'll keep distance.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

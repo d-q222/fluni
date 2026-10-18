@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "10:00",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "rest",
+    "end": "17:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "17:30",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:30",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat: Still feverish and achy, isolating in my room per FlUni until Wed. Staying masked and resting, still very anxious about my roommate and friends.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: I tested positive for flu and am isolating in my room until at least Wednesday. Please stay safe and mask up. I'll keep you posted.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I tested positive and feel unwell with fever and aches. FlUni says stay home until Wednesday. I'm anxious about my roommate and want to be responsible, so I'll sleep, rest and stay masked in my room. I can't go to the dining hall, so I'll have food brought or eat what I have. Honest with friends; a quick check-in text to the group is fine.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

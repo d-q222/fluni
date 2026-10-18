@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah, super ready, should be a good one. Glad you're masked, it's pretty packed in here. Where are you sitting?",
+  "shared_health": false
+ }
+}

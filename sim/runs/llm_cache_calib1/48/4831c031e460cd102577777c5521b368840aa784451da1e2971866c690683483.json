@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "08:30"
+   },
+   {
+    "activity": "relax",
+    "end": "11:15",
+    "place": "bld:bld_643965064",
+    "start": "10:10"
+   },
+   {
+    "activity": "study",
+    "end": "13:15",
+    "place": "plan:bld_232805685_f2_218",
+    "start": "11:25"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:CEE285B_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:25",
+    "place": "bld:bld_643965064",
+    "start": "15:20"
+   },
+   {
+    "activity": "class",
+    "end": "17:20",
+    "place": "class:CEE221_SEM01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_232715666",
+    "start": "17:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:35",
+    "place": "plan:bld_232805685_f2_213",
+    "start": "18:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "18:55"
+   }
+  ],
+  "diary": "Regular Monday on campus: studied, went to both classes, and headed home in the evening. Feeling fine, a little watchful about illness.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll follow my usual routine: sleep at home, study at Lathrop, relax at Annette's, then go to both classes and head home after dinner. Nothing unusual to text about.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

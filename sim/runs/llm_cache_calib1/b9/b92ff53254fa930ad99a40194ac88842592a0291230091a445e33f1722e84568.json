@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Cool, let's get after it. I'll take the bench first if you want to spot me.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I heard. I'm a close contact of Dakota, actually, so I'm staying low-key tonight. I feel fine though, just watching for symptoms. You?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:55"
+   },
+   {
+    "activity": "study",
+    "end": "21:20",
+    "place": "bld:bld_232841950",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "22:45",
+    "place": "home",
+    "start": "21:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:45"
+   }
+  ],
+  "diary": "Stern was crowded at dinner so I ate fast with my mask on, then studied at Mark Taper and went home. Feeling fine but still a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 45 people and I'm anxious about illness. I'll keep my mask on, eat quickly, and then move to the quieter Mark Taper or my room. I feel fine, so I'll stick with my usual routine, maybe studying a bit at Green Library instead of crowding. Keep it simple: eat, relax at Mark Taper, then home early.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

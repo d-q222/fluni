@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Walked to the dorm hangout with Oakley, who is feeling fine but wary and may want a spare mask; I said I'd check my bag or ask Umi.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

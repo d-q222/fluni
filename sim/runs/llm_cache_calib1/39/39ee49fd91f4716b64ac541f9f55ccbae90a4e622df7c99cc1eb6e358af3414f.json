@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Skyler, who lives in my dorm, that I have a fever and cough and am waiting on a flu test. Skyler is also waiting on a test after a FlUni ping but feels fine, and was kind about it. I'll keep my distance, rest at home, and skip the dorm hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

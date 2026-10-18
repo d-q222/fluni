@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Dell (masked, feels fine) said Oli is coughing and Chris has a fever in our dorm, and suggested avoiding the Stern lounge. I'll keep my study plan, keep my distance and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

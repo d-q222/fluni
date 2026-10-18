@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:00",
+    "place": "bld:bld_232715666",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:PWR1NFA_SEM02",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:PHYSICS23_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "study",
+    "end": "21:35",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "18:40"
+   },
+   {
+    "activity": "lab",
+    "end": "23:00",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "21:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:00"
+   }
+  ],
+  "diary": "Thursday: usual classes, lab and study. Feeling fine, still a bit careful because of the fever rumor in Devon's dorm; trying to get to bed by midnight.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit wary after Devon's warning about a fever in their dorm. I'll follow my usual routine, but go to bed earlier and be careful. No mask since I'm healthy and mostly indoors alone-ish. Introverted, so no extra socializing.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

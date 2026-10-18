@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, let's head over. We'll stay near the edge and bail early.",
+  "shared_health": false
+ }
+}

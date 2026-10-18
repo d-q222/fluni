@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Marley, I didn't know you were studying here too. Are you here for the PSYCH 1 group?",
+  "shared_health": false
+ }
+}

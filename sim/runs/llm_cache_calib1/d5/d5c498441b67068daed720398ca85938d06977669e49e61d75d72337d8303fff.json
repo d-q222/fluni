@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "rest",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "rest",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Staying in isolation as FlUni advised, resting and doing light studying. Still anxious about who I may have exposed.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my flu test came back positive. I'm isolating in my room until at least Wed. If you've been near me the last few days please watch for symptoms and check FlUni. Sorry!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I tested positive and the app says stay home until Wed 17:00. I'm anxious and honest, so I'll stay in my room, rest, sleep, and keep my distance from everyone. Skipping lab and meals out. Maybe I'll do light studying when I can. I should tell friends and the lab about my positive result and warn Rain, since we talked recently.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

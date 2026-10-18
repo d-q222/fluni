@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Rain (masked, feels fine) said they were near Teagan Thursday and Teagan tested positive. I'm staying masked, keeping distance, and heading to Green to study as planned.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

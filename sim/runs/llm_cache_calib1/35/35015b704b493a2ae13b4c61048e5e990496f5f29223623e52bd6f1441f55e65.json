@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika! Morning. You doing okay, or is the mask just a precaution with that dorm fever rumor going around?",
+  "shared_health": false
+ }
+}

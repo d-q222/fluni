@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:BIO35_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "19:05",
+    "place": "plan:bld_m_green_library_f1_113",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:10"
+   },
+   {
+    "activity": "study",
+    "end": "21:45",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "study",
+    "end": "23:05",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "23:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Stern Dining was crowded at lunch, so I ate quickly and kept my mask on otherwise. Following my usual study schedule today; feeling fine but a little wary.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 43 people, so I'll finish eating quickly with my mask on when not actually eating, then head to Green Library. I'll stick to my routine since I'm organized, but take a quieter study spot. Dinner might be crowded too, so I could eat a bit later or earlier.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

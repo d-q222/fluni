@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat near Harper (masked, same dorm and PHYSICS 41) before lecture. They mentioned lots of coughing lately; I said I feel fine but stay wary. We kept some distance. Nothing planned.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

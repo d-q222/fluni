@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Devon, thanks for the heads up. I'm feeling fine right now. Skyler mentioned they're waiting on a flu test, so I'm being a little careful too. Hope you stay healthy.",
+  "shared_health": true
+ }
+}

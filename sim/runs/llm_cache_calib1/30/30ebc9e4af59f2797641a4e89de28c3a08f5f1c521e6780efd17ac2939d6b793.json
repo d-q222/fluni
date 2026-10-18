@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Winter my test was negative and that Hadley and Sidney looked sick; Winter invited me to a loud, packed 10:30 party (EV00081) and I said I'd probably pass. Sticking to my plan to stay in.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

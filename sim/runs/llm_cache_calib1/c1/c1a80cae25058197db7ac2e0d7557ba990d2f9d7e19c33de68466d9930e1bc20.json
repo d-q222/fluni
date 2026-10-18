@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Mika! Doing fine, just being careful with everything going around. Thanks again for offering the spare mask yesterday. How about you, still feeling okay?",
+  "shared_health": true
+ }
+}

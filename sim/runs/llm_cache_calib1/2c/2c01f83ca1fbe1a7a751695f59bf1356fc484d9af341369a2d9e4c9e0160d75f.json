@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:55"
+   },
+   {
+    "activity": "gym",
+    "end": "18:00",
+    "place": "bld:bld_255490604",
+    "start": "16:50"
+   },
+   {
+    "activity": "relax",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_333374283",
+    "start": "19:05"
+   },
+   {
+    "activity": "gym",
+    "end": "21:30",
+    "place": "bld:bld_255490604",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "21:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Sat Jan 10: At the Cal game in a crowded stadium, masked and feeling fine, meeting Skyler and Ocean. Plan is gym, dinner and an early night, still watching the dorm fever rumor.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "I'm in the stadium, masked up. Text me your section and I'll come find you.",
+    "time": "",
+    "to": "A0157"
+   }
+  ],
+  "thoughts": "The stadium is crowded, but I feel fine and I'm masked, sitting with Skyler and Ocean. I'll stay for the game, then follow my usual routine of gym, dinner, and relaxing. I'll text Skyler where I am so we can find each other. I'll keep masking in crowds and keep an eye on the dorm fever rumor.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

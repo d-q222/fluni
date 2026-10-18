@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:45"
+   },
+   {
+    "activity": "relax",
+    "end": "11:30",
+    "place": "home",
+    "start": "08:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_1040629370",
+    "start": "11:50"
+   },
+   {
+    "activity": "gym",
+    "end": "12:55",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "12:15"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:30",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Game day vs Cal, so lighter lift, then the game, and a quiet night. Feeling fine, keeping the mask handy and washing hands after last night's packed hangout.",
+  "messages": [],
+  "thoughts": "Saturday is game day, Football vs Cal at 13:00. I feel fine, so I'll keep the routine: sleep in, breakfast at Stern, a light morning, pregame lunch, a short lift, then the game. Hangout last night was packed and Sidney had a fever, so I'll keep the mask handy and wash hands, but I won't mask indoors. After the game I'll relax and eat dinner, then take it easy.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

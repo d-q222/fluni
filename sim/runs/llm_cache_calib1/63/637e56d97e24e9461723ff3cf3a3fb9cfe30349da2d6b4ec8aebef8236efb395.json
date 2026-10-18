@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "10:45"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_1040629370",
+    "start": "12:05"
+   },
+   {
+    "activity": "lab",
+    "end": "15:20",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "12:45"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:15",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "15:25"
+   },
+   {
+    "activity": "lab",
+    "end": "17:20",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "16:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:30",
+    "place": "bld:bld_m_meyer_green",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "lab",
+    "end": "23:00",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "19:25"
+   },
+   {
+    "activity": "rest",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: still feel fine. Staying masked, skipping the game and the lounge, sticking to study, lab, meals and home. Still quite worried about Teagan and Dakota; will tell friends if I get symptoms.",
+  "messages": [],
+  "thoughts": "I feel fine, but Teagan tested positive and Dakota in my dorm is sick, so I'm staying careful. I'll sleep in, keep to my routine of study, lab and meals, and skip the game and crowded spots. I'm disciplined, so I'll keep things low-contact: eat at off-peak times, and walk outdoors rather than sitting indoors with people. I'll mask in shared spaces even though I usually don't indoors.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

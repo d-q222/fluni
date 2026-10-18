@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Heard more dorm folks are sick. Skipped the hangout, studied in my room and went to bed early. I feel fine but anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Wesley. I feel fine too, skipping the hangout and staying in my room. I'll text if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan, Dakota and Chris in my dorm being sick makes me more anxious. I'm a close contact and feel fine, so I'll skip the dorm hangout and stay in my room. I'll study as usual, then wind down and sleep. A quick reply to the group to confirm I'm staying in is reasonable.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

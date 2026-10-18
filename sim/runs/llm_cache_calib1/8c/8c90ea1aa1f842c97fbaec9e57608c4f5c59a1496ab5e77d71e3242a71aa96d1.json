@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! You eating here too? Heads up, Eden said there are fevers going around Stern, so Chris and I are keeping the lounge thing short tonight. You feeling okay?",
+  "shared_health": false
+ }
+}

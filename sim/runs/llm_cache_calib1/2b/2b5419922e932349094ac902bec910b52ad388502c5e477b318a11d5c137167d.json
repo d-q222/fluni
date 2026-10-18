@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Lake at Stern Dining; they're skipping the morning gym and have class at 10:30, and I told them to check the team chat for practice time. Nothing changes for me.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:45"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "11:10",
+    "place": "bld:bld_m_white_plaza",
+    "start": "10:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:55",
+    "place": "home",
+    "start": "11:15"
+   },
+   {
+    "activity": "lab",
+    "end": "18:05",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:15"
+   },
+   {
+    "activity": "study",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:40",
+    "place": "event:EV00114",
+    "start": "20:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "21:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Saturday: skipped the Cal football crowd, studied, did lab, and made a short masked appearance at the dorm hangout. Still feel fine but anxious about illness going around the dorm.",
+  "messages": [],
+  "thoughts": "Saturday, feeling fine but anxious since illness is going around the dorm. I'll skip the crowded football game, which is a big unmasked crowd, and study at home or in the library instead. Lab in the afternoon and evening as usual, masked. The dorm hangout is small, so I'll maybe drop by briefly masked, or skip it. Sleep in as usual.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

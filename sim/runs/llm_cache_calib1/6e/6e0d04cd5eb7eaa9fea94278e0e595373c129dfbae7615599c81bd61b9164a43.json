@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Zuri, masked in the packed dining hall, said they have no symptoms and are being extra careful because Bryce mentioned a possible close contact of someone sick. I feel fine and will keep my distance from anyone who seems sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

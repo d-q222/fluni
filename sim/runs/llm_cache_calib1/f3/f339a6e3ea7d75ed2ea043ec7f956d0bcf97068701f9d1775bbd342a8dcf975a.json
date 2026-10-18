@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm fine too, just kind of worried with Chris and Dakota testing positive. Gonna finish eating, hit Green for a bit, then probably a quick dorm hangout. Text me if you want to hang later.",
+  "shared_health": true
+ }
+}

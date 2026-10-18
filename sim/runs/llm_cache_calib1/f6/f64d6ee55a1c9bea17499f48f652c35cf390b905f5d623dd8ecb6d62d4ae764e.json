@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden! Heads up, I tested positive, so I'm keeping my distance. Just grabbing food and heading back to my room.",
+  "shared_health": true
+ }
+}

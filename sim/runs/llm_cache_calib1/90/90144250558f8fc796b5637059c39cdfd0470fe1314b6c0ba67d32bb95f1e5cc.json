@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "20:10",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:40",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Stern was crowded at dinner so I ate fast and left for Green to study with Oli. Feeling fine, still a bit mindful of illness.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 49 people. I'm fine but a bit mindful of illness. I'll grab food quickly, then head to Green to study with Oli as planned. Then do my usual evening, home to sleep on time.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

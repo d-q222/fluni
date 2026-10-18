@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "lab",
+    "end": "20:45",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "20:55"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Stern Dining was crowded so I ate quickly and kept my mask on otherwise. Did my usual lab, study, and then home; feeling fine but a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 49 people, and I'm already anxious about illness going around. I'll eat quickly, wear my mask when not actually eating, and keep my usual lab and study plan. I might skip the crowded library room and study at home after lab if I can, but I'll stick with the routine mostly since I'm organized and the lab is required.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

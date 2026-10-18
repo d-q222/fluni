@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:00",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "relax",
+    "end": "20:00",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:45",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:45"
+   }
+  ],
+  "diary": "Sat Jan 10: Skipped the Cal game invite and stayed in my room per FlUni advice, with masked quick meals at Stern. Feel fine but still worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the invite! I'm skipping since FlUni told me to stay in until the 14th. Have fun and stay safe!",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "FlUni told me to stay home until Jan 14, and I'm worried and a homebody anyway. The Cal game is outdoors but crowded, and I'd be breaking the advice. I'll skip it, stay in my room, and keep masked quick meals at Stern. I'll text Campbell a friendly no.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

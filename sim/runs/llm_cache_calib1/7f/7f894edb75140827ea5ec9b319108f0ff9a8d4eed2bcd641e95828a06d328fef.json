@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Yeah, grabbing dinner. I feel totally fine, no fever or anything. Keeping the lounge short too, then the party later. You feeling okay?",
+  "shared_health": true
+ }
+}

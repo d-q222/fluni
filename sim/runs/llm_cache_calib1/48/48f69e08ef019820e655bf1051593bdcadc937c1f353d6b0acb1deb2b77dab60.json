@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Heck yes, I'm in! See you at the game around 7, save me a spot. Lounge after for sure.",
+  "shared_health": false
+ }
+}

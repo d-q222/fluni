@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter, what's up? Lunch crowd's rough today, huh?",
+  "shared_health": false
+ }
+}

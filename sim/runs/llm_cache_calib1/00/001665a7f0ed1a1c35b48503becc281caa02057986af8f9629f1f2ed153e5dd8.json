@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:55"
+   },
+   {
+    "activity": "class",
+    "end": "13:10",
+    "place": "class:PWR1HT_SEM01",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "home",
+    "start": "13:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "16:20",
+    "place": "bld:bld_m_meyer_green",
+    "start": "15:15"
+   },
+   {
+    "activity": "class",
+    "end": "17:50",
+    "place": "class:ECON155_LEC01",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:55",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "study",
+    "end": "23:59",
+    "place": "bld:bld_232805691",
+    "start": "22:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "00:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Tuesday: seminar, ECON lecture, Flo Mo dinner with Wynn, then Taper hangout with the group. Feeling fine, a little wary of the illness going around.",
+  "messages": [],
+  "thoughts": "Tuesday. I feel fine. Sleep in, go to PWR seminar, lunch, ECON lecture, then Flo Mo dinner with Wynn at 18:30 and Taper at 20:25 with the group. Skip the Lakeside plan since that was yesterday's. Social as usual, no mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

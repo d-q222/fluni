@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "16:30",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun: Still sick, FlUni says stay home until Fri. Resting masked in my room, took Sawyer up on dinner at my door. Still anxious about my roommate and friends.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks so much Sawyer! Still feverish and achy, staying in till Friday. Could you leave dinner outside my door around 18:30 and text me when it's there? I'll grab it after you leave, masked.",
+    "time": "",
+    "to": "A0050"
+   }
+  ],
+  "thoughts": "Still sick and positive, FlUni says stay home until Friday. I'll stay in my room masked, rest, do light studying when I can, and take Sawyer up on the food offer, leaving it at my door. I'm anxious about my roommate, so I'll keep the mask on.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

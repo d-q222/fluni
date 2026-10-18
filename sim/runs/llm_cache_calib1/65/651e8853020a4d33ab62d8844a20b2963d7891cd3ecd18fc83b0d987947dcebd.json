@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean! Yeah, quick bite then I've got dance class. You hitting the gym after? We should all hang at White Plaza later, I'll be there around 5.",
+  "shared_health": false
+ }
+}

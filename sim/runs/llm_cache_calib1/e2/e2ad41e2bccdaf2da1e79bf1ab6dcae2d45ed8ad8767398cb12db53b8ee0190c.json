@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Yeah, grabbing dinner with Dakota before study group at Green. Want to join us? I feel like I haven't caught up with you in forever.",
+  "shared_health": false
+ }
+}

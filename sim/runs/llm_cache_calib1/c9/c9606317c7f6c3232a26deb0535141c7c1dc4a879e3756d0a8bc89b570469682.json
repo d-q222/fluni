@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Finley! I feel fine, just anxious too. FlUni flagged me as a close contact, so I'm staying in until Sunday and just grabbing quick masked meals. Let me know if you feel off, okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Emerson! I feel fine, just keeping the mask on since I was near Jesse at the hangout. Are you feeling okay? Let's keep our distance and watch for symptoms.",
+  "shared_health": true
+ }
+}

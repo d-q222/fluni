@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "10:15",
+    "place": "home",
+    "start": "09:15"
+   },
+   {
+    "activity": "lab",
+    "end": "12:50",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "10:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:55",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "lab",
+    "end": "18:35",
+    "place": "plan:bld_232841887_f1_105",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "23:05",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Sidney and Bailey are still sick. I'm negative and fine, staying masked, doing lab and study as usual, skipping the football game. Still anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the updates, Sidney and Bailey. Rest up and drink lots of fluids. I'm staying masked and keeping my distance, but text me if you need anything dropped off at your door.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sidney and Bailey are still sick, so I'll keep my cautious routine. I feel fine and tested negative, so I'll keep my mask on, stick to lab and study, and avoid the crowded football game. I'll send a short supportive text to the group and keep my distance.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

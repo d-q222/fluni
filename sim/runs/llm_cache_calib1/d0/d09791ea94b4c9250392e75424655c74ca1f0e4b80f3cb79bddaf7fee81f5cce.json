@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:55"
+   },
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "plan:bld_m_green_library_f2_205",
+    "start": "10:05"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:35",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:45",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:15",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "01:05",
+    "place": "home",
+    "start": "20:20"
+   },
+   {
+    "activity": "relax",
+    "end": "02:50",
+    "place": "home",
+    "start": "01:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:50"
+   }
+  ],
+  "diary": "Fri Jan 9: Classes, dinner at Stern, skipping the hangout again and staying home. Feeling fine but keeping my mask on since people in the dorm are sick.",
+  "messages": [],
+  "thoughts": "Feeling fine, but people in the dorm are sick. I'll follow my usual routine, mask up in crowded places, skip the hangout again and spend the evening at home.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

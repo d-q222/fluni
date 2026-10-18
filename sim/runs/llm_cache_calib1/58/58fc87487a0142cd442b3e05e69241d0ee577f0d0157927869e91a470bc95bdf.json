@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Oli: they feel fine, masked, window cracked. We agreed to tell each other right away if anything feels off. I'm staying low-key and masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

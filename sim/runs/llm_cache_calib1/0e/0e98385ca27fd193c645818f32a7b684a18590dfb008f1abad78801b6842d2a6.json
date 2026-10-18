@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Tyler. I feel fine, just being careful with the fever rumors going around Stern. You heading to the hangout too? I'm planning to stay near the edge and leave early.",
+  "shared_health": true
+ }
+}

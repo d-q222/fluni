@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Perfect timing, I'm about to eat. Are you coming to Taper tonight around 8? Everyone's heading over after dinner.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I've noticed. I'm feeling fine, just trying to avoid big crowds. Probably not the hangout tonight though, I've got lab at nine and then I'll crash. You feeling okay?",
+  "shared_health": true
+ }
+}

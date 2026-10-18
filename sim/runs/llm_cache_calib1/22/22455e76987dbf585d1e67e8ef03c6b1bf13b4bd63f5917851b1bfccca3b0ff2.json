@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Glad you're being careful! I feel fine too, no symptoms at all. I'll keep my mask on at Taper. Maybe check in with Vaden about Oli? See you there!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Pretty good, just fueling up before study and then practice at 3:30. You're masking too, huh? Everyone in our hall seems to be being careful lately.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer. I heard you got a FlUni notice too, from Teagan? I'm a close contact as well, feeling fine so far. How about you?",
+  "shared_health": true
+ }
+}

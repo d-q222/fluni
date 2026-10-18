@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "I feel fine, just being careful. Sawyer and Val both mentioned a friend got flagged by FlUni and is waiting on a flu test, so I'm keeping my distance and keeping the mask on. Might be worth doing the same.",
+  "shared_health": true
+ }
+}

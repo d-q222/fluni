@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I heard Teagan tested symptomatic and has flu symptoms. I was around them Wednesday, so I'm masking and keeping to my routine. I feel fine too. Keep an eye out and maybe check Vaden if anything starts?",
+  "shared_health": true
+ }
+}

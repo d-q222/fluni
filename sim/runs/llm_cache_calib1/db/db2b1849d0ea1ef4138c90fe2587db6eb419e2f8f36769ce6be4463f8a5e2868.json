@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:35"
+   },
+   {
+    "activity": "study",
+    "end": "12:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:45",
+    "place": "plan:bld_m_green_library_f2_205",
+    "start": "12:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "study",
+    "end": "19:30",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "00:10",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:50",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Sat Jan 10: Feel fine but still anxious about Wesley's exposure and the sick folks in the lounge. Plan: masked library studying, skipping the football game, avoiding the lounge, home for the evening.",
+  "messages": [],
+  "thoughts": "Still anxious about Wesley's exposure and the sick people in the lounge. I feel fine, so I'll keep my usual disciplined routine: sleep in, eat at Stern, study at Green Library masked, avoid the lounge, skip the football game and crowds, and be home for the evening.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sat at the Cal game with Skyler, True and Ocean near the middle; Skyler is masked, feels good and still tests negative. Nothing changes: keep masking and stick to my schedule.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

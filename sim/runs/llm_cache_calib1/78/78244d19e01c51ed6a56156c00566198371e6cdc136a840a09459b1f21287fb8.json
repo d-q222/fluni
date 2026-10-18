@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern; they might swing by Taper after practice if not wiped. Told them to text me. Still doing study group then hanging out.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

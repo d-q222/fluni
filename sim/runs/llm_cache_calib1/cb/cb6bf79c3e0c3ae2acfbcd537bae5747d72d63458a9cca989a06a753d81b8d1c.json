@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Wynn at Lakeside; they feel fine and are going to Flo Mo then Taper around 8. I said I'd see them at Taper around 8:25 after my study block.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

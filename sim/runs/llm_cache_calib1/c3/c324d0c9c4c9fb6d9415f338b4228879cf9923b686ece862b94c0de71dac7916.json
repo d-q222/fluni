@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "study",
+    "end": "10:00",
+    "place": "home",
+    "start": "07:30"
+   },
+   {
+    "activity": "eat",
+    "end": "10:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thursday: staying in my room per FlUni until Jan 11, skipping class and library, studying remotely with only quick masked meals. Feeling fine but anxious.",
+  "messages": [],
+  "thoughts": "FlUni told me to stay home until Jan 11, and I feel fine but anxious. I'll keep following that: stay in my room, study remotely, and only slip out for quick masked meals at Stern Dining. I'll skip the in-person class and the library. Staying organized, I'll keep a disciplined study schedule.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:15",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "19:55",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "eat",
+    "end": "20:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:50",
+    "place": "home",
+    "start": "20:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:50"
+   }
+  ],
+  "diary": "Sat Jan 10: Quiet day, skipping the football game, masked at meals and staying in the dorm. Feeling fine but still a little worried about dorm sickness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Hope you're feeling okay, Mika. I'm staying careful too, masking and keeping to my room mostly. Let me know if you need anything.",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Saturday, feeling fine but people in the dorm are sick and Mika got a stay-home notice. I'll stick to my homebody routine, sleep in, eat masked at Flomo and Stern when it's quieter, study a bit, and stay in. Skip the football game. Keep the mask on indoors.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

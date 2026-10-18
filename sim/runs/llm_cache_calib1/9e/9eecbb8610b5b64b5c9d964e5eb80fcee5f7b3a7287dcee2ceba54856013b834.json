@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, all good, I feel fine. Just masking to be careful since people keep coughing. Glad you are too. Want to start with the problem set from Monday?",
+  "shared_health": true
+ }
+}

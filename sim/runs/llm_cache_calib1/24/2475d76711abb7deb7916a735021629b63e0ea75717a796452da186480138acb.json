@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with Devon before class; both feel fine and we'll keep masking and text each other if anything changes or we hear from Wesley.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

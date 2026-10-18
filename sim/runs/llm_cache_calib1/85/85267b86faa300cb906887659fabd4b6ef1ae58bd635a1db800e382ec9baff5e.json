@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Mika (dorm neighbor) at Taper; they're masking just to be careful, feel fine, and passed on tonight's Taper invite. Plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

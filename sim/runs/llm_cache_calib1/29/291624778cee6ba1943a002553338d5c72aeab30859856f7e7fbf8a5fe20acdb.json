@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sure, I think Umi had a few extras from Mika, I'll check my bag. If not I'll ask them tonight. Come on, let's head over.",
+  "shared_health": false
+ }
+}

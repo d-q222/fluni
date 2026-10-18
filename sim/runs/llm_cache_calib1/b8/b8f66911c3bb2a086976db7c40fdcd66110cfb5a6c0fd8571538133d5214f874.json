@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks, figured it's smart with everything going around. I'm somewhere near the middle, mind if we sit together? Glad your flu test came back negative yesterday.",
+  "shared_health": false
+ }
+}

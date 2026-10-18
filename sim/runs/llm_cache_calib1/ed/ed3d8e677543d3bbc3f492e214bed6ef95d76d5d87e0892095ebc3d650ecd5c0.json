@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_333374283",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "10:35",
+    "place": "plan:bld_m_green_library_f3_303",
+    "start": "09:15"
+   },
+   {
+    "activity": "gym",
+    "end": "12:15",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "13:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:20"
+   },
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00113",
+    "start": "13:25"
+   },
+   {
+    "activity": "gym",
+    "end": "17:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "16:25"
+   },
+   {
+    "activity": "study",
+    "end": "19:10",
+    "place": "plan:bld_m_green_library_f1_106",
+    "start": "17:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "gym",
+    "end": "21:05",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "20:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:25",
+    "place": "event:EV00124",
+    "start": "21:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Saturday: following my usual routine with the game and the dorm hangout. Told Lake that Skyler tested negative. I feel fine and am staying a bit careful.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry about the blank text! Skyler tested negative, so all good. Glad you feel fine.",
+    "time": "",
+    "to": "A0191"
+   }
+  ],
+  "thoughts": "Saturday. I feel fine. Lake says my text came through blank, so I'll reply that Skyler tested negative. Keep the usual routine: sleep, breakfast, study, gym, the football game, and the dorm hangout in the evening, with a mask if it's packed. Staying a bit careful but not stressing.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

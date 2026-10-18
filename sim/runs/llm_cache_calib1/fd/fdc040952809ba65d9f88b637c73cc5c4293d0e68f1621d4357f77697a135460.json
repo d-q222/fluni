@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Bryce. Still feeling fine, no cough or fever. I'm a little worried about the Dakota thing though, so I'm just chilling here tonight. Text me if you feel off, and good luck studying!",
+  "shared_health": true
+ }
+}

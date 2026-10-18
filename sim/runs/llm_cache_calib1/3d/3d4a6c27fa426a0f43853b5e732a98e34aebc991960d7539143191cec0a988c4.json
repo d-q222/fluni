@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, packed. I'm masking too, I was near Teagan on Thursday and they tested positive. I feel fine, just being careful. Good luck studying!",
+  "shared_health": true
+ }
+}

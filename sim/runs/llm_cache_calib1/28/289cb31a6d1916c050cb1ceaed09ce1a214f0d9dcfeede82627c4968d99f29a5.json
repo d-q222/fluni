@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:05",
+    "place": "bld:bld_m_white_plaza",
+    "start": "09:35"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:20",
+    "place": "bld:bld_m_meyer_green",
+    "start": "12:10"
+   },
+   {
+    "activity": "lab",
+    "end": "14:55",
+    "place": "class:DESIGN1_LBS04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "bld:bld_m_green_library",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:00",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Oli is coughing next to me this morning. I'm staying out of the room, masking, doing lab, library, Lakeside and a short Taper, skipping the lounge. Feel fine but more worried.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: my roommate Oli is coughing and looks sick. I feel fine but I'm masking and skipping the lounge tonight. Feel better Chris!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Oli is coughing right next to me, so I'm likely exposed. I feel fine, though. I'll get out of the room, keep my lab and library time, mask up around people, and keep Lakeside and a short Taper, then skip the lounge hangout as planned. Home late to sleep, but I'll spend less time in the room.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

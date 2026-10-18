@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Doing great, no symptoms at all! Smart to be careful though. You going to the Arizona game tonight? A bunch of us are heading to Maples.",
+  "shared_health": true
+ }
+}

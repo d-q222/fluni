@@ -1,0 +1,115 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m1",
+   "m2",
+   "m6"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:50",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:50"
+   },
+   {
+    "activity": "study",
+    "end": "12:20",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "relax",
+    "end": "13:20",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:DESIGN1_WKS01",
+    "start": "13:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:10",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "14:50"
+   },
+   {
+    "activity": "relax",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "gym",
+    "end": "20:00",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:15"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "First Monday of the quarter: class, White Plaza with Onyx, Lakeside dinner with Dakota, gym, then Taper with Winter. Feeling fine, just a bit cautious about illness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Can't make every dinner! Doing Lakeside at 17:30, then gym, then Taper later. See you all soon!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter and everyone wants to hang out. I feel fine, so I'll keep my routine: class, White Plaza with Onyx after, dinner with Dakota at Lakeside, then gym and Taper hangout with Winter. I can't do every dinner, so I'll pick Lakeside early and skip the others. Sleep matters too, so I'll wrap up at a reasonable hour.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

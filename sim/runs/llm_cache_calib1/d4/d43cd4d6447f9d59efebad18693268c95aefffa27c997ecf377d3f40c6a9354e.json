@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:35"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "FlUni told me to stay home until Jan 11 after a close contact. I skipped the library, am studying in my room, and warned my friends. Feeling fine but anxious.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: FlUni told me to stay home until Jan 11 since I was a close contact. I feel fine, but I'd mask up and keep an eye on symptoms, since we all had breakfast together yesterday. I'm staying in my room.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "FlUni says stay home until Jan 11, meaning I was a close contact. I feel fine but I'm anxious and almost always follow health advice, so I'll go home and study there. I'll skip the library and Stern dining as a group meal; I'll still need food, so I'll grab a quick masked takeaway-style meal at Stern at an off-peak time, or just go once masked. Better to tell my friends since I had breakfast with them yesterday.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

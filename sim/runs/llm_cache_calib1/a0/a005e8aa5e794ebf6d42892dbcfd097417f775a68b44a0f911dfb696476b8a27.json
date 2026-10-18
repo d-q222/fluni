@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Finley. Yeah, I feel fine, just keeping an eye out. Same here, I'm avoiding the lounge too. Text me if you hear anything about Wesley or if you start feeling off, and I'll do the same.",
+  "shared_health": true
+ }
+}

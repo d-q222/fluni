@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning! I feel fine, no symptoms so far. No new word from Wesley, though. How about you? I'm still masking up today just in case.",
+  "shared_health": true
+ }
+}

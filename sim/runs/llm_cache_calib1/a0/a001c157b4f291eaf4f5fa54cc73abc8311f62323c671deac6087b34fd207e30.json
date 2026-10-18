@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, gym right after. I've got practice at 4:20 so I can't make White Plaza at 5, but have fun! Catch you later.",
+  "shared_health": false
+ }
+}

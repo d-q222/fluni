@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Wynn, my dorm neighbor, at Mark Taper; Wynn has no symptoms and invited me to the Arizona game, but I declined because of lab and avoiding crowds. Nothing changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

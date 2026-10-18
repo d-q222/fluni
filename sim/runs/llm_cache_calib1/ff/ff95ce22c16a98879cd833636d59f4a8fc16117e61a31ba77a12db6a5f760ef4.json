@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine, just a little paranoid honestly. I'm gonna pop into the hangout and bail early. Smart on the mask though!",
+  "shared_health": true
+ }
+}

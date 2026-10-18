@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, better safe. Alright, I'm heading to Green to study. See you around the dorm, Rain.",
+  "shared_health": false
+ }
+}

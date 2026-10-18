@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks, you too. Anyone in your lab sick? Feels like something's going around lately.",
+  "shared_health": false
+ }
+}

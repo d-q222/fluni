@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Good call honestly. I feel fine too, just being careful. Sounds like the lounge might be sketchy with Sidney and Hadley sick, so I might skip it too. Thanks for the heads up!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,83 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m77",
+   "m86",
+   "m76"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:20",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "09:20"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:ME104_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:40",
+    "place": "plan:bld_m_green_library_f3_312",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "17:55",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "14:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:40",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "dorm_lounge",
+    "start": "19:45"
+   },
+   {
+    "activity": "party",
+    "end": "01:25",
+    "place": "event:EV00081",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "02:00",
+    "place": "home",
+    "start": "01:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:00"
+   }
+  ],
+  "diary": "Thu Jan 8: class, study at Green and Taper, dinner at Stern, then Taper and the lounge hangouts and the party tonight. Feeling fine, only a little wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll keep my normal day. Class, study at Green and Taper, then dinner. Lots of invites tonight: Dakota's lounge at 19:45 and Onyx's at 20:00 fit after dinner, and Dell's Taper hangout at 19:15 is easy since I'm already there. I'll skip the Lakeside dinner since Stern is my usual spot, then hit Taper, the lounge, and the party later. No mask, just a little wary.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

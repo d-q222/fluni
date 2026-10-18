@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:10",
+    "place": "bld:bld_333374283",
+    "start": "10:40"
+   },
+   {
+    "activity": "study",
+    "end": "13:10",
+    "place": "home",
+    "start": "11:15"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_333374283",
+    "start": "13:15"
+   },
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "bld:bld_1169967277",
+    "start": "14:00"
+   },
+   {
+    "activity": "lab",
+    "end": "17:35",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "15:20"
+   },
+   {
+    "activity": "relax",
+    "end": "19:25",
+    "place": "home",
+    "start": "17:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_333374283",
+    "start": "19:30"
+   },
+   {
+    "activity": "lab",
+    "end": "22:45",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "20:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Feel fine but worried about Teagan and Dakota. Masked, skipping the game, gym and Taper, keeping lab and study going.",
+  "messages": [],
+  "thoughts": "Feel fine but worried with Teagan positive and Dakota sick in the dorm. I'll keep lab and study since I have problem sets, but mask up, skip the basketball game and the crowded Taper, and avoid the lounge. Dining stays but I'll go at off-peak times, maybe take it quickly. Skip the gym today to cut exposure, study at Breer instead of the lab in the evening partly. Keep sleeping in.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

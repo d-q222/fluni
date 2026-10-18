@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh hey, Max. Morning. You eating here too?",
+  "shared_health": false
+ }
+}

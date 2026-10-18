@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Pretty good, honestly, just classes and chilling. Gym wiped you out already? Rough. Eden's skipping tonight though, wearing a mask and everything because of whatever's going around. You feeling okay?",
+  "shared_health": false
+ }
+}

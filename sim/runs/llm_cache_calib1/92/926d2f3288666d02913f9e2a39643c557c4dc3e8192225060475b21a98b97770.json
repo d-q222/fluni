@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, still in for Taper and a short masked lounge stop. I feel fine, just watching for symptoms. Totally with you on bailing if people are coughing. Want to grab a table?",
+  "shared_health": true
+ }
+}

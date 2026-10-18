@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean, morning. Yeah, just grabbing breakfast, then heading home to study. Feeling fine, just being careful. You?",
+  "shared_health": true
+ }
+}

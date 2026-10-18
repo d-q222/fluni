@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:50"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "00:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Left crowded Stern quickly and went to Green for problem sets. Feeling fine, a bit wary since a couple friends are masking. Rain may stop by around 11.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 42 people, so I'll finish eating quickly and head to Green to study. I feel fine and my friends are only being careful. I'll stick to my routine, stay organized, and keep an eye on the FlUni app. Rain might come find me around 11pm at Green's second floor.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

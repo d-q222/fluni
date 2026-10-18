@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "15:00",
+    "place": "bld:bld_232841950",
+    "start": "14:25"
+   },
+   {
+    "activity": "class",
+    "end": "17:20",
+    "place": "class:MUSIC12C_PRA01",
+    "start": "15:05"
+   },
+   {
+    "activity": "relax",
+    "end": "17:30",
+    "place": "home",
+    "start": "17:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "dorm_lounge",
+    "start": "21:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wed Jan 7: Music class, meet Wynn at 5:30, Stern dinner, then the Arizona game at Maples with friends. Feeling fine, still a bit wary with all the coughing around.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sounds good, see you outside the dorm at 5:30!",
+    "time": "",
+    "to": "A0274"
+   }
+  ],
+  "thoughts": "Feeling fine, a little wary of illness with all the coughing around. I'll study a bit at Taper, go to music class, then hang out, meet Wynn outside the dorm around 5:30, eat at Stern, and go to the game. Afterward I'll hang in the lounge and then sleep at a reasonable hour.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

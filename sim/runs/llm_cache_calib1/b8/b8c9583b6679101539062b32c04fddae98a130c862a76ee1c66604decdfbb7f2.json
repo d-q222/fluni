@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, still down for the lounge, just maybe a shorter one. If anyone's coughing a lot we can bail. Glad you feel fine, I do too!",
+  "shared_health": true
+ }
+}

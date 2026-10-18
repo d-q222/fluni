@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota! You eating here too? Come sit with us if you want, Onyx and I are doing dinner before Taper.",
+  "shared_health": false
+ }
+}

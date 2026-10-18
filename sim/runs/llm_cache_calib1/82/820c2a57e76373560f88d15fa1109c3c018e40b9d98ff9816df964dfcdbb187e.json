@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Lake! Yeah, still masking in crowds, just being careful. I feel fine though, thanks. You doing okay?",
+  "shared_health": true
+ }
+}

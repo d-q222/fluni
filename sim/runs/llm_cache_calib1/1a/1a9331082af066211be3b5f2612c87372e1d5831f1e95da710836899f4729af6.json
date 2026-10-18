@@ -1,0 +1,24 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Fri Jan 9 evening: FlUni suggested testing at Vaden but I feel fine, so I'm staying in my room, skipping the dorm hangout, and will get tested if any symptoms show up. Still worried.",
+  "messages": [],
+  "thoughts": "I feel fine, but FlUni suggests testing at Vaden and people in my dorm are sick. I'm a homebody and already staying in. Going to Vaden this late on a Friday seems unnecessary with no symptoms, and I'd be walking around and exposing myself. I'll stay home tonight, mask off alone in my room, relax, and sleep a bit earlier. I might think about testing tomorrow if I feel anything. I'll skip the hangout.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

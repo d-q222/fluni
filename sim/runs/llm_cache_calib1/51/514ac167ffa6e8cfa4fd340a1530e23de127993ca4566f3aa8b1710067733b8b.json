@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Umi from my dorm at Stern; they were wearing a mask to be careful. Nothing else came up, and I'm sticking with my plans tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

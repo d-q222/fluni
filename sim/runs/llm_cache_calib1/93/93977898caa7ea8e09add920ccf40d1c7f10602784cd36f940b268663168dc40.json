@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Wesley at Stern Dining; they're out of their stay-in, masked, and heading to the library. I said I feel fine, still anxious, and will keep my distance. We'll text if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

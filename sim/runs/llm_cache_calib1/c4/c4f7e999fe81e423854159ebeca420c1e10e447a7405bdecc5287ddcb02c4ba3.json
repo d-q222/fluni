@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:10",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "gym",
+    "end": "09:35",
+    "place": "plan:bld_232805668_f1_102",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "11:10",
+    "place": "plan:bld_232805685_f1_101",
+    "start": "09:45"
+   },
+   {
+    "activity": "lab",
+    "end": "12:10",
+    "place": "plan:bld_1434557267_f3_306",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "13:50",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "12:50"
+   },
+   {
+    "activity": "lab",
+    "end": "14:55",
+    "place": "plan:bld_1434557267_f3_306",
+    "start": "14:00"
+   },
+   {
+    "activity": "class",
+    "end": "16:05",
+    "place": "class:CS246_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "gym",
+    "end": "18:05",
+    "place": "plan:bld_232805668_f1_102",
+    "start": "16:20"
+   },
+   {
+    "activity": "relax",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "18:30"
+   }
+  ],
+  "diary": "Regular Tuesday on campus: gym, study, lab, CS246, then home in the evening. Feeling fine, still a little watchful about illness.",
+  "messages": [],
+  "thoughts": "Regular Tuesday. I feel fine, so I'll follow my usual routine: gym, library study, lab, lunch, CS246 lecture, then gym and home. Staying a bit watchful about illness but no need for a mask.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Thanks for telling me, that's really considerate. Glad you're feeling fine and the test was negative. I'll keep my mask on too, and let me know if anything changes, okay?",
+  "shared_health": false
+ }
+}

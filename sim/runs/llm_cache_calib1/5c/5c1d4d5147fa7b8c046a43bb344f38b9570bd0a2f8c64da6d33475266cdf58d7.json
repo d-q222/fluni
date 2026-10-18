@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jesse! Pretty good, just busy with problem sets and lab. I'm feeling fine, just a bit wary of whatever's going around. I noticed the mask, you doing okay?",
+  "shared_health": true
+ }
+}

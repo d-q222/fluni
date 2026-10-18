@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, should be fine. Gotta head out soon though. See you around, Stevie.",
+  "shared_health": false
+ }
+}

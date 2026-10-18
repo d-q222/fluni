@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "20:05",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:35",
+    "place": "dorm_lounge",
+    "start": "20:05"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Thu Jan 8: Heard Skyler tested negative, relieved. Told Umi. Dinner at Stern, dorm hangout, then study and sleep.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Update: Skyler's flu test came back negative and they feel fine! Hangout at 8 still on if you want to pop in.",
+    "time": "",
+    "to": "A0196"
+   }
+  ],
+  "thoughts": "Skyler tested negative, so I'm relieved. Stern is crowded but I feel fine. I'll finish dinner, text Umi the update since I promised, then do the dorm hangout like usual, maybe a bit shorter, then study and sleep.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

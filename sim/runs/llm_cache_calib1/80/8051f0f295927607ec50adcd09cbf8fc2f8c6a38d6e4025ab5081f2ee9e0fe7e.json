@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey True! Yeah, I'm going, the plan's to mask up in the crowd. I feel fine, test was negative. You going with anyone?",
+  "shared_health": true
+ }
+}

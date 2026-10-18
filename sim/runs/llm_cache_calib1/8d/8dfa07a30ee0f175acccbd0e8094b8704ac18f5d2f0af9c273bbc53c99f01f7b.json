@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Campbell at Taper; they'll pop into the lounge/party too and will bail early if it gets coughy. I feel fine and am keeping my plans, no mask.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

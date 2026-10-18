@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Heard Teagan, Dakota and Chris in my dorm are sick. Skipped the hangout, studied in my room and went to bed early. I feel fine but anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Wesley. I'm skipping the hangout too and staying in my room. Still feel fine. Will text if anything changes.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Sick dorm-mates and I'm already a FlUni close contact, so the dorm hangout is a no. I'll stay in my room, study through the evening, and wind down early. I feel fine, but I'm anxious. I'll send Finley and Wesley a brief reply and keep my distance.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

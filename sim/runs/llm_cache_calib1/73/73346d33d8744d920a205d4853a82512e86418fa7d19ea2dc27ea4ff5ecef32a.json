@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Makes sense, honestly I've been a little watchful too. Good luck with lab tonight, I've got class at 7. See you around the dorm!",
+  "shared_health": false
+ }
+}

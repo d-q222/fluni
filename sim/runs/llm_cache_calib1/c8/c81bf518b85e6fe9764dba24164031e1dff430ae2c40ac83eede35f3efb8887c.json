@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:30"
+   },
+   {
+    "activity": "relax",
+    "end": "10:45",
+    "place": "bld:bld_232841950",
+    "start": "08:25"
+   },
+   {
+    "activity": "study",
+    "end": "13:05",
+    "place": "home",
+    "start": "10:50"
+   },
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00113",
+    "start": "13:10"
+   },
+   {
+    "activity": "gym",
+    "end": "17:20",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "16:20"
+   },
+   {
+    "activity": "relax",
+    "end": "18:15",
+    "place": "home",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_333374283",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "plan:bld_m_green_library_f4_403",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:15",
+    "place": "event:EV00124",
+    "start": "21:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "22:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Normal Saturday plan: breakfast, football game, gym, study, dorm hangout. Feeling fine and still masking indoors with the illness rumors around.",
+  "messages": [],
+  "thoughts": "Saturday, feeling fine. Follow my usual routine: breakfast at Stern, then Taper, study, the Cal football game as a team outing, gym, dinner, study, and the dorm hangout. Illness rumors are still going around, so I keep masking indoors and stay cautious. Skyler tested negative, which is reassuring.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

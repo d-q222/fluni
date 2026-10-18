@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Rain (masked, feels fine) about Scout's and Sawyer's exposure notices and suggested they check FlUni. We both feel fine; I'm still masking, doing lab, then staying home.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

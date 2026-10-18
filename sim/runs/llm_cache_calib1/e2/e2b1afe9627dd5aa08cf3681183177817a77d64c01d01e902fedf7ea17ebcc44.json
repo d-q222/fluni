@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie. Dinner at Stern again, huh? I'm just eating quick and heading back to my room. How are you feeling?",
+  "shared_health": false
+ }
+}

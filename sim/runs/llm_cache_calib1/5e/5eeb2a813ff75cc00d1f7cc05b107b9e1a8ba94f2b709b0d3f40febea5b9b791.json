@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Val (dormmate, masked, said they're anxious about everything going around). I told them I'm fine and heading home to study; nothing changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

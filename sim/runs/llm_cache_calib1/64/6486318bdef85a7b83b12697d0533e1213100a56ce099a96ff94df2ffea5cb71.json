@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Talked with Dylan at Vaden; they're masked and getting tested because Teagan tested positive. I told them I'm sick with fever and cough, likely the same Stern bug, and I'm going home to rest after my test.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

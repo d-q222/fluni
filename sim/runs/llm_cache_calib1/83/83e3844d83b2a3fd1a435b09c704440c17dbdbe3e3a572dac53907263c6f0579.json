@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sawyer told me their flu test came back negative, so I can relax a bit around them. I'm still fine and will keep masking in crowded places and stick to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

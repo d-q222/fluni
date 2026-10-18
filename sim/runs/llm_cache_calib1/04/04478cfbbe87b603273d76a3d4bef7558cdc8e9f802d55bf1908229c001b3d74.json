@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "plan:bld_m_green_library_f3_311",
+    "start": "09:20"
+   },
+   {
+    "activity": "relax",
+    "end": "12:55",
+    "place": "home",
+    "start": "12:10"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "13:40"
+   },
+   {
+    "activity": "study",
+    "end": "17:40",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:15",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "study",
+    "end": "20:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "23:59",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Feel fine but still anxious about Wesley and the sick folks in the lounge. Masked library studying, skipping the dorm hangout, home early.",
+  "messages": [],
+  "thoughts": "Still anxious about Wesley's exposure and the sick folks in the lounge. I feel fine, so I'll keep my usual masked library routine but skip the dorm hangout since the lounge crowd includes people coughing. Home early in the evening to rest.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

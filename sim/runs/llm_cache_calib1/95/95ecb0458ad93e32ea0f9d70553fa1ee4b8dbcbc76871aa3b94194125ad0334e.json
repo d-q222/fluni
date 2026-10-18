@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh yeah, super crowded. Thanks for telling me, that's good you're masking and getting tested. I'll keep my distance a bit and wear mine too. Hope it comes back negative!",
+  "shared_health": false
+ }
+}

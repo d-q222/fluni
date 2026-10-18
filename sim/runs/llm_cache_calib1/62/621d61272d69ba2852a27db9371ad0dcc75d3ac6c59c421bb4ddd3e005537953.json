@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Yeah, I'm fine, just being cautious with everything going around. You doing okay?",
+  "shared_health": true
+ }
+}

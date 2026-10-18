@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Armani from my dorm I'm a FlUni close contact but feel fine; Armani feels fine too and will keep some distance. Heading home to sleep soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

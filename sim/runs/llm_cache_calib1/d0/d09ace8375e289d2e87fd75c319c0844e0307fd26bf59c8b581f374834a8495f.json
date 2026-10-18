@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning. Yeah, I'm fine, just a little wary too. I've been trying to keep my distance from anyone who sounds sick. Are you feeling okay?",
+  "shared_health": true
+ }
+}

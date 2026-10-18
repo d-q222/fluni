@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah I'm in! Just grabbing dinner first. I feel fine, a little wary after Eden's thing but I'm not bailing. See you at Taper?",
+  "shared_health": true
+ }
+}

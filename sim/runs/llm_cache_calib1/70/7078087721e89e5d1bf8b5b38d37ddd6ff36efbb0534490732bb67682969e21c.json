@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:00",
+    "place": "bld:bld_333374283",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f1_103",
+    "start": "09:05"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:MATH51_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "15:15",
+    "place": "class:ENGR14_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:20"
+   },
+   {
+    "activity": "class",
+    "end": "18:15",
+    "place": "class:SLE92_LEC01_2",
+    "start": "17:30"
+   },
+   {
+    "activity": "lab",
+    "end": "19:10",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "18:20"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "lab",
+    "end": "23:15",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "21:40"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:15",
+    "place": "home",
+    "start": "00:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:15"
+   }
+  ],
+  "diary": "Regular Wednesday of classes, labs, and study. Feeling fine, only a little worried about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, a regular Wednesday. I'll stick to my usual routine of classes, lab, and study. Not wearing a mask, not too worried. Maybe skip nothing.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

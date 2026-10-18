@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Aspen, a dorm neighbor, at Mark Taper. We both feel fine, are masking, and are a bit anxious. Nothing changes in my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

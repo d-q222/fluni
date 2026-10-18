@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden, yeah, Lucie Stern. Day's good, just grabbing lunch before class. How about you? I noticed the mask, everything okay?",
+  "shared_health": false
+ }
+}

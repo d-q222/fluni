@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:15",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:05",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "08:20"
+   },
+   {
+    "activity": "study",
+    "end": "10:35",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:10"
+   },
+   {
+    "activity": "study",
+    "end": "11:50",
+    "place": "home",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:00",
+    "place": "bld:bld_m_the_oval",
+    "start": "12:35"
+   },
+   {
+    "activity": "relax",
+    "end": "15:35",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "study_group",
+    "end": "17:00",
+    "place": "event:EV00138",
+    "start": "15:40"
+   },
+   {
+    "activity": "study",
+    "end": "19:05",
+    "place": "home",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_333374283",
+    "start": "19:10"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Jesse is staying in until Wednesday. I feel fine, so I'll keep masking, follow my usual routine, and keep watching for symptoms after being near Jesse.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Jesse. Rest up and let us know if you need anything. I'll keep masking and watch for symptoms.",
+    "time": "",
+    "to": "A0170"
+   }
+  ],
+  "thoughts": "Jesse is skipping the study group, so it's less risky, but I was near them at the hangout and still feel fine. I'll keep masking and keep my usual routine, but cut back on crowded spots. I'll go to the study group masked, since it's small, and reply kindly to Jesse.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

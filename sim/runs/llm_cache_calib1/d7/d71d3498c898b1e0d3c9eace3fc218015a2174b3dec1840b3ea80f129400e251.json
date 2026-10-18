@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks for the heads up, Rain mentioned Teagan earlier too. Val has the flu as well, so I'm staying masked and heading to Green after this. Glad you're being careful. I feel fine, just keeping my distance.",
+  "shared_health": true
+ }
+}

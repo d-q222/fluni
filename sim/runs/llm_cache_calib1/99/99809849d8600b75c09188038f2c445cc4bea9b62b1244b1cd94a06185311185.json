@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Pretty good, just got back into the swing of things! Busy too, but I've got a bunch of stuff with friends planned tonight. Gotta run to the next thing, see you around the dorm!",
+  "shared_health": false
+ }
+}

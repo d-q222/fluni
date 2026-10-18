@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "bld:bld_m_green_library",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Stern was crowded so I ate fast, then studied at Green masked and headed home for an early night. Feeling fine but staying cautious.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 49 people. I'll eat quickly, keep my mask on when not actually eating, and head to Green Library to study, since I like studying there. Jesse mentioned sharing a table. I'll return home to sleep at a reasonable hour.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

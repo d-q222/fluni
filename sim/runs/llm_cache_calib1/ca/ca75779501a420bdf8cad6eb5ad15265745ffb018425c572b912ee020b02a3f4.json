@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler at Stern; they said they feel fine and tested negative, and plan to mask at the Cal game. Agreed to sit together there and text them where I end up.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

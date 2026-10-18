@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, first Monday and it's already been a full day. Classes, gym, now dinner. I'm feeling great though. Then Flo Mo later and a hangout at Taper tonight, you should come!",
+  "shared_health": true
+ }
+}

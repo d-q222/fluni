@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, I'll probably be there around noon-ish, but catch you later if not. Good luck studying!",
+  "shared_health": false
+ }
+}

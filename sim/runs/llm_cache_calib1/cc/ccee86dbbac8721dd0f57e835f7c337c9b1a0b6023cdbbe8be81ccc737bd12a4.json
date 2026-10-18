@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Mika said Skyler's flu test came back negative and they feel fine, though a few people in our dorm are sick. We're both masking and skipping the hangout; I'll keep my plan to study at home.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

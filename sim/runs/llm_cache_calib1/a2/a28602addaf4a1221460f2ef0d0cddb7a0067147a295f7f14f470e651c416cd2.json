@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel totally fine, no symptoms. Good call on the mask though, I might grab one and keep an eye on things. Let me know if you start feeling off, okay?",
+  "shared_health": true
+ }
+}

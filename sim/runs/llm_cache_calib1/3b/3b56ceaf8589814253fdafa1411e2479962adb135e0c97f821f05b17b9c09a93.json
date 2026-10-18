@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:10",
+    "place": "home",
+    "start": "07:30"
+   },
+   {
+    "activity": "eat",
+    "end": "09:00",
+    "place": "bld:bld_333374283",
+    "start": "08:15"
+   },
+   {
+    "activity": "relax",
+    "end": "10:05",
+    "place": "bld:bld_232841950",
+    "start": "09:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:25",
+    "place": "home",
+    "start": "10:10"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:PWR1AH_SEM02",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "bld:bld_232841950",
+    "start": "13:20"
+   },
+   {
+    "activity": "class",
+    "end": "16:05",
+    "place": "class:COLLEGE102_SEM39",
+    "start": "15:00"
+   },
+   {
+    "activity": "practice",
+    "end": "17:35",
+    "place": "bld:bld_232715573",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "20:30",
+    "place": "home",
+    "start": "18:40"
+   },
+   {
+    "activity": "gym",
+    "end": "21:45",
+    "place": "bld:bld_255490604",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thursday: sticking to routine of class, study, practice and gym, masking in crowded indoor spots. Feel fine, still watching for the dorm fever rumor.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit wary about the dorm fever rumor. I'll stick to my disciplined routine: class, study, practice, gym. I'll mask indoors in crowded spots and avoid lingering in crowds. No need to text anyone, though I may check in if anything changes.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

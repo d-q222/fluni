@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon! Just hanging at Taper for a bit before I head home early. How's your night going?",
+  "shared_health": false
+ }
+}

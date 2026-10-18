@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Stevie. I'm keeping this quick, a few people in our circle tested positive. Are you feeling okay?",
+  "shared_health": false
+ }
+}

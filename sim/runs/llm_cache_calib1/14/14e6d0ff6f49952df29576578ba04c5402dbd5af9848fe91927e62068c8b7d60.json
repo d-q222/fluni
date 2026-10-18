@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! Yeah, I'm in, let me grab my tray and sit. You guys heading to the lounge after Taper too, or just the party?",
+  "shared_health": false
+ }
+}

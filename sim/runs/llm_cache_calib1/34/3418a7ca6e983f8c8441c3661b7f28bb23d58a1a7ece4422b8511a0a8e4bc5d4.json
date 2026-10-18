@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:30"
+   },
+   {
+    "activity": "rest",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "rest",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Still isolating at home with fever and cough, resting and doing light studying. Dakota and Chris in the dorm are sick too, so I'm very anxious. Friends are checking in, and I'll keep my distance.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks everyone, and thanks Dylan for the update. I'm staying in my room resting and keeping my door closed. Please keep masking in the dorm and let me know your test results. Sorry again if I exposed anyone.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm still sick and positive, so I'm staying in my room. Dylan's text says Dakota from the dorm is sick too, which makes me more anxious about the dorm. I'll rest, drink fluids, do light studying, and keep my door closed. A short reply to the group thanking everyone seems kind.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

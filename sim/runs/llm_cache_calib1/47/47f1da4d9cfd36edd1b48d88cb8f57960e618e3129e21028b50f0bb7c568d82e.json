@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Fallon in my dorm is masked, feels fine, app quiet, and is skipping the lounge. Nothing changes: I keep masking, lab and study, and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

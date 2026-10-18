@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley. Still feeling fine on my end, you? I'm heading out to study soon, so I'll keep my distance.",
+  "shared_health": true
+ }
+}

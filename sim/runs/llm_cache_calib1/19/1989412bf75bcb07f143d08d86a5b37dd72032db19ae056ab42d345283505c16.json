@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "13:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "rest",
+    "end": "17:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:10"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Test came back positive. Staying in and resting, skipping the dorm hangout, only a masked dinner run. Told the group and feel guilty about possibly spreading it.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my test came back positive. I'm staying in my room and skipping the dorm hangout tonight. If you were around me Thursday or Friday, watch for symptoms and get tested.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm sick and tested positive. Even though I'm social, I don't want to spread this to everyone, especially after Chris and Dylan's situations. I'll stay in, sleep, rest, and maybe grab food briefly masked. Skipping the dorm hangout, and I'll tell friends my test was positive.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

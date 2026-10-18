@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Sweet, let's go. I'm starving, I heard they've got decent pasta tonight.",
+  "shared_health": false
+ }
+}

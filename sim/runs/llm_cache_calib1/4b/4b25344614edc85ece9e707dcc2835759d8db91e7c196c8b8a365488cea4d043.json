@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! It's been good, gym, seminar, now food. Feeling pretty great honestly. Bunch of people have been going on about some illness going around, though. How about you?",
+  "shared_health": true
+ }
+}

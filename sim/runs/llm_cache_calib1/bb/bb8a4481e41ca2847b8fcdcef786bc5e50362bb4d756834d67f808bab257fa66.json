@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Nope, just a rumor I heard from True at the game, someone in a dorm with a fever. No names or anything. I feel fine though, so probably nothing. Masking's not a bad call, though!",
+  "shared_health": true
+ }
+}

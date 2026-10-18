@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I'll be at Green from 4 to 7, so I'll be there already. Probably a different floor though, I need to focus. Catch you back at the room later.",
+  "shared_health": false
+ }
+}

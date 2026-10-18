@@ -1,0 +1,17 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Sidney (my dorm neighbor, masked) told me they have a fever and cough; I urged them to get checked at Vaden and stay in. I'll keep my distance, stay watchful, and tell Finley.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Sidney from my dorm told me they have a fever and cough. Illness is going around, so keep some distance and tell me if you feel off.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "replan": false,
+  "worry": 3
+ }
+}

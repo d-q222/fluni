@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Skyler said Chris in our dorm tested positive and Hadley and Sidney look rough; Skyler is masked and tested negative. I feel fine, will keep my mask handy, skip packed spots and the dorm hangout, and keep washing hands.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

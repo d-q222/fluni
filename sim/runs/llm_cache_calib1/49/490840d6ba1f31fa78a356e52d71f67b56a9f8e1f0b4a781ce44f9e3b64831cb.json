@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler at Stern Dining; they can't lift at 8:50 but will see me at practice later. Nothing health-related shared; I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

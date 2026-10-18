@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "outdoor_leisure",
+    "end": "10:05",
+    "place": "bld:bld_m_white_plaza",
+    "start": "09:50"
+   },
+   {
+    "activity": "gym",
+    "end": "12:20",
+    "place": "bld:bld_232715642",
+    "start": "10:10"
+   },
+   {
+    "activity": "class",
+    "end": "13:25",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:05",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "eat",
+    "end": "17:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:55",
+    "place": "bld:bld_232841950",
+    "start": "17:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "event:EV00090",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Mika got told to stay home by FlUni, which made me a bit more nervous. I'm still doing gym, classes, dinner and Taper, but I'll leave the hangout early.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Mika, stay cozy! I feel fine but I'll be careful.",
+    "time": "",
+    "to": "A0257"
+   }
+  ],
+  "thoughts": "Mika's warning gives me pause, but I feel fine and I'm Campbell, so I'm not canceling my whole day. I'll keep the gym and classes, and maybe wear a mask in the crowded spots. Dinner at Stern is packed, so I'll grab food and go to Taper. I'll pop into the hangout briefly, then head home earlier than usual. I'll text Mika a quick reply.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

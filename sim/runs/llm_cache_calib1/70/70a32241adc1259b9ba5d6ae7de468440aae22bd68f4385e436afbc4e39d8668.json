@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Smart move, honestly. I feel fine, just a little wary after hearing a fever rumor in a dorm. Hope your friends get better soon! I've got practice later so I'm trying to stay healthy.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, they won't mind, the more the merrier. Come on, I think they're just up this way.",
+  "shared_health": false
+ }
+}

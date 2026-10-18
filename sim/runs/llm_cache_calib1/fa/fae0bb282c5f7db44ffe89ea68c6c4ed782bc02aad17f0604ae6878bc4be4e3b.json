@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Scout at Stern Dining; they said they feel fine with no symptoms and a quiet app, just anxious. Nothing changes, I'll keep my distance from anyone who sounds sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

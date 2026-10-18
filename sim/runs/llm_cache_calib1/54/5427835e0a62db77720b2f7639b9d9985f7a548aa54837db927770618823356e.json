@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! You heading to the Stern lounge at 8:30 too? I'm gonna pop in briefly, but I'm bailing if people are coughing.",
+  "shared_health": false
+ }
+}

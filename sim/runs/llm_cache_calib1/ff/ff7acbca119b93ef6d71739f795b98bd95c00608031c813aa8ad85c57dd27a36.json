@@ -1,0 +1,105 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:05",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:35",
+    "place": "home",
+    "start": "10:05"
+   },
+   {
+    "activity": "lab",
+    "end": "11:30",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "10:35"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "lab",
+    "end": "13:35",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "12:40"
+   },
+   {
+    "activity": "study",
+    "end": "16:45",
+    "place": "bld:bld_1169967277",
+    "start": "13:55"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_333374283",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:50",
+    "place": "plan:bld_m_green_library_f1_108",
+    "start": "19:15"
+   },
+   {
+    "activity": "lab",
+    "end": "22:15",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "21:05"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:05",
+    "place": "home",
+    "start": "00:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:05"
+   }
+  ],
+  "diary": "Sat Jan 10: Teagan tested positive. I feel fine but I'm masked and worried. I'm skipping the football game and keeping lab and study going. I texted Rain and Teagan.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Teagan tested positive for flu. Stay masked and watch for symptoms. I feel fine so far.",
+    "time": "",
+    "to": "A0022"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us. Rest up, and let us know if you need anything.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan tested positive. I feel fine but I've likely been near them, so I'm worried. I'll keep the mask on, skip the football game and crowded spots, and keep lab and study going. Dining halls are unavoidable, but I'll go at off-peak times and maybe take food back. I'll text Rain, since they asked me to share any news about the tests.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

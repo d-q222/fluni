@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Carter at Stern Dining; they're coming to the Arizona game at 7 and the lounge hangout after, and I'll save them a seat. Nothing health-related came up.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

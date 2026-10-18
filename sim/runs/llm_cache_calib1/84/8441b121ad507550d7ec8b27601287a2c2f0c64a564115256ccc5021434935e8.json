@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I feel fine. A bunch of illness stuff seems to be going around, so I'm masking in crowded spots. Thanks for the invite, but I'm more of a stay-in person, so I'll probably pass tonight.",
+  "shared_health": true
+ }
+}

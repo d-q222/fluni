@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel totally fine too. Cool, let's bail if anyone's coughing. See you at Taper!",
+  "shared_health": true
+ }
+}

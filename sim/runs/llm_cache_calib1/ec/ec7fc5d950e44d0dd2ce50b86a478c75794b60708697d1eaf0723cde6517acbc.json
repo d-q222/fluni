@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Morning Max! I'd come but I've got a thing at 8:45, then I'm back at the dorm. Have a good lift, I'll catch you at practice later!",
+  "shared_health": false
+ }
+}

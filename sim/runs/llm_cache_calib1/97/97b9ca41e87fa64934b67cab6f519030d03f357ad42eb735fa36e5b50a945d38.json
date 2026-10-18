@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Devon. Feeling okay today? I'm fine, just still a little anxious about the lounge. I'm heading to Stern for lunch soon, then the library, masked.",
+  "shared_health": true
+ }
+}

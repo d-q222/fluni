@@ -1,0 +1,66 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "13:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "event",
+    "end": "16:15",
+    "place": "event:EV00113",
+    "start": "13:25"
+   },
+   {
+    "activity": "gym",
+    "end": "17:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "16:25"
+   },
+   {
+    "activity": "study",
+    "end": "19:10",
+    "place": "plan:bld_m_green_library_f1_106",
+    "start": "17:55"
+   },
+   {
+    "activity": "eat",
+    "end": "19:55",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "gym",
+    "end": "20:45",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "20:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:40",
+    "place": "event:EV00124",
+    "start": "20:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "21:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Saturday: ate at crowded Stern, heading to the Cal game with True and Skyler, masking in crowds. Feel fine, staying a bit careful.",
+  "messages": [],
+  "thoughts": "Stern is crowded but I feel fine. I'll finish eating, go to the Cal game with True and Skyler and mask in the crowd, then gym, study, dinner, and a short stop at the dorm hangout with a mask. Staying a bit careful but keeping my routine.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

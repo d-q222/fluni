@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Paxton about Teagan's flu test and my possible exposure; Paxton is fine, masking, and skipping the hangout too. I'll keep my routine, stay in tonight, and share any news.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

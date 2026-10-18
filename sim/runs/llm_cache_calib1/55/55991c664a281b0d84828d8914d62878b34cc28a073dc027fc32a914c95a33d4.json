@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Just being careful, I'm feeling fine. I get anxious about stuff going around. I think I have a spare in my bag if you want one.",
+  "shared_health": true
+ }
+}

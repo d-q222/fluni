@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "00:20",
+    "place": "plan:bld_m_green_library_f2_208",
+    "start": "23:05"
+   },
+   {
+    "activity": "relax",
+    "end": "01:25",
+    "place": "home",
+    "start": "00:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:25"
+   }
+  ],
+  "diary": "Stern Dining was crowded so I ate quickly, then kept to my usual lab, study, home routine with a mask on. Feeling fine but still watching for symptoms after Scout's exposure.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 41 people. I'm anxious about Scout's exposure, so I'll finish eating quickly with my mask on and head to lab as usual. I'm disciplined, so I'll keep my routine, mask up indoors, and then study and go home to sleep. No need to text anyone right now.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

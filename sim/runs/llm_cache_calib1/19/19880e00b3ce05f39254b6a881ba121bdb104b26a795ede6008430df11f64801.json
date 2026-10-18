@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I heard the same rumor, super sketchy. I feel fine though, just keeping an eye out. Are you masking or anything, or just being careful with hand washing?",
+  "shared_health": true
+ }
+}

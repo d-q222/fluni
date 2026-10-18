@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "12:35"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:MUSIC19A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:05",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "lab",
+    "end": "16:55",
+    "place": "plan:bld_86355804_f2_202",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "17:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:40",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "17:40"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "20:45"
+   },
+   {
+    "activity": "relax",
+    "end": "00:10",
+    "place": "home",
+    "start": "22:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Stern was crowded at lunch so I left quickly. Stuck to my usual Monday schedule and plan to study with Oli at Green tonight. Feeling fine, a bit mindful of illness.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with 43 people, so I'll finish eating quickly and head out. I'll keep my routine since I feel fine: lab, MUSIC class, a break at home, more lab, then dinner and library study with Oli at 5:40. I don't usually mask indoors, so I'll stay without one but keep some distance. Dinner might be less crowded if I go a bit later, but I'll keep it short.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

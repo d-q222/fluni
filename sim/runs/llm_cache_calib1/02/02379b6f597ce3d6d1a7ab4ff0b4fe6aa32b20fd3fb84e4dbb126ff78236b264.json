@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm okay, still a FlUni close contact so I'm keeping my distance. Glad you're feeling fine. Text me if anything changes, yeah?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Jody I feel fine and still have no word on Jesse's test; Jody feels fine too. We'll keep masking in the room, and I'll text the moment I hear so Jody can tell Neo.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

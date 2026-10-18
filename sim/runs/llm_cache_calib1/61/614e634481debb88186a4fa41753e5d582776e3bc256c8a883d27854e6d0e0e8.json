@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout! Crowded in here tonight, huh?",
+  "shared_health": false
+ }
+}

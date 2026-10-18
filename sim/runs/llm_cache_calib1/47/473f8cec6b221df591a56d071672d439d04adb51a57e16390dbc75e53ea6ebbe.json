@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dakota. You doing okay? You sound rough. I'm here getting tested too since Teagan tested positive, so I'm keeping my distance a bit.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bailey! Pretty busy, mostly lab and problem sets. I see you're masking too, seems like everyone in the dorm is. How are you doing?",
+  "shared_health": false
+ }
+}

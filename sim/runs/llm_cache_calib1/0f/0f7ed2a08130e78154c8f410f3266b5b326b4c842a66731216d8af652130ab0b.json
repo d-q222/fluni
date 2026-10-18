@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:50",
+    "place": "bld:bld_1040629370",
+    "start": "10:15"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "11:45",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "10:55"
+   },
+   {
+    "activity": "lab",
+    "end": "13:30",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "11:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "14:10",
+    "place": "bld:bld_m_meyer_green",
+    "start": "13:35"
+   },
+   {
+    "activity": "study",
+    "end": "15:10",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:15"
+   },
+   {
+    "activity": "gym",
+    "end": "16:30",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "15:15"
+   },
+   {
+    "activity": "lab",
+    "end": "18:20",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "16:40"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_333374283",
+    "start": "18:30"
+   },
+   {
+    "activity": "lab",
+    "end": "20:10",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "event:EV00146",
+    "start": "20:20"
+   },
+   {
+    "activity": "study",
+    "end": "23:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:35"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:40"
+   }
+  ],
+  "diary": "Sun Jan 11: Kept my usual lab, gym, hangout and study routine. Feel fine, only mildly aware of the flu going around.",
+  "messages": [],
+  "thoughts": "Sunday, I feel fine. Flu is going around but I'm calm and keep my usual routine: lab, study, gym, and the dorm hangout in the evening. No mask indoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

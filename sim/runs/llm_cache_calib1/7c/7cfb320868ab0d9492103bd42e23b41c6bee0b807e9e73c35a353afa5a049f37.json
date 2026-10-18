@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Dakota at Maples before the Arizona game; we're going to find Wynn and Onyx for seats and then head to Taper after. Both feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

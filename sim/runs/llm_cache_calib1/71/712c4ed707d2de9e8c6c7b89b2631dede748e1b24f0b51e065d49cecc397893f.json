@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Carter I was around Dakota, who tested positive; Carter was also a close contact and feels fine. We agreed to text right away if either feels off, and I'm staying in tonight, masked.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

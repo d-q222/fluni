@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:05",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:30",
+    "place": "home",
+    "start": "08:05"
+   },
+   {
+    "activity": "study",
+    "end": "10:50",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "10:55"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS205L_LEC01",
+    "start": "12:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:ME102_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "relax",
+    "end": "20:20",
+    "place": "dorm_lounge",
+    "start": "19:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Tuesday: classes, quick White Plaza catch-up with Dell, Lakeside dinner with the group, then Taper. Feeling fine, still a bit wary of illness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Lakeside at 5:30 for me, then Taper at 8:25. See you all!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Tuesday, I feel fine. Sleep in, follow my usual routine with classes, then White Plaza with Dell and Lakeside dinner with the crew, then Taper at 20:25 with friends. Skip the gym tonight in favor of social time. Slightly wary of illness but fine, no mask outdoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

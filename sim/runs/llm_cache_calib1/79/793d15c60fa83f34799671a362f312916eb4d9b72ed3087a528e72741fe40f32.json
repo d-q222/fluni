@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:10",
+    "place": "home",
+    "start": "09:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "13:20",
+    "place": "bld:bld_m_meyer_green",
+    "start": "12:10"
+   },
+   {
+    "activity": "lab",
+    "end": "14:50",
+    "place": "class:DESIGN1_LBS04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "bld:bld_m_green_library",
+    "start": "15:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:30",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "bld:bld_232841950",
+    "start": "20:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Oli is coughing and seems sick. I warned the group and I'm skipping the Stern lounge. I'll do Lakeside and Taper masked and spend less time in the room.",
+  "messages": [
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: my roommate Oli is coughing and looks sick. I'm fine so far, but I'm skipping the Stern lounge tonight. Still up for Lakeside and Taper, masked.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Oli, my roommate, is coughing and looks unwell, and Eden warned about fevers in Stern. I feel fine but I'm a bit more careful now. I'll keep my social plans but skip the lounge hangouts, which are the riskiest. I'll still go to the DESIGN lab, Lakeside dinner and a short Taper hangout, and I'll mask there. I'll warn the group that Oli is sick and spend less time in the room.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Brief chat with Mika at Stern breakfast; we're both masked and feel fine, and they offered another spare mask. Nothing changes, sticking with my routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

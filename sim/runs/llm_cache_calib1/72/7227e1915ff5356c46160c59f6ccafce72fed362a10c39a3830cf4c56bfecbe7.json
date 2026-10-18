@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden! Yeah, a little chilly out there. I see the mask, are you feeling okay or just being careful with that fever rumor going around?",
+  "shared_health": false
+ }
+}

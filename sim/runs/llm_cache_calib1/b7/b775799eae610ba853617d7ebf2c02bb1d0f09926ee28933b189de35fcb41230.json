@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh good, that's a relief about Skyler. I'm feeling fine too, just staying careful. Let's keep masking. See you around, Mika!",
+  "shared_health": true
+ }
+}

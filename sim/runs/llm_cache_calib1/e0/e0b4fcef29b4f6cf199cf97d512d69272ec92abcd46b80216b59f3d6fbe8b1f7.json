@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler (masked, negative test, no symptoms) at Mark Taper; they're skipping tonight's dorm hangout to rest and suggested masking if it's packed. I feel fine and my plans stay the same, staying a bit careful.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

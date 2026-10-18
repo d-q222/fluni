@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:55"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:BIOE271_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "eat",
+    "end": "10:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:20"
+   },
+   {
+    "activity": "relax",
+    "end": "12:35",
+    "place": "home",
+    "start": "10:45"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_232715666",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "15:10",
+    "place": "class:ARTSTUDI122_PRA01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:45",
+    "place": "home",
+    "start": "15:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:20",
+    "place": "bld:bld_m_green_library",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:25"
+   },
+   {
+    "activity": "study",
+    "end": "22:20",
+    "place": "home",
+    "start": "19:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Regular Monday: classes, dining, and studying at Green. Feeling fine but staying masked indoors since I'm a little anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Normal Monday. I feel fine, so I'll stick to my routine, attend both classes, study, and mask up indoors since I'm a bit anxious about illness going around. No need to text anyone.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

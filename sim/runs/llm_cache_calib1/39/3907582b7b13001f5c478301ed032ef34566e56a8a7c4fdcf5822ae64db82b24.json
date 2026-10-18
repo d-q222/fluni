@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Walked to CS 194W with Fallon, who lives in my dorm. We both feel fine and are masking because we're anxious about illness. Sitting near the door for airflow. No plan changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

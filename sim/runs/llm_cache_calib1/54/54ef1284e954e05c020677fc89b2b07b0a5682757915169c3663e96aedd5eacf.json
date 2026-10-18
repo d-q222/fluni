@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Glad you're feeling fine! Yeah, I'm good too, just a little wary of everything going around. Heading to the dorm hangout, you coming?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, thanks for telling me, I appreciate the honesty. Let's keep a bit of space at the table, and I'll keep my mask on too. Hope Wallace is okay, and if you get symptoms maybe get tested.",
+  "shared_health": false
+ }
+}

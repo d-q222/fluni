@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:40",
+    "place": "home",
+    "start": "11:10"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "11:45"
+   },
+   {
+    "activity": "event",
+    "end": "15:45",
+    "place": "event:EV00113",
+    "start": "13:05"
+   },
+   {
+    "activity": "gym",
+    "end": "17:35",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:40",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:10"
+   },
+   {
+    "activity": "gym",
+    "end": "20:05",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "22:05",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "party",
+    "end": "01:35",
+    "place": "event:EV00131",
+    "start": "22:10"
+   },
+   {
+    "activity": "relax",
+    "end": "02:10",
+    "place": "home",
+    "start": "01:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:10"
+   }
+  ],
+  "diary": "Sat Jan 10: Plan is study, football, gym, Stern dinner, then the Acacia party. Feel fine, a bit worried with Chris and Oli sick, but skipping the lounge and not changing much.",
+  "messages": [],
+  "thoughts": "Feeling fine, a little worried with Chris, Oli, Sidney and Hadley sick around. But it's Saturday, football game and a party tonight, and I'm very social and rarely follow health advice. I'll keep most of my routine, skip the lounge, and maybe wear a mask in the crowded stadium. Keep dinner at Stern but brief.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

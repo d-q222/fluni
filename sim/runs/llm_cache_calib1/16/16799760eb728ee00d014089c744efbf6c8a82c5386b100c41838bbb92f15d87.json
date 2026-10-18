@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "13:45",
+    "place": "home",
+    "start": "13:40"
+   },
+   {
+    "activity": "gym",
+    "end": "16:30",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "13:45"
+   },
+   {
+    "activity": "relax",
+    "end": "17:45",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "study",
+    "end": "20:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "20:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Heard Dakota and Chris in my dorm tested positive. Keeping masked, doing gym, dinner and study, but skipping the dorm hangout tonight. Feeling fine, a bit more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, True. I feel fine and am masking too. Skipping the dorm hangout tonight to be safe. Let me know if anything changes.",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "Dakota and Chris in my dorm tested positive, so the dorm hangout feels riskier. I feel fine and will keep masking. I'll keep gym and dinner since I'm a varsity athlete, study at Green, and skip the crowded hangout in favor of a quiet evening at home. I'll thank True and tell the group I'm skipping.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

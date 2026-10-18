@@ -6,10 +6,13 @@
 import { buildingStyle, HIDDEN, haloRadius, GLOW, HALO_BLUR, fmt, heatColor, darker } from './userstyle.js';
 import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
+const TAP = { stroke: false, fill: true, fillColor: '#000', fillOpacity: 0 };
+
 export class BuildingTotalsLayer {
   // avoid: () => [DOMRect, ...] the labels must stay clear of (legend, chip)
-  constructor(geojson, { avoid = () => [], badges = true, names = true } = {}) {
+  constructor(geojson, { avoid = () => [], badges = true, names = true, invisible = false } = {}) {
     this.geojson = geojson;
+    this.invisible = invisible; // draw nothing, only take taps (the phone's map shows the presenter's heat instead)
     this.names = names;
     this.badges = badges; // the presenter's count badges (FlUni's own map has none)
     this.avoid = avoid;
@@ -80,12 +83,12 @@ export class BuildingTotalsLayer {
         if (it.badge) { it.badge = false; labelsDirty = true; }
         continue;
       }
-      const style = buildingStyle(d.n, d.excess ?? d.expected, vmax, { minPeople, forecast });
+      const style = this.invisible ? (d.n >= minPeople ? TAP : HIDDEN) : buildingStyle(d.n, d.excess ?? d.expected, vmax, { minPeople, forecast });
       const key = JSON.stringify(style);
       if (key !== it.key) { it.layer.setStyle(style); it.key = key; }
       if (!it.shown) { this.group.addLayer(it.layer); it.shown = true; }
       // a halo with a floor on its on-screen size, so a small hot building still registers when zoomed out
-      if (style.fill) {
+      if (style.fill && !this.invisible) {
         if (!it.halo) it.halo = L.circleMarker(it.center, { interactive: false, stroke: false, radius: haloRadius(this.map.getZoom()), ...this.P.halo }).addTo(this.haloGroup);
         it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
       } else if (it.halo) { it.halo.remove(); it.halo = null; }

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Oakley at Stern breakfast; they're masking too and have practice later. Plans unchanged: keep meals short, mask, stay home.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

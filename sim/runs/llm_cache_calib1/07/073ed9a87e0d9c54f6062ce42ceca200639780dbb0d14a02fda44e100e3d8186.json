@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler! Pretty good, just grabbing dinner before the party tonight. Why the mask, are you feeling okay?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Pasta sounds perfect, I'm starving too. Let's go!",
+  "shared_health": false
+ }
+}

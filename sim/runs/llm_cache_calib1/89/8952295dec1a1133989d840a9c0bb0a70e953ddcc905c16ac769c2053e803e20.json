@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Lake! Yeah, I'm fine, just being cautious with everything going around. Good luck at practice!",
+  "shared_health": true
+ }
+}

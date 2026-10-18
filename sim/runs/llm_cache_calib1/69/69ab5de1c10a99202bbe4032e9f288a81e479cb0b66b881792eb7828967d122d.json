@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, just what I heard people saying at dinner, nothing confirmed. Okay, see you in there, stay safe and good luck studying!",
+  "shared_health": false
+ }
+}

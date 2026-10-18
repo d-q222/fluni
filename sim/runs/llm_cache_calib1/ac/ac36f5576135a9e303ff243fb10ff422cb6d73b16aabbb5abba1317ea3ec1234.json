@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dylan. I'm feeling fine, actually, my last test came back negative. Just masking to be careful. What's the dorm stuff going around? You feeling okay?",
+  "shared_health": true
+ }
+}

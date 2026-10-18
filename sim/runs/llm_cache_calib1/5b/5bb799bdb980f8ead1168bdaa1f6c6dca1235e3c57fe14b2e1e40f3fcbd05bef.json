@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm heading to the lounge too, but just a short stop before the party. I feel fine, but let's keep our distance if anyone's coughing.",
+  "shared_health": true
+ }
+}

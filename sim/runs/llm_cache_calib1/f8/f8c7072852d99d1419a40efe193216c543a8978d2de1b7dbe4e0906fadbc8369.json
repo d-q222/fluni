@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "10:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "home",
+    "start": "10:15"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:50",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:05",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:00",
+    "place": "bld:bld_m_engineering_quad",
+    "start": "18:50"
+   },
+   {
+    "activity": "gym",
+    "end": "20:25",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Normal Monday: three classes, gym in the evening, studying at home. Feeling fine but a bit wary of illness going around, so I wore a mask in class.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll mostly follow my usual routine. Monday classes in a row, so I'll go. Slightly worried about illness going around, so I might wear a mask in the crowded lecture rooms. Keep the evening quiet at home.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

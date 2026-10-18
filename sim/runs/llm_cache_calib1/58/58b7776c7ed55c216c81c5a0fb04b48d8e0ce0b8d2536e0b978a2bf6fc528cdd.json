@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner with Wynn at Lakeside; we both feel fine and are still going to Taper, the lounge and the party despite the Stern fever rumor. Nothing changed.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

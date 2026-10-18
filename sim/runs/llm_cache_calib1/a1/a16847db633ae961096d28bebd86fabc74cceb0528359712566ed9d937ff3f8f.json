@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:30",
+    "place": "home",
+    "start": "10:20"
+   },
+   {
+    "activity": "lab",
+    "end": "12:05",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "10:35"
+   },
+   {
+    "activity": "eat",
+    "end": "12:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "home",
+    "start": "12:55"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "home",
+    "start": "16:10"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:50",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "01:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:55"
+   },
+   {
+    "activity": "study",
+    "end": "02:50",
+    "place": "home",
+    "start": "01:55"
+   },
+   {
+    "activity": "relax",
+    "end": "03:20",
+    "place": "home",
+    "start": "02:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "03:20"
+   }
+  ],
+  "diary": "Teagan tested positive and I was near them Thursday. I feel fine, but I'm masking, skipping the football game, and watching for symptoms. Still quite worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Teagan. Hope you feel better soon. I'm feeling fine but masking and watching for symptoms. Will check Vaden if anything shows up. Feel free to ask if you need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan tested positive and I was near them Thursday at Stern. I feel fine but I'm worried. I'll keep my disciplined routine, but skip the crowded football game and crowded Stern dinner, and mask indoors. I'll study at home instead and use the dining hall at an off-peak time. I'll text the group to thank Teagan and offer to leave water outside their door, and mention I'll watch for symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

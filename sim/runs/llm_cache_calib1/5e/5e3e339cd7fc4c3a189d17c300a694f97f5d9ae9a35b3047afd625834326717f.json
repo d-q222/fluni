@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Checked in with roommate Onyx at 13:35; both masked and feel fine. We'll keep the window cracked and tell each other right away if anything feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

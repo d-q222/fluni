@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Devon I feel fine and agreed we'd tell each other if either feels off. Sidney down the hall wore a mask at dinner but said they felt fine; people say something is going around. Keeping my mask on in common areas.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

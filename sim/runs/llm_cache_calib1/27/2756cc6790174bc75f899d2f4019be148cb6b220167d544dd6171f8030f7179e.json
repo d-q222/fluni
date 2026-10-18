@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, pretty long, but I'm fine. Masking helps me feel better about these hangouts. Let's keep it short and head up?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice! We're heading over around 6:45 or so, after I finish eating. Text me when you're at Maples and we'll find you!",
+  "shared_health": false
+ }
+}

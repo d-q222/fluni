@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Eden, mask today? I heard you were skipping the lounge tonight. You feeling okay, or just being careful with all the Stern fever stuff?",
+  "shared_health": false
+ }
+}

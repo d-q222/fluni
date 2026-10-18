@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Onyx, a dorm neighbor, who mentioned illness going around; we both said we're being careful and I told them I feel fine. Nothing planned beyond seeing them at the dorm.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

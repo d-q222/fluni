@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody, I see you're masking too. Smart, I feel like something's going around.",
+  "shared_health": false
+ }
+}

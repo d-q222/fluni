@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m6",
+   "m2"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:15",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "10:40",
+    "place": "home",
+    "start": "10:15"
+   },
+   {
+    "activity": "study",
+    "end": "12:10",
+    "place": "home",
+    "start": "10:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:55",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "13:00"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:MATH20_LEC04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:10",
+    "place": "bld:bld_m_green_library",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:15",
+    "place": "dorm_lounge",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f1_104",
+    "start": "22:10"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "First Monday of the quarter: class, studying, then Lakeside dinner with Dakota and Taper hangout with Winter. Feeling fine, a little wary of illness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Down for Lakeside at 5:30 and Taper later! Can't do Wilbur too, but see you all.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter and three friends invited me out. I feel fine and love being social. I'll go to class, study, then do the 17:30 Lakeside dinner with Dakota. Wynn's Wilbur dinner at 19:00 would be a second dinner, so I'll skip it and hang in the Stern lounge later. I'll finish at Taper at 20:25 for Winter's hangout. A little worried about illness but no mask indoors.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

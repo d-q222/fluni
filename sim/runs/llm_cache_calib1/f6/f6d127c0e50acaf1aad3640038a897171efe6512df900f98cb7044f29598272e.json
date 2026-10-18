@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden wore a mask at Stern Dining, said they feel fine and are just being careful about the fever rumors, and are skipping the lounge tonight. I said I'm skipping the lounge too but still doing Taper this afternoon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

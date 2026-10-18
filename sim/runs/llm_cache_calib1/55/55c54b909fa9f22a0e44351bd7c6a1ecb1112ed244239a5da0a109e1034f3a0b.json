@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Ocean. Heads up, a few people in our dorm have been coming down with fevers and coughs, so I'm keeping my distance a bit. You feeling okay?",
+  "shared_health": false
+ }
+}

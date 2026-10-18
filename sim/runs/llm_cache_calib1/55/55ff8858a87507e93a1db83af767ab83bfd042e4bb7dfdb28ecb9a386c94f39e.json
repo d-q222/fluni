@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Skyler, you headed to the game too? Good to see you masked up. Heard you tested negative, that's good.",
+  "shared_health": false
+ }
+}

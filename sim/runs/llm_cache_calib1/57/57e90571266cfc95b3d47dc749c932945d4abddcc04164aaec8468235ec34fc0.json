@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, still fine, thanks. Test was negative and I'm still masking in crowds. Hope lab goes okay, stay careful!",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Teagan. Yeah, I got a heads-up that I'm a close contact of someone, so I'm being careful. I feel fine, just watching for symptoms. Maybe keep a bit of distance to be safe.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,123 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:15",
+    "place": "home",
+    "start": "07:00"
+   },
+   {
+    "activity": "study",
+    "end": "07:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "07:20"
+   },
+   {
+    "activity": "eat",
+    "end": "08:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:55"
+   },
+   {
+    "activity": "relax",
+    "end": "08:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "class",
+    "end": "10:20",
+    "place": "class:PHYSICS41_LEC01",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:BIO199C_SEM01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:CHEM141_LEC02",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:50",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:45",
+    "place": "home",
+    "start": "16:55"
+   },
+   {
+    "activity": "eat",
+    "end": "20:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:50"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Jesse has a fever after the hangout. I feel fine, so I'm keeping my routine with a mask, a slightly earlier night, and symptom watching. I texted Jesse and the group.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're sick, Jesse. Please rest and get tested at Vaden if you can. I'm fine so far, but I'll keep masking. Let me know if you need anything.",
+    "time": "",
+    "to": "A0170"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Heads up: Jesse has a fever after the hangout. Keep masks on and watch for symptoms. I'll tell you if I feel anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Jesse texted that they have a fever after the hangout where I stood near the edge, masked. I feel fine now. I'll keep my routine, stay masked, and keep my distance. I'll check in with Jesse kindly and watch for symptoms. I'll also skip the late library night and head home a bit earlier to be careful.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

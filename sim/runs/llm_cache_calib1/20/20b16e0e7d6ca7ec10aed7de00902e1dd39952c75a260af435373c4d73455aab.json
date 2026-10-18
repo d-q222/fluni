@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same, breakfast then class and practice later. Gotta stay on top of things. Have a good one!",
+  "shared_health": false
+ }
+}

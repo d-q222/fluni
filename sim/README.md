@@ -140,6 +140,16 @@ its placeholder and is marked `"fitted": false`. The JSON holds:
 `personality.weights_source=calibrated` uses the fitted weight for each trait marked fitted, and
 `personality.json` for the rest. Intercepts are still solved so archetype means match today's.
 With the default (`config`), the file is ignored and run ids don't change.
+
+The weights only change how agents vary around the archetype means. To move the means themselves
+toward what Claude agents did, add `--set personality.rates_source=calibrated` (works with personality
+off or `big_five`). This takes the pooled fitted sick-response shares, the app compliance rate (and a
+multiplier per advice kind), and the worry jumps and half-life. Each is shrunk toward its config
+value: `new = (n * fitted + k * current) / (n + k)`, where `n` is the number of rows and
+`k = personality.rates_prior_n` (default 30). Each is applied as one shift on the logit or log-prob
+scale, so archetype differences are kept. Unfitted rates stay as they are. The run log prints
+old -> new for each applied rate. The default (`config`) leaves run ids unchanged. Check it with
+`scripts/smoke_rates.py`.
 `validation_report.py` writes `validation.md`, which compares each fitted rate with
 `configs/published_rates.json` and flags gaps outside tolerance. It lists rates with no published
 match as unvalidated. Check all of this with `scripts/smoke_calibrate_agents.py`, which recovers
@@ -289,6 +299,61 @@ live in 53 dorms (at most 97 in one, Florence Moore Hall) instead of 77% in one:
 
 Except the 4-day spread run, their `contacts.csv.gz` and `timeline.csv.gz` are committed in parts, so run
 `scripts/run_parts.py join runs/<run> --no-by-agent` after cloning.
+
+## Training runs
+
+Runs for `ml/` and the behaviour fit. All are 14 days, seed 42, rule-based agents only. For most,
+only the five files `ml/fluniml/data.py` reads are committed (`contacts.parquet`, `infections.csv`,
+`agents_static.csv`, `config.json`, `summary.json`). Rerun the command (output is byte-identical) to
+get the rest.
+
+| Run | Agents | Initial cases | `transmission_scale` | Infected | R | Committed |
+|---|---|---|---|---|---|---|
+| `influenza_none_n1000_d14_s42_a986df0a` | 1,000 | 30 | 1.2 | 15.4% | 0.98 | 5 files |
+| `influenza_none_n7000_d14_s42_f90e5e60` | 7,000 | 90 | 1.2 | 18.3% | 1.45 | small files (no contacts) |
+| `influenza_none_n1000_d14_s42_689ae9f0` | 1,000 | 5 | 1.2, old behaviour | 5.0% | 0.97 | 5 files |
+| `influenza_none_n1000_d14_s42_f4bf301c` | 1,000 | 5 | 1.446, calibrated behaviour | 9.8% | 1.38 | 5 files |
+| `influenza_none_n7500_d14_s42_9776284a` (**fixed**) | 7,500 | 5 | 1.2, old behaviour | 5.3% | 1.54 | small files; 5 files in the release below |
+| `influenza_none_n7500_d14_s42_17ed9cd6` (**frankenstein**) | 7,500 | 5 | 1.446, calibrated behaviour | 10.3% | 2.04 | small files; 5 files in the release below |
+| `influenza_none_n1000_d14_s42_{22a44427, 9214956b, f4573d76, 2329d271, 291f8efd, 14859125}` | 1,000 | 10, 30, 30, 30, 30, 30 | 1.5, 1.8, 2.0, 2.5, 3.0, 4.0 | 6.6%, 32%, 45%, 57%, 59%, 79% | 0.90–1.76 | 5 files |
+| `influenza_none_n1000_d21_s42_4f488dd3` (21 days) | 1,000 | 30 | 2.5 | 74% | 1.16 | 5 files |
+
+```bash
+.venv/bin/python simulate.py --agents 1000 --days 14 --seed 42 --initial-seeds 30                 # a986df0a
+.venv/bin/python simulate.py --agents 7000 --days 14 --step-min 5 --seed 42 --initial-seeds 90    # f90e5e60, ~8 min
+.venv/bin/python simulate.py --agents 7500 --days 14 --initial-seeds 5                            # old behaviour
+.venv/bin/python simulate.py --agents 7500 --days 14 --initial-seeds 5 --set personality.mode=big_five \
+    --set worry.mode=on --set personality.rates_source=calibrated --set disease.transmission_scale=1.446  # calibrated
+```
+
+### fixed and frankenstein (7,500 agents, downloadable)
+
+The two 7,500-agent runs are called **fixed** (the old, fixed rule-based behaviour) and **frankenstein**
+(behaviour calibrated from 50 Claude-driven agents). Their `contacts.parquet` (~555 MB) is too big
+for git, so each run's five `ml/` files are attached to the GitHub release
+[`sim-runs-n7500-2026-10-18`](https://github.com/aidenyj/fluni/releases/tag/sim-runs-n7500-2026-10-18):
+
+| Name | Run | Download | Infected | R |
+|---|---|---|---|---|
+| fixed | `influenza_none_n7500_d14_s42_9776284a` | [`fixed.tar`](https://github.com/aidenyj/fluni/releases/download/sim-runs-n7500-2026-10-18/fixed.tar) (561 MB) | 5.3% | 1.54 |
+| frankenstein | `influenza_none_n7500_d14_s42_17ed9cd6` | [`frankenstein.tar`](https://github.com/aidenyj/fluni/releases/download/sim-runs-n7500-2026-10-18/frankenstein.tar) (556 MB) | 10.3% | 2.04 |
+
+```bash
+gh release download sim-runs-n7500-2026-10-18 -R aidenyj/fluni -D /tmp/fluni-runs
+(cd /tmp/fluni-runs && shasum -a 256 -c SHA256SUMS.txt)
+tar -xf /tmp/fluni-runs/fixed.tar -C runs/ && tar -xf /tmp/fluni-runs/frankenstein.tar -C runs/
+```
+
+Each tar unpacks to `runs/<run id>/` next to the small files already committed there. Each run is one
+seed, so the fixed vs frankenstein difference isn't a measured behaviour effect yet.
+
+The calibrated runs read `configs/behavior_calibrated.json`, fitted from the calibration run
+`runs/influenza_fluni_n300_d7_s7_06ba2d48/` (committed in full, with its API response cache
+`runs/llm_cache_calib1/`, so it reruns without API calls) by
+`scripts/calibrate_agents.py runs/influenza_fluni_n300_d7_s7_06ba2d48 --min-rows 5 --min-kind-rows 2`.
+`worry.half_life_fitted` was then set to false by hand (see `half_life_note` in the file). 1.446 is
+the scale that re-fits R to 1.65 with calibrated behaviour (7,000 agents × 14 days, 3 scales × 2
+seeds). Each arm is one seed, so the old vs calibrated difference isn't significant yet.
 
 ## Calibration
 

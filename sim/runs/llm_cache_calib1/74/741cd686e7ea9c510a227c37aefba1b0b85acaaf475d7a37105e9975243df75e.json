@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha, I'm good too, no symptoms or anything. I'm okay on the mask, I'm about to eat anyway. Smart though! You going to the study group later?",
+  "shared_health": true
+ }
+}

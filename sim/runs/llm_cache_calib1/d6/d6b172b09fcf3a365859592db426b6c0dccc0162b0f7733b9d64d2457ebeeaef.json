@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce. Heard about the flu in our dorm, Dakota and Chris I think? You doing okay?",
+  "shared_health": false
+ }
+}

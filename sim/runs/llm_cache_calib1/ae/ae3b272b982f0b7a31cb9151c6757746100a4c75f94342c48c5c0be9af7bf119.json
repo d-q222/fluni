@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Dinner at crowded Stern with Campbell, kept my mask handy and left earlier than usual. Studying at home then an early night, skipping the dorm hangout. Still a little wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 49 people and I'm wary of getting sick. I'll finish dinner quickly with Campbell, mask on, then head home to study and relax. I'll skip the dorm hangout and get an early night, like I planned.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

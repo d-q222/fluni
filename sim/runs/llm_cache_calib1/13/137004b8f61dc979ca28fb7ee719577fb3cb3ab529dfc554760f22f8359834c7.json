@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon. Yeah, I heard a couple people in the lounge are sick, so I'm keeping my distance. Glad you're masking too.",
+  "shared_health": false
+ }
+}

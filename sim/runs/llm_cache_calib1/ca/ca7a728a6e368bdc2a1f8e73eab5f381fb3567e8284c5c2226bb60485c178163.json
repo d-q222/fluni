@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm fine, just a little nervous about it. I'm keeping my routine and skipping the lounge stuff for now. Want to sit together and eat?",
+  "shared_health": true
+ }
+}

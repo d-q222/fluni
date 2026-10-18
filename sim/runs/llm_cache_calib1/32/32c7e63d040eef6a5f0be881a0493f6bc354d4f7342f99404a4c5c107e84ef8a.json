@@ -1,0 +1,108 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:30",
+    "place": "home",
+    "start": "06:10"
+   },
+   {
+    "activity": "gym",
+    "end": "08:15",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "06:35"
+   },
+   {
+    "activity": "eat",
+    "end": "09:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:50",
+    "place": "bld:bld_m_meyer_green",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "11:35",
+    "place": "home",
+    "start": "09:55"
+   },
+   {
+    "activity": "eat",
+    "end": "12:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:JAPANLNG11B_LNG01",
+    "start": "12:30"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "14:10",
+    "place": "bld:bld_m_white_plaza",
+    "start": "13:20"
+   },
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "home",
+    "start": "14:15"
+   },
+   {
+    "activity": "practice",
+    "end": "17:50",
+    "place": "bld:bld_232715629",
+    "start": "15:25"
+   },
+   {
+    "activity": "gym",
+    "end": "18:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:15"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "dorm_lounge",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Wed Jan 7: Planned a normal day of lifting, class, practice, and dinner at Stern. Feeling fine and not worried.",
+  "messages": [],
+  "thoughts": "Feeling fine, not worried. Stick with my usual routine: lift, Stern, Japanese class, practice, dinner. Some dorm folks are masking but nobody is sick. I'll skip the men's game and keep my own schedule, with a bit more sleep and a lighter evening than the autopilot.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

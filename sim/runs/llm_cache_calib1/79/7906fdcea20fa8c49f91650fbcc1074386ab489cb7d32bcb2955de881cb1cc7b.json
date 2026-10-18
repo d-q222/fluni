@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dylan in the lab; we both feel fine and are wary of getting sick. Dylan may start wearing a mask. Nothing changes, I keep masking and stay in lab.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

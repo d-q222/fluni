@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Nice, enjoy the gym. Probably skipping the hangout though, after last night I'm keeping it quiet. Maybe catch you at dinner at Stern. See you!",
+  "shared_health": false
+ }
+}

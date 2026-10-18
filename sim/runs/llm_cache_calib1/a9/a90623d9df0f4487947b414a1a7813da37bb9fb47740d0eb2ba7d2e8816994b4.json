@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm fine too, no symptoms. Honestly I'm kind of anxious about it too, so I get it. Have you heard how bad it's getting around here?",
+  "shared_health": true
+ }
+}

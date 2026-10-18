@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Can't walk over, I've got lifting at 6:45, so I'll probably miss tipoff. Maybe I'll swing by after if I'm not wiped. Have fun though!",
+  "shared_health": false
+ }
+}

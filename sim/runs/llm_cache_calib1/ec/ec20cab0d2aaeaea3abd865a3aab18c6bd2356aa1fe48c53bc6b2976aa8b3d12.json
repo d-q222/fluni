@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Carter at Coupa; both fine. Told them I'll be at the Arizona game after the gym and Taper afterward; Carter will save seats near Onyx.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

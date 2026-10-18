@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "11:35",
+    "place": "home",
+    "start": "09:50"
+   },
+   {
+    "activity": "eat",
+    "end": "12:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "14:45",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:STATS118_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "rest",
+    "end": "17:45",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:30",
+    "place": "event:EV00031",
+    "start": "20:45"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "00:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Tue Jan 6: Routine day with class, dinner at Stern with Campbell, then study group. Wearing a mask in crowds. Feeling fine, a little wary.",
+  "messages": [],
+  "thoughts": "Feeling fine, a bit wary. Stick to my routine, but wear a mask in crowded spots. Dinner at Stern with Campbell is agreed, then study group at Taper. The dorm hangout later is optional and I'm introverted, so I'll keep it short or skip it.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

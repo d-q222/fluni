@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning Bryce. Yeah, I'm feeling fine, just a bit wary too. Smart move with the mask. Hope it stays quiet in the dorm.",
+  "shared_health": true
+ }
+}

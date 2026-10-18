@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Good call, I'll probably do the same and head to Green after. I feel fine, just being careful. Text me if you hear anything about the tests.",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:25"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Thu Jan 8: Ate at Stern with Campbell in a crowded room, masked, then went home and skipped the lounge hangout. Feeling fine, still waiting on Skyler's result and a bit worried.",
+  "messages": [],
+  "thoughts": "Stern is crowded and I'm already wary with Skyler and Sidney's situation. I'll finish dinner quickly with Campbell, keep my mask on, then head home and skip the lounge hangout. Study a bit, relax, and sleep at a normal time.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

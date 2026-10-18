@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "I'm good, feel totally fine! Taper sounds fun, but I'm still down for the lounge after, we can bail if anyone's coughing. Home early might be a bit lame though, haha.",
+  "shared_health": true
+ }
+}

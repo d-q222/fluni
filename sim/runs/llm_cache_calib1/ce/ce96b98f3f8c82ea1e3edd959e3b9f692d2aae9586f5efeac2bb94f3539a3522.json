@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Doing fine too, no symptoms. Just keeping some distance from Scout in the dorm since they're a close contact. Anyway, I've got to get to studying, take care!",
+  "shared_health": true
+ }
+}

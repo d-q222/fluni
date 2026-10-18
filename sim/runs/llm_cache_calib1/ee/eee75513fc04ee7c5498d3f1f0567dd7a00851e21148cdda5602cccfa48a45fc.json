@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Onyx is saving group seats around 7, and Winter's coming after the gym. Come after lifting if you can, we'll be at the lounge after too!",
+  "shared_health": false
+ }
+}

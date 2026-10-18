@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Cool, glad you're fine too. I'm studying here for a bit, then dinner at Stern and lab tonight. Keep masking and let me know if you hear anything solid about the dorm. See you around!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:05"
+   },
+   {
+    "activity": "lab",
+    "end": "11:40",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "09:45"
+   },
+   {
+    "activity": "eat",
+    "end": "12:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:45"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "bld:bld_232841950",
+    "start": "12:15"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:EE102A_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "17:05"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:05",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:05"
+   }
+  ],
+  "diary": "Wed Jan 7: Feeling fine after the negative test. Following my usual routine of lab, class and study, masking indoors and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine after the negative test. I'll stick to my usual routine since I'm organized and disciplined, keep masking indoors, and watch for symptoms. Lab and class as normal.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

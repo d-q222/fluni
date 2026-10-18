@@ -1,0 +1,90 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:10",
+    "place": "home",
+    "start": "08:55"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_26292283_f2_205",
+    "start": "09:15"
+   },
+   {
+    "activity": "class",
+    "end": "14:45",
+    "place": "class:PHYSICS23_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:15",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "14:50"
+   },
+   {
+    "activity": "relax",
+    "end": "17:55",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "gym",
+    "end": "19:30",
+    "place": "bld:bld_255490604",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "20:45",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "19:40"
+   },
+   {
+    "activity": "gym",
+    "end": "21:45",
+    "place": "bld:bld_255490604",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:35",
+    "place": "home",
+    "start": "21:55"
+   },
+   {
+    "activity": "study",
+    "end": "00:40",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "23:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Tuesday: lab, Physics lecture, study and gym as usual. Feeling fine, still a bit wary of illness; planning to get to bed a bit earlier tonight.",
+  "messages": [],
+  "thoughts": "Feeling fine, a little wary of illness but nothing alarming. I'll stick with my usual routine: lab, Physics lecture, study, dinner, gym, late study. PWR seminar isn't in my usual routine, so I'll skip planning it. I'll sleep a bit more by shortening the late study session.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

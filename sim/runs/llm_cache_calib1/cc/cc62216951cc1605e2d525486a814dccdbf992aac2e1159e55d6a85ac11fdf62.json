@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm heading to Green around 5:45 after relaxing for a bit. Want to grab a table together? I'll keep my mask on.",
+  "shared_health": false
+ }
+}

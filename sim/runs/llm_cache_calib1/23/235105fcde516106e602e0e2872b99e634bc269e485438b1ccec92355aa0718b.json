@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Morgan. Yeah, still fine, no symptoms, just masking and heading to lab soon. Nothing new on Teagan beyond the positive test. Let me know if you start feeling off, and I'll do the same.",
+  "shared_health": true
+ }
+}

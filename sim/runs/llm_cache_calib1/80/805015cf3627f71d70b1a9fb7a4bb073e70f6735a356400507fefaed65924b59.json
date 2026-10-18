@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Bryce! Yeah, I'm feeling fine too, just trying to be careful. Kind of anxious about it as well. Hope it stays quiet in our dorm.",
+  "shared_health": true
+ }
+}

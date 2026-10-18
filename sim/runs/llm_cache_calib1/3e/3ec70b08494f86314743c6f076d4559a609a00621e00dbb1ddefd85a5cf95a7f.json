@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika! Thanks, perfect timing, I'm starving. Wait, why the mask? You feeling okay?",
+  "shared_health": false
+ }
+}

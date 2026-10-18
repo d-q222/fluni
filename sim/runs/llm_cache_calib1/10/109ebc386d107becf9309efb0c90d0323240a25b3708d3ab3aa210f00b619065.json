@@ -1,0 +1,51 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Wed Jan 7: Finished dinner at Stern, then went home to study and sleep early, skipping the hangout. Sidney is sick and Skyler awaits a flu test, so I'm staying careful and masking.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Umi. I'm skipping the hangout too and staying in.",
+    "time": "",
+    "to": "A0196"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for sharing the news, Campbell. I'd skip the hangout if I were you, but please text me Skyler's result when you hear.",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Sidney is sick and Skyler awaits a flu test. I'm fine but wary, so I'll finish dinner, head home, study, and skip the hangout. I'll text Campbell to encourage skipping and thank Umi for the heads up.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

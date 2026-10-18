@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "party",
+    "end": "01:25",
+    "place": "event:EV00081",
+    "start": "00:05"
+   },
+   {
+    "activity": "relax",
+    "end": "02:15",
+    "place": "home",
+    "start": "01:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:15"
+   }
+  ],
+  "diary": "Fri Jan 9: Stayed at the crowded party until it ended, then went home to sleep. Feel fine, a bit wary about the Stern fever rumors but not changing much.",
+  "messages": [],
+  "thoughts": "I'm at the party, it's crowded with 52 people and I feel fine. Sick rumors from Stern make me a bit wary, but I'm a social person and rarely follow health advice. I'll stay until the party ends at 01:25, then go home, relax a bit and sleep. No mask.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

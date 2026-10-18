@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with True at Stern breakfast; they're masked and feeling fine. We agreed to sit together at the Cal game (starts ~1:15) and I'll text them where I end up. Plan otherwise unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

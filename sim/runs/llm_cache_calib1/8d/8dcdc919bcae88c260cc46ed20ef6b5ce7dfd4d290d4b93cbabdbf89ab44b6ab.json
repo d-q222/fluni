@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter. I'm heading to Green Library around nine to study. Still feeling fine here, how about you?",
+  "shared_health": true
+ }
+}

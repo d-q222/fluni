@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Neo feels fine and app is quiet; Jody said Emerson's friend Jesse has a fever and is getting tested. We agreed to text if symptoms or app alerts show up. I'm keeping my mask on at the hangout, then going to lab.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oakley! Yeah, I'm trying to be careful. Glad you're masking too. I'm keeping meals short and mostly staying in my room.",
+  "shared_health": false
+ }
+}

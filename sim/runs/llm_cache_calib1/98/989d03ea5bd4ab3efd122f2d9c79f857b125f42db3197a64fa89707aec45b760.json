@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, no worries if you head home first. I'll text either way. See you later!",
+  "shared_health": false
+ }
+}

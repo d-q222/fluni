@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Armani! Yeah, just being careful, I feel fine. Stern's so crowded I figured why not. You doing okay?",
+  "shared_health": true
+ }
+}

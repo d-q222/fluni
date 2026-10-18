@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "18:30",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "rest",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Tested positive. I'm staying in my room all day and night, resting, doing light studying, skipping the hangout and the game. Feeling achy and anxious about having exposed people.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my flu test came back positive. I'm staying in my room to rest and skipping everything. Please keep your distance and get tested if you feel off. Thanks for the kind messages.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Positive test, so I'm staying in my room. No classes, no dorm hangout, no game. I'll rest, eat in the room if possible, do a little light studying since I'm organized, and sleep early. I should tell Skyler and my roommate, but I only have the friend group to text, so I'll send a brief group update that I tested positive. Wearing a mask when my roommate is around makes sense.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

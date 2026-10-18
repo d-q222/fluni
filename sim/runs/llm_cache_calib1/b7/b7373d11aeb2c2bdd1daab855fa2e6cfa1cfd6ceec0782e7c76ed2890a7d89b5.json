@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I heard that too, but I feel totally fine. Still down for Taper, then the lounge for a bit and the party later. You feeling okay for all that?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Scout told me FlUni flagged me as their close contact; both of us feel fine and are keeping our distance. I'm staying in until Jan 11 with only quick masked meals.",
+  "messages": [],
+  "replan": false,
+  "worry": 4
+ }
+}

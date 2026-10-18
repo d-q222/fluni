@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "10:50"
+   },
+   {
+    "activity": "relax",
+    "end": "13:25",
+    "place": "home",
+    "start": "11:35"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "14:05"
+   },
+   {
+    "activity": "relax",
+    "end": "18:35",
+    "place": "home",
+    "start": "17:10"
+   },
+   {
+    "activity": "eat",
+    "end": "19:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:10"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sun Jan 11: Heard Dakota and Chris tested positive in the dorm. Feeling fine but more worried; staying masked, keeping to my room and skipping Breer and the game.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up, Stevie. I'm feeling fine, staying masked and mostly in my room. Take care, everyone.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Dakota and Chris testing positive in the dorm makes me more nervous. I feel fine, so I'll keep my quiet routine, masked at meals, and skip the basketball game. I'll grab brunch quickly, then stay home mostly, maybe skip the Breer study room and study at home to limit exposure. I'll reply thanks to the group.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

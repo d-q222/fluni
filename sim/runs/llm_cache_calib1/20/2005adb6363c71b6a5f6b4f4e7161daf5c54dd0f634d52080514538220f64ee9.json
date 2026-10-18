@@ -1,0 +1,87 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_232715666",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "14:00",
+    "place": "home",
+    "start": "12:50"
+   },
+   {
+    "activity": "lab",
+    "end": "18:20",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_232715666",
+    "start": "18:30"
+   },
+   {
+    "activity": "relax",
+    "end": "21:20",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:35",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "21:25"
+   },
+   {
+    "activity": "study",
+    "end": "01:00",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Teagan tested positive. I feel fine, will mask, avoid crowded Stern and the gym, drop food at Teagan's door, do lab and study, and sleep earlier.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're sick, Teagan. I'll bring food and water to your door, will leave it outside and text you. Feel better!",
+    "time": "",
+    "to": "A0175"
+   },
+   {
+    "kind": "warn",
+    "place": "",
+    "text": "Teagan tested positive. If you were near them, mask up, watch for symptoms and get tested if anything shows up. I'm skipping crowded spots for now.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Teagan tested positive and I'm in the same dorm, so I want to cut exposure. I feel fine, so I'll keep a mostly normal routine but with a mask and fewer crowded places. I'll skip Stern Dining and the gym crowds, eat at Ricker midday at an off time, do lab since it's a commitment, and study at home. I'll also text Teagan to offer to drop off food and warn the group.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

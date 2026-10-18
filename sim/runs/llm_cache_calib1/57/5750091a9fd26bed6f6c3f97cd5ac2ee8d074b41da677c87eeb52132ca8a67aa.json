@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "10:20",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "09:40"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "10:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:30",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "14:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:35"
+   },
+   {
+    "activity": "relax",
+    "end": "15:45",
+    "place": "home",
+    "start": "14:10"
+   },
+   {
+    "activity": "study",
+    "end": "17:20",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "15:50"
+   },
+   {
+    "activity": "relax",
+    "end": "17:55",
+    "place": "home",
+    "start": "17:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:45",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:30",
+    "place": "dorm_lounge",
+    "start": "19:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "event:EV00099",
+    "start": "20:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:00",
+    "place": "home",
+    "start": "23:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Fri Jan 9: Chris is sick and Dell is skipping the lounge, but I feel fine so I'm keeping my usual plans: Lakeside, Taper, lounge, dorm hangout. No mask, a bit wary.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Dell! Feel better Chris. I feel fine so far, will keep an eye out.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I feel fine. Chris is sick and Dell is skipping the lounge, but I'm social and rarely follow health advice. I'll mostly keep my routine, maybe skip the lounge-heavy stretch only a little. Keep Taper and the dorm hangout, no mask. A bit wary, so I'll reply to the group kindly.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

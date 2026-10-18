@@ -1,0 +1,24 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "party",
+    "end": "00:50",
+    "place": "event:EV00081",
+    "start": "00:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:00"
+   }
+  ],
+  "diary": "Fri Jan 9: Stayed at the crowded party a bit, left earlier than usual because of the fever rumors in Stern. Feel fine, going to sleep.",
+  "messages": [],
+  "thoughts": "The party is crowded with 52 people and there are rumors of fevers in Stern. I feel fine and I'm easygoing, but I'll stay a bit less long than usual, keep distance from anyone coughing, then head home to sleep. Leaving a little earlier feels reasonable. I won't wear a mask at a party, that's just not me.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

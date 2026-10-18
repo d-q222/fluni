@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at the Cal game; Max is playing in it so no mask on the field, and said they'll keep one handy after. I'm feeling fine, tested negative, and told Max to mask in the crowd. Plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

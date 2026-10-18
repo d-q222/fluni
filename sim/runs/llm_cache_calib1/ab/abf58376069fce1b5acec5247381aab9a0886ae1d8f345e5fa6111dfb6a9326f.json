@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey. Heading to Green in a bit for problem sets. You going too, or staying in?",
+  "shared_health": false
+ }
+}

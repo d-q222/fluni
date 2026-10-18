@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Waverly! Yeah, I'm fine, just being careful. A friend of mine got sick today so I'm a bit paranoid. I got tested and it came back negative, but I'm keeping the mask on anyway.",
+  "shared_health": true
+ }
+}

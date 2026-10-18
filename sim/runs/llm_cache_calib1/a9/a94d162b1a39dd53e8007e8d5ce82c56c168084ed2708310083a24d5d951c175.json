@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Yeah, starving, let's grab a table. You still down for Taper after? Eden said there's some fever thing going around Stern, but I feel fine.",
+  "shared_health": true
+ }
+}

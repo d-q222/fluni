@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:25",
+    "place": "home",
+    "start": "07:00"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "07:30"
+   },
+   {
+    "activity": "class",
+    "end": "11:40",
+    "place": "class:PSYCH1_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "relax",
+    "end": "13:40",
+    "place": "home",
+    "start": "11:50"
+   },
+   {
+    "activity": "eat",
+    "end": "14:10",
+    "place": "bld:bld_232715666",
+    "start": "14:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:05",
+    "place": "plan:bld_m_green_library_f3_305",
+    "start": "14:30"
+   },
+   {
+    "activity": "lab",
+    "end": "17:35",
+    "place": "plan:bld_738808361_f3_305",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:55",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:40"
+   },
+   {
+    "activity": "gym",
+    "end": "21:40",
+    "place": "plan:bld_232715573_f1_102",
+    "start": "21:10"
+   },
+   {
+    "activity": "study",
+    "end": "23:40",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "21:55"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "23:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Normal Friday of classes, lab, library and gym. Feeling fine, masking indoors, and sharing a table with Sawyer at Green now that their test was negative.",
+  "messages": [],
+  "thoughts": "Feeling fine. Sawyer tested negative, so sharing a table at Green is okay while I stay masked. I'll keep my usual Friday routine of classes, library, lab and gym, and keep the mask on indoors.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

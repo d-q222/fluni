@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Dell! Perfect timing, grab a seat. Did you hear Eden's warning about fevers in Stern? I'm masking up tonight, kinda wary.",
+  "shared_health": false
+ }
+}

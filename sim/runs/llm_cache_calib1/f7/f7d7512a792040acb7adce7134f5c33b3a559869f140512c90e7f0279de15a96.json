@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Dakota at Taper; they're meeting Winter and Wynn here. I said I'd join after studying. Feeling fine, no health info shared.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

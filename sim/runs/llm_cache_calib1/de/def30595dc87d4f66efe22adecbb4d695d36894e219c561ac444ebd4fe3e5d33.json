@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "No name, just a rumor Salem passed along. I feel fine too, just keeping an eye out. Anyway, I'm heading to the Cal game soon, so catch you later!",
+  "shared_health": true
+ }
+}

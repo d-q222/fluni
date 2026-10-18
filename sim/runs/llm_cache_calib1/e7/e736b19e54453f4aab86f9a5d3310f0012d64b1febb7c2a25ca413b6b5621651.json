@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Mika. Have you heard anything about Skyler's test yet? I'm still skipping the hangout tonight.",
+  "shared_health": false
+ }
+}

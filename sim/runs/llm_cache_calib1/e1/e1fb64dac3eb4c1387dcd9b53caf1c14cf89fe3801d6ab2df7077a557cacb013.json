@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:45",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:10",
+    "place": "home",
+    "start": "08:45"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_232841950_f1_102",
+    "start": "09:15"
+   },
+   {
+    "activity": "lab",
+    "end": "13:20",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "11:55"
+   },
+   {
+    "activity": "eat",
+    "end": "14:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:35"
+   },
+   {
+    "activity": "lab",
+    "end": "15:50",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "14:15"
+   },
+   {
+    "activity": "relax",
+    "end": "18:40",
+    "place": "home",
+    "start": "16:05"
+   },
+   {
+    "activity": "lab",
+    "end": "22:10",
+    "place": "plan:bld_232841932_f1_103",
+    "start": "18:55"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Kept to my routine with a mask on, skipping the dorm hangout again to avoid crowds. Feeling fine but still watching for symptoms.",
+  "messages": [],
+  "thoughts": "Feeling fine, still anxious after the dorm exposure notices. I'll keep my disciplined routine with a mask, skip the crowded dorm hangout again, and sleep at a decent hour. PSYCH lecture conflicts with my usual study block, so I'll stick with the routine.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

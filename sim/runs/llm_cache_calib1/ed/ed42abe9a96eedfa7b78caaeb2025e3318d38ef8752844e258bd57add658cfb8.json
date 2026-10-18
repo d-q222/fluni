@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Dakota and Chris tested positive, that's what I've heard. I feel fine too, just being careful. Staying in your room sounds smart. I'm heading home soon too, take care!",
+  "shared_health": true
+ }
+}

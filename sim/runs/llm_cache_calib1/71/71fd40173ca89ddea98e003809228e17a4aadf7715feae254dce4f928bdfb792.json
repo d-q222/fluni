@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Oli about Chris and Dakota; Oli says they feel fine, no cough (Dell's report was likely wrong). We agreed to keep masks on in the room, crack a window, and tell each other right away if anything feels off. Staying in tonight.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

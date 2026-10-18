@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:25",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "11:45",
+    "place": "home",
+    "start": "11:25"
+   },
+   {
+    "activity": "study",
+    "end": "13:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:35"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:EARTHSYS177M_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:30",
+    "place": "dorm_lounge",
+    "start": "20:05"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Thursday: Green, class, dinner at Stern at 6:30, then dorm hangout and early-ish sleep. Fine but still a bit paranoid about Skyler's flu test; will update the group if I hear.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Haven't heard Skyler's result yet, will tell you guys as soon as I do. See you at Stern 6:30!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine, a bit paranoid about Skyler's flu test. Keep my usual social day: sleep in, study at Green, EARTHSYS class, dinner at Stern with the group at 18:30, then hangout in the lounge. I'll skip the late library grind and sleep earlier. No mask, as usual. Will text Mika and Umi that I haven't heard anything yet.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

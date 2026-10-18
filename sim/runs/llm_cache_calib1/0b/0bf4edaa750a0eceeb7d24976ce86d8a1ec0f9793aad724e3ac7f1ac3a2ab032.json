@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hey Wesley! I feel fine, just anxious as usual. Glad you're out and masked. Library for me too later, so I'll keep my distance. Text me if anything feels off?",
+  "shared_health": true
+ }
+}

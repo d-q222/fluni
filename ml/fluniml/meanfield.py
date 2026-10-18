@@ -70,9 +70,11 @@ class Compact:
 
 
 class MeanField:
-    """oracle=True is a reference ceiling, not a competitor: instead of propagating probabilities it
-    uses everyone's true infection hours (hidden from real models), so H_i is the hazard i actually
-    faced while susceptible and P_i = 1 - exp(-sum H_i). What's left is the sim's coin flips."""
+    """oracle=True is a reference, not a competitor: instead of propagating probabilities it uses
+    everyone else's true infection hours (hidden from real models), so H_i is the hazard i would
+    face over the whole run from the people who really were infectious, and P_i = 1 - exp(-sum H_i).
+    The sum is not cut at i's own infection time: that would condition on the label and make
+    infected agents look less exposed."""
 
     def __init__(self, cfg, hours, oracle=False):
         self.oracle = oracle
@@ -97,7 +99,6 @@ class MeanField:
             inf = np.flatnonzero(c.t_inf >= 0)
             P[np.minimum(c.t_inf[inf] + (~c.seed[inf]), H), inf] = 1.0
             P[0, c.seed] = 1.0
-            susceptible_until = np.where(c.t_inf >= 0, c.t_inf, H)
             cum = np.zeros(N)
         rate = th_c * c.cw + th_r * c.rm
         f = self.f
@@ -107,7 +108,7 @@ class MeanField:
             a, b, r = c.a[lo:hi], c.b[lo:hi], rate[lo:hi]
             haz = np.bincount(b, iota[a] * r, N) + np.bincount(a, iota[b] * r, N) + th_i
             if self.oracle:
-                cum += haz * (h < susceptible_until)
+                cum += haz
                 continue
             q = np.exp(-haz)
             P[h + 1] = S * (1 - q)

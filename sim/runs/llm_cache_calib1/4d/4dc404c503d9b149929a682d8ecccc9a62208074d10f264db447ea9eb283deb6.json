@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Hadley and Sidney both looked rough at Vaden yesterday, Sidney said they had a fever and cough. Party sounds fun but loud and packed is kinda what I'm dodging right now, plus I've got stuff in the morning. Maybe I'll pass, have fun though!",
+  "shared_health": false
+ }
+}

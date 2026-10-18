@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Carter I'm going to the Arizona game tonight; they and Onyx are saving seats around 7, aisle spot for me. Both seem fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

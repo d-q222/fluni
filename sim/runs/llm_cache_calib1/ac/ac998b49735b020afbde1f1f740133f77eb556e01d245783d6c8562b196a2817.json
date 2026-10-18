@@ -1,0 +1,101 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m4"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "10:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "11:15",
+    "place": "home",
+    "start": "10:15"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:BIO102_LEC01",
+    "start": "11:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:DANCE156_PRA01",
+    "start": "12:30"
+   },
+   {
+    "activity": "class",
+    "end": "14:35",
+    "place": "class:CS161_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "relax",
+    "end": "16:50",
+    "place": "home",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:50"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:20"
+   },
+   {
+    "activity": "gym",
+    "end": "20:25",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "19:20"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:40"
+   },
+   {
+    "activity": "relax",
+    "end": "23:55",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:55"
+   }
+  ],
+  "diary": "Said yes to dinner with Campbell at Stern at 18:20. Otherwise a normal Monday of classes, gym and studying; wearing a mask in class since I'm a bit wary of illness.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sounds good, see you at Stern at 18:20!",
+    "time": "",
+    "to": "A0255"
+   }
+  ],
+  "thoughts": "Normal Monday. Campbell invited me to dinner at Stern at 18:20 before study group. I usually eat at Stern around 18:10 anyway, so I'll say yes, it's a small circle and I like them. I feel fine, a little wary of illness, so I'll mask in class. Keep the routine, shift dinner slightly to 18:20.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

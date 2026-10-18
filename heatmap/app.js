@@ -16,8 +16,7 @@ import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
 import { meanFieldRisk } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
-import { rampCss, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
-import { LabelLayer } from './maplabels.js';
+import { rampCss, fmt as fmtSick } from './userstyle.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import * as PV from './phone-views.js';
 import { makeSeats } from './seats.js';
@@ -411,6 +410,7 @@ const CanvasLayer = L.Layer.extend({
   },
   onAdd(map) {
     map.getPane('overlayPane').appendChild(this.canvas);
+    if (this.fade) this.canvas.after(this.fade.canvas);
     map.on('zoomanim', this.animate, this);
     map.on('zoom', this.follow, this);
     map.on('moveend viewreset resize', this.draw, this);
@@ -418,6 +418,7 @@ const CanvasLayer = L.Layer.extend({
   },
   onRemove(map) {
     this.canvas.remove();
+    this.fade?.canvas.remove();
     map.off('zoomanim', this.animate, this);
     map.off('zoom', this.follow, this);
     map.off('moveend viewreset resize', this.draw, this);
@@ -474,6 +475,7 @@ const CanvasLayer = L.Layer.extend({
       c.style.width = `${w}px`; c.style.height = `${h}px`;
     }
     L.DomUtil.setPosition(c, min);
+    this.placeFade(map.getZoom(), map.getCenter());
     this.zoom = map.getZoom();
     this.view = L.latLngBounds(map.layerPointToLatLng(min), map.layerPointToLatLng(min.add([w, h])));
     const ctx = c.getContext('2d');
@@ -520,6 +522,33 @@ const CanvasLayer = L.Layer.extend({
     const scale = this._map.getZoomScale(e.zoom, this.zoom);
     const offset = this._map._latLngBoundsToNewLayerBounds(this.view, e.zoom, e.center).min;
     L.DomUtil.setTransform(this.canvas, offset, scale);
+    this.placeFade(e.zoom, e.center);
+  },
+  // Crossfade: the heat on screen now, kept on a canvas above, fading out over the heat drawn next (after a
+  // zoom the new spread and grid would otherwise replace the stretched old image in one frame).
+  fadeOut(ms = 280) {
+    const c = this.canvas;
+    if (!this._map || !this.view || c.style.display === 'none') return;
+    if (!this.fade) {
+      this.fade = { canvas: L.DomUtil.create('canvas', 'heat-fade leaflet-zoom-animated') };
+      this.fade.canvas.style.pointerEvents = 'none';
+      c.after(this.fade.canvas);
+    }
+    const f = this.fade, fc = f.canvas;
+    fc.width = c.width; fc.height = c.height;
+    fc.style.width = c.style.width; fc.style.height = c.style.height;
+    fc.getContext('2d').drawImage(c, 0, 0);
+    Object.assign(f, { view: this.view, zoom: this.zoom });
+    fc.style.transform = c.style.transform;
+    fc.style.display = '';
+    f.anim?.cancel();
+    f.anim = fc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' });
+    f.anim.onfinish = () => { fc.style.display = 'none'; };
+  },
+  placeFade(zoom, center) {
+    const f = this.fade;
+    if (!f || f.canvas.style.display === 'none') return;
+    L.DomUtil.setTransform(f.canvas, this._map._latLngBoundsToNewLayerBounds(f.view, zoom, center).min, this._map.getZoomScale(zoom, f.zoom));
   },
   follow() {
     const map = this._map;
@@ -1229,6 +1258,8 @@ async function main() {
       const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
       if (next !== sigmaM || nextFine !== fine) { sigmaM = next; fine = nextFine; renderLegend(); }
       heatDirty = true;
+      heatLayer.fadeOut(); // the new heat fades in under the old
+      outdoorLayer?.fadeOut();
       if (!playing) render(performance.now()); // playing: the next frame does it
     }, SETTLE_MS);
   });
@@ -1487,59 +1518,21 @@ async function main() {
   // (views in phone-views.js; numbers: the campus model's P for this person, close-contact minutes)
   const ph = { for: null, openKey: null, seen: new Set(), sheet: null, picked: new Set(['fever', 'cough']), when: 1, stamped: false, html: { today: '', you: '', sheet: '' } };
   const DAYMS = 24 * 3600000;
-  const cache = { key: '', v: null };
-  // Where this person was over the last 24 h: building visits from their timeline, newest first.
-  function visitsFor(id) {
-    const key = `${id}@${Math.floor(now / (5 * 60000))}`;
-    if (cache.key === key) return cache.v;
-    const out = [], tr = tracks.get(id) || [];
-    let cur = null;
-    for (const s of tr) {
-      if (s.t > now) break;
-      if (cur && cur.id === s.buildingId) continue;
-      if (cur) { cur.endMs = s.t; out.push(cur); cur = null; }
-      if (s.buildingId) cur = { id: s.buildingId, name: s.building || 'On campus', startMs: s.t };
-    }
-    if (cur) { cur.endMs = now; cur.current = true; out.push(cur); }
-    const eps = recentEpisodes(id).filter((e) => e.start > now - DAYMS).map((e) => ({
-      type: e.weighted >= CLOSE_CONTACT_MIN ? 'close' : 'heads', key: `m${e.start}`, startMs: e.start, endMs: e.end,
-      minutes: Math.max(e.min, 1), contagious: e.contagious,
-      place: out.find((v) => v.startMs - 60000 <= e.start && e.start <= v.endMs + 60000)?.name || null }));
-    const places = out.filter((v) => v.endMs > now - DAYMS && !v.current).map((v) => {
-      const minutes = (v.endMs - v.startMs) / 60000;
-      let maxPhones = 0;
-      for (const f of [0.2, 0.5, 0.8]) { // phones in the same building at three moments of the visit
-        const t = v.startMs + f * (v.endMs - v.startMs);
-        let n = 0;
-        for (const [oid, otr] of tracks) if (oid !== id && sampleAt(otr, t)?.buildingId === v.id) n++;
-        maxPhones = Math.max(maxPhones, n);
-      }
-      const hit = eps.filter((e) => e.startMs <= v.endMs + 60000 && e.endMs >= v.startMs - 60000);
-      const tone = hit.some((e) => e.type === 'close') ? 'close' : hit.length ? 'heads' : maxPhones > 0 ? 'phones' : 'quiet';
-      return { type: 'place', startMs: Math.max(v.startMs, now - DAYMS), name: v.name, minutes, maxPhones, tone, passing: minutes < 3 };
-    });
-    const entries = [...places, ...eps].sort((a, b) => b.startMs - a.startMs);
-    const current = out.find((v) => v.current) || null;
-    const curHit = current && eps.some((e) => e.endMs >= current.startMs - 60000);
-    cache.key = key;
-    return (cache.v = { entries, current, eps, placeTone: curHit ? 'heads' : null });
-  }
-
   // Self-reports (reports_tests.csv): what this person told the app, up to now.
   function selfStatus(id) {
-    let status = 'none', startMs = null, positive = false;
+    let status = 'none', startMs = null, positive = false, setMs = null;
     for (const e of reportsBy.get(id) || []) {
       if (e.ms > now) break;
+      if (e.event === 'self_report' || e.event === 'test_result') setMs = e.ms;
       if (e.event === 'self_report' && e.value === 'might_be_sick') { status = 'possible'; startMs = e.ms; positive = false; }
       else if ((e.event === 'self_report' && e.value === 'tested_positive') || (e.event === 'test_result' && e.value === 'positive')) { status = 'contagious'; startMs = startMs ?? e.ms; positive = true; }
       else if ((e.event === 'self_report' && e.value === 'recovered') || (e.event === 'test_result' && e.value === 'negative')) { status = 'none'; startMs = null; positive = false; }
     }
-    return { status, startMs, positive };
+    return { status, startMs, positive, setMs };
   }
   const midnight = (ms) => { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); };
 
   function phoneData(me, st) {
-    const v = visitsFor(me.id);
     const sr = selfStatus(me.id);
     const dayNo = sr.startMs == null ? 0 : Math.round((midnight(now) - midnight(sr.startMs)) / DAYMS);
     const stay = sr.startMs == null ? null : {
@@ -1547,11 +1540,9 @@ async function main() {
       days: Array.from({ length: 6 }, (_, i) => ({ day: i, ms: midnight(sr.startMs) + i * DAYMS + 12 * 3600000 })),
     };
     return {
-      now, dateText: data.numericTime ? `Day ${Math.floor((now - t0) / DAYMS) + 1}` : new Date(now).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      place: v.current ? { name: v.current.name, startMs: v.current.startMs } : (me.building ? { name: me.building, startMs: now } : null),
+      now, statusSetMs: sr.setMs,
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
-      p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt), the same number as the presenter bar and the dot's tooltip
-      entries: v.entries, placeTone: v.placeTone, openKey: ph.openKey, seen: ph.seen,
+      p: me.p ?? MODEL.prior, // the campus model's P (model.risk.pAt): the same number the presenter bar and the dot's tooltip show
       status: sr.status, stamp: sr.status === 'possible', stay,
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
         text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
@@ -1576,8 +1567,6 @@ async function main() {
     else if (act === 'sticker') { ph.picked.has(b.dataset.k) ? ph.picked.delete(b.dataset.k) : ph.picked.add(b.dataset.k); }
     else if (act === 'when') ph.when = Number(b.dataset.i);
     else if (act === 'report-send') { ph.stamped = true; renderPhone(); setTimeout(() => { ph.sheet = null; ph.stamped = false; renderPhone(); }, 1500); return; }
-    else if (act === 'got-it') { ph.seen.add(key); ph.openKey = `x${key}`; }
-    else if (act === 'cc-toggle') ph.openKey = ph.openKey === key ? `x${key}` : key;
     renderPhone();
   });
 
@@ -1649,49 +1638,46 @@ async function main() {
     noticeTimer = setTimeout(() => b.remove(), 7000);
   }
 
-  // The phone's Campus tab: FlUni's own user map look (usermap.js): paper, pale outlines, faint roads, soft green and water,
-  // anchor labels; no tiles. Heat comes from the same BuildingTotalsLayer as "What users see".
-  let phoneAnchors = null;
-  const NIGHT_INK = '#f1e2c6';
-  const NIGHT_CONTEXT = { green: { fillColor: '#5f6e45', fillOpacity: 0.55 }, water: { fillColor: '#4d6a70', fillOpacity: 0.75 },
-    road: { color: NIGHT_INK, opacity: 0.22 }, street: { color: NIGHT_INK, opacity: 0.12 }, rail: { color: NIGHT_INK, opacity: 0.2 },
-    town: { color: NIGHT_INK, opacity: 0.15 }, shopping: { color: NIGHT_INK, fillColor: NIGHT_INK, opacity: 0.2 }, hospital: { color: NIGHT_INK, opacity: 0.2 } };
-  const NIGHT_NEUTRAL = { color: NIGHT_INK, opacity: 0.2, fillColor: '#33281f' };
+  // The phone's Map tab: the presenter's own map (sim basemap, Lisa's landmarks, the same building heat at the same moment),
+  // without people or truth rings. It has its own view, so its heat is computed at its zoom, into its own canvases (the
+  // presenter's fade canvas belongs to the presenter's layer). Tapping a building still opens the user map's popup.
   const PHONE_BOUNDS = [[37.4171, -122.1833], [37.4379, -122.1565]]; // the sim's campus extent
   function fitPhoneMap() { phoneMap.fitBounds(PHONE_BOUNDS, { paddingTopLeft: [4, 56], paddingBottomRight: [4, 70], animate: false }); }
+  let phoneHeat = null, phoneOutdoor = null, phoneDirty = true, phoneSettle = 0;
   function buildPhoneMap() {
-    const map = L.map('ph-map', { zoomControl: false, attributionControl: false, preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, maxZoom: 19 });
-    const pane = (name, z) => { const p = map.createPane(name); p.style.zIndex = z; p.style.pointerEvents = 'none'; return { pane: name, renderer: L.canvas({ pane: name }) }; };
-    const PC = pane('pctx', 410), PN = pane('pneu', 420);
-    // Night mode (theme.js): the same map in Lisa's night palette, cream lines on cocoa; heat keeps its colours.
-    const ctxLayers = {};
-    let neutral = null;
-    const styleMap = () => {
-      const night = $('phone').dataset.theme === 'night';
-      map.getContainer().style.background = night ? '#2a211c' : '#f4ead6';
-      for (const [k, l] of Object.entries(ctxLayers)) l.setStyle(night ? { ...CONTEXT_STYLE[k], ...NIGHT_CONTEXT[k] } : CONTEXT_STYLE[k]);
-      neutral?.setStyle(night ? { ...NEUTRAL_BUILDING, ...NIGHT_NEUTRAL } : NEUTRAL_BUILDING);
-    };
-    $('phone').addEventListener('fluni-theme', styleMap);
-    styleMap();
-    fetch('data/context.geojson').then((r) => (r.ok ? r.json() : null)).then((ctx) => {
-      if (!ctx) return;
-      for (const k of CONTEXT_ORDER) ctxLayers[k] = L.geoJSON({ type: 'FeatureCollection', features: ctx.features.filter((f) => f.properties.k === k) }, { style: () => CONTEXT_STYLE[k], interactive: false, ...PC }).addTo(map);
-      styleMap();
-    }).catch(() => {});
-    if (outlines) neutral = L.geoJSON(outlines, { style: () => NEUTRAL_BUILDING, interactive: false, ...PN }).addTo(map);
-    styleMap();
-    phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false }).addTo(map);
-    const labels = new LabelLayer(map, { pane: 'ph-labels', avoid: () => [document.querySelector('#phone .cchip')?.getBoundingClientRect(), document.querySelector('#phone .cleg')?.getBoundingClientRect()] });
-    fetch('out/app-bundle/data/labels.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
-      if (!j?.anchors) return;
-      phoneAnchors = j.anchors;
-      const z0 = map.getZoom();
-      labels.setItems(j.anchors.map((l) => ({ key: l.t, lat: l.lat, lon: l.lon, html: esc(l.t), cls: `lbl-${l.c}`, p: l.p, minZoom: z0 + (l.p - 1) * 0.75 - 0.01 })));
-    }).catch(() => {});
-    phoneMap = map;
+    const m = baseMap('ph-map', { zoomControl: false, attributionControl: false, maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
+    addLandmarks(m);
+    phoneOutdoor = outlines ? new CanvasLayer([sw, ne]).addTo(m) : null;
+    phoneHeat = new CanvasLayer([sw, ne]).addTo(m);
+    // taps: the user map's building popup, drawn invisibly over the heat
+    phoneBuildings = new BuildingTotalsLayer(outlines || { features: [] }, { badges: false, names: false, invisible: true }).addTo(m);
+    m.on('moveend', () => { // like the presenter: the heat waits for the gesture to settle, the old heat fades under the new
+      clearTimeout(phoneSettle);
+      phoneSettle = setTimeout(() => { phoneDirty = true; phoneHeat.fadeOut(); phoneOutdoor?.fadeOut(); if (!playing) render(performance.now()); }, SETTLE_MS);
+    });
+    phoneMap = m;
     fitPhoneMap();
-    return map;
+    return m;
+  }
+  // The presenter's heat code path, at the phone map's zoom (sigma, fine grid) and view; sigmaM, fine and the shared field
+  // are put back afterwards. The scale and clipping are the presenter's.
+  const phoneZoomBusy = () => Boolean(phoneMap?._animatingZoom);
+  function paintPhoneHeat() {
+    if (!phoneMap?._loaded) return;
+    const z = phoneMap.getZoom(), area = phoneMap.getBounds().pad(0.5), keep = [sigmaM, fine, lastField];
+    try {
+      sigmaM = sigmaForZoom(z); fine = zoneHeat && z >= FINE_ZOOM;
+      const g = heatAt(now, current.values(), false, area), vm = demoScale();
+      if (g.zoneOut) phoneHeat.setZones(g, Z.zones, vm);
+      else { phoneHeat.setBounds(g.cellM === DEMO.cellM ? [sw, ne] : gridBounds(g)); paint(g, phoneHeat.grid, vm, { strong: true }); phoneHeat.setGrid(); }
+      if (phoneOutdoor) {
+        const o = outdoorAt(now, current.values(), false, area);
+        phoneOutdoor.setBounds(o.cellM === DEMO.cellM ? [sw, ne] : gridBounds(o));
+        paint(o, phoneOutdoor.grid, vm * outdoorPeak(o), { soft: true });
+        phoneOutdoor.setGrid();
+      }
+    } finally { [sigmaM, fine, lastField] = keep; }
+    phoneDirty = false;
   }
 
   function renderPhone(withHeat) {
@@ -1714,7 +1700,7 @@ async function main() {
       kicker: taLevel === 'close' ? 'Close contact' : 'Heads-up',
       title: PV.esc(taAdvice.title), lines: taAdvice.body.map(PV.esc) } });
     if (phoneTab === 'today') setHtml($('ph-today'), 'today', PV.todayHtml(d));
-    else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.youHtml(d));
+    else if (phoneTab === 'me') setHtml($('ph-you'), 'you', PV.meHtml(d));
     renderSheet(d);
     const where = me.walking ? 'walking' : me.building;
     $('ph-truth').textContent = `${me.id}${me.sick === null ? '' : me.sick ? ' is infected' : ' is healthy'}${where ? ` · ${where}` : ''} · campus model ${liveText(me.p)} (everyone's contacts and reports)`;
@@ -1727,9 +1713,8 @@ async function main() {
     const h = Number($('horizon').value);
     if (phoneMap) {
       const clock = (ms) => (data.numericTime ? formatTime(ms, true).split(', ')[1] : new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s?([AP])M$/i, (_, c) => ` ${c.toLowerCase()}m`));
-      $('ph-ctime').innerHTML = h ? `<b>In 1 hour</b> · around ${clock(now + h * 60000)}` : `<b>Now</b> · updated ${clock(now)}`;
+      $('ph-ctime').innerHTML = `<b>Now</b> · updated ${clock(now)}`;
       $('ph-ramp').style.background = rampCss();
-  for (const x of document.querySelectorAll('#ph-hseg button')) x.setAttribute('aria-pressed', String(Number(x.dataset.h) === (h ? 60 : 0)));
     }
   }
 
@@ -1972,6 +1957,7 @@ async function main() {
       heatInterval = cost <= HEAT_BUDGET_MS ? 0 : Math.min(250, cost * 3); // keep frames smooth on big runs
     }
 
+    if (phoneMap && phoneTab === 'map' && !$('phone').hidden && !phoneZoomBusy() && (heatDue || phoneDirty)) paintPhoneHeat();
     const showDots = $('show-dots').checked && view !== 'public';
     // People step back in "Air by room" (the rooms are the subject). Zoomed out they're already small
     // (sized on the ground, PERSON_M), so no fading is needed there.
@@ -2168,7 +2154,6 @@ async function main() {
   addEventListener('resize', fitPhone);
   new ResizeObserver(fitPhone).observe($('phone'));
   for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => setPhoneTab(b.dataset.tab));
-  for (const x of document.querySelectorAll('#ph-hseg button')) x.addEventListener('click', () => { $('horizon').value = x.dataset.h; $('horizon').dispatchEvent(new Event('change')); });
   $('ph-close').addEventListener('click', () => { selected = null; renderPhone(); });
   initNightMode($('phone'), $('ph-night')); // Lisa's night palette and drawings for the phone
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { selected = null; renderPhone(); } });

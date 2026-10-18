@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:00",
+    "place": "home",
+    "start": "07:15"
+   },
+   {
+    "activity": "eat",
+    "end": "08:45",
+    "place": "bld:bld_1040629370",
+    "start": "08:05"
+   },
+   {
+    "activity": "study",
+    "end": "11:35",
+    "place": "home",
+    "start": "08:50"
+   },
+   {
+    "activity": "eat",
+    "end": "12:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:40"
+   },
+   {
+    "activity": "relax",
+    "end": "13:40",
+    "place": "home",
+    "start": "12:10"
+   },
+   {
+    "activity": "gym",
+    "end": "17:40",
+    "place": "plan:bld_232715642_f1_102",
+    "start": "13:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:45"
+   },
+   {
+    "activity": "study",
+    "end": "20:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:15",
+    "place": "event:EV00161",
+    "start": "20:55"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "23:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sunday: sticking to my routine of gym, study and the dorm hangout, masking indoors. Feeling fine, a little worried about the illness rumors.",
+  "messages": [],
+  "thoughts": "Sunday, feeling fine. Stick to my usual routine and keep masking indoors with the illness rumors around. Might go to the women's basketball game but gym time is more important for a gymnast. Keep it normal, the dorm hangout in the evening is fine.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

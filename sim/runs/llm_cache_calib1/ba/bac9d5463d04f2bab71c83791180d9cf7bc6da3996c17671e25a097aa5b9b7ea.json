@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! You eating here too? I'm about to head to a CS161 study group at 7:50, then hanging out after if you want to join.",
+  "shared_health": false
+ }
+}

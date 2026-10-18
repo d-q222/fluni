@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:40"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:MATH62CM_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:25",
+    "place": "plan:bld_1169967277_f1_103",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "13:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:30"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "home",
+    "start": "13:10"
+   },
+   {
+    "activity": "lab",
+    "end": "17:15",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "15:50"
+   },
+   {
+    "activity": "eat",
+    "end": "17:55",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:20",
+    "place": "plan:bld_1169967277_f2_201",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "18:50",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "18:45"
+   },
+   {
+    "activity": "class",
+    "end": "21:15",
+    "place": "class:MUSIC160_PRA01",
+    "start": "19:00"
+   },
+   {
+    "activity": "lab",
+    "end": "23:35",
+    "place": "plan:bld_116855068_f2_204",
+    "start": "21:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "home",
+    "start": "23:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:35"
+   }
+  ],
+  "diary": "Thursday: sticking to my usual routine of class, lab and study. Feeling fine, still keeping distance from sick dorm neighbors and checking in with Finley.",
+  "messages": [],
+  "thoughts": "I feel fine. Illness is going around my dorm, but I'm calm and disciplined, so I'll follow my usual routine and keep my distance from sick people. I'll skip the hangouts and keep checking in with Finley. No need to text friends again, since they already replied.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

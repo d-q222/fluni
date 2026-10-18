@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "13:55",
+    "place": "home",
+    "start": "13:40"
+   },
+   {
+    "activity": "event",
+    "end": "16:20",
+    "place": "event:EV00132",
+    "start": "14:00"
+   },
+   {
+    "activity": "gym",
+    "end": "17:50",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_1040629370",
+    "start": "17:55"
+   },
+   {
+    "activity": "study",
+    "end": "21:30",
+    "place": "home",
+    "start": "18:35"
+   },
+   {
+    "activity": "rest",
+    "end": "23:50",
+    "place": "home",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:50"
+   }
+  ],
+  "diary": "Sun Jan 11: Heard again that Chris and Dakota tested positive in my dorm. Still feeling fine; UCLA game, gym, dinner, then study and rest at home, skipping the dorm hangout and masking in crowds.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up! I'm fine and masking in crowds. Skipping the dorm hangout tonight. Will tell you if anything changes.",
+    "time": "",
+    "to": "A0007"
+   }
+  ],
+  "thoughts": "True's warning matches what I already knew. I feel fine and tested negative, and the UCLA game is my team's game, so I'm going. I'll mask in crowds, lift after, eat at Lakeside, study and rest at home, and skip the dorm hangout since Chris and Dakota are positive in my dorm.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

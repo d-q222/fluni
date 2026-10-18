@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted briefly with Skyler at Mark Taper; no health talk. Mentioned maybe getting dinner together after practice. Sticking to my plan.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

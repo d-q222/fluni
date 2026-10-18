@@ -1,0 +1,74 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:DANCE46_ACT01",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_333374283",
+    "start": "12:20"
+   },
+   {
+    "activity": "gym",
+    "end": "14:00",
+    "place": "plan:bld_232805714_f1_102",
+    "start": "12:55"
+   },
+   {
+    "activity": "study",
+    "end": "15:35",
+    "place": "plan:bld_m_green_library_f4_401",
+    "start": "14:10"
+   },
+   {
+    "activity": "relax",
+    "end": "17:10",
+    "place": "home",
+    "start": "15:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "18:25",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "17:20"
+   },
+   {
+    "activity": "lab",
+    "end": "22:20",
+    "place": "plan:bld_232841897_f3_307",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "02:35",
+    "place": "home",
+    "start": "22:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "02:35"
+   }
+  ],
+  "diary": "Fri Jan 9: Teagan texted that they have a fever; I feel fine but am masking up today and keeping my usual class, lab and study schedule. Worried more now.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, hope the test comes back okay. Rest up and let us know.",
+    "time": "",
+    "to": "A0175"
+   }
+  ],
+  "thoughts": "Teagan has a fever and is getting tested. I feel fine, but I've been around the Stern hangout and may have been near Teagan. I'll stick to my routine mostly since I'm healthy, but I'll mask up in close indoor spaces for today and keep distance. I'll text Teagan back briefly and thank them for the heads-up. Lab is important, so I keep it, but I'll skip lingering in the dorm lounge tonight.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

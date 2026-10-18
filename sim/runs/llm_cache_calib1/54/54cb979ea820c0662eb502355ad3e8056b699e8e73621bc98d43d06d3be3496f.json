@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Wynn (masked, lives in my dorm) said they feel fine but are being careful since Chris tested positive and they saw Dakota Thursday; they're heading home to stay in. I feel fine and will keep watching for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

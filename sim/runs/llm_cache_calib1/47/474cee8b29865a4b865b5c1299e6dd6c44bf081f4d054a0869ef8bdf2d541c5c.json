@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "off_campus",
+    "start": "04:00"
+   },
+   {
+    "activity": "study",
+    "end": "12:00",
+    "place": "off_campus",
+    "start": "09:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "off_campus",
+    "start": "12:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "off_campus",
+    "start": "13:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "off_campus",
+    "start": "17:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "off_campus",
+    "start": "18:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:00",
+    "place": "off_campus",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "00:00"
+   }
+  ],
+  "diary": "Sunday: stayed home again to keep contacts low while Wallace is sick. Feel fine, still watching for symptoms and a bit worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feeling fine here, staying home today. Let me know if you feel off and I'll do the same.",
+    "time": "",
+    "to": "A0181"
+   }
+  ],
+  "thoughts": "It's Sunday and I feel fine. Wallace is still sick, so I'll keep contacts low and stay home again, sleep in, study, and eat. Maybe a little rest later. I'll check in with Marley briefly.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Dell at Stern Dining; they're masked, feel fine, and heading to Green to study. I told them I'm a close contact of Dakota and might get tested at Vaden tomorrow; we'll text if either feels off.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

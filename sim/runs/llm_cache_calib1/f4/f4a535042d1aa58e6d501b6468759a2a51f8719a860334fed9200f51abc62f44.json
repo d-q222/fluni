@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Teagan (dorm neighbor, masked) I'm a close contact via Wesley and feel fine; they thanked me and backed off. Plan to keep masking in crowds and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

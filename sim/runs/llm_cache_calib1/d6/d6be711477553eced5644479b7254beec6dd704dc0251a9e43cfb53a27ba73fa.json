@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "off_campus",
+    "start": "00:00"
+   }
+  ],
+  "diary": "Wallace said they're sick with fever and cough. I feel fine, went to sleep at home and will stay careful and masked on campus tomorrow.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Sorry you're feeling rough, Wallace. Rest up and let us know if you need anything. I feel fine so far, will keep watching for symptoms.",
+    "time": "",
+    "to": "A0013"
+   }
+  ],
+  "thoughts": "It's midnight, I'm home and feeling fine. Wallace is sick, which makes me a bit more worried since I'm a close contact. Nothing to do but sleep. I'll text Wallace a quick get-well reply and keep sleeping.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

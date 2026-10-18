@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Campbell, my dormmate, at Taper; they'll be at White Plaza around noon and I said I might see them there this evening. Feel fine, nothing health-related shared.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

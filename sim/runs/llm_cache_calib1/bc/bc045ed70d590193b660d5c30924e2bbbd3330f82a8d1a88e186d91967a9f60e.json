@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Campbell! Mika said they'd tell you my flu test came back negative, so I'm good. How are you feeling?",
+  "shared_health": true
+ }
+}

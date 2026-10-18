@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Jody. Studying late too? I'm masking since there's a lot going around the dorm.",
+  "shared_health": false
+ }
+}

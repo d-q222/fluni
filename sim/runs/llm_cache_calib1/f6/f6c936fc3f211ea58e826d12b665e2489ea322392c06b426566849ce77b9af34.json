@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Max about Chris testing positive and Hadley and Sidney looking rough; Max feels fine and will keep a mask handy and avoid packed spots. I'm fine, plan unchanged: lunch, UCLA game, gym, rest at home.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

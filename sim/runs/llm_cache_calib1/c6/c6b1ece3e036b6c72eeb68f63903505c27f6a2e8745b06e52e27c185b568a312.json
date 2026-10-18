@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:25",
+    "place": "home",
+    "start": "07:40"
+   },
+   {
+    "activity": "lab",
+    "end": "10:15",
+    "place": "class:CHEM31B_LBS04",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "10:20"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:PWR2PT_SEM02",
+    "start": "11:30"
+   },
+   {
+    "activity": "eat",
+    "end": "14:05",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "14:10"
+   },
+   {
+    "activity": "gym",
+    "end": "15:55",
+    "place": "plan:bld_255490604_f1_102",
+    "start": "14:45"
+   },
+   {
+    "activity": "lab",
+    "end": "17:55",
+    "place": "plan:bld_232841933_f2_203",
+    "start": "16:00"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "study",
+    "end": "20:15",
+    "place": "home",
+    "start": "18:35"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "event:EV00027",
+    "start": "20:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "relax",
+    "end": "00:30",
+    "place": "home",
+    "start": "23:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "Tuesday: lab, PWR seminar, gym, evening lab, then a short stop at the dorm hangout and problem sets. Feeling fine, still a bit wary of illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my routine. PWR seminar is 11:30-13:20 in Main Quad, so I'll swap the long relax block for that and eat after. Organized, so I'll keep lab and gym. Introverted, so I'll skip the long dorm hangout or just drop by briefly, then study.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "lab",
+    "end": "22:55",
+    "place": "plan:bld_232841921_f2_207",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "01:05",
+    "place": "home",
+    "start": "23:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:05"
+   }
+  ],
+  "diary": "Wed Jan 7 evening: Stern Dining was crowded so I ate quickly with my mask on, then went to lab. Feeling fine, still watching for symptoms.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 40 people. I feel fine and my last test was negative, so I'll mask up and finish eating quickly. Then I'll go to lab as planned, since I'm disciplined and have problem sets due. I'll keep the usual routine and head home after lab.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

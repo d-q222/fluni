@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, let's grab a table! I'll take that spare mask for the lounge too if you still have it.",
+  "shared_health": false
+ }
+}

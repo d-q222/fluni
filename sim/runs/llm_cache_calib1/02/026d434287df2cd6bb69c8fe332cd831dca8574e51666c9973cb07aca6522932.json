@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate dinner plans with Chris at Lakeside; they're masked and feel fine, just careful. We agreed to do Taper quickly, then the lounge, and bail if anyone is coughing a lot; I'll take Onyx's spare mask.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

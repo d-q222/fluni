@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "I'm fine, no symptoms. Just a vibe for me too. Anyway, I've got to head to the gym soon, so I'll catch you later.",
+  "shared_health": true
+ }
+}

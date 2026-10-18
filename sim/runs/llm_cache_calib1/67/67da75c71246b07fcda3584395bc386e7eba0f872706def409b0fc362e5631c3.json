@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "rest",
+    "end": "12:00",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "home",
+    "start": "12:00"
+   },
+   {
+    "activity": "rest",
+    "end": "15:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:00",
+    "place": "home",
+    "start": "15:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "17:00"
+   },
+   {
+    "activity": "rest",
+    "end": "22:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sat Jan 10: Staying isolated at home, resting, drinking fluids and doing light studying. Friends are being kind and bringing food to my door. Still anxious about who I may have exposed.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thank you so much, Paxton. Please leave it outside and I'll grab it after you leave.",
+    "time": "",
+    "to": "A0224"
+   },
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Morgan, I appreciate it. Please keep watching symptoms and test if anything shows up.",
+    "time": "",
+    "to": "A0282"
+   }
+  ],
+  "thoughts": "I'm positive and feel awful. I'll stay home in isolation, sleep, rest, drink fluids, and do light studying. Paxton is leaving food outside my door, so I'll thank them and Morgan. I'll also tell the group I'm following FlUni advice so everyone knows to watch for symptoms. Still anxious about who I exposed.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

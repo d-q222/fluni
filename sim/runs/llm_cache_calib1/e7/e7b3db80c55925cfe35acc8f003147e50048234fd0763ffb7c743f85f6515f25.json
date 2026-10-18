@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern Dining; no morning lift for them, they have class at 9. They think practice is around 6, but my plan says 3:30, so I still need to check the team chat. Nothing health-related shared; I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

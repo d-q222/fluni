@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:45",
+    "place": "bld:bld_m_green_library",
+    "start": "19:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "22:45"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Thu Jan 8: Met Oli at Green to study after dinner. Feeling fine after the negative test, still staying mindful. Plan to head home and sleep at a decent hour.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Heading to Green now, see you at the table!",
+    "time": "",
+    "to": "A0055"
+   }
+  ],
+  "thoughts": "Test negative, feel fine. I told Oli I'd meet at Green. Study there for a few hours, then head home and sleep at a reasonable hour. I'll keep a little caution but no mask needed mostly.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

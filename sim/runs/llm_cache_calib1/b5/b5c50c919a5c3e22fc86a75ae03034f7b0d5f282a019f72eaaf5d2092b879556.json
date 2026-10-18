@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Carter told me at Stern dinner they're a close contact of Dakota, feel fine, and are staying low-key. I suggested they get tested at Vaden tomorrow and kept some distance. I'm still masking and skipping the hangout.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

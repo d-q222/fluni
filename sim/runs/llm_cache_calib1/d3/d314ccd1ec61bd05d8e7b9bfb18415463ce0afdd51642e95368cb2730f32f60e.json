@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Didn't see you there, are you eating here too? How was your day?",
+  "shared_health": false
+ }
+}

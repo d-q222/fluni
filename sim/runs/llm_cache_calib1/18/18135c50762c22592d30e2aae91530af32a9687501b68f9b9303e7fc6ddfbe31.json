@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Flo Mo sounds fun, but I've got a study block at 7 before Taper. Maybe I'll catch you at Taper and the lounge after!",
+  "shared_health": false
+ }
+}

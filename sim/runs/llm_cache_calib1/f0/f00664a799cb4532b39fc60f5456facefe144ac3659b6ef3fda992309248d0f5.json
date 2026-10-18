@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler at breakfast; they're masked, feel fine with no symptoms, and are heading to the gym. I'm still fine and keeping my mask on, with the plan unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

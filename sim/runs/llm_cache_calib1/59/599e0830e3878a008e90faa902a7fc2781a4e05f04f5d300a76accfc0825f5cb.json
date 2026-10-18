@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine, no symptoms. Just wary with the flu going around the dorm. You okay? Keep the mask on, and let me know the second you hear so I can tell Neo.",
+  "shared_health": true
+ }
+}

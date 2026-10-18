@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:40"
+   },
+   {
+    "activity": "relax",
+    "end": "18:30",
+    "place": "home",
+    "start": "16:45"
+   },
+   {
+    "activity": "eat",
+    "end": "19:25",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "relax",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Played the Cal game in a packed stadium, feeling fine. Heading home to relax, dinner at Stern, quiet night, mask handy and washing hands.",
+  "messages": [],
+  "thoughts": "Game day vs Cal, I'm playing so I stay at the stadium until the game ends. Stadium is crowded but I'm outdoors and feel fine. Afterward I'll head home, shower, eat at Stern, and keep a quiet night. Spare mask stays handy, wash hands.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

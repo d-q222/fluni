@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Winter! You headed to the Arizona game tonight? Onyx is saving us seats around 7.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "11:45",
+    "place": "home",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "12:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:45",
+    "place": "home",
+    "start": "12:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "17:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "18:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Sat Jan 10: Chris and Dakota confirmed sick. I'm staying home, masking, skipping the game and party, keeping Stern meals short. Feeling fine but very anxious.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us Chris and Dakota, feel better! I'm fine but staying in and masking. Wynn, with this many people sick maybe skip the party tonight, or at least mask up.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Chris and Dakota both confirmed sick, and the dorm has many fevers. I feel fine but anxious. I'll skip the game and party, stay home masked, keep Stern meals short, and sleep. I might text the group a short reply wishing them well and warning Wynn.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

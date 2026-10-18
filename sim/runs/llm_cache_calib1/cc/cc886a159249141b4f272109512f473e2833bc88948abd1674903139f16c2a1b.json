@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "accept": [
+   "m6",
+   "m2"
+  ],
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "eat",
+    "end": "09:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "08:35"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "eat",
+    "end": "13:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:05"
+   },
+   {
+    "activity": "relax",
+    "end": "15:10",
+    "place": "home",
+    "start": "13:50"
+   },
+   {
+    "activity": "study",
+    "end": "16:10",
+    "place": "plan:bld_m_green_library_f2_213",
+    "start": "15:15"
+   },
+   {
+    "activity": "gym",
+    "end": "17:20",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "16:15"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:20",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "18:50"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:00",
+    "place": "bld:bld_232841950",
+    "start": "20:25"
+   },
+   {
+    "activity": "hangout",
+    "end": "00:30",
+    "place": "dorm_lounge",
+    "start": "22:05"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:30"
+   }
+  ],
+  "diary": "First Monday of the quarter: going to Lakeside dinner with Dakota, then Taper hangout with Winter, then dorm lounge. Feeling healthy and not worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Down for Lakeside at 5:30 and Taper after! See you all there.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "First Monday of the quarter and everyone wants dinner. I feel fine, so I'll go social. Dakota's Lakeside dinner is at 17:30 after the gym, then Winter's Taper hangout at 20:25. Skipping Wilbur and Flo Mo since I can't be everywhere, though Stern lounge later is easy.",
+  "wear_mask": false,
+  "worry": 1
+ }
+}

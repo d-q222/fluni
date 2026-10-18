@@ -1,0 +1,86 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "10:30",
+    "place": "home",
+    "start": "10:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:AA214_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:10"
+   },
+   {
+    "activity": "study",
+    "end": "15:30",
+    "place": "bld:bld_232841950",
+    "start": "13:15"
+   },
+   {
+    "activity": "gym",
+    "end": "17:00",
+    "place": "bld:bld_6593510",
+    "start": "15:45"
+   },
+   {
+    "activity": "eat",
+    "end": "18:30",
+    "place": "bld:bld_1040629370",
+    "start": "17:30"
+   },
+   {
+    "activity": "relax",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "19:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wednesday: AA 214, gym, then the basketball game tonight and invited the group. Feeling fine, still slightly wary of illness.",
+  "messages": [
+   {
+    "kind": "invite",
+    "place": "event:EV00047",
+    "text": "Basketball vs Arizona tonight at Maples at 7, who's in?",
+    "time": "19:00",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Wednesday. I feel fine, so I'll keep a normal social day: sleep in, AA 214 lecture at 10:30, then lunch, some study at Taper, gym, and the basketball game tonight with friends. Illness is going around, so I'll be a little careful, but I'm not going to skip everything. I'll invite a couple of friends to the game.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

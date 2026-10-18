@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout. Good to see you, I'll keep my distance though. Still staying in until Sunday per FlUni, just grabbing a quick breakfast. How are you feeling?",
+  "shared_health": true
+ }
+}

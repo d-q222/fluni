@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:50",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "08:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:55"
+   },
+   {
+    "activity": "study",
+    "end": "09:25",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "08:45"
+   },
+   {
+    "activity": "class",
+    "end": "10:15",
+    "place": "class:ME131_LEC01",
+    "start": "09:30"
+   },
+   {
+    "activity": "study",
+    "end": "11:45",
+    "place": "plan:bld_m_green_library_f2_203",
+    "start": "10:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:55"
+   },
+   {
+    "activity": "study",
+    "end": "13:25",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:15",
+    "place": "class:MATH51_LEC04",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "17:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "14:20"
+   },
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "plan:bld_m_green_library_f1_106",
+    "start": "17:20"
+   },
+   {
+    "activity": "lab",
+    "end": "21:40",
+    "place": "plan:bld_26292283_f1_108",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "22:35",
+    "place": "plan:bld_m_green_library_f2_210",
+    "start": "21:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:20",
+    "place": "home",
+    "start": "22:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:20"
+   }
+  ],
+  "diary": "Followed my usual Monday routine of classes, library, and lab, wearing a mask indoors. Feeling fine but still a bit anxious about illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, just a bit anxious about illness going around. I'll stick to my usual routine, wear a mask indoors, and keep things organized. Monday is a full day of classes, library, and lab.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

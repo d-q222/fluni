@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "15:20",
+    "place": "bld:bld_232841950",
+    "start": "14:05"
+   },
+   {
+    "activity": "study",
+    "end": "18:15",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:00",
+    "place": "bld:bld_1040629370",
+    "start": "18:20"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "19:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: heard flu confirmed in the dorm (Dakota, Chris). Skipping the gym and dorm hangout, studying at home, masking with Emerson. Feel fine but more worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Armani. I feel fine, masking in my room and skipping crowds. Still waiting on Jesse's test result; will pass it on.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Flu in my dorm is confirmed now, and Jesse's test is still pending. I'll keep to my routine but cut crowds: finish studying here, go home, skip the dorm hangout. Gym is a risk, so I'll skip it and take an earlier dinner at Lakeside. I'll mask in the room with Emerson. I feel fine, so no need to isolate, but I'll stay wary.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

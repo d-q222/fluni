@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yes, perfect, the more the merrier. Taper after sounds good, or the lounge, we'll see how loud everyone is. Let's go find the seats!",
+  "shared_health": false
+ }
+}

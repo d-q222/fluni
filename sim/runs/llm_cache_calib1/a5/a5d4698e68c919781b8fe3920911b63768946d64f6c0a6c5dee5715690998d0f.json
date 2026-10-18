@@ -1,0 +1,36 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "18:30",
+    "place": "home",
+    "start": "18:15"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:30",
+    "place": "plan:bld_738808361_f3_306",
+    "start": "19:25"
+   },
+   {
+    "activity": "rest",
+    "end": "23:59",
+    "place": "home",
+    "start": "22:40"
+   }
+  ],
+  "diary": "Sun Jan 11 evening: FlUni advised masking tomorrow. Still feel fine; masked for dinner and lab, then home early. Quite worried, watching for symptoms.",
+  "messages": [],
+  "thoughts": "The app says to mask tomorrow. I feel fine, so I'll keep my usual routine: quick study, masked dinner at Stern, lab (disciplined, and I've been masking in shared spaces anyway), then home early. I'll wear a mask since I'm exposed. I'll keep distance from others in lab and watch for symptoms.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

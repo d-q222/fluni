@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli, still feeling okay? I'm fine so far, just keeping an eye out. Let me know right away if anything feels off, okay?",
+  "shared_health": true
+ }
+}

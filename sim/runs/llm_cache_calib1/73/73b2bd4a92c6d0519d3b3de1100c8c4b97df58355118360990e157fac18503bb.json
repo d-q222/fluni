@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Dakota (dorm neighbor) at Stern Dining; they heard the dorm fever rumor too, don't mask, and feel fine. I said I feel fine and am wary. Nothing changes; keep watching for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Nice, you're masked too. Carter said you had a spare, you still doing the Taper stop then lounge later?",
+  "shared_health": false
+ }
+}

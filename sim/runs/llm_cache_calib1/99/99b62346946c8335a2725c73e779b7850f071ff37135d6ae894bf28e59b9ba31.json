@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do! Thanks for being cool about it. I'll text if anything changes. Enjoy dinner, see you around the dorm!",
+  "shared_health": false
+ }
+}

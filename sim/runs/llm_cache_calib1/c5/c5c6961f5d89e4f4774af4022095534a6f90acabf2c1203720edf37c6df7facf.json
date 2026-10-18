@@ -1,0 +1,54 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "16:30",
+    "place": "home",
+    "start": "12:40"
+   },
+   {
+    "activity": "relax",
+    "end": "18:25",
+    "place": "home",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "22:30",
+    "place": "home",
+    "start": "18:50"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Thursday: Stern was crowded at lunch, so I ate quickly masked and went back to my room. Staying in until Jan 11 per FlUni, still feeling fine but anxious.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded with about 40 people and I'm supposed to be staying in until Jan 11 per FlUni. I'll finish up fast, keep my mask on, and head straight back to my room. Then I'll study remotely like I've been doing and keep to my routine.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

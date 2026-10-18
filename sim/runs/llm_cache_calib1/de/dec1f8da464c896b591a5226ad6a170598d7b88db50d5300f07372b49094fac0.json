@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! Yeah, I'm popping in for a bit, keeping it short with all the sick rumors going around. Smart on the mask. I feel fine, so I'll just stay away from anyone coughing. You going?",
+  "shared_health": true
+ }
+}

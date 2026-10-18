@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler (masked) at Stern Dining; we'll meet near the student section at the Cal game and they reminded me to keep my mask on in the crowd. Plans unchanged.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

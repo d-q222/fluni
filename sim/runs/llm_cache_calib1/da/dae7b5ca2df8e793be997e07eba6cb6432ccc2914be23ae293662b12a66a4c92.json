@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "06:20",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "06:40",
+    "place": "home",
+    "start": "06:20"
+   },
+   {
+    "activity": "gym",
+    "end": "07:45",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "06:45"
+   },
+   {
+    "activity": "eat",
+    "end": "08:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "07:50"
+   },
+   {
+    "activity": "gym",
+    "end": "10:30",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "08:20"
+   },
+   {
+    "activity": "relax",
+    "end": "12:25",
+    "place": "bld:bld_232841950",
+    "start": "10:35"
+   },
+   {
+    "activity": "class",
+    "end": "13:15",
+    "place": "class:JAPANLNG11B_LNG01",
+    "start": "12:30"
+   },
+   {
+    "activity": "eat",
+    "end": "13:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:20"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:30",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "14:00"
+   },
+   {
+    "activity": "practice",
+    "end": "17:55",
+    "place": "plan:bld_232715640_f1_101",
+    "start": "15:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "19:15",
+    "place": "bld:bld_m_meyer_green",
+    "start": "18:00"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "gym",
+    "end": "21:25",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "20:05"
+   },
+   {
+    "activity": "relax",
+    "end": "23:30",
+    "place": "home",
+    "start": "21:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Feeling fine. Sticking to training, class and meals, masking in crowds, and skipping the packed party to rest at home.",
+  "messages": [],
+  "thoughts": "Feeling fine, test negative. Sticking to my routine as a disciplined athlete: lifting, class, practice, meals. The party tonight is loud and packed, and with sick folks in the dorm I'll skip or make a brief appearance. I'll mask in crowded dining and stay home instead of the party to be safe and rest.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

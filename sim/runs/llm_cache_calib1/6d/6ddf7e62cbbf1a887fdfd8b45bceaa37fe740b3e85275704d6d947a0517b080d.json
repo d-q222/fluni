@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Winter said a group is going to Taper around 8:30 tonight; I said maybe if I'm not wiped. Nothing else changed, I feel fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

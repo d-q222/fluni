@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Eden is skipping the Arizona game because crowds make them nervous; they're masked and keeping low-key. I suggested hanging out in the lounge later. Nothing health-related to share on my side.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

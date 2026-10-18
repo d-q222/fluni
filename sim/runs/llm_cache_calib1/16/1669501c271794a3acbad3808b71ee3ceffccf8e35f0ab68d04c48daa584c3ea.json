@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Jesse is wearing a mask because of unconfirmed fever rumors in Stern. We both plan to stay near the edge of the hangout and leave early; I'll head to study soon.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

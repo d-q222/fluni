@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:25",
+    "place": "home",
+    "start": "08:55"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "10:25",
+    "place": "bld:bld_m_white_plaza",
+    "start": "09:30"
+   },
+   {
+    "activity": "class",
+    "end": "12:20",
+    "place": "class:BIOE141B_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "class",
+    "end": "13:20",
+    "place": "class:CS194W_LEC01",
+    "start": "12:30"
+   },
+   {
+    "activity": "lab",
+    "end": "16:15",
+    "place": "class:BIOE141B_LBS02",
+    "start": "13:30"
+   },
+   {
+    "activity": "lab",
+    "end": "18:30",
+    "place": "plan:bld_232841918_f1_104",
+    "start": "16:20"
+   },
+   {
+    "activity": "study",
+    "end": "19:25",
+    "place": "plan:bld_232805685_f1_119",
+    "start": "18:35"
+   },
+   {
+    "activity": "class",
+    "end": "21:15",
+    "place": "class:MUSIC160B_PRA01",
+    "start": "19:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:35",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:35"
+   }
+  ],
+  "diary": "Wednesday: usual classes, long lab, and music class in the evening, masked indoors and skipping the basketball game. Feeling fine, still a bit anxious about illness.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual Wednesday: classes, lab, and the evening music class. I'll wear a mask indoors and skip the basketball game because the crowd would be a risk. I'll add a quick lunch since the routine has no meal, and get dinner during the study slot.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

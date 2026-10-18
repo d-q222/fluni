@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Max at Stern Dining; we agreed to lift together at Roble Gym around 8:50. Felt fine and didn't share anything health-related.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

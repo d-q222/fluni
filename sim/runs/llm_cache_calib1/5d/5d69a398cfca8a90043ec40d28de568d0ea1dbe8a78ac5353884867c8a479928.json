@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "health_visit",
+    "end": "12:00",
+    "place": "bld:bld_26250731",
+    "start": "10:20"
+   },
+   {
+    "activity": "rest",
+    "end": "17:30",
+    "place": "home",
+    "start": "12:05"
+   },
+   {
+    "activity": "eat",
+    "end": "18:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Fri: Suddenly came down with fever, chills, cough and aches mid-morning. Skipped class, lab and study group, went to Vaden, and am isolating in my room. Told my friends; very anxious.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Hey, I woke up with fever, chills, cough and body aches. Heading to Vaden to get checked, then staying in my room. Please keep your distance and watch for symptoms. I'll update you after the test.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I suddenly have fever, chills, cough, sore throat and body aches. With flu going around I'm anxious, and I'd never want to get others sick. I'll skip class, lab and the study group, go to Vaden to get checked, then go home and rest. I'll tell Sawyer and Oli honestly, and mask on the way.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

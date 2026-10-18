@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Wynn I'll be at Taper around 8:30 after the gym; Wynn is saving me a spot. Both seem fine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

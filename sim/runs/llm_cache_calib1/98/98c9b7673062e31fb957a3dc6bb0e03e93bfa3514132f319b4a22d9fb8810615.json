@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Waverly! I'm keeping my mask on except to eat, sorry if I'm hovering. Have you heard how Sidney and Bailey are doing?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, just being careful. FlUni told me to get tested so I went to Vaden this morning, still waiting on the result. I feel fine though. You doing okay?",
+  "shared_health": true
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Umi! Mask, huh? You feeling okay or just being careful? Stevie said Skyler got a FlUni alert, so everyone's kinda on edge.",
+  "shared_health": false
+ }
+}

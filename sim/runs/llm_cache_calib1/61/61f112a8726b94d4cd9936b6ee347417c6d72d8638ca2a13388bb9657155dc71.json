@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Max at Stern Dining; they invited me to lift at 8:50 with Lake but I declined because of my 8:45 plan. Said I'd see them at practice later. Nothing sick mentioned.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

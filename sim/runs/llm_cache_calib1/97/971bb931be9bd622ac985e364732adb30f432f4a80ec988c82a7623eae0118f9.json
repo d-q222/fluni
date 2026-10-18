@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Lake we're heading to the Arizona game at Maples around 6:45; Lake will meet us there after Green and text me. Nothing health-related came up.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

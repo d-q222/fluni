@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate at Flo Mo with Dakota; we'll meet at the dorm around 8:10 and bike to Taper with Winter at 8:15. I feel fine and plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

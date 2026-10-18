@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chris invited me to the Arizona game tonight; I declined because of lab and avoiding crowds. Nothing changes, still careful with my mask and routine.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

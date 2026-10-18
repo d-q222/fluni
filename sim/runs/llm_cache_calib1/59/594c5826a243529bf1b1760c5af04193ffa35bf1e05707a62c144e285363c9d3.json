@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same, a little nervous honestly. My friends are sick so I'm keeping my distance from everyone. I'm fine though, tested negative. Want to grab seats near the aisle?",
+  "shared_health": true
+ }
+}

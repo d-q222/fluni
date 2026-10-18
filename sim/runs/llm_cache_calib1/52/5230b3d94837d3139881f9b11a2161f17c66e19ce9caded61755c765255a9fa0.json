@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm planning on it, 7:50 at the study group. Gym sounds way more productive though, ha. Then I'm probably hanging out with people after. Wanna join later if you're done?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,80 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "10:30",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "11:30",
+    "place": "bld:bld_232715666",
+    "start": "10:40"
+   },
+   {
+    "activity": "study",
+    "end": "13:00",
+    "place": "bld:bld_232805662",
+    "start": "11:40"
+   },
+   {
+    "activity": "event",
+    "end": "16:30",
+    "place": "event:EV00113",
+    "start": "13:00"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "17:30",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "16:40"
+   },
+   {
+    "activity": "study",
+    "end": "19:00",
+    "place": "bld:bld_232805662",
+    "start": "17:40"
+   },
+   {
+    "activity": "eat",
+    "end": "20:00",
+    "place": "bld:bld_m_stern_dining",
+    "start": "19:20"
+   },
+   {
+    "activity": "relax",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:05"
+   },
+   {
+    "activity": "party",
+    "end": "00:00",
+    "place": "event:EV00131",
+    "start": "22:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:10"
+   }
+  ],
+  "diary": "Saturday: feeling fine but cautious with Chris, Sidney and Hadley sick. Plan is the football game, studying, a short party, then bed. Staying out of the lounge.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Feel better Chris! I feel fine, staying careful. Skipping the Stern lounge. Text me if you get symptoms.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Feeling fine but cautious with Chris, Sidney and Hadley sick nearby. Saturday: sleep in, eat, study a bit, then the football game outdoors. I'll skip the crowded party or make it short, and keep time with friends outdoors. I'll avoid the dorm lounge and keep my spare mask handy.",
+  "wear_mask": false,
+  "worry": 3
+ }
+}

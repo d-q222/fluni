@@ -1,0 +1,68 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "relax",
+    "end": "14:55",
+    "place": "home",
+    "start": "13:05"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS109_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "lab",
+    "end": "17:45",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:25",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:55"
+   },
+   {
+    "activity": "lab",
+    "end": "22:20",
+    "place": "plan:bld_232841922_f3_303",
+    "start": "18:35"
+   },
+   {
+    "activity": "study",
+    "end": "00:05",
+    "place": "home",
+    "start": "22:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Sidney tested positive for flu. I feel fine but I'm more worried, so I'm wearing a mask in class, skipping the dorm hangout and game, and watching for symptoms.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for telling us, Sidney. Rest up and drink lots of fluids. Let us know if you need anything dropped off outside your door. I'll keep my distance.",
+    "time": "",
+    "to": "A0168"
+   }
+  ],
+  "thoughts": "Sidney tested positive for flu. I feel fine, but I'm worried. I'm organized and disciplined, so I'll keep class and lab, since they matter. I'll skip the crowded dorm hangout and the game, and keep distance from others. I'll text Sidney to wish them well and say I'll check symptoms. I might wear a mask in class given exposure risk, even though I rarely do. Skip the late-night library study room and study at home instead to reduce exposure, then sleep earlier.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

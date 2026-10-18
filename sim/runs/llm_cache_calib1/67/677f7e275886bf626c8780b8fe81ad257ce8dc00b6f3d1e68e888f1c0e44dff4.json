@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Ha no worries, it was chill! Week's good, kinda busy. Everyone's a little jumpy about flu going around though. You headed to the dorm hangout later?",
+  "shared_health": false
+ }
+}

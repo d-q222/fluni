@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! You're masked up again, smart. I'm feeling fine, just grabbing dinner before Taper. Heard Chris is sick, so I'll bail on the lounge if people are coughing. You still in?",
+  "shared_health": true
+ }
+}

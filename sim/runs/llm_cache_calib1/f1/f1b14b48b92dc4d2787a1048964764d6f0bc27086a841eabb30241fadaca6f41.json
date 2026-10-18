@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm definitely going! Want to head over together after dinner? I'm eating at Stern around 6.",
+  "shared_health": false
+ }
+}

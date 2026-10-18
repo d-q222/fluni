@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'm heading to the game this afternoon too, so maybe I'll see you there. Stay safe, and keep that mask on! I've gotta finish eating, see you later!",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I feel fine, just being careful too. Got plenty of spare masks if you need another. Anyway, I'm heading back to study after breakfast. See you around the dorm!",
+  "shared_health": true
+ }
+}

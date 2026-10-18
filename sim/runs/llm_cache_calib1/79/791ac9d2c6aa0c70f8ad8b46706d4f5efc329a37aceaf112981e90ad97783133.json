@@ -1,0 +1,48 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "study_group",
+    "end": "20:40",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "19:55"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:10",
+    "place": "event:EV00031",
+    "start": "20:45"
+   },
+   {
+    "activity": "study",
+    "end": "00:00",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "00:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Tue Jan 6: Stern was crowded at dinner so I ate fast with my mask on, then study group and a short stop at the dorm hangout before studying at home. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "Stern is crowded with about 49 people, so I'll finish dinner quickly with my mask on and not linger. I still want to see Campbell and go to the study group since I'm feeling fine. The dorm hangout is probably packed, so I'll make a brief appearance or skip it and head home to study, which is more me.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

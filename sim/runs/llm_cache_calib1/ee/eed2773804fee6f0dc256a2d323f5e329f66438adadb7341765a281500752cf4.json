@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, no mask on me, I feel totally fine! Just a little wary with all the coughing lately. Awesome, lead the way, I'll sit with you guys!",
+  "shared_health": true
+ }
+}

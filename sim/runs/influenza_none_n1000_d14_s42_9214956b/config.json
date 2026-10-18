@@ -1,0 +1,2188 @@
+{
+  "run_id": "influenza_none_n1000_d14_s42_9214956b",
+  "seed": 42,
+  "n_agents": 1000,
+  "days": 14,
+  "step_min": 5,
+  "start": "2026-01-05T00:00:00",
+  "disease": "influenza",
+  "intervention": "none",
+  "archetype_fractions": {
+    "studious": 0.2,
+    "social": 0.18,
+    "athlete": 0.1,
+    "stem": 0.22,
+    "commuter": 0.1,
+    "homebody": 0.2
+  },
+  "map_version": "05a51a4cae721c53",
+  "code_version": "0.1.0+0b1a065cab62",
+  "local_frame": {
+    "origin_lat": 37.418,
+    "origin_lon": -122.182,
+    "units": "m",
+    "x": "east",
+    "y": "north"
+  },
+  "distance_tiers": {
+    "1": "<1 m",
+    "2": "1-2 m",
+    "3": "2-5 m",
+    "4": "same room, >=5 m"
+  },
+  "params": {
+    "behavior": {
+      "mask_context_factor": {
+        "sleep": 0.0,
+        "relax": 0.0,
+        "class": 1.0,
+        "lab": 1.0,
+        "study": 0.9,
+        "eat": 0.1,
+        "practice": 0.05,
+        "gym": 0.4,
+        "party": 0.15,
+        "hangout": 0.1,
+        "event": 0.4,
+        "study_group": 0.9,
+        "outdoor_leisure": 0.1,
+        "commute": 0.2,
+        "off_campus": 0.0,
+        "isolate": 0.0,
+        "health_visit": 1.0,
+        "rest": 0.0,
+        "idle": 0.3,
+        "arrived_early": 0.5
+      },
+      "mask_symptomatic_boost": 2.0,
+      "mask_p_max": 0.98,
+      "room_margin_m": 0.3,
+      "seat_spacing_m": {
+        "lecture_hall": 0.9,
+        "seminar": 1.1,
+        "classroom": 1.0,
+        "exam_room": 1.2,
+        "reading_room": 1.2,
+        "study_room": 1.0,
+        "dining_room": 1.0,
+        "cafe": 1.0,
+        "waiting_room": 1.2,
+        "default": 1.0
+      },
+      "seat_edge_m": 0.5,
+      "seat_retry_rounds": 3,
+      "mingle_sigma_m": 0.6,
+      "mingle_center_margin_m": 1.0,
+      "mingle_resample_p": 0.25,
+      "bed_wall_offset_m": 1.0,
+      "desk_wall_offset_m": 0.6,
+      "bed_acts": [
+        "sleep",
+        "isolate",
+        "rest"
+      ],
+      "leave_location_act": "relax",
+      "carry_on_drop_act": "rest",
+      "vaden_overrides_isolation": false,
+      "vaden_min_stay_steps": 2,
+      "vaden_max_extend_steps": 36
+    },
+    "contacts": {
+      "radius_m": 5.0,
+      "tiers_m": [
+        1.0,
+        2.0,
+        5.0
+      ],
+      "same_room_max_capacity": 150,
+      "ground_floor": 1,
+      "floor_separation_m": 1000.0,
+      "outdoor_any_floor": false
+    },
+    "interventions": {
+      "isolation_days": 5,
+      "mask_days": 1,
+      "vaden_visit_min": 45,
+      "self_report_isolate": {
+        "statuses": [
+          "might_be_sick",
+          "tested_positive"
+        ]
+      },
+      "symptomatic_isolate_oracle": {}
+    },
+    "map": {
+      "map_seed": 0,
+      "data_dir": "data/osm",
+      "manual_places": "data/manual_places.json",
+      "teaching_rooms": "data/courses/rooms_20252026_winter.csv",
+      "location_overrides": "data/location_overrides.json",
+      "exclude_highways": [
+        "motorway",
+        "motorway_link",
+        "trunk",
+        "trunk_link",
+        "construction",
+        "proposed",
+        "abandoned",
+        "raceway",
+        "bus_guideway",
+        "elevator",
+        "platform"
+      ],
+      "modes": {
+        "bike_min_trip_m": 300,
+        "walk": {
+          "default": 1.5,
+          "designated": 1.0,
+          "allowed": 1.3,
+          "crossing": 1.0,
+          "no_sidewalk": 2.0,
+          "separate_sidewalk": 3.0,
+          "highway": {
+            "footway": 1.0,
+            "pedestrian": 1.0,
+            "path": 1.0,
+            "living_street": 1.0,
+            "corridor": 1.0,
+            "steps": 1.15,
+            "track": 1.2,
+            "service": 1.3,
+            "residential": 1.3,
+            "unclassified": 1.3,
+            "cycleway": 1.6,
+            "tertiary": 1.6,
+            "tertiary_link": 1.6,
+            "secondary": 2.0,
+            "secondary_link": 2.0,
+            "primary": 3.0,
+            "primary_link": 3.0
+          }
+        },
+        "bike": {
+          "default": 2.0,
+          "designated": 0.85,
+          "allowed": 1.2,
+          "crossing": 1.0,
+          "sidewalk": 2.5,
+          "dismount": 4.0,
+          "forbid": [
+            "steps",
+            "corridor"
+          ],
+          "highway": {
+            "cycleway": 0.85,
+            "residential": 1.0,
+            "unclassified": 1.0,
+            "tertiary": 1.0,
+            "tertiary_link": 1.0,
+            "secondary": 1.05,
+            "secondary_link": 1.05,
+            "primary": 1.3,
+            "primary_link": 1.3,
+            "living_street": 1.1,
+            "service": 1.15,
+            "path": 1.1,
+            "track": 1.2,
+            "pedestrian": 1.6,
+            "footway": 2.0
+          }
+        }
+      },
+      "footprint_grid_m": 1.0,
+      "open_building_tags": [
+        "roof",
+        "carport",
+        "grandstand",
+        "bridge"
+      ],
+      "_passage_ways_doc": "OSM ways that run through a building footprint for real but lack covered/tunnel tags: the Main Quad's outer and courtyard arcades (all ~4 m inside an outline).",
+      "passage_ways": [
+        "way/580337109",
+        "way/591686694",
+        "way/591686705",
+        "way/591686692",
+        "way/689427790",
+        "way/689427784",
+        "way/696250797",
+        "way/696250998",
+        "way/689427785",
+        "way/689427783",
+        "way/689423957",
+        "way/591686693",
+        "way/1537961302",
+        "way/698477418",
+        "way/689427793",
+        "way/689427792",
+        "way/1537948106",
+        "way/1171322650",
+        "way/1171322648",
+        "way/591686702",
+        "way/1434952387",
+        "way/591686699",
+        "way/616870182",
+        "way/591686696",
+        "way/31705924",
+        "way/31011817"
+      ],
+      "through_building_factor": 5.0,
+      "through_building_min_m": 3.0,
+      "connector_search_m": [
+        30,
+        80,
+        200,
+        500
+      ],
+      "split_snap_m": 0.5,
+      "node_round_dp": 7,
+      "route_cache_size": 512,
+      "room_gap_m": 1.0,
+      "row_scan_step_m": 2.0,
+      "max_room_fill": 0.92,
+      "default_footprint_m2": 400,
+      "manual_default_w_m": 40,
+      "manual_default_h_m": 30,
+      "entry_points": [
+        {
+          "name": "Palm Drive / El Camino",
+          "lat": 37.438,
+          "lon": -122.164
+        },
+        {
+          "name": "Campus Dr E / Stanford Ave",
+          "lat": 37.4195,
+          "lon": -122.16
+        },
+        {
+          "name": "Junipero Serra / Campus Dr W",
+          "lat": 37.418,
+          "lon": -122.179
+        },
+        {
+          "name": "Sand Hill / Campus Dr W",
+          "lat": 37.43,
+          "lon": -122.183
+        },
+        {
+          "name": "Galvez / El Camino",
+          "lat": 37.435,
+          "lon": -122.158
+        }
+      ],
+      "types": {
+        "dorm": {
+          "levels": 3,
+          "max_floors": 4,
+          "ventilation_ach": 2.0,
+          "ceiling_m": 3.0,
+          "max_rooms_per_floor": 120,
+          "bed_fill": 0.38,
+          "lobby_frac": 0.05,
+          "lobby_min_m2": 30,
+          "lobby_max_m2": 120,
+          "bedroom_mix": {
+            "dorm_single": 0.15,
+            "dorm_double": 0.65,
+            "dorm_triple": 0.12,
+            "dorm_quad": 0.08
+          }
+        },
+        "classroom": {
+          "levels": 2,
+          "max_floors": 4,
+          "ventilation_ach": 4.0,
+          "ceiling_m": 3.0,
+          "max_rooms_per_floor": 12,
+          "max_rooms": 40,
+          "teach_frac": 0.3,
+          "lecture_room_min_footprint_m2": 2500,
+          "max_lecture_rooms": 4,
+          "classroom_share": 0.45
+        },
+        "lecture_hall": {
+          "levels": 1,
+          "max_floors": 1,
+          "ventilation_ach": 5.0,
+          "ceiling_m": 6.0,
+          "hall_frac": 0.6,
+          "max_seats": 400
+        },
+        "dining": {
+          "levels": 1,
+          "max_floors": 1,
+          "ventilation_ach": 4.0,
+          "ceiling_m": 4.0,
+          "dining_frac": 0.5,
+          "max_capacity": 600
+        },
+        "library": {
+          "levels": 3,
+          "max_floors": 4,
+          "ventilation_ach": 3.0,
+          "ceiling_m": 3.0,
+          "reading_frac": 0.25,
+          "reading_floors": 2,
+          "study_rooms_per_m2": 0.006,
+          "max_study_rooms_per_floor": 12
+        },
+        "gym": {
+          "levels": 1,
+          "max_floors": 1,
+          "ventilation_ach": 6.0,
+          "ceiling_m": 7.0,
+          "weight_frac": 0.2,
+          "weight_max_m2": 400,
+          "practice_frac": 0.4,
+          "practice_max_m2": 1500,
+          "pool_frac": 0.6,
+          "pool_max_m2": 2500
+        },
+        "lab": {
+          "levels": 3,
+          "max_floors": 4,
+          "ventilation_ach": 6.0,
+          "ceiling_m": 3.5,
+          "lab_frac": 0.35,
+          "max_labs_per_floor": 8
+        },
+        "party_venue": {
+          "levels": 2,
+          "max_floors": 1,
+          "ventilation_ach": 1.5,
+          "ceiling_m": 3.0,
+          "party_frac": 0.3,
+          "party_max_m2": 200,
+          "lounge_frac": 0.1,
+          "lounge_max_m2": 80
+        },
+        "event_venue": {
+          "levels": 1,
+          "max_floors": 1,
+          "ventilation_ach": 8.0,
+          "ceiling_m": 10.0,
+          "arena_frac": 0.8
+        },
+        "common_room": {
+          "levels": 2,
+          "max_floors": 1,
+          "ventilation_ach": 3.0,
+          "ceiling_m": 3.0,
+          "lounge_frac": 0.3,
+          "lounge_max_m2": 400,
+          "cafe_frac": 0.15,
+          "cafe_max_m2": 200,
+          "cafe_min_footprint_m2": 300
+        },
+        "outdoor": {
+          "levels": 1,
+          "max_floors": 1,
+          "ventilation_ach": 0.0,
+          "ceiling_m": 0.0
+        },
+        "health_center": {
+          "levels": 2,
+          "max_floors": 1,
+          "ventilation_ach": 6.0,
+          "ceiling_m": 3.0,
+          "waiting_m2": 60,
+          "n_exam_rooms": 6
+        },
+        "other": {
+          "levels": 2,
+          "max_floors": 1,
+          "ventilation_ach": 3.0,
+          "ceiling_m": 3.0,
+          "generic_frac": 0.3,
+          "generic_max_m2": 100
+        }
+      },
+      "room_types": {
+        "dorm_single": {
+          "area_m2": 11,
+          "capacity": 1,
+          "layout": "bed"
+        },
+        "dorm_double": {
+          "area_m2": 18,
+          "capacity": 2,
+          "layout": "bed"
+        },
+        "dorm_triple": {
+          "area_m2": 26,
+          "capacity": 3,
+          "layout": "bed"
+        },
+        "dorm_quad": {
+          "area_m2": 34,
+          "capacity": 4,
+          "layout": "bed"
+        },
+        "lobby": {
+          "m2_per_person": 2.0,
+          "layout": "mingle",
+          "aspect": 1.3
+        },
+        "seminar": {
+          "cap_range": [
+            12,
+            20
+          ],
+          "m2_per_person": 2.5,
+          "layout": "seated",
+          "aspect": 1.3
+        },
+        "classroom": {
+          "cap_range": [
+            30,
+            60
+          ],
+          "m2_per_person": 2.0,
+          "layout": "seated",
+          "aspect": 1.3
+        },
+        "lecture_hall": {
+          "cap_range": [
+            100,
+            300
+          ],
+          "m2_per_person": 1.2,
+          "layout": "seated",
+          "aspect": 1.25,
+          "ceiling_m": 6.0
+        },
+        "dining_room": {
+          "m2_per_person": 2.0,
+          "layout": "mingle",
+          "aspect": 1.5
+        },
+        "reading_room": {
+          "m2_per_person": 2.5,
+          "layout": "free",
+          "aspect": 1.6
+        },
+        "study_room": {
+          "cap_range": [
+            4,
+            8
+          ],
+          "m2_per_person": 2.5,
+          "layout": "seated",
+          "aspect": 1.2
+        },
+        "lab": {
+          "cap_range": [
+            10,
+            20
+          ],
+          "m2_per_person": 6.0,
+          "layout": "free",
+          "aspect": 1.4
+        },
+        "weight_room": {
+          "m2_per_person": 5.0,
+          "layout": "free",
+          "aspect": 1.4
+        },
+        "practice_gym": {
+          "m2_per_person": 4.0,
+          "layout": "free",
+          "aspect": 1.6,
+          "ceiling_m": 8.0
+        },
+        "pool": {
+          "m2_per_person": 6.0,
+          "layout": "free",
+          "aspect": 2.0,
+          "ceiling_m": 8.0
+        },
+        "party_room": {
+          "m2_per_person": 0.7,
+          "layout": "mingle",
+          "aspect": 1.3
+        },
+        "lounge": {
+          "m2_per_person": 2.0,
+          "layout": "mingle",
+          "aspect": 1.3
+        },
+        "arena": {
+          "m2_per_person": 0.8,
+          "layout": "mingle",
+          "aspect": 1.4
+        },
+        "cafe": {
+          "m2_per_person": 1.8,
+          "layout": "mingle",
+          "aspect": 1.3
+        },
+        "waiting_room": {
+          "m2_per_person": 3.0,
+          "layout": "seated",
+          "aspect": 1.3
+        },
+        "exam_room": {
+          "area_m2": 12,
+          "capacity": 3,
+          "layout": "free",
+          "aspect": 1.33
+        },
+        "outdoor_area": {
+          "m2_per_person": 2.0,
+          "layout": "free"
+        },
+        "generic": {
+          "m2_per_person": 10.0,
+          "layout": "free",
+          "aspect": 1.3
+        }
+      },
+      "rules": [
+        {
+          "type": "health_center",
+          "name": "\\bVaden\\b"
+        },
+        {
+          "type": "other",
+          "tag": "^(hospital|garage|parking|kindergarten|shed|roof|carport|toilets|bridge|industrial|data_center|service|grandstand)$"
+        },
+        {
+          "type": "other",
+          "name": "(?i)hospital|medical|medicine|clinic|cancer|garage|\\bfire\\b|maintenance|offices?\\b|data center|warehouse|escondido|lyman|munger|\\brains\\b|graduate|faculty|alumni|golf|modular|schwab|post office|sanitary|steam|work center|mausoleum|loading dock|restroom|caretaker|housing management|\\bLBRE\\b|blake wilbur|imaging|clinical|knight|\\bpress\\b|carnegie"
+        },
+        {
+          "type": "party_venue",
+          "tag": "^Zap_House$"
+        },
+        {
+          "type": "party_venue",
+          "name": "(?i)\\b(sigma|kappa|delta|theta|phi|alpha|psi|zap|acacia|chi|omega|beta|gamma)\\b"
+        },
+        {
+          "type": "dining",
+          "name": "(?i)dining|\\bricker\\b"
+        },
+        {
+          "type": "library",
+          "name": "(?i)library"
+        },
+        {
+          "type": "event_venue",
+          "name": "(?i)stadium|maples pavilion|bing concert|memorial hall|dinkelspiel|burnham pavilion|amphitheater"
+        },
+        {
+          "type": "gym",
+          "tag": "^gymnasium$"
+        },
+        {
+          "type": "gym",
+          "name": "(?i)gymnasium|\\bgym\\b|sports|recreation|\\bpool\\b|weight room|\\bford center|track house|koret"
+        },
+        {
+          "type": "lecture_hall",
+          "name": "(?i)hewlett teaching|auditorium|cubberl"
+        },
+        {
+          "type": "common_room",
+          "name": "(?i)tresidder|old union|lounge|caf[e\u00e9]|haas center|community|student center|bechtel|elliott program|windhover|bookstore"
+        },
+        {
+          "type": "lab",
+          "name": "(?i)huang|spilker|shriram|yang & yamazaki|environment & energy|clark center|lokey|\\bmudd\\b|\\bkeck\\b|stauffer|varian|^packard$|moore material|physics|earth sciences|product realization|chem-h|neurosciences|computing & data|laborator|\\blabs?\\b|engineering|biology|beckman|turbulence|\\bhepl\\b|paul g\\. allen|sapp center|\\bblume\\b|mccullough|gilbert hall|durand building|lucas center|li ka shing"
+        },
+        {
+          "type": "dorm",
+          "name": "(?i)roble hall|toyon|branner|florence moore|kimball|okada|otero|\\bsoto\\b|rinconada|junipero|trancos|cedro|arroyo|lucie stern|mirrielees|adelfa|eucalipto|granada|naranja|ujamaa|house$|xanadu|mariposa|^rogers$|well house"
+        },
+        {
+          "type": "dorm",
+          "tag": "^(dormitory|apartments|residential|house|detached)$"
+        },
+        {
+          "type": "classroom",
+          "tag": "^(university|school)$"
+        },
+        {
+          "type": "classroom",
+          "name": "(?i)main quad|encina|economics|\\blaw\\b|humanities|sweet hall|hall$|building|center|hoover|\\bknoll\\b"
+        }
+      ]
+    },
+    "output": {
+      "_doc": "Output writer settings. by_agent: write timeline_by_agent/<agent_id>.csv. parquet: write timeline/contacts/room_exposure .parquet mirrors. by_agent_max_open: keep one open file per agent up to this many agents, else buffer in memory (by_agent_buffer_mb) and append. gzip_level: zlib level for .csv.gz (mock used 9; 6 is ~as small and much faster). gzip_threads: parallel deflate workers (output is one standard gzip member, byte-identical for any thread count). chunk_rows: rows formatted per batch (memory bound). R_window_days: override for measured_R eligibility window (null = latent+presym+infectious means from cfg.disease). R_min_agents: below this N the summary carries a note that R is not meaningful. trips: write trips.csv.gz (one row per trip with its route polyline).",
+      "by_agent": false,
+      "parquet": true,
+      "by_agent_max_open": 512,
+      "by_agent_buffer_mb": 512,
+      "gzip_level": 6,
+      "gzip_threads": 8,
+      "gzip_block_mb": 8,
+      "chunk_rows": 262144,
+      "parquet_compression": "zstd",
+      "trips": true,
+      "R_window_days": null,
+      "R_min_agents": 200,
+      "R_min_cases": 20
+    },
+    "plans": {
+      "priority": {
+        "flex": 0,
+        "meal": 1,
+        "hangout": 2,
+        "study_group": 2,
+        "party": 3,
+        "event": 3,
+        "practice": 4,
+        "lab": 4,
+        "class": 5
+      },
+      "min_fragment_min": 15,
+      "sleep": {
+        "fri_sat_bed_delay_h": 1.0,
+        "min_sleep_h": 5.0,
+        "event_bed_buffer_min": [
+          10,
+          40
+        ],
+        "commit_wake_lead_min": [
+          25,
+          50
+        ],
+        "wake_clip_h": [
+          5.0,
+          13.0
+        ],
+        "bed_clip_h": [
+          21.0,
+          28.0
+        ]
+      },
+      "home_buffer": {
+        "morning_min": [
+          15,
+          45
+        ],
+        "evening_min": [
+          30,
+          90
+        ]
+      },
+      "flex": {
+        "block_min": [
+          60,
+          180
+        ],
+        "gym_min": [
+          60,
+          90
+        ],
+        "outdoor_min": [
+          30,
+          60
+        ],
+        "short_gap_min": 30,
+        "min_remainder_min": 50,
+        "allowed_hours": {
+          "library": [
+            7,
+            26
+          ],
+          "dorm_study": [
+            5,
+            27
+          ],
+          "common_room": [
+            7,
+            25
+          ],
+          "gym": [
+            6,
+            22
+          ],
+          "outdoor": [
+            7,
+            19
+          ],
+          "lab": [
+            7,
+            23
+          ],
+          "home": [
+            0,
+            48
+          ]
+        },
+        "common_relax_p": 0.5,
+        "capacity_check": true,
+        "library_room_types": [
+          "reading_room",
+          "study_room"
+        ],
+        "common_room_types": [
+          "lobby",
+          "lounge",
+          "study_room",
+          "cafe",
+          "generic"
+        ],
+        "gym_room_types": [
+          "weight_room"
+        ],
+        "outdoor_room_types": [
+          "outdoor_area"
+        ],
+        "lab_room_types": [
+          "lab"
+        ]
+      },
+      "meals": {
+        "centers_h": [
+          8.0,
+          12.25,
+          18.5
+        ],
+        "sd_min": [
+          30,
+          40,
+          45
+        ],
+        "window_h": [
+          [
+            7.0,
+            11.0
+          ],
+          [
+            11.0,
+            14.5
+          ],
+          [
+            17.0,
+            21.0
+          ]
+        ],
+        "min_gap_min": 120,
+        "dur_min": [
+          25,
+          50
+        ],
+        "fav_p": 0.7,
+        "breakfast_min_after_wake_min": 10,
+        "breakfast_latest_h": 11.0,
+        "max_shift_min": 90
+      },
+      "events": {
+        "arrive_delay_frac": 0.25,
+        "leave_early_frac": 0.25,
+        "act": {
+          "party": "party",
+          "dorm_hangout": "hangout",
+          "sports_game": "event",
+          "large_event": "event",
+          "study_group": "study_group"
+        }
+      },
+      "athletes": {
+        "practice_start_h": 15.5,
+        "practice_end_h": 18.0,
+        "practice_jitter_min": 10,
+        "lift_start_h": 6.75,
+        "lift_jitter_min": 20,
+        "lift_dur_min": [
+          50,
+          75
+        ]
+      },
+      "labs": {
+        "start_h": 19.0,
+        "end_h": 22.5,
+        "jitter_min": 20,
+        "weekdays_only": true
+      },
+      "classes": {
+        "lab_skip_mult": 0.3
+      },
+      "commuter": {
+        "arrive_sd_h": 0.4,
+        "leave_sd_h": 0.6,
+        "merge_gap_min": 180,
+        "class_lead_min": [
+          15,
+          35
+        ],
+        "class_tail_min": [
+          10,
+          30
+        ],
+        "event_buffer_min": [
+          10,
+          30
+        ]
+      },
+      "defaults": {
+        "evening_lab_p": 0.0,
+        "lift_days_per_week": 0.0
+      },
+      "archetypes": {
+        "studious": {
+          "evening_lab_p": 0.05,
+          "lift_days_per_week": 2.5
+        },
+        "social": {
+          "evening_lab_p": 0.0,
+          "lift_days_per_week": 2.5
+        },
+        "athlete": {
+          "evening_lab_p": 0.0,
+          "lift_days_per_week": 2.5
+        },
+        "stem": {
+          "evening_lab_p": 0.4,
+          "lift_days_per_week": 2.5
+        },
+        "commuter": {
+          "evening_lab_p": 0.0,
+          "lift_days_per_week": 2.5
+        },
+        "homebody": {
+          "evening_lab_p": 0.0,
+          "lift_days_per_week": 2.5
+        }
+      }
+    },
+    "population": {
+      "_doc": "Population config. archetypes.<name>.<param> is the single source of truth for archetype behavior (read via pop.param(name)). Hours are local clock hours (bed_h > 24 = after midnight, 24.5 = 00:30). Rates: party_p = P(attend) per eligible Thu-Sat night; event_p = P(attend) per offered large event; hangout_rate = expected dorm hangouts per day; study_group_rate = expected study groups per weekday; import_daily_p = daily P(off-campus infection import). sick_profile_p order = codes.SICK_PROFILES [stay_home, visit_vaden_then_isolate, carry_on]. *_beta = Beta(a, b) for per-agent attributes. n_courses / friend_group_size are inclusive [min, max].",
+      "archetype_fractions": {
+        "studious": 0.2,
+        "social": 0.18,
+        "athlete": 0.1,
+        "stem": 0.22,
+        "commuter": 0.1,
+        "homebody": 0.2
+      },
+      "class_year_fractions": {
+        "2026": 0.24,
+        "2027": 0.25,
+        "2028": 0.25,
+        "2029": 0.26
+      },
+      "friend_group_size": {
+        "studious": [
+          3,
+          5
+        ],
+        "social": [
+          6,
+          10
+        ],
+        "athlete": [
+          4,
+          7
+        ],
+        "stem": [
+          3,
+          6
+        ],
+        "commuter": [
+          2,
+          4
+        ],
+        "homebody": [
+          2,
+          4
+        ]
+      },
+      "has_app_rate": 0.6,
+      "has_app_compliance_slope": 0.5,
+      "shares_location_rate": 0.3,
+      "shares_location_honesty_slope": 0.4,
+      "sick_profile_weight": 0.5,
+      "walk_mps": 1.3,
+      "bike_mps": 4.5,
+      "speed_jitter_sd": 0.1,
+      "friend_group_mix_p": 0.15,
+      "fav_random_p": 0.25,
+      "fav_nearest_k": 3,
+      "teams": [
+        {
+          "sport": "football",
+          "size": [
+            40,
+            60
+          ],
+          "practice_venue": "Stanford Stadium"
+        },
+        {
+          "sport": "mens_basketball",
+          "size": [
+            14,
+            18
+          ],
+          "practice_venue": "Maples Pavilion"
+        },
+        {
+          "sport": "womens_basketball",
+          "size": [
+            14,
+            18
+          ],
+          "practice_venue": "Maples Pavilion"
+        },
+        {
+          "sport": "volleyball",
+          "size": [
+            16,
+            22
+          ],
+          "practice_venue": "Burnham Pavilion"
+        },
+        {
+          "sport": "swimming",
+          "size": [
+            30,
+            45
+          ],
+          "practice_venue": "Avery Competition Pool"
+        },
+        {
+          "sport": "water_polo",
+          "size": [
+            20,
+            28
+          ],
+          "practice_venue": "Avery Competition Pool"
+        },
+        {
+          "sport": "soccer",
+          "size": [
+            25,
+            32
+          ],
+          "practice_venue": "Arrillaga Family Sports Center"
+        },
+        {
+          "sport": "track",
+          "size": [
+            40,
+            60
+          ],
+          "practice_venue": "Arrillaga Family Sports Center"
+        },
+        {
+          "sport": "rowing",
+          "size": [
+            30,
+            45
+          ],
+          "practice_venue": "Arrillaga Family Sports Center"
+        },
+        {
+          "sport": "wrestling",
+          "size": [
+            20,
+            28
+          ],
+          "practice_venue": "Arrillaga Family Sports Center"
+        },
+        {
+          "sport": "gymnastics",
+          "size": [
+            14,
+            20
+          ],
+          "practice_venue": "Burnham Pavilion"
+        },
+        {
+          "sport": "fencing",
+          "size": [
+            16,
+            24
+          ],
+          "practice_venue": "Arrillaga Family Sports Center"
+        }
+      ],
+      "practice_room_types": [
+        "practice_gym",
+        "arena",
+        "pool",
+        "outdoor_area"
+      ],
+      "fallback_practice_room_types": [
+        "practice_gym",
+        "arena",
+        "pool",
+        "weight_room",
+        "outdoor_area"
+      ],
+      "archetypes": {
+        "studious": {
+          "n_courses": [
+            4,
+            5
+          ],
+          "class_skip": 0.03,
+          "wake_h": 7.5,
+          "wake_sd_h": 0.5,
+          "weekend_wake_delay_h": 1.0,
+          "bed_h": 23.5,
+          "bed_sd_h": 0.5,
+          "meal_p": [
+            0.75,
+            0.9,
+            0.95
+          ],
+          "flex_weights": {
+            "library": 0.5,
+            "dorm_study": 0.15,
+            "common_room": 0.12,
+            "gym": 0.06,
+            "outdoor": 0.05,
+            "lab": 0.07,
+            "home": 0.05
+          },
+          "party_p": 0.05,
+          "event_p": 0.1,
+          "hangout_rate": 0.2,
+          "study_group_rate": 0.35,
+          "import_daily_p": 0.0001,
+          "sick_profile_p": [
+            0.6,
+            0.3,
+            0.1
+          ],
+          "carry_on_intensity": 0.5,
+          "commuter": false,
+          "arrive_h": 0.0,
+          "leave_h": 24.0,
+          "bike_p": 0.55,
+          "mobility": 1.0,
+          "mask_propensity_beta": [
+            3.0,
+            5.0
+          ],
+          "compliance_beta": [
+            8.0,
+            2.0
+          ],
+          "honesty_beta": [
+            9.0,
+            1.5
+          ]
+        },
+        "social": {
+          "n_courses": [
+            3,
+            4
+          ],
+          "class_skip": 0.15,
+          "wake_h": 9.5,
+          "wake_sd_h": 0.9,
+          "weekend_wake_delay_h": 2.5,
+          "bed_h": 25.5,
+          "bed_sd_h": 1.0,
+          "meal_p": [
+            0.3,
+            0.8,
+            0.9
+          ],
+          "flex_weights": {
+            "library": 0.1,
+            "dorm_study": 0.1,
+            "common_room": 0.25,
+            "gym": 0.15,
+            "outdoor": 0.2,
+            "lab": 0.0,
+            "home": 0.2
+          },
+          "party_p": 0.55,
+          "event_p": 0.45,
+          "hangout_rate": 0.6,
+          "study_group_rate": 0.08,
+          "import_daily_p": 0.0008,
+          "sick_profile_p": [
+            0.15,
+            0.35,
+            0.5
+          ],
+          "carry_on_intensity": 0.9,
+          "commuter": false,
+          "arrive_h": 0.0,
+          "leave_h": 24.0,
+          "bike_p": 0.45,
+          "mobility": 1.2,
+          "mask_propensity_beta": [
+            1.2,
+            6.0
+          ],
+          "compliance_beta": [
+            3.0,
+            4.0
+          ],
+          "honesty_beta": [
+            5.0,
+            2.5
+          ]
+        },
+        "athlete": {
+          "n_courses": [
+            3,
+            4
+          ],
+          "class_skip": 0.08,
+          "wake_h": 6.5,
+          "wake_sd_h": 0.4,
+          "weekend_wake_delay_h": 1.0,
+          "bed_h": 23.0,
+          "bed_sd_h": 0.5,
+          "meal_p": [
+            0.95,
+            0.95,
+            0.98
+          ],
+          "flex_weights": {
+            "library": 0.15,
+            "dorm_study": 0.1,
+            "common_room": 0.1,
+            "gym": 0.35,
+            "outdoor": 0.1,
+            "lab": 0.0,
+            "home": 0.2
+          },
+          "party_p": 0.25,
+          "event_p": 0.35,
+          "hangout_rate": 0.4,
+          "study_group_rate": 0.1,
+          "import_daily_p": 0.0005,
+          "sick_profile_p": [
+            0.3,
+            0.5,
+            0.2
+          ],
+          "carry_on_intensity": 0.7,
+          "commuter": false,
+          "arrive_h": 0.0,
+          "leave_h": 24.0,
+          "bike_p": 0.6,
+          "mobility": 1.1,
+          "mask_propensity_beta": [
+            1.5,
+            5.0
+          ],
+          "compliance_beta": [
+            5.0,
+            3.0
+          ],
+          "honesty_beta": [
+            6.0,
+            2.0
+          ]
+        },
+        "stem": {
+          "n_courses": [
+            4,
+            5
+          ],
+          "class_skip": 0.06,
+          "wake_h": 8.5,
+          "wake_sd_h": 0.7,
+          "weekend_wake_delay_h": 1.5,
+          "bed_h": 25.5,
+          "bed_sd_h": 0.8,
+          "meal_p": [
+            0.5,
+            0.85,
+            0.9
+          ],
+          "flex_weights": {
+            "library": 0.2,
+            "dorm_study": 0.1,
+            "common_room": 0.1,
+            "gym": 0.05,
+            "outdoor": 0.05,
+            "lab": 0.4,
+            "home": 0.1
+          },
+          "party_p": 0.1,
+          "event_p": 0.15,
+          "hangout_rate": 0.3,
+          "study_group_rate": 0.3,
+          "import_daily_p": 0.0001,
+          "sick_profile_p": [
+            0.35,
+            0.45,
+            0.2
+          ],
+          "carry_on_intensity": 0.7,
+          "commuter": false,
+          "arrive_h": 0.0,
+          "leave_h": 24.0,
+          "bike_p": 0.6,
+          "mobility": 1.0,
+          "mask_propensity_beta": [
+            2.5,
+            5.0
+          ],
+          "compliance_beta": [
+            5.0,
+            3.0
+          ],
+          "honesty_beta": [
+            7.0,
+            2.0
+          ]
+        },
+        "commuter": {
+          "n_courses": [
+            3,
+            4
+          ],
+          "class_skip": 0.1,
+          "wake_h": 7.0,
+          "wake_sd_h": 0.5,
+          "weekend_wake_delay_h": 1.0,
+          "bed_h": 23.0,
+          "bed_sd_h": 0.6,
+          "meal_p": [
+            0.1,
+            0.6,
+            0.2
+          ],
+          "flex_weights": {
+            "library": 0.4,
+            "dorm_study": 0.0,
+            "common_room": 0.25,
+            "gym": 0.1,
+            "outdoor": 0.1,
+            "lab": 0.05,
+            "home": 0.1
+          },
+          "party_p": 0.05,
+          "event_p": 0.1,
+          "hangout_rate": 0.05,
+          "study_group_rate": 0.15,
+          "import_daily_p": 0.0015,
+          "sick_profile_p": [
+            0.35,
+            0.4,
+            0.25
+          ],
+          "carry_on_intensity": 0.75,
+          "commuter": true,
+          "arrive_h": 8.5,
+          "leave_h": 18.0,
+          "bike_p": 0.7,
+          "mobility": 0.8,
+          "mask_propensity_beta": [
+            2.5,
+            4.5
+          ],
+          "compliance_beta": [
+            5.0,
+            3.0
+          ],
+          "honesty_beta": [
+            6.0,
+            2.0
+          ]
+        },
+        "homebody": {
+          "n_courses": [
+            3,
+            4
+          ],
+          "class_skip": 0.08,
+          "wake_h": 9.0,
+          "wake_sd_h": 0.7,
+          "weekend_wake_delay_h": 1.5,
+          "bed_h": 24.0,
+          "bed_sd_h": 0.7,
+          "meal_p": [
+            0.7,
+            0.9,
+            0.95
+          ],
+          "flex_weights": {
+            "library": 0.1,
+            "dorm_study": 0.35,
+            "common_room": 0.1,
+            "gym": 0.02,
+            "outdoor": 0.03,
+            "lab": 0.0,
+            "home": 0.4
+          },
+          "party_p": 0.03,
+          "event_p": 0.05,
+          "hangout_rate": 0.25,
+          "study_group_rate": 0.1,
+          "import_daily_p": 0.0001,
+          "sick_profile_p": [
+            0.6,
+            0.3,
+            0.1
+          ],
+          "carry_on_intensity": 0.5,
+          "commuter": false,
+          "arrive_h": 0.0,
+          "leave_h": 24.0,
+          "bike_p": 0.3,
+          "mobility": 0.5,
+          "mask_propensity_beta": [
+            3.0,
+            4.0
+          ],
+          "compliance_beta": [
+            6.0,
+            2.5
+          ],
+          "honesty_beta": [
+            7.0,
+            2.0
+          ]
+        }
+      }
+    },
+    "reports": {
+      "require_app": true,
+      "isolation_max_days": 10,
+      "pre_visit_carry_on_intensity": 0.6,
+      "vaden": {
+        "open_hours": [
+          [
+            8,
+            17
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            8,
+            17
+          ],
+          [
+            10,
+            14
+          ],
+          null
+        ],
+        "delay_h": [
+          1.0,
+          4.0
+        ],
+        "visit_min": [
+          30,
+          75
+        ],
+        "search_days": 8,
+        "test_requires_presence": true,
+        "presence_grace_min": 30
+      },
+      "test": {
+        "sensitivity": 0.7,
+        "specificity": 0.98,
+        "result_delay_h": 4.0,
+        "p_test_non_vaden": 0.0,
+        "non_vaden_delay_h": [
+          2.0,
+          24.0
+        ]
+      },
+      "self_report": {
+        "onset_delay_h": [
+          1.0,
+          12.0
+        ],
+        "positive_delay_min": [
+          5.0,
+          60.0
+        ],
+        "p_report_recovered": 0.5,
+        "recovered_delay_h": [
+          0.0,
+          24.0
+        ],
+        "early_recovered_daily_p": 0.05,
+        "false_sick_daily_p": 0.002,
+        "false_report_clear_p": 0.7,
+        "false_report_clear_days": [
+          1.0,
+          3.0
+        ]
+      },
+      "report_other": {
+        "require_app": true,
+        "severity_threshold": 0.3,
+        "p_per_step": 0.003,
+        "max_tier": 2,
+        "false_daily_p": 0.002,
+        "cooldown_days": 3
+      }
+    },
+    "run": {
+      "seed": 42,
+      "n_agents": 1000,
+      "days": 14,
+      "step_min": 5,
+      "start_date": "2026-01-05",
+      "start_weekday": 0,
+      "initial_seeds": 30,
+      "intervention": "none"
+    },
+    "schedule": {
+      "sections": {
+        "source": "explorecourses",
+        "_source_doc": "explorecourses = real sections from data/courses/ (fetch_explorecourses.py + build_rooms.py); synthetic = the invented catalog below (size_mix, slots, courses, labs).",
+        "explorecourses": {
+          "catalog": "data/courses/20252026_winter.csv.gz",
+          "seat_slack": 1.25,
+          "_seat_doc": "Seats per section = real enrollment x undergrad_share[level], scaled so all primary seats = seat_slack x the courses agents want.",
+          "not_primary": [
+            "DIS",
+            "INS",
+            "T/D",
+            "ISF",
+            "ISS",
+            "ITR",
+            "RSC",
+            "IDS",
+            "CAS",
+            "RES"
+          ],
+          "lab_components": [
+            "LAB",
+            "LBS"
+          ],
+          "kind_by_component": {
+            "LAB": "lab",
+            "LBS": "lab",
+            "SEM": "seminar",
+            "COL": "seminar",
+            "WKS": "seminar",
+            "LNG": "seminar"
+          },
+          "skip_locations": [
+            "Remote"
+          ],
+          "exclude_subjects": [
+            "ACCT",
+            "ALP",
+            "BUSGEN",
+            "MGTECON",
+            "FINANCE",
+            "GSBGEN",
+            "GSBGID",
+            "HRMGT",
+            "MKTG",
+            "OIT",
+            "OB",
+            "POLECON",
+            "STRAMGT",
+            "LAW",
+            "LAWGEN",
+            "ANES",
+            "BIOC",
+            "BMDS",
+            "BMP",
+            "BIOS",
+            "CBIO",
+            "CTS",
+            "CSB",
+            "CHPR",
+            "COMPMED",
+            "DERM",
+            "DBIO",
+            "EMED",
+            "EPI",
+            "FAMMED",
+            "GENE",
+            "HRP",
+            "IMMUNOL",
+            "LEAD",
+            "LIFE",
+            "MED",
+            "INDE",
+            "MI",
+            "MCP",
+            "NBIO",
+            "NENS",
+            "NEPR",
+            "NSUR",
+            "OBGYN",
+            "OPHT",
+            "ORTHO",
+            "OTOHNS",
+            "PATH",
+            "PEDS",
+            "PAS",
+            "PSYC",
+            "RADO",
+            "RAD",
+            "SOMGEN",
+            "STEMREM",
+            "SBIO",
+            "SURG",
+            "UROL"
+          ],
+          "exclude_subject_prefixes": [
+            "OSP",
+            "ROTC"
+          ],
+          "_levels_doc": "Course number bands: <100, 100-199, 200-299, 300+. undergrad_share = fraction of a section's real enrollment that is undergrads; year_level_weight[class_year] = pick weight per band.",
+          "level_bands": [
+            100,
+            200,
+            300
+          ],
+          "undergrad_share": [
+            0.92,
+            0.75,
+            0.3,
+            0.04
+          ],
+          "year_level_weight": {
+            "1": [
+              1.0,
+              0.35,
+              0.05,
+              0.005
+            ],
+            "2": [
+              0.75,
+              0.7,
+              0.12,
+              0.01
+            ],
+            "3": [
+              0.3,
+              1.0,
+              0.3,
+              0.03
+            ],
+            "4": [
+              0.2,
+              1.0,
+              0.45,
+              0.06
+            ]
+          },
+          "required": [
+            {
+              "courses": "^COLLEGE 1",
+              "class_years": [
+                1
+              ],
+              "p": 0.9
+            },
+            {
+              "courses": "^PWR 1",
+              "class_years": [
+                1
+              ],
+              "p": 0.35
+            },
+            {
+              "courses": "^PWR 2",
+              "class_years": [
+                2
+              ],
+              "p": 0.4
+            }
+          ],
+          "restricted": [
+            {
+              "courses": "^COLLEGE 1",
+              "class_years": [
+                1
+              ]
+            },
+            {
+              "courses": "^PWR 1",
+              "class_years": [
+                1,
+                2
+              ]
+            }
+          ],
+          "majors": {
+            "_doc": "Each agent draws one major group from archetype_mix; its subjects get major_mult[class_year - 1] extra weight.",
+            "groups": {
+              "cs": [
+                "CS",
+                "SYMSYS",
+                "DATASCI",
+                "CME"
+              ],
+              "engineering": [
+                "EE",
+                "ME",
+                "AA",
+                "CEE",
+                "CHEMENG",
+                "MATSCI",
+                "ENGR",
+                "BIOE",
+                "DESIGN",
+                "MS&E"
+              ],
+              "math_physics": [
+                "MATH",
+                "STATS",
+                "PHYSICS",
+                "APPPHYS"
+              ],
+              "bio_health": [
+                "BIO",
+                "HUMBIO",
+                "CHEM",
+                "BIOE",
+                "PSYCH"
+              ],
+              "econ_policy": [
+                "ECON",
+                "PUBLPOL",
+                "MS&E",
+                "POLISCI",
+                "INTNLREL"
+              ],
+              "social": [
+                "POLISCI",
+                "SOC",
+                "INTNLREL",
+                "COMM",
+                "PSYCH",
+                "ANTHRO",
+                "URBANST",
+                "CSRE",
+                "EDUC"
+              ],
+              "humanities": [
+                "ENGLISH",
+                "HISTORY",
+                "PHIL",
+                "CLASSICS",
+                "ARTHIST",
+                "COMPLIT",
+                "MUSIC",
+                "TAPS",
+                "ARTSTUDI",
+                "FILMEDIA",
+                "RELIGST",
+                "LINGUIST",
+                "AMSTUD"
+              ],
+              "earth": [
+                "EARTHSYS",
+                "EPS",
+                "ESS",
+                "OCEANS",
+                "SUSTAIN",
+                "ENERGY",
+                "GEOPHYS"
+              ]
+            },
+            "archetype_mix": {
+              "stem": {
+                "cs": 0.35,
+                "engineering": 0.3,
+                "math_physics": 0.15,
+                "bio_health": 0.2
+              },
+              "studious": {
+                "cs": 0.15,
+                "math_physics": 0.15,
+                "humanities": 0.2,
+                "social": 0.1,
+                "econ_policy": 0.1,
+                "bio_health": 0.2,
+                "earth": 0.1
+              },
+              "social": {
+                "econ_policy": 0.3,
+                "social": 0.3,
+                "humanities": 0.15,
+                "cs": 0.2,
+                "bio_health": 0.05
+              },
+              "athlete": {
+                "social": 0.3,
+                "econ_policy": 0.25,
+                "humanities": 0.1,
+                "bio_health": 0.15,
+                "engineering": 0.1,
+                "earth": 0.1
+              },
+              "commuter": {
+                "cs": 0.25,
+                "engineering": 0.2,
+                "econ_policy": 0.2,
+                "social": 0.2,
+                "bio_health": 0.15
+              },
+              "homebody": {
+                "cs": 0.2,
+                "humanities": 0.25,
+                "social": 0.15,
+                "bio_health": 0.15,
+                "math_physics": 0.1,
+                "earth": 0.15
+              }
+            },
+            "major_mult": [
+              1.5,
+              2.5,
+              4.0,
+              5.0
+            ]
+          }
+        },
+        "mean_courses_default": 4.0,
+        "min_courses": 3,
+        "max_courses": 5,
+        "capacity_slack": 1.15,
+        "size_mix": [
+          {
+            "name": "seminar",
+            "kind": "seminar",
+            "p": 0.55,
+            "min": 10,
+            "max": 20
+          },
+          {
+            "name": "medium",
+            "kind": "lecture",
+            "p": 0.3,
+            "min": 30,
+            "max": 80
+          },
+          {
+            "name": "large",
+            "kind": "lecture",
+            "p": 0.15,
+            "min": 100,
+            "max": 300
+          }
+        ],
+        "room_types": {
+          "seminar": [
+            "seminar",
+            "classroom"
+          ],
+          "medium": [
+            "classroom",
+            "seminar",
+            "lecture_hall"
+          ],
+          "large": [
+            "lecture_hall"
+          ],
+          "lab": [
+            "lab"
+          ]
+        },
+        "fallback_exclude_room_types": [
+          "dorm_single",
+          "dorm_double",
+          "dorm_triple",
+          "dorm_quad",
+          "corridor"
+        ],
+        "mwf_frac": 0.5,
+        "mwf_slots": [
+          "09:30",
+          "10:30",
+          "11:30",
+          "13:30",
+          "14:30",
+          "15:30"
+        ],
+        "mwf_dur_min": 50,
+        "tth_slots": [
+          "09:00",
+          "10:30",
+          "12:00",
+          "13:30",
+          "15:00",
+          "16:30"
+        ],
+        "tth_dur_min": 80,
+        "lab_depts": [
+          "CHEM",
+          "BIO",
+          "PHYSICS",
+          "EE",
+          "ME",
+          "BIOE"
+        ],
+        "lab_p": 0.7,
+        "lab_min_size": 30,
+        "lab_section_size": 24,
+        "lab_dur_min": 180,
+        "lab_days": [
+          "M",
+          "T",
+          "W",
+          "Th",
+          "F"
+        ],
+        "lab_starts": [
+          "13:30",
+          "14:00"
+        ],
+        "courses": {
+          "seminar": [
+            "PWR 1",
+            "PWR 2",
+            "THINK 3",
+            "THINK 12",
+            "COLLEGE 101",
+            "COLLEGE 102",
+            "ENGLISH 10",
+            "HISTORY 50",
+            "PHIL 80",
+            "CS 181",
+            "MATH 109",
+            "ECON 101",
+            "POLISCI 102",
+            "PSYCH 70",
+            "BIO 82",
+            "CHEM 151",
+            "ME 104",
+            "EE 191",
+            "ARTHIST 1",
+            "COMM 166",
+            "SOC 118",
+            "AMSTUD 140",
+            "CS 194",
+            "PHYSICS 91",
+            "LINGUIST 1",
+            "CLASSICS 18",
+            "MUSIC 19",
+            "EARTHSYS 10",
+            "BIOE 141",
+            "STATS 199"
+          ],
+          "medium": [
+            "CS 107",
+            "CS 109",
+            "CS 161",
+            "MATH 52",
+            "MATH 53",
+            "MATH 104",
+            "ECON 51",
+            "ECON 52",
+            "PHYSICS 43",
+            "PHYSICS 45",
+            "CHEM 33",
+            "CHEM 121",
+            "BIO 84",
+            "BIO 86",
+            "EE 102A",
+            "EE 108",
+            "ME 30",
+            "ME 80",
+            "BIOE 42",
+            "BIOE 80",
+            "STATS 116",
+            "PSYCH 30",
+            "POLISCI 1",
+            "HISTORY 1B",
+            "CS 221",
+            "CS 229"
+          ],
+          "large": [
+            "CS 106A",
+            "CS 106B",
+            "MATH 51",
+            "MATH 21",
+            "CHEM 31A",
+            "CHEM 31B",
+            "PHYSICS 41",
+            "BIO 45",
+            "ECON 1",
+            "PSYCH 1",
+            "STATS 60",
+            "EE 100",
+            "ME 101",
+            "BIOE 101",
+            "HUMBIO 2A"
+          ]
+        },
+        "archetype_dept_bias": {
+          "stem": {
+            "CHEM": 2.5,
+            "BIO": 2.5,
+            "PHYSICS": 2.5,
+            "EE": 2.5,
+            "ME": 2.5,
+            "BIOE": 2.5,
+            "CS": 2.0,
+            "MATH": 2.0,
+            "STATS": 1.5
+          },
+          "studious": {
+            "MATH": 1.3,
+            "CS": 1.3,
+            "PHIL": 1.3,
+            "HISTORY": 1.3
+          },
+          "athlete": {
+            "COMM": 1.5,
+            "SOC": 1.5,
+            "PSYCH": 1.3
+          },
+          "social": {
+            "ECON": 1.3,
+            "POLISCI": 1.3,
+            "COMM": 1.3
+          }
+        },
+        "max_pick_attempts": 40
+      },
+      "events": {
+        "party": {
+          "weekdays": [
+            3,
+            4,
+            5
+          ],
+          "parties_per_1000": 4.0,
+          "start_h": 22.0,
+          "start_sd_min": 25,
+          "dur_h": 3.5,
+          "dur_sd_min": 30,
+          "member_p": 0.85,
+          "individual_mult": 0.25,
+          "crowding": 1.0,
+          "min_attendees": 2,
+          "room_types": [
+            "party_room"
+          ],
+          "venue_types": [
+            "party_venue"
+          ]
+        },
+        "dorm_hangout": {
+          "weekend_weekdays": [
+            4,
+            5,
+            6
+          ],
+          "weekend_mult": 1.6,
+          "member_p": 0.75,
+          "min_attendees": 2,
+          "bedroom_max": 4,
+          "bedroom_p": 0.6,
+          "start_h": 20.0,
+          "start_jitter_h": 1.5,
+          "dur_h_min": 1.25,
+          "dur_h_max": 3.0,
+          "latest_end_h": 23.5,
+          "lounge_room_types": [
+            "lobby",
+            "lounge"
+          ]
+        },
+        "big_events": [
+          {
+            "name": "Men's Basketball vs Arizona",
+            "type": "sports_game",
+            "sport": "mens_basketball",
+            "day": 2,
+            "start_h": 19.0,
+            "dur_h": 2.25,
+            "venue": "Maples Pavilion",
+            "draw_mult": 0.6
+          },
+          {
+            "name": "Football vs Cal",
+            "type": "sports_game",
+            "sport": "football",
+            "day": 5,
+            "start_h": 13.0,
+            "dur_h": 3.5,
+            "venue": "Stanford Stadium",
+            "draw_mult": 1.5
+          },
+          {
+            "name": "Women's Basketball vs UCLA",
+            "type": "sports_game",
+            "sport": "womens_basketball",
+            "day": 6,
+            "start_h": 14.0,
+            "dur_h": 2.25,
+            "venue": "Maples Pavilion",
+            "draw_mult": 0.8
+          },
+          {
+            "name": "Speaker Series Talk",
+            "type": "large_event",
+            "day": 8,
+            "start_h": 18.0,
+            "dur_h": 1.5,
+            "venue": "Memorial Hall",
+            "draw_mult": 0.35
+          },
+          {
+            "name": "Spring Concert",
+            "type": "large_event",
+            "day": 11,
+            "start_h": 19.5,
+            "dur_h": 3.0,
+            "venue": "Frost Amphitheater",
+            "draw_mult": 1.2
+          }
+        ],
+        "big_event_room_types": [
+          "arena",
+          "outdoor_area"
+        ],
+        "big_event_member_p": 0.8,
+        "big_event_individual_mult": 0.3,
+        "big_event_crowding": 1.0,
+        "study_group": {
+          "base_rate": 0.25,
+          "exam_days": [
+            9,
+            10
+          ],
+          "exam_lead_days": 3,
+          "exam_mult": 4.0,
+          "no_weekdays": [
+            5
+          ],
+          "min_size": 3,
+          "max_size": 6,
+          "afternoon_p": 0.4,
+          "afternoon_window_h": [
+            15.0,
+            17.0
+          ],
+          "evening_window_h": [
+            19.0,
+            22.0
+          ],
+          "dur_h_min": 1.0,
+          "dur_h_max": 2.0,
+          "room_types": [
+            "study_room"
+          ],
+          "fallback_room_types": [
+            "lounge",
+            "common_room",
+            "lobby",
+            "reading_room"
+          ],
+          "include_labs": false
+        },
+        "exclusive_room_types": [
+          "study_room",
+          "dorm_single",
+          "dorm_double",
+          "dorm_triple",
+          "dorm_quad",
+          "party_room"
+        ]
+      }
+    },
+    "weather": {
+      "_note": "Outdoor weather. Used by presets whose aerosol.inactivation is \"humidity\" (influenza): heated outdoor air keeps its water, so indoor RH = outdoor RH x sat(outdoor_temp_c) / sat(indoor_temp_c) (Magnus; unchanged when outdoor_temp_c >= indoor_temp_c), and airborne flu inactivation rises from 0.29/h at indoor RH <= 25% to 1.61/h at >= 45% (Noti et al. 2013). Same formula and defaults as model/infer.js and exposure/flu_risk.py. daily: optional per-sim-day overrides [{\"outdoor_rh_pct\": .., \"outdoor_temp_c\": ..}, ...]; missing keys use the values above, and days past the end of the list repeat its last entry.",
+      "outdoor_rh_pct": 60.0,
+      "outdoor_temp_c": 10.0,
+      "indoor_temp_c": 21.0,
+      "daily": []
+    },
+    "disease": {
+      "_note": "Seasonal flu. Latent ~1.5 d, presym ~1 d, post-onset ~5 d (total infectious ~6 d), 30% asymptomatic at half infectiousness. Calibration targets (integrator tunes transmission_scale for campus R~1.3-2.0): dorm roommate SAR ~20-30%/episode (8 h sleep + 2 h relax/day co-located at 2-5 m in a 54 m^3, 2 ACH double), 1-h seminar with a peak-infectious person ~1% per susceptible (144 m^3, 4 ACH; 15%/40% of the hour within 1-2 m / 2-5 m), 3-h party near an infectious friend ~8% (300 m^3, 2 ACH, 25/50/25% at tiers 1/2/3). Pure Wells-Riley makes small bedrooms ~10x riskier per hour than seminars, so reconciling the roommate and seminar targets uses low emission while sleeping (emission x0.5, breathing 0.25 m^3/h) and moderate overdispersion (k=1). quanta_per_hour_peak=13 is at the low end of literature flu quanta (~15-100 q/h, Rudnick&Milton 2003 ~ 67 for an outbreak) because 'infectiousness' integrates to ~1.6 peak-days per symptomatic case and our rooms are well-mixed boxes. decay = 0.3/h deposition + humidity-dependent inactivation (configs/weather.json; default 60% RH, 10 C outdoors -> ~30% indoor RH -> 0.59/h, total 0.90/h). quanta was raised 12 -> 13 when humidity replaced the fixed 0.6/h decay, keeping the three targets (roommate 0.234, seminar 1.04%, party 8.5%). Close tier weights 1 : 0.5 : 0.17 per min (3.6e-4, 1.8e-4, 6e-5).",
+      "latent_days": {
+        "dist": "gamma",
+        "mean": 1.5,
+        "sd": 0.5
+      },
+      "presym_days": {
+        "dist": "gamma",
+        "mean": 1.0,
+        "sd": 0.4
+      },
+      "infectious_days": {
+        "dist": "gamma",
+        "mean": 5.0,
+        "sd": 1.2
+      },
+      "p_asym": 0.3,
+      "asym_rel_infectiousness": 0.5,
+      "viral_load": {
+        "presym_start_level": 0.1,
+        "peak_at": "onset",
+        "end_level": 0.05
+      },
+      "individual_infectiousness_gamma_shape": 1.0,
+      "individual_infectiousness_max": 5.0,
+      "severity": {
+        "beta_a": 4.0,
+        "beta_b": 3.0,
+        "rise_days": 0.5,
+        "onset_fraction": 0.3,
+        "end_fraction": 0.1,
+        "_note": "peak ~ Beta(a,b) (mean 0.57); severity = peak * shape: onset_fraction -> 1 over rise_days, then linear to end_fraction at t_end. 0 unless I_sym."
+      },
+      "close_hazard_per_min": {
+        "tier1": 0.00036,
+        "tier2": 0.00018,
+        "tier3": 6e-05
+      },
+      "outdoor_multiplier": 0.2,
+      "masks": {
+        "source_eff": 0.5,
+        "wearer_eff": 0.3
+      },
+      "aerosol": {
+        "quanta_per_hour_peak": 13.0,
+        "inactivation": "humidity",
+        "deposition_per_hour": 0.3,
+        "breathing_m3_per_h": {
+          "default": 0.5,
+          "sleep": 0.25,
+          "relax": 0.4,
+          "rest": 0.3,
+          "isolate": 0.35,
+          "class": 0.5,
+          "study": 0.45,
+          "eat": 0.5,
+          "lab": 0.6,
+          "party": 0.9,
+          "gym": 1.8,
+          "practice": 2.0,
+          "commute": 1.0,
+          "outdoor_leisure": 0.8,
+          "event": 0.6,
+          "hangout": 0.55
+        },
+        "emission_multiplier_by_activity": {
+          "default": 1.0,
+          "sleep": 0.5,
+          "rest": 0.7,
+          "isolate": 0.8,
+          "study": 0.7,
+          "party": 1.5,
+          "gym": 1.5,
+          "practice": 1.5,
+          "event": 1.3,
+          "hangout": 1.2,
+          "_note": "source vocalization/exertion factor"
+        },
+        "ledger_prune_level": 1e-10
+      },
+      "transmission_scale": 1.8,
+      "import_scale": 1.0,
+      "initial_immune_fraction": 0.0,
+      "concentration_report_threshold": 1e-06,
+      "preset": "influenza"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wynn! Perfect timing, are you eating here too? Come sit with me, I want to hear how your first Monday's gone.",
+  "shared_health": false
+ }
+}

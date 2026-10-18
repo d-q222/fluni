@@ -1,0 +1,84 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:00",
+    "place": "home",
+    "start": "04:05"
+   },
+   {
+    "activity": "relax",
+    "end": "09:35",
+    "place": "home",
+    "start": "09:00"
+   },
+   {
+    "activity": "class",
+    "end": "11:25",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "12:00",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "11:30"
+   },
+   {
+    "activity": "study",
+    "end": "14:40",
+    "place": "home",
+    "start": "12:05"
+   },
+   {
+    "activity": "lab",
+    "end": "16:10",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "14:50"
+   },
+   {
+    "activity": "study",
+    "end": "17:35",
+    "place": "home",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:20",
+    "place": "bld:bld_m_wilbur_dining",
+    "start": "17:40"
+   },
+   {
+    "activity": "lab",
+    "end": "21:00",
+    "place": "plan:bld_232841903_f2_202",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "00:30",
+    "place": "home",
+    "start": "21:10"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "00:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Sidney and Bailey are still sick. I feel fine but worried. Keeping class and lab, skipping the gym and hangouts, studying in my room, and watching for symptoms.",
+  "messages": [],
+  "thoughts": "Sidney and Bailey are both sick, but I feel fine. I'll keep class and lab since they matter, skip the gym and hangouts, and watch for symptoms. I'll eat at Wilbur, but earlier or later would be quieter. No need to text anyone; the group already knows.",
+  "wear_mask": false,
+  "worry": 4
+ }
+}

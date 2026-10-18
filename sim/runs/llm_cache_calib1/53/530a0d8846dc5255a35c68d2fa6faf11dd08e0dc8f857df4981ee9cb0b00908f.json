@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "rest",
+    "end": "20:00",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "isolate",
+    "end": "22:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "22:00"
+   }
+  ],
+  "diary": "Still feverish and achy, so I stayed in my room and rested, skipping the dorm hangout. I feel bad that Marley has to stay home because of me. Very worried.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks Marley, and sorry you got stuck at home because of me. I'm staying in and resting. I'll let you know if I need anything.",
+    "time": "",
+    "to": "A0181"
+   }
+  ],
+  "thoughts": "I'm still feverish and achy, and Marley is now stuck at home because of me. I'll stay in my room, rest, and skip the dorm hangout. I'll text Marley a quick thanks and tell them I'm sorry. I'm not going to the dining hall, so I'll sleep early and drink fluids.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

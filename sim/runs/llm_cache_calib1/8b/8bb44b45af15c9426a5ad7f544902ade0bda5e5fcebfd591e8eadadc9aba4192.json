@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Scout! Feeling okay today? I'm fine so far, still masking and avoiding the lounge.",
+  "shared_health": true
+ }
+}

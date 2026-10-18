@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, I'll definitely head to Vaden if anything feels off. You too! I'm heading home after dinner, so stay safe and text me if you hear anything.",
+  "shared_health": false
+ }
+}

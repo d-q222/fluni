@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:45",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:15",
+    "place": "bld:bld_232841950",
+    "start": "12:50"
+   },
+   {
+    "activity": "gym",
+    "end": "17:00",
+    "place": "bld:bld_6593510",
+    "start": "14:30"
+   },
+   {
+    "activity": "eat",
+    "end": "17:30",
+    "place": "bld:bld_1040629370",
+    "start": "17:05"
+   },
+   {
+    "activity": "relax",
+    "end": "18:30",
+    "place": "home",
+    "start": "17:30"
+   },
+   {
+    "activity": "event",
+    "end": "21:15",
+    "place": "event:EV00047",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "21:30"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wednesday: crowded Stern lunch so I masked up, then Taper, gym, Arizona game at 7 with the group, lounge hangout after. Feeling fine, still a bit wary.",
+  "messages": [],
+  "thoughts": "Stern Dining is crowded, so I'll finish lunch quickly. I feel fine and still plan on the usual routine: study at Taper, gym, then the game at 7 with friends and the lounge hangout after. I'll wear a mask in the crowded dining room and keep it on briefly as a precaution. Lighthearted and social as usual.",
+  "wear_mask": true,
+  "worry": 2
+ }
+}

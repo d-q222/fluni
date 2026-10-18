@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer, again. Still feeling fine on your end? I'm heading to lab after this, masked up.",
+  "shared_health": true
+ }
+}

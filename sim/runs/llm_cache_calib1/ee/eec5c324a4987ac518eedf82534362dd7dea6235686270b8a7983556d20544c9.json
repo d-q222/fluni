@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "13:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "18:00",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "rest",
+    "end": "19:00",
+    "place": "home",
+    "start": "18:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sun Jan 11: Still sick and positive, isolating in my room all day and skipping the game and dorm hangout. Hoping nobody else gets it.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks all. Still positive and feeling rough, staying in my room today and skipping the game and the dorm hangout. Mask up and watch for symptoms, and let me know if you need anything.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm still sick and tested positive, so I'm staying in. Skipping the game and the dorm hangout, since I don't want to get others sick. I'll sleep late, rest, drink fluids, and maybe eat something from my room. Nothing more to do but keep isolating and update friends briefly.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "13:00",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "15:25",
+    "place": "home",
+    "start": "13:00"
+   },
+   {
+    "activity": "study",
+    "end": "16:25",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "relax",
+    "end": "18:20",
+    "place": "home",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:50",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:25"
+   },
+   {
+    "activity": "relax",
+    "end": "21:00",
+    "place": "home",
+    "start": "18:55"
+   },
+   {
+    "activity": "study",
+    "end": "22:25",
+    "place": "bld:bld_232841950",
+    "start": "21:05"
+   },
+   {
+    "activity": "study",
+    "end": "23:25",
+    "place": "home",
+    "start": "22:30"
+   },
+   {
+    "activity": "relax",
+    "end": "00:25",
+    "place": "home",
+    "start": "23:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:25"
+   }
+  ],
+  "diary": "Saturday: skipping the football game, sticking to my quiet routine with Stern dinner, a bit of studying and room time, masking in crowds. Feeling fine, still a little wary.",
+  "messages": [],
+  "thoughts": "It's Saturday and I feel fine. I'm a homebody, so I'll stick to my usual routine: sleep in, relax in my room, eat at Stern with a mask on if it's crowded, and do a bit of studying. I'll skip the football game since crowds aren't my thing and I'm still a little wary.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

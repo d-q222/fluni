@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Wesley. Still feeling fine here, just anxious. How about you, anything off today?",
+  "shared_health": true
+ }
+}

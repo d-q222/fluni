@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Onyx! Yeah, trying to be careful, a couple friends have been getting flagged lately. Morning's fine, just breakfast and then studying at home. You?",
+  "shared_health": false
+ }
+}

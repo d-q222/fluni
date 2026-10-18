@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Oh nice, maybe we can grab a table together. I'm feeling fine, just trying to stay careful too. Anyway, I should finish eating, see you there!",
+  "shared_health": true
+ }
+}

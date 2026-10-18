@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh no, sorry about your friends. Glad you tested negative though. Aisle sounds good, let's grab seats with a little space between us.",
+  "shared_health": false
+ }
+}

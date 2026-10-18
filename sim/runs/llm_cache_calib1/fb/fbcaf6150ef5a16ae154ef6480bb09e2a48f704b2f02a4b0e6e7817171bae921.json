@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:15",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "09:40",
+    "place": "home",
+    "start": "09:15"
+   },
+   {
+    "activity": "study",
+    "end": "10:55",
+    "place": "home",
+    "start": "09:40"
+   },
+   {
+    "activity": "eat",
+    "end": "11:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "11:00"
+   },
+   {
+    "activity": "relax",
+    "end": "14:20",
+    "place": "home",
+    "start": "11:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "15:15",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "14:30"
+   },
+   {
+    "activity": "study",
+    "end": "18:00",
+    "place": "home",
+    "start": "15:25"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:05"
+   },
+   {
+    "activity": "study",
+    "end": "20:05",
+    "place": "plan:bld_m_green_library_f4_408",
+    "start": "18:40"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "20:10"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Quiet Tuesday following my usual routine: studying, meals at Stern, and a Green Library session in the evening. Feeling fine, still slightly wary of getting sick.",
+  "messages": [],
+  "thoughts": "Feeling fine, so a normal Tuesday. I'll stick to my usual routine: sleep in, study in my room, meals at Stern, a short walk on the Main Quad, and an evening study session at Green. Nothing unusual to report to Bryce.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

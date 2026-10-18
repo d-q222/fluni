@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, thanks, that's kind of you. I'm not totally sure of the number, let me pull up my booking. If it's a mix-up I can just find another room, no need for you to move yet.",
+  "shared_health": false
+ }
+}

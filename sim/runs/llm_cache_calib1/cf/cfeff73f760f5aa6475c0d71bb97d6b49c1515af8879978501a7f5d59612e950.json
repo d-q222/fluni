@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Lake said Hadley and Sidney look rough and Chris tested positive in our dorm; Lake isn't masked. I'm still fine, so I'll keep masking in crowds, skip the dorm hangout, and see Lake at the UCLA game.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

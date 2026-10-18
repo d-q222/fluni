@@ -1,0 +1,102 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:35",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "07:45",
+    "place": "home",
+    "start": "07:35"
+   },
+   {
+    "activity": "lab",
+    "end": "10:35",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "07:50"
+   },
+   {
+    "activity": "gym",
+    "end": "11:25",
+    "place": "plan:bld_6593510_f1_102",
+    "start": "10:40"
+   },
+   {
+    "activity": "class",
+    "end": "12:15",
+    "place": "class:FRENLANG1_LNG02",
+    "start": "11:30"
+   },
+   {
+    "activity": "lab",
+    "end": "13:25",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "12:20"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS106EA_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:CS124_LEC01",
+    "start": "15:00"
+   },
+   {
+    "activity": "lab",
+    "end": "18:00",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "16:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:00"
+   },
+   {
+    "activity": "lab",
+    "end": "22:10",
+    "place": "plan:bld_81794794_f2_206",
+    "start": "18:45"
+   },
+   {
+    "activity": "hangout",
+    "end": "22:55",
+    "place": "event:EV00073",
+    "start": "22:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:00"
+   },
+   {
+    "activity": "relax",
+    "end": "00:05",
+    "place": "home",
+    "start": "23:35"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:05"
+   }
+  ],
+  "diary": "Thursday: sticking to my routine of lab, gym, French, CS106EA, CS124, and dinner at Stern. Masked indoors and keeping distance since a friend of Sawyer and Val's is awaiting a flu test; I feel fine.",
+  "messages": [],
+  "thoughts": "Feeling fine. Sawyer and Val's friend is awaiting a flu test, so I'll keep my mask on indoors and keep distance, but stick to my disciplined routine. Eat at Stern when it is less crowded, and skip nothing important.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "10:05",
+    "place": "home",
+    "start": "08:10"
+   },
+   {
+    "activity": "class",
+    "end": "11:50",
+    "place": "class:BIO82_LEC01",
+    "start": "10:10"
+   },
+   {
+    "activity": "relax",
+    "end": "12:40",
+    "place": "bld:bld_232841950",
+    "start": "11:55"
+   },
+   {
+    "activity": "eat",
+    "end": "13:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:45"
+   },
+   {
+    "activity": "relax",
+    "end": "14:35",
+    "place": "home",
+    "start": "13:25"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:COLLEGE102_SEM34",
+    "start": "14:40"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "16:25"
+   },
+   {
+    "activity": "eat",
+    "end": "19:10",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "19:45",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "21:15",
+    "place": "dorm_lounge",
+    "start": "19:50"
+   },
+   {
+    "activity": "relax",
+    "end": "00:45",
+    "place": "home",
+    "start": "21:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:45"
+   }
+  ],
+  "diary": "Thu Jan 8: Eden warned about fevers in Stern. Feeling fine but wearing a mask tonight; classes, Lakeside dinner, quick Taper, then a shorter lounge hangout.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up Eden! I'll mask up tonight and keep it short in the lounge. See you at Lakeside!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Eden's warning about fevers in Lucie Stern makes me a little more wary, but I feel fine and I'm social. I'll keep my classes and plans, wear a mask this time, and skip the second lounge hangout overlap by staying for one lounge session. Still go to dinner and Taper.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "11:00",
+    "place": "home",
+    "start": "09:40"
+   },
+   {
+    "activity": "rest",
+    "end": "12:30",
+    "place": "home",
+    "start": "11:00"
+   },
+   {
+    "activity": "health_visit",
+    "end": "13:30",
+    "place": "bld:bld_26250731",
+    "start": "12:30"
+   },
+   {
+    "activity": "rest",
+    "end": "18:50",
+    "place": "home",
+    "start": "13:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:20",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:50"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:30",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Fri Jan 9: Still sick with fever, cough and aches. Going to Vaden to get checked, skipping MATH and the hangouts, resting at home. Worried it spread from Stern.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks all! Going to Vaden to get checked, then resting. Skipping the lounge tonight. Dell, thanks for the heads up, mask up!",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I'm sick with fever, chills, cough and aches, and Dell's text about Oli makes me think this is going around. I've already told the group. I'll sleep a bit more, then go to Vaden to get checked since everyone suggests it, and then rest. I'll skip MATH today since I feel awful and don't want to spread it; I can email for notes. Staying in tonight, no lounge.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

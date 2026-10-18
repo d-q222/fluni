@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Sawyer! Thanks for telling me, I really appreciate it. I'm feeling fine, just masking because I'm kind of anxious about everything going around. Let me know what the test says, okay? I'll keep a bit of distance in the meantime.",
+  "shared_health": true
+ }
+}

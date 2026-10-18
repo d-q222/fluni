@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Max! Yeah, great game, super crowded though so I'm keeping the mask on. I feel fine too. Gym next, then I'll see you at the dorm hangout tonight maybe?",
+  "shared_health": true
+ }
+}

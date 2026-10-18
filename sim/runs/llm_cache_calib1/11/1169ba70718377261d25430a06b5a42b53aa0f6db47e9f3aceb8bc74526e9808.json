@@ -1,0 +1,110 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:30",
+    "place": "home",
+    "start": "08:10"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "09:15",
+    "place": "bld:bld_m_main_quad_courtyard",
+    "start": "08:30"
+   },
+   {
+    "activity": "study",
+    "end": "10:25",
+    "place": "home",
+    "start": "09:25"
+   },
+   {
+    "activity": "gym",
+    "end": "11:55",
+    "place": "plan:bld_232715629_f1_102",
+    "start": "10:40"
+   },
+   {
+    "activity": "outdoor_leisure",
+    "end": "12:30",
+    "place": "bld:bld_m_meyer_green",
+    "start": "12:05"
+   },
+   {
+    "activity": "eat",
+    "end": "13:30",
+    "place": "bld:bld_1040629370",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "14:50",
+    "place": "class:CS106EA_LEC01",
+    "start": "13:30"
+   },
+   {
+    "activity": "study",
+    "end": "16:20",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "15:00"
+   },
+   {
+    "activity": "hangout",
+    "end": "17:15",
+    "place": "bld:bld_m_white_plaza",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_1040629370",
+    "start": "18:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:00",
+    "place": "bld:bld_232841950",
+    "start": "19:15"
+   },
+   {
+    "activity": "hangout",
+    "end": "20:45",
+    "place": "dorm_lounge",
+    "start": "20:00"
+   },
+   {
+    "activity": "relax",
+    "end": "22:15",
+    "place": "home",
+    "start": "20:45"
+   },
+   {
+    "activity": "party",
+    "end": "01:25",
+    "place": "event:EV00081",
+    "start": "22:25"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Thursday: Eden warned about fevers in Lucie Stern, but I feel fine. Sticking to class, dinner, Taper, a shorter lounge stop, then the party.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "",
+    "time": "",
+    "to": "A0056"
+   }
+  ],
+  "thoughts": "Eden's warning is secondhand and vague, and I feel fine. I'm outgoing and rarely worry, so I'll keep most plans. Dorm lounge hangout has sick neighbors possibly, so I'll shorten it a bit but still show up briefly. I'll keep dinner and Taper, go to class, gym, and the party.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

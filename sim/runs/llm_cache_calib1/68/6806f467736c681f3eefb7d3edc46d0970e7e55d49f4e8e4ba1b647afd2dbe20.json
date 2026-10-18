@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Oh, not taken, go ahead. I've got the room booked till about 1:15, but there's space.",
+  "shared_health": false
+ }
+}

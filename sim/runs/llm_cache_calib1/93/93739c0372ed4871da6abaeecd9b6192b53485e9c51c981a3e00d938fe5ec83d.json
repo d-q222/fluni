@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, quick breakfast before I head out. You're masked up, everything good? I'm heading to the basketball game at seven tonight if you want to come.",
+  "shared_health": false
+ }
+}

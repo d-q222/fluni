@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at Stern Dining; they're lifting around 6 after class, I said I'd skip since I have practice and dinner. Will see them at practice. Nobody mentioned being sick.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

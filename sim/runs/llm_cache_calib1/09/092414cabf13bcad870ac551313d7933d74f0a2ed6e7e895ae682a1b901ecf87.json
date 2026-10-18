@@ -1,0 +1,96 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "07:40",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "08:05",
+    "place": "home",
+    "start": "07:40"
+   },
+   {
+    "activity": "eat",
+    "end": "08:45",
+    "place": "bld:bld_333374283",
+    "start": "08:10"
+   },
+   {
+    "activity": "study",
+    "end": "10:20",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "08:50"
+   },
+   {
+    "activity": "class",
+    "end": "11:20",
+    "place": "class:CS107_LEC01",
+    "start": "10:30"
+   },
+   {
+    "activity": "study",
+    "end": "12:10",
+    "place": "plan:bld_232841950_f1_101",
+    "start": "11:20"
+   },
+   {
+    "activity": "eat",
+    "end": "12:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:15"
+   },
+   {
+    "activity": "study",
+    "end": "14:25",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "12:40"
+   },
+   {
+    "activity": "class",
+    "end": "17:20",
+    "place": "class:ENGLISH91_WKS06",
+    "start": "14:30"
+   },
+   {
+    "activity": "class",
+    "end": "18:20",
+    "place": "class:SLE92_LEC01_2",
+    "start": "17:30"
+   },
+   {
+    "activity": "study",
+    "end": "20:15",
+    "place": "plan:bld_232805685_f2_201",
+    "start": "18:25"
+   },
+   {
+    "activity": "eat",
+    "end": "21:10",
+    "place": "bld:bld_m_stern_dining",
+    "start": "20:25"
+   },
+   {
+    "activity": "relax",
+    "end": "23:15",
+    "place": "home",
+    "start": "21:15"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:15"
+   }
+  ],
+  "diary": "Wed: kept my class and study routine, masked indoors, skipped the crowded basketball game to study instead. Feeling fine but still a bit anxious.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick to my usual routine. Still a bit anxious about illness, so I'll keep wearing my mask indoors. I'll skip the basketball game since a crowded arena feels risky and I'd rather study at Lathrop, then eat and head home to sleep at a reasonable hour.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

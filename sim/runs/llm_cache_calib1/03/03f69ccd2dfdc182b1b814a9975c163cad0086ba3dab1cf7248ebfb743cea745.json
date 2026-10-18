@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning, Devon. Feeling okay today? I'm fine, just keeping the mask handy since people say something's going around.",
+  "shared_health": true
+ }
+}

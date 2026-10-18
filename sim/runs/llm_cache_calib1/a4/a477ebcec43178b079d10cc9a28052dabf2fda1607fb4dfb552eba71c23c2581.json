@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Thanks, hope yours is quick. Sounds like you should go straight back and rest after, and let people in the dorm know so they can watch out. I'll scoot over a seat, hope you feel better.",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, all good, feeling fine! Just wearing it since stuff's going around. Tonight's packed for me with practice and gym, so I'll probably skip, but have fun!",
+  "shared_health": true
+ }
+}

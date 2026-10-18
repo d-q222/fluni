@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Carter! You eating here too? I'm just grabbing food then heading to Green to study. Feeling fine, just keeping it low-key with everyone getting sick.",
+  "shared_health": true
+ }
+}

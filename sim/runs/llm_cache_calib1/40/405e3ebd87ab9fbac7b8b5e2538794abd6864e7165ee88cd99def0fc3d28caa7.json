@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Oli! Just finishing dinner. My flu test came back negative, so I'm good. How are you doing?",
+  "shared_health": true
+ }
+}

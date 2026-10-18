@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Same, honestly, I've been a little wary too. I feel fine though. Good call on the mask, maybe I should bring one to class later.",
+  "shared_health": true
+ }
+}

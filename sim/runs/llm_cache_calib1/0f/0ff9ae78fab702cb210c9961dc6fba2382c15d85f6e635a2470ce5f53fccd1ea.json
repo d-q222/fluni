@@ -1,0 +1,78 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "09:10",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "relax",
+    "end": "12:00",
+    "place": "home",
+    "start": "09:10"
+   },
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_333374283",
+    "start": "12:05"
+   },
+   {
+    "activity": "hangout",
+    "end": "14:50",
+    "place": "plan:bld_232805691_f1_101",
+    "start": "12:50"
+   },
+   {
+    "activity": "class",
+    "end": "16:15",
+    "place": "class:COLLEGE102_SEM37",
+    "start": "15:00"
+   },
+   {
+    "activity": "study",
+    "end": "17:25",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "16:20"
+   },
+   {
+    "activity": "class",
+    "end": "20:10",
+    "place": "class:CSRE152A_SEM01",
+    "start": "17:30"
+   },
+   {
+    "activity": "eat",
+    "end": "21:20",
+    "place": "bld:bld_m_flomo_dining",
+    "start": "20:20"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:45",
+    "place": "bld:bld_232841950",
+    "start": "21:25"
+   },
+   {
+    "activity": "relax",
+    "end": "01:30",
+    "place": "home",
+    "start": "23:50"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:30"
+   }
+  ],
+  "diary": "Wednesday: lunch at Arrillaga, seminars, Green study, then late dinner and Taper with friends. Feeling fine, still a bit wary of the illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine today. I'll follow my usual routine mostly, but swap in some social stuff. Sleep in, grab lunch at Arrillaga, seminar, study at Green, long CSRE seminar, then hang out at Taper with friends late. A little wary of illness but not masking.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

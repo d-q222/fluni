@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Stevie (my dorm neighbor) at Stern Dining; they wore a mask but said they're fine and just being cautious. I feel fine. Still need to confirm practice time in the team chat.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

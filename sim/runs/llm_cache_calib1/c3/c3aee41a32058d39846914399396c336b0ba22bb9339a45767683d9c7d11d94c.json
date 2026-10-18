@@ -1,0 +1,50 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "isolate",
+    "end": "18:30",
+    "place": "home",
+    "start": "15:05"
+   },
+   {
+    "activity": "rest",
+    "end": "19:30",
+    "place": "home",
+    "start": "18:30"
+   },
+   {
+    "activity": "study",
+    "end": "21:00",
+    "place": "home",
+    "start": "19:30"
+   },
+   {
+    "activity": "rest",
+    "end": "23:00",
+    "place": "home",
+    "start": "21:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: just got my test result but still feel feverish and achy with a cough. Staying in my room all evening, resting, and keeping the group posted.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: still feverish with cough and aches. I'm staying in my room to rest, skipping lab and the game. Stay safe and keep your distance from me.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "I just got a test result and still feel feverish and achy. The app flags me as maybe sick, so I'll keep to my room, rest, and drink fluids. I'm being honest with my friends, so I'll tell the group how I'm doing. If the result needs follow-up, I'll go to Vaden, but I'm staying in the rest of the day and skipping lab and the game.",
+  "wear_mask": true,
+  "worry": 4
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Same, I feel fine and my app's been quiet. Just keeping my distance and sticking to lab and my room. Stay careful, and text if anything changes?",
+  "shared_health": true
+ }
+}

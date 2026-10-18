@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, heading there now. Masks seem like the easy move right now, I'm kind of anxious about getting sick. Walk over together?",
+  "shared_health": false
+ }
+}

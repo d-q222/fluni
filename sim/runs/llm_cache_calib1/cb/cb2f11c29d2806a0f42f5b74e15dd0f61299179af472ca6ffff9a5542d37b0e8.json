@@ -1,0 +1,56 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "study",
+    "end": "12:05",
+    "place": "home",
+    "start": "11:45"
+   },
+   {
+    "activity": "eat",
+    "end": "12:30",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:10"
+   },
+   {
+    "activity": "relax",
+    "end": "18:40",
+    "place": "home",
+    "start": "12:35"
+   },
+   {
+    "activity": "eat",
+    "end": "19:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:45"
+   },
+   {
+    "activity": "relax",
+    "end": "23:00",
+    "place": "home",
+    "start": "19:20"
+   },
+   {
+    "activity": "sleep",
+    "end": "00:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Sunday: Bryce warned that Teagan and Dakota are sick in our dorm. I'm staying in my room, masking at Stern, avoiding the lounge. Feel fine but wary.",
+  "messages": [
+   {
+    "kind": "reply",
+    "place": "",
+    "text": "Thanks for the heads up! I feel fine, staying masked and skipping the lounge. Will tell you if anything feels off.",
+    "time": "",
+    "to": "A0063"
+   }
+  ],
+  "thoughts": "Bryce warned me about sick people in the dorm. I feel fine, so I'll keep to my quiet routine, avoid the lounge, and mask at Stern. I'll grab a quick lunch and dinner, and otherwise stay in my room. I'll thank Bryce.",
+  "wear_mask": true,
+  "worry": 3
+ }
+}

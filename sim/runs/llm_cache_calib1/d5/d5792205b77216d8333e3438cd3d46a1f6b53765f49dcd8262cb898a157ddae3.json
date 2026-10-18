@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Yeah, I'll be there after dinner. Might grab a mask if it's packed, with all the dorm fevers going around. See you there!",
+  "shared_health": false
+ }
+}

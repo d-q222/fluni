@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Morning, Carter. You heading out to class soon too? I'm about to get my mask and bike over for EE108.",
+  "shared_health": false
+ }
+}

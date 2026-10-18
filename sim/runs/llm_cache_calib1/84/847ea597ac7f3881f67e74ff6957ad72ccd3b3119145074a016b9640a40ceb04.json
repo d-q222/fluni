@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Max at the Cal game; they feel fine, are skipping tonight's dorm hangout and might see me at Stern dinner. Nothing changes: keep masking and stick to my schedule.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Fallon! Yeah, I'm feeling fine, just a little anxious about stuff going around. Sitting near the door sounds good, better airflow anyway.",
+  "shared_health": true
+ }
+}

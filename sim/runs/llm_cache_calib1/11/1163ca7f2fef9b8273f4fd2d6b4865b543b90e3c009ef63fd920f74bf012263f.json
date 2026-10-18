@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, Umi told me earlier. I feel fine, just keeping my mask on in crowds. Staying in tonight too, early night after dinner. You feeling okay?",
+  "shared_health": true
+ }
+}

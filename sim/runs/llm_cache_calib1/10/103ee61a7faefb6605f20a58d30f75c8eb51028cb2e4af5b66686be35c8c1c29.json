@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Yeah, I'm still going, I feel fine and it's just a hangout. Skyler's not even confirmed yet. If I hear the result I'll text you though. Wait, Sidney's sick too?",
+  "shared_health": true
+ }
+}

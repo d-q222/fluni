@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Paxton from my dorm in the lobby; both masked and feeling fine. We agreed to stay at the edge of the hangout and leave early.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

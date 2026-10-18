@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Will do! Mask on is smart, honestly. See you at 8, save me a seat!",
+  "shared_health": false
+ }
+}

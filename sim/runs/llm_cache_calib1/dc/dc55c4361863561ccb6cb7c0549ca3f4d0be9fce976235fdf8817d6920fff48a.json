@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Awesome, will do! I'll grab us seats near the group. See you tonight!",
+  "shared_health": false
+ }
+}

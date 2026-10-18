@@ -1,0 +1,72 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "sleep",
+    "end": "08:55",
+    "place": "home",
+    "start": "04:00"
+   },
+   {
+    "activity": "eat",
+    "end": "09:40",
+    "place": "bld:bld_1040629370",
+    "start": "09:00"
+   },
+   {
+    "activity": "study",
+    "end": "13:40",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "09:45"
+   },
+   {
+    "activity": "eat",
+    "end": "14:15",
+    "place": "bld:bld_m_stern_dining",
+    "start": "13:45"
+   },
+   {
+    "activity": "study",
+    "end": "18:10",
+    "place": "home",
+    "start": "14:20"
+   },
+   {
+    "activity": "eat",
+    "end": "18:35",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:15"
+   },
+   {
+    "activity": "study",
+    "end": "23:30",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "18:40"
+   },
+   {
+    "activity": "study",
+    "end": "00:35",
+    "place": "plan:bld_m_green_library_f1_101",
+    "start": "23:30"
+   },
+   {
+    "activity": "relax",
+    "end": "01:20",
+    "place": "home",
+    "start": "00:40"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "01:20"
+   }
+  ],
+  "diary": "Regular Monday of problem sets and library study. Feeling fine, just slightly wary of illness going around.",
+  "messages": [],
+  "thoughts": "Feeling fine, so I'll stick with my usual routine. Monday after break, problem sets are piling up. I'm a bit worried about illness going around but no symptoms, so no mask. Keep to a disciplined schedule and get decent sleep.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

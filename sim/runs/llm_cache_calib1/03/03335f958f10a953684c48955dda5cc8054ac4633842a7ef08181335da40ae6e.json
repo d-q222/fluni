@@ -1,0 +1,44 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "isolate",
+    "end": "19:00",
+    "place": "home",
+    "start": "16:35"
+   },
+   {
+    "activity": "rest",
+    "end": "20:00",
+    "place": "home",
+    "start": "19:00"
+   },
+   {
+    "activity": "isolate",
+    "end": "23:00",
+    "place": "home",
+    "start": "20:00"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:00"
+   }
+  ],
+  "diary": "Test came back positive. I told my friends, I'm isolating at home, skipping the hangout, resting and feeling anxious about who I might have exposed.",
+  "messages": [
+   {
+    "kind": "tell_sick",
+    "place": "",
+    "text": "Update: my test came back POSITIVE. I'm isolating in my room and skipping everything, including the dorm hangout. If you've been near me, please mask, watch for symptoms, and check FlUni. If anyone can drop food or water outside my door, thank you so much.",
+    "time": "",
+    "to": "group"
+   }
+  ],
+  "thoughts": "Positive test. I feel awful and I'm honest and anxious, so I'm staying home in isolation, skipping the dorm hangout. I'll tell my friends the result and ask for food to be dropped at my door. I'll mask if anyone comes by, and I'll rest, hydrate, and sleep early.",
+  "wear_mask": true,
+  "worry": 5
+ }
+}

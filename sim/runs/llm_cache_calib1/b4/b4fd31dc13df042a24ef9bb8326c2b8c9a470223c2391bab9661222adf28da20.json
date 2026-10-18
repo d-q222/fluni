@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Paxton! Yeah, just finishing dinner before heading to Green to study. Monday's been fine, just psets. I see the mask, you doing okay?",
+  "shared_health": false
+ }
+}

@@ -1,0 +1,60 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "12:40",
+    "place": "bld:bld_m_stern_dining",
+    "start": "12:25"
+   },
+   {
+    "activity": "study",
+    "end": "14:30",
+    "place": "home",
+    "start": "12:45"
+   },
+   {
+    "activity": "class",
+    "end": "16:20",
+    "place": "class:CS243_LEC01",
+    "start": "14:35"
+   },
+   {
+    "activity": "gym",
+    "end": "17:35",
+    "place": "plan:bld_232715571_f1_102",
+    "start": "16:30"
+   },
+   {
+    "activity": "eat",
+    "end": "18:05",
+    "place": "bld:bld_1040629370",
+    "start": "17:45"
+   },
+   {
+    "activity": "event",
+    "end": "20:50",
+    "place": "event:EV00047",
+    "start": "18:10"
+   },
+   {
+    "activity": "hangout",
+    "end": "23:30",
+    "place": "dorm_lounge",
+    "start": "20:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "23:30"
+   }
+  ],
+  "diary": "Wed Jan 7: Stern was crowded at lunch so I left fast. Plan is class, gym, the Arizona game with the group, then the lounge. Feeling fine, still a bit wary.",
+  "messages": [],
+  "thoughts": "Stern is packed, so I'll finish lunch quickly and head out. I feel fine and I'm only a little wary. I'll stick to my usual plan: study, CS243, gym, a quick bite, then the Arizona game with the group and the lounge after. I won't wear a mask because I rarely do.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}

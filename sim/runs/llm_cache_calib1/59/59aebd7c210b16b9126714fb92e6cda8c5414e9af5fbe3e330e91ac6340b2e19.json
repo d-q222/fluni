@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Told Bryce (masked dorm neighbor) about my close contact warning from Wesley; they feel fine, suggested testing and masking, and gave me space. I said I'd look into testing and watch for symptoms.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

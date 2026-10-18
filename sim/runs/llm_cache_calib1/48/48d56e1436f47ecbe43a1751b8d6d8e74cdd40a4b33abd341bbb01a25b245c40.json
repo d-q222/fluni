@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Umi, my dorm neighbor, at Stern Dining; they wore a mask just to be careful and said they feel fine. Nobody is sick, so my plan stays the same.",
+  "messages": [],
+  "replan": false,
+  "worry": 1
+ }
+}

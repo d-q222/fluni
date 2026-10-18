@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Harper at Wilbur; neither of us is sick, both are being a bit careful. Nothing agreed, no change to my plans.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

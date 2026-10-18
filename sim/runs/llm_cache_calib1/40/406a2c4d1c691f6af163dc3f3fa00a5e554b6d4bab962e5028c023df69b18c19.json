@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": true,
+  "say": "Sounds good, let's grab food and see how it feels. I'll probably pop by the hangout anyway, mask or no mask haha. Come find me after!",
+  "shared_health": false
+ }
+}

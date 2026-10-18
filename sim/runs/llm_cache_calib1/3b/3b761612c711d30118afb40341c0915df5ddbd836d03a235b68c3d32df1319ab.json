@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ate with Chris at Wilbur; they said hi to Dell, will be at Green this afternoon, and may come late to the study group after Flo Mo dinner. I feel fine and shared nothing about health.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

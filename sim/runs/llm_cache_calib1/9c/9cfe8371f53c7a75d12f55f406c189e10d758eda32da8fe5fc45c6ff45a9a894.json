@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Chatted with Skyler at Stern Dining; they're studying at Green then class, practice till 6:20 so they'll skip lifting. We'll see each other at practice. Nothing changes.",
+  "messages": [],
+  "replan": false,
+  "worry": 2
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Morgan. Lots of flu going around the dorm, huh? I'm just finishing up and heading to Green.",
+  "shared_health": false
+ }
+}

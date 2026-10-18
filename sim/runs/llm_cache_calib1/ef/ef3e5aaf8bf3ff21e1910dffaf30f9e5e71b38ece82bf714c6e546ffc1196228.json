@@ -1,0 +1,9 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "memory": "Ran into Oli (masked, same dorm) at Green late Friday; they said a lot is going around the dorm. I said I feel fine but stay wary. Nothing planned, back to studying.",
+  "messages": [],
+  "replan": false,
+  "worry": 3
+ }
+}

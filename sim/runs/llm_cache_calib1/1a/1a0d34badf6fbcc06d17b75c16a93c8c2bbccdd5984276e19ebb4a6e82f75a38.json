@@ -1,0 +1,8 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "end": false,
+  "say": "Hey Chris! Pretty good, gym then seminar, just ate with Wynn actually. I'm heading to Flo Mo for dinner with you in a bit, right? How's yours been?",
+  "shared_health": false
+ }
+}

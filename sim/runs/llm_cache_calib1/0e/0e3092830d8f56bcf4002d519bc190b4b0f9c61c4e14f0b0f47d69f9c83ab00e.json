@@ -1,0 +1,42 @@
+{
+ "model": "claude-sonnet-5-5",
+ "response": {
+  "blocks": [
+   {
+    "activity": "eat",
+    "end": "18:55",
+    "place": "bld:bld_m_stern_dining",
+    "start": "18:35"
+   },
+   {
+    "activity": "lab",
+    "end": "22:00",
+    "place": "plan:bld_232841897_f2_208",
+    "start": "19:00"
+   },
+   {
+    "activity": "study",
+    "end": "23:50",
+    "place": "plan:bld_m_green_library_f2_201",
+    "start": "22:05"
+   },
+   {
+    "activity": "relax",
+    "end": "00:40",
+    "place": "home",
+    "start": "23:55"
+   },
+   {
+    "activity": "sleep",
+    "end": "04:00",
+    "place": "home",
+    "start": "00:40"
+   }
+  ],
+  "diary": "Stern was crowded and Ari said Bailey has flu symptoms. I feel fine and stuck to lab, study and sleep, a bit more aware of illness around.",
+  "messages": [],
+  "thoughts": "Stern is crowded and people around me are getting sick, but I feel fine. I'll finish eating quickly and head to lab as usual. I won't bother with a mask, though I'll keep a bit of distance. Study at Green, then home to sleep.",
+  "wear_mask": false,
+  "worry": 2
+ }
+}
