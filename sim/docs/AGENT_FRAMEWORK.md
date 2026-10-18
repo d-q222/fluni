@@ -139,7 +139,8 @@ silently tuned away.
    that the trait means match today's and R is unchanged. **Done** (`campussim/personality.py`,
    `configs/personality.json`, `scripts/smoke_personality.py`).
 2. **Worry state and drift** (rule-based jumps and decay), plus the `worry` answer from Claude
-   agents.
+   agents. **Done** for rule-based agents (`campussim/worry.py`, `configs/worry.json`,
+   `scripts/smoke_worry.py`); the Claude `worry` answer is still to do.
 3. **Structured outcomes and `llm_events.csv`**, including `shared_health` on talk turns.
 4. **Notice** (Claude agents observing rule-based agents).
 5. **Messages and group plans**, including the P(accept) rule for rule-based recipients.

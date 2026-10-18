@@ -87,6 +87,23 @@ agents' personas describe the personality in words. The weights are placeholders
 calibration loop in [docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md) fits them. Off by default,
 so run ids are unchanged. Check it with `scripts/smoke_personality.py`.
 
+## Worry
+
+`--set worry.mode=on` gives every agent a worry level between 0 and 1 (`campussim/worry.py`,
+`configs/worry.json`). Each agent has a resting level: from neuroticism when Big Five is on, else a
+constant per archetype. Worry jumps when the agent gets symptoms, a friend-group member tests
+positive, or the app sends an alert, and Claude agents can report their own. Each jump closes a fixed
+share of the gap to 1. Between jumps worry relaxes back to the resting level with a 3-day half-life.
+
+Worry above the resting level makes an agent follow advice more often, wear a mask more, and skip
+planned parties, hangouts, events, study groups and gym sessions (they stay home instead). Parties
+and events are scheduled before the run starts, so skipping them is the only way worry can reduce
+going out. At the resting level, behavior is the same as with worry off. The run writes
+`worry.csv.gz` (`t, agent_id, worry, cause`): every agent's resting level at t=0, one row per jump or
+reported value, and hourly rows while worry is fading. The jump sizes and weights are placeholders
+until the calibration loop fits them. Off by default, so run ids are unchanged. Check it with
+`scripts/smoke_worry.py`.
+
 ## Claude-driven agents
 
 By default every agent follows the scheduler's plan (`plans.py`) and a scripted sick response.
@@ -236,6 +253,7 @@ sim with the same seed if you need them (output is byte-identical). Add the run'
 | `campussim/interventions.py` | intervention hook (observable state only, unless an oracle) |
 | `campussim/app_policy.py` | `fluni` intervention: the FlUni app's alerts and advice |
 | `campussim/personality.py` | Big Five personalities; derives compliance, masks, honesty, sick response, social_scale |
+| `campussim/worry.py` | worry level per agent: jumps on events, decays to baseline, shifts compliance, masks, optional activities |
 | `campussim/llm_agents.py` | Claude-driven agents: daily plans and re-plans from the Claude API, cached |
 | `campussim/psick.py` | streaming P(sick), a step-by-step port of `model/infer.js` |
 | `campussim/output.py`, `summary.py` | deterministic CSV/gzip/Parquet writers, summary.json |

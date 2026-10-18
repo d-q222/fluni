@@ -163,9 +163,11 @@ def _cfg_defaults():
     return json.loads(_CFG_PATH.read_text())
 
 
-def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=None, compliance_scale=1.0) -> list:
+def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=None, compliance_scale=1.0,
+                  compliance=None) -> list:
     """Apply {agent_idx: [Action]} in sorted agent order; each action accepted w.p.
-    pop.compliance[i] * compliance_scale (capped at 1). isolate_until never shortens an isolation.
+    compliance[i] * compliance_scale (capped at 1); compliance defaults to pop.compliance (the engine
+    passes the worry-adjusted one when worry is on). isolate_until never shortens an isolation.
     Returns len-N list of timeline strings ("" = no action), multiple joined with "|".
     Pass `reports` so isolate_until survives recovery handling and go_to_vaden yields a test."""
     out = [""] * pop.N
@@ -174,7 +176,8 @@ def apply_actions(actions, beh, pop, rng, t, reports=None, cfg_interventions=Non
     icfg = cfg_interventions or _cfg_defaults()
     step_min = getattr(reports, "step_min", 5)
     spd = 1440 // step_min
-    comp = np.minimum(np.asarray(pop.compliance, dtype=float) * float(compliance_scale), 1.0)
+    comp = np.asarray(pop.compliance if compliance is None else compliance, dtype=float)
+    comp = np.minimum(comp * float(compliance_scale), 1.0)
     for i in sorted(int(k) for k in actions):
         parts = []
         for a in actions[i]:

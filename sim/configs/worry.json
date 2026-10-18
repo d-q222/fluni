@@ -1,0 +1,14 @@
+{
+  "_doc": "Worry state and drift (docs/AGENT_FRAMEWORK.md section 3, campussim/worry.py). mode 'off' (default) keeps run ids and output unchanged; 'on' gives every agent a worry level in [0, 1]. baseline = neuroticism_baseline[0] + (neuroticism_baseline[1] - neuroticism_baseline[0]) * neuroticism with Big Five on, else baseline_archetype[archetype] (the same map applied to personality.json's archetype mean neuroticism). Worry relaxes toward the baseline with half_life_days (sim time) and jumps on events: level += jumps[kind] * (1 - level). Effects scale with (level - baseline), so nothing changes at baseline: compliance and mask propensity shift by effects.* on the logit scale (mask: the per-agent propensity before the activity context factor); P(drop a planned optional activity in drop_acts, i.e. stay home in drop_to_act instead) = clip(effects.drop_optional * (level - baseline), 0, drop_p_max), decided once per planned block. worry.csv.gz logs every jump / measured value, all baselines at t=0, and hourly rows for agents whose level moved more than log_min_change since their last row. Jumps and weights are placeholders until the calibration loop fits them from Claude agents' worry answers.",
+  "mode": "off",
+  "half_life_days": 3.0,
+  "neuroticism_baseline": [0.1, 0.5],
+  "baseline_archetype": {"studious": 0.32, "social": 0.27, "athlete": 0.25, "stem": 0.31, "commuter": 0.29, "homebody": 0.34},
+  "jumps": {"own_symptoms": 0.5, "friend_sick": 0.25, "friend_positive": 0.35, "app_alert": 0.3, "warning_text": 0.3, "saw_sick": 0.1},
+  "effects": {"compliance": 2.0, "mask_propensity": 3.0, "drop_optional": 1.5},
+  "drop_p_max": 0.9,
+  "drop_min_excess": 0.01,
+  "drop_acts": ["party", "hangout", "event", "study_group", "gym"],
+  "drop_to_act": "relax",
+  "log_min_change": 0.02
+}
