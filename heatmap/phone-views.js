@@ -55,7 +55,7 @@ const squiggle = '<svg viewBox="0 0 62 10" aria-hidden="true"><path d="M2 6 Q9 0
 export const wordmark = (cls = '') => `<span class="wordmark ${cls}">FlUni${squiggle}</span>`;
 
 function tissue(mood, stamp) {
-  const bubbleTail = '<svg viewBox="0 0 15 17" aria-hidden="true"><path d="M14.5 1 Q5 3 0.5 11 Q7 9 14.5 14" fill="#fffaf1" stroke="#33241c" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 2 V13.5" stroke="#fffaf1" stroke-width="3"/></svg>';
+  const bubbleTail = '<svg viewBox="0 0 15 17" aria-hidden="true"><path d="M14.5 1 Q5 3 0.5 11 Q7 9 14.5 14" style="fill: var(--surface); stroke: var(--ink)" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 2 V13.5" stroke="#fffaf1" stroke-width="3"/></svg>';
   const marks = (c) => `<svg class="marks" viewBox="0 0 44 26" aria-hidden="true"><path d="M0 9 L10 26 M22 0 L23 24 M44 8 L35 26" fill="none" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/></svg>`;
   let fig;
   if (mood === 'sick') fig = `<img class="sick" src="${ASSET}illo-sick@600.png" alt="">${stamp ? `<img class="stamp" src="${ASSET}stamp-self-reported.png" alt="Self-reported">` : ''}`;
