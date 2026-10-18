@@ -15,16 +15,10 @@
   scrollbar-width: none; scroll-behavior: smooth; }
 #phone .screen::-webkit-scrollbar { display: none; }
 #phone .tab[hidden] { display: none; }
-#phone .tab { padding: 4px 16px 112px; }
+#phone .tab { padding: 4px 16px 28px; }
 #phone .tab.bleed { padding: 0; height: 100%; position: relative; }
 
-/* tab bar: a floating pill, the selected tab on a soft chip */
-#phone .tabbar { position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 6; border: 0; border-radius: 999px; padding: 5px;
-  background: rgba(255, 250, 241, .82); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 0 0 1px rgba(51, 36, 28, .08), 0 8px 24px -8px rgba(51, 36, 28, .3); font-family: -apple-system, system-ui, sans-serif; justify-content: space-between; }
-#phone .tabbar button { flex: 1; min-width: 0; padding: 7px 0 5px; border-radius: 999px; color: var(--ink); font-size: 12px; font-weight: 500; gap: 3px; }
-#phone .tabbar button[aria-selected="true"] { background: rgba(51, 36, 28, .09); color: var(--ink); font-weight: 600; }
-#phone .tabbar svg { width: 24px; height: 24px; }
+/* the tab bar is Lisa's tissue box (assets/tabbar/, styled in index.html); the screen sits above it */
 
 /* ---- Today ---- */
 .p-head { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; }
@@ -175,7 +169,7 @@
 .cchip .seg2 { display: flex; background: var(--surface-2); border-radius: 999px; padding: 2px; }
 .cchip .seg2 button { all: unset; font-size: 13px; color: var(--ink-2); border-radius: 999px; padding: 5px 12px; min-height: 20px; cursor: pointer; }
 .cchip .seg2 button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
-.cleg { position: absolute; z-index: 5; left: 10px; right: 10px; bottom: 96px; padding: 3px 8px 0 6px; font-size: 12px; border-style: solid; border-width: 9px 8px 21px 17px;
+.cleg { position: absolute; z-index: 5; left: 10px; right: 10px; bottom: 14px; padding: 3px 8px 0 6px; font-size: 12px; border-style: solid; border-width: 9px 8px 21px 17px;
   border-image: url("assets/containers/box-paper.png") 34 30 80 64 fill / 9px 8px 21px 17px stretch; filter: drop-shadow(0 6px 10px rgba(51, 36, 28, 0.10)); }
 .cleg .strip { display: flex; align-items: center; gap: 8px; color: var(--ink-2); white-space: nowrap; font-size: 15px; }
 .cleg .ramp { flex: 1; height: 10px; border-radius: 5px; }
