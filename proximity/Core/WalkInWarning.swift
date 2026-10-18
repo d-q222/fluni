@@ -31,5 +31,8 @@ struct WalkInWarning {
         return Outcome(bannerBuilding: b, notify: true)
     }
 
+    /// Forget every cooldown (Delete my data, and the Demo's "Reset warnings").
+    mutating func resetCooldowns() { lastNotified = [:] }
+
     static func message(for name: String) -> String { "\(name) has a lot of illness right now. Consider a mask, or a different spot." }
 }
