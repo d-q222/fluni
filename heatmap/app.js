@@ -500,8 +500,9 @@ let drawnBounds = null, glReady = null, simMap = null; // simMap: { buildings, p
 
 function baseMap(el, options) {
   // Zoom stops at room scale (20: ~15 cm a pixel, people at full size) and at the whole campus (13);
-  // the vector base would otherwise let you zoom in forever.
-  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, minZoom: 13, maxZoom: 20, ...options });
+  // the vector base would otherwise let you zoom in forever. Quarter-level wheel and trackpad steps (half
+  // the default speed per pixel) and half-level +/- clicks, so zooming glides instead of jumping.
+  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, minZoom: 13, maxZoom: 20, ...options });
   map.createPane('simPane').style.zIndex = 250; // above base tiles, below heat, fills and people
   bases.set(map, {});
   applyBase(map);
@@ -1015,27 +1016,37 @@ async function main() {
     if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
-  // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
-  map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
+  // People are sized on the ground: resize them at every zoom step. Set directly, not with setRadius and
+  // setStyle (each reprojects and queues a repaint per dot): the dots' renderer, whose zoomend handler runs
+  // after this one, reprojects and redraws them all once anyway.
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom());
-    for (const [id, m] of dots) if (m.getRadius() !== r) {
-      m.setRadius(r);
-      m.setStyle({ weight: ringWeight(r, $('dot-mode').value !== 'truth' && Boolean(current.get(id)?.sick)) });
+    const r = personRadius(map.getZoom()), mode = $('dot-mode').value;
+    for (const [id, m] of dots) if (m._radius !== r) {
+      m.options.radius = m._radius = r;
+      m.options.weight = ringWeight(r, mode !== 'truth' && Boolean(current.get(id)?.sick));
     }
-    const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
-    if (next === sigmaM && nextFine === fine) return;
-    sigmaM = next;
-    fine = nextFine;
-    heatDirty = true;
-    renderLegend();
-    render(performance.now());
+  });
+  // The heat covers only the visible map (plus a margin) at a spread set by the zoom, so a zoom or pan
+  // redoes it, but once the gesture settles, not at every wheel step (a 50-100 ms stall each). Meanwhile
+  // the heat canvases keep their last heat, scaled with the map and redrawn crisp at each step.
+  const SETTLE_MS = 140;
+  let zooming = false, settleTimer = 0;
+  map.on('zoomstart', () => { zooming = true; clearTimeout(settleTimer); });
+  map.on('moveend', () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      zooming = false;
+      const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
+      if (next !== sigmaM || nextFine !== fine) { sigmaM = next; fine = nextFine; renderLegend(); }
+      heatDirty = true;
+      if (!playing) render(performance.now()); // playing: the next frame does it
+    }, SETTLE_MS);
   });
   // Smooth zooming: the first zoom to a new spread or grid built that grid and its kernels on the spot
   // (a visible stall at zoom 16 and 18). Build every zoom level's once, in idle time after the page loads.
   const warmLevels = [];
   const planWarm = () => { // once the map has a view (sigmaForZoom reads its centre)
-    for (let z = 13; z <= 20; z += 0.5) {
+    for (let z = 13; z <= 20; z += map.options.zoomSnap) {
       const lv = { sigma: sigmaForZoom(z), fine: zoneHeat && z >= FINE_ZOOM };
       if (!warmLevels.some((w) => w.sigma === lv.sigma && w.fine === lv.fine)) warmLevels.push(lv);
     }
@@ -1627,7 +1638,14 @@ async function main() {
       hoverTip.setLatLng(e.latlng); if (!map.hasLayer(hoverTip)) map.openTooltip(hoverTip);
     });
   });
-  map.on('moveend', () => updateViewCount(performance.now(), true));
+  // The "expected sick in view" count follows the map as it moves (~1,000 bounds checks, once a frame),
+  // on its own: never the legend's redraw or the heat's recompute.
+  let viewCountQueued = false;
+  map.on('move', () => {
+    if (viewCountQueued) return;
+    viewCountQueued = true;
+    requestAnimationFrame(() => { viewCountQueued = false; updateViewCount(performance.now(), true); });
+  });
   map.on('mouseout', () => { if (hover) { map.closeTooltip(hoverTip); hover = null; } });
   map.on('click', (e) => {
     if ($('view').value !== 'demo') return;
@@ -1704,7 +1722,7 @@ async function main() {
     $('time').textContent = dayTime(now, t0, data.numericTime);
     $('slider').value = (now - t0) / 60000;
 
-    const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
+    const heatDue = !zooming && (heatDirty || realNow - lastHeat >= heatInterval); // zooming: when it settles
     if (heatDue) {
       const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';
