@@ -51,8 +51,9 @@ export const MF_DEFAULTS = {
                           //   the online pass can rerun this far back)
   lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
-                          //   Per run (node model/meanfield-cli.mjs <run> --calibrate): from the true 5 seeds the 7,500-agent
-                          //   runs fit 1.128 (fixed) and 1.401 (frankenstein); see ml/KL_RESULTS.md.
+                          //   Refit per run. The 7,500-agent runs: --calibrate (true seeds, no reports) gives 1.128 (fixed) and
+                          //   1.401 (frankenstein), but with reports those over-predict; fitted with reports: 0.569 and 0.760
+                          //   (ml/scripts/kl_mf_fit.mjs, ml/KL_RESULTS.md).
   // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
   // air, so outdoor passers-by and crowded lounges outweighed roommates (the sim's most common infections).
   // A two-zone model (Nicas, Am. Ind. Hyg. Assoc. J. 57:542, 1996) treats the air within d of the source as a

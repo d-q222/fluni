@@ -247,7 +247,10 @@ sim's true seeds, the model's expected on-campus infections match the sim's 167.
 7,500-agent runs (5 seeds, `--holdout` = 10% validation agents) it is **1.128** (fixed, sim transmission scale 1.2)
 and **1.401** (frankenstein, 1.446): their ratio 1.24 tracks the sim's 1.21. With the 2% prior, 0.901 looked too high
 (mean P 0.40) only because the prior's ~150 phantom cases did the spreading; from the true 0.07% it is too low.
-Scores on held-out agents: [`ml/KL_RESULTS.md`](../ml/KL_RESULTS.md). On that run the top 50
+But `--calibrate` fits without reports, and run with reports those values over-predict ~4–5× (a report pins P = 1
+and reaches back, on top of the spread the seeds already explain). Fitted on the model as used, reports included,
+so mean P over train agents = their attack rate (`ml/scripts/kl_mf_fit.mjs`): **0.569** (fixed) and **0.760**
+(frankenstein). On frankenstein that beats the ML models on held-out agents; see [`ml/KL_RESULTS.md`](../ml/KL_RESULTS.md). On that run the top 50
 by P hold 35–43 truly infected people from day 7 on (random 50: 6–8), AUC 0.62–0.73, ~20 s in Node.
 `--set key=value` overrides any parameter (`--set legacyDose=true --scale 0.135` is the dose before the audit below).
 
