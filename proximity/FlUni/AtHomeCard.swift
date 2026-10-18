@@ -15,6 +15,7 @@ struct AtHomeCard: View {
         let r = store.record
         let phase = store.reporter.phase(r, now: now)
         VStack(alignment: .leading, spacing: 0) {
+            SceneFlip(name: "SceneSick")
             HStack(alignment: .firstTextBaseline, spacing: 9) {
                 Circle().fill(Theme.sun).overlay(Circle().strokeBorder(Theme.ink, lineWidth: 1.5))
                     .frame(width: 10, height: 10)

@@ -29,7 +29,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     banners
-                    TissueHeader(line: line, sick: sick, showLogo: Self.showLogo)
+                    TissueHeader(line: line, pose: sick ? "PoseSick" : level == .none ? "PoseFine" : "PoseAlert", showLogo: Self.showLogo)
                     if sick {
                         // Someone who reported being sick never sees "All clear" or a risk percentage.
                         AtHomeCard(model: model, store: store)
@@ -152,7 +152,8 @@ struct TodayView: View {
 /// tissue keeps quiet (the line would push the card off screen); VoiceOver still reads it.
 struct TissueHeader: View {
     let line: String
-    var sick = false
+    /// Lisa's companion pose (PoseFine, PoseAlert or PoseSick), a drawing that carries its own pose, so no tilt.
+    let pose: String
     var showLogo = false
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -165,10 +166,8 @@ struct TissueHeader: View {
             if !typeSize.isAccessibilitySize {
                 SpeechBubble(text: line).padding(.trailing, 3)
             }
-            Image(sick ? "FeelingSick" : "Tissue").resizable().scaledToFit()
-                .frame(width: sick ? 55 : 42, height: 42)
-                .rotationEffect(.degrees(sick ? 0 : 8))
-                .offset(y: 6)
+            Image(pose).resizable().scaledToFit()
+                .frame(maxWidth: pose == "PoseSick" ? 76 : 72, maxHeight: pose == "PoseAlert" ? 56 : pose == "PoseSick" ? 46 : 52)
                 .accessibilityHidden(true)
         }
         .frame(minHeight: 46)
@@ -206,6 +205,24 @@ struct SpeechBubble: View {
     }
 }
 
+/// Lisa's two-frame scene (760 x 594) at the top of a card: the frames swap like a flipbook, about a second a cycle.
+/// Reduce Motion holds frame 1. Decorative, so hidden from VoiceOver.
+struct SceneFlip: View {
+    let name: String   // SceneFine or SceneSick, + 1 / 2
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.periodic(from: Date(timeIntervalSinceReferenceDate: 0), by: 0.52)) { ctx in
+            let second = !reduceMotion && Int(ctx.date.timeIntervalSinceReferenceDate / 0.52) % 2 == 1
+            Image("\(name)\(second ? 2 : 1)").resizable().aspectRatio(760.0 / 594.0, contentMode: .fit)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.ink, lineWidth: 1.5))
+        .padding(.top, 2).padding(.bottom, 8)
+        .accessibilityHidden(true)
+    }
+}
+
 // MARK: The risk card
 
 /// The top card: the phone's live estimate as the headline with a tiny band indicator, and "I don't feel well".
@@ -221,7 +238,7 @@ struct RiskHero: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if level != .none { AlertStrip(level: level).padding(.bottom, 6) }
+            if level != .none { AlertStrip(level: level).padding(.bottom, 6) } else { SceneFlip(name: "SceneFine") }
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .firstTextBaseline, spacing: 14) { number; indicator }
                 VStack(alignment: .leading, spacing: 4) { number; indicator }
