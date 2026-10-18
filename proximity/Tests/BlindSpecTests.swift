@@ -4,6 +4,11 @@
 // plus a signatures-only API digest. The implementation was not read. Every expected value below comes
 // from the spec text cited in the comment above the test; behaviour the spec does not pin down is not
 // asserted. A failing test here is a finding, not something to tune away.
+//
+// Updated after origin/main changed (still blind): the phone's risk estimate is Rio's formula (README "Risk
+// estimate"), ContactGuard hardens against ID bursts, and README states Bluetooth accuracy as
+// +-(70 % of distance + 0.3 m), +-(40 % + 0.3 m) once calibrated. Expected risk numbers were computed
+// independently from model/infer.js `doseModel()` (node), never from the Swift implementation.
 
 @testable import FluniProx
 import CoreBluetooth
@@ -55,11 +60,11 @@ private struct Pipeline {
         for p in peers where p.active(elapsed) {
             guard let e = Fusion.fuse(p.readings(now), now: now) else { continue }
             inputs.append(ContactGuard.Input(
-                id: p.id(elapsed), risk: p.risk, pClose: Fusion.exposurePClose(e), tier: Fusion.tierWeight(e),
+                id: p.id(elapsed), risk: p.risk, pClose: Fusion.exposurePClose(e), distance: Fusion.isCoarseGPSOnly(e) ? nil : e.distance,
                 rssi: p.rssi, sources: e.sources, uwbAt: e.sources.contains(.uwb) ? now : nil))
         }
         let out = guardian.apply(now: now, inputs)
-        tracker.advance(simSeconds: dt, contacts: out.map { (pClose: $0.pClose, risk: $0.risk) }, tiers: out.map { $0.tier })
+        tracker.advance(simSeconds: dt, contacts: out.map { (pClose: $0.pClose, risk: $0.risk) }, doses: out.map { o in o.distance.map { DosePeer(id: o.id, distance: $0) } })
         let n = AlertNotifier.next(level: tracker.level, notified: notified)
         notified = n.notified
         if let x = n.notify { notifications.append(x) }
@@ -84,11 +89,20 @@ private func blePeer(_ id: String, _ risk: Risk, rssi: Double, active: @escaping
                    rssi: rssi, active: active)
 }
 
-/// The phone's own risk estimate as heatmap/app.js `phoneEstimate` (FlUni RiskEstimate: beta .015,
-/// xMax .3, prior .02).
-private func phoneEstimate(_ dose: Double) -> Double {
-    1 - 0.98 * (1 - min(1 - exp(-0.015 * max(0, dose)), 0.3))
+/// Spec (README "Risk estimate"): p = 0.02, then per rotating ID p <- p + (1-p) * s * (1 - e^(-0.352 * dose)).
+/// IDs are folded in the order given. Dose per second at d metres comes from infer.js (see `jsDosePerSecond`).
+private func expectedP(_ sources: [(dose: Double, s: Double)]) -> Double {
+    var p = 0.02
+    for x in sources { p += (1 - p) * x.s * (1 - exp(-0.352 * x.dose)) }
+    return p
 }
+
+/// infer.js `doseModel()({distance_m: d, duration_s: 900}) / 900`, computed with node (unit dose per second,
+/// default room 50 m2 x 2.7 m, 2 ach, January indoor humidity). Distances in metres.
+private let jsDose900: [Double: Double] = [
+    0.5: 0.16986495140215704, 3: 0.007827914365119995, 1: 0.04486495140215703,
+    10: 0.0036149514021570316, 0.3: 0.46616124769845335,
+]
 
 // MARK: - End-to-end glue scenarios
 
@@ -110,15 +124,100 @@ final class BlindPipelineTests: XCTestCase {
         XCTAssertEqual(p.notifications, [.nearby, .closeContact])
     }
 
-    // docs/p-sick-format.md (phone's own estimate matches model DEFAULTS: beta, distance weights <1 m = 1,
-    // 0.3 cap, 0.02 prior); heatmap/app.js phoneEstimate; README "Risk tiers" (RiskEstimate.band).
-    func testRiskPercentAfterCloseContactAtHalfMetreMatchesSharedFormula() {
+    // README "Risk estimate": a contagious (tested positive, s = 0.97) peer 0.5 m away by UWB for 15 min.
+    // Expected from infer.js: dose 0.169865, p = 0.075173 (Low: the new formula is far gentler at 0.5 m than the
+    // old beta model, which gave ~22 %).
+    func testRiskAfter15MinutesAtHalfMetreMatchesRioFormula() {
         var p = Pipeline()
-        p.run([uwbPeer("peerA", .contagious, meters: 0.5)], seconds: 15 * 60 + 10)
-        let pr = RiskEstimate.probability(dose: p.tracker.dose)
-        // At < 1 m the model's distance weight is 1, so the dose is the weighted minutes.
-        XCTAssertEqual(pr, phoneEstimate(p.tracker.minutes), accuracy: 0.01)
-        XCTAssertEqual(RiskEstimate.band(pr), RiskEstimate.band(0.2), "about 22 %: the Elevated tier")
+        p.run([uwbPeer("peerA", .contagious, meters: 0.5)], seconds: 900)
+        XCTAssertEqual(p.tracker.dose, jsDose900[0.5]!, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.probability, 0.0751728192911298, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.probability, expectedP([(jsDose900[0.5]!, 0.97)]), accuracy: 1e-6)
+        XCTAssertEqual(RiskEstimate.band(p.tracker.probability), RiskEstimate.band(0.05), "7.5 % is Low")
+        XCTAssertEqual(p.tracker.level, .closeContact, "the 15-weighted-minute alert is independent of the risk %")
+    }
+
+    // Same peer at 3 m by UWB for 15 min: not within 6 ft (no close contact) but inside 10 m, so it adds dose.
+    // infer.js: dose 0.0078279, p = 0.0226157.
+    func testRiskAfter15MinutesAtThreeMetres() {
+        var p = Pipeline()
+        p.run([uwbPeer("peerA", .contagious, meters: 3.0)], seconds: 900)
+        XCTAssertEqual(p.tracker.dose, jsDose900[3]!, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.probability, 0.0226157024771422, accuracy: 1e-6)
+        XCTAssertNotEqual(p.tracker.level, .closeContact)
+    }
+
+    // README "Risk estimate": symptoms (Risk.possible) use s = 0.6. infer.js: p = 0.0541275 at 0.5 m for 15 min.
+    func testRiskForSymptomsPeerUsesSixtyPercentEvidence() {
+        var p = Pipeline()
+        p.run([uwbPeer("peerS", .possible, meters: 0.5)], seconds: 900)
+        XCTAssertEqual(p.tracker.dose, jsDose900[0.5]!, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.probability, 0.05412751708729678, accuracy: 1e-6)
+    }
+
+    // README "Risk estimate": the dose of one source is not shared; "one person seen under two rotating IDs
+    // counts as two sources". 450 s under each of two IDs at 0.5 m: infer.js doses 0.0849325 each, p = 0.0751976.
+    func testRotatingIDMidContactCountsAsTwoSources() {
+        var p = Pipeline()
+        var peer = uwbPeer("x", .contagious, meters: 0.5)
+        peer.id = { $0 <= 450 ? "rotA" : "rotB" }
+        p.run([peer], seconds: 900)
+        let half = jsDose900[0.5]! / 2
+        XCTAssertEqual(p.tracker.dose, 2 * half, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.probability, 0.07519755933909407, accuracy: 1e-6)
+        XCTAssertEqual(p.tracker.sources.count, 2)
+    }
+
+    // README "Risk estimate": healthy peers add no dose; no contacts = the prior 0.02.
+    func testPriorWithNoContactsAndHealthyPeersAddNothing() {
+        let t = ExposureTracker()
+        XCTAssertEqual(t.probability, 0.02, accuracy: 1e-12)
+        XCTAssertEqual(t.dose, 0, accuracy: 1e-12)
+        var p = Pipeline()
+        p.run([uwbPeer("peerH", .none, meters: 0.3)], seconds: 600)
+        XCTAssertEqual(p.tracker.probability, 0.02, accuracy: 1e-12)
+        XCTAssertEqual(p.tracker.dose, 0, accuracy: 1e-12)
+    }
+
+    // README "Risk estimate": only d <= 10 m (inclusive) counts. 900 s at exactly 10.0 m adds the dose
+    // 0.003614951 (p = 0.0212088); at 10.01 m nothing is added.
+    func testDoseRangeBoundaryTenMetresInclusive() {
+        var inside = ExposureTracker(), outside = ExposureTracker()
+        for _ in 0..<900 {
+            inside.advance(simSeconds: 1, contacts: [(pClose: 0, risk: .contagious)],
+                           doses: [DosePeer(id: "a", distance: 10.0)])
+            outside.advance(simSeconds: 1, contacts: [(pClose: 0, risk: .contagious)],
+                            doses: [DosePeer(id: "a", distance: 10.01)])
+        }
+        XCTAssertEqual(inside.dose, jsDose900[10]!, accuracy: 1e-6)
+        XCTAssertEqual(inside.probability, 0.0212088339653266, accuracy: 1e-6)
+        XCTAssertEqual(outside.dose, 0, accuracy: 1e-12, "10.01 m is beyond Bluetooth range: no dose")
+        XCTAssertEqual(outside.probability, 0.02, accuracy: 1e-12)
+    }
+
+    // README "Risk estimate": distance is clamped below at 0.3 m inside the dose (max(d, 0.3)).
+    func testDoseDistanceFlooredAtThirtyCentimetres() {
+        var near = ExposureTracker(), floor = ExposureTracker()
+        for _ in 0..<900 {
+            near.advance(simSeconds: 1, contacts: [(pClose: 1, risk: .contagious)], doses: [DosePeer(id: "a", distance: 0.1)])
+            floor.advance(simSeconds: 1, contacts: [(pClose: 1, risk: .contagious)], doses: [DosePeer(id: "a", distance: 0.3)])
+        }
+        XCTAssertEqual(near.dose, jsDose900[0.3]!, accuracy: 1e-6)
+        XCTAssertEqual(floor.dose, jsDose900[0.3]!, accuracy: 1e-6)
+        XCTAssertEqual(floor.probability, 0.1638574429943885, accuracy: 1e-6)
+    }
+
+    // README "Risk estimate": "no estimate or coarse GPS alone adds nothing" to the dose.
+    func testNoDoseWithoutDistanceEstimate() {
+        var tr = ExposureTracker()
+        for _ in 0..<600 { tr.advance(simSeconds: 1, contacts: [(pClose: 1, risk: .contagious)], doses: [nil]) }
+        XCTAssertEqual(tr.dose, 0, accuracy: 1e-12)
+        XCTAssertEqual(tr.probability, 0.02, accuracy: 1e-12)
+        var p = Pipeline()
+        let gps = SimPeer(id: { _ in "g" }, risk: .contagious,
+                          readings: { now in [Reading(source: .gps, distance: 1, sigma: 15, at: now)] }, rssi: nil)
+        p.run([gps], seconds: 600)
+        XCTAssertEqual(p.tracker.dose, 0, accuracy: 1e-12, "coarse GPS alone adds nothing")
     }
 
     // README "Exposure": minutes += dt x P(<= 6 ft) x weight; 6 ft = 1.83 m. A peer at 3 m by UWB (+-10 cm)
@@ -241,8 +340,8 @@ final class BlindPipelineTests: XCTestCase {
         var closeAt: TimeInterval?
         var t: TimeInterval = 0
         while t <= 30 * 60 {
-            if let c = acc.observe("bg", at: t0 + t, pClose: 1, risk: .contagious, tier: 1) {
-                tr.advance(simSeconds: c.seconds, contacts: [(pClose: c.pClose, risk: c.risk)], tiers: [c.tier])
+            if let c = acc.observe("bg", at: t0 + t, pClose: 1, risk: .contagious, distance: 0.5) {
+                tr.advance(simSeconds: c.seconds, contacts: [(pClose: c.pClose, risk: c.risk)], doses: [c.distance.map { DosePeer(id: "bg", distance: $0) }])
             }
             if t == 12 * 60 { XCTAssertNotEqual(tr.level, .closeContact, "only 12 min credited at t = 12 min") }
             if closeAt == nil, tr.level == .closeContact { closeAt = t }
@@ -259,9 +358,9 @@ final class BlindPipelineTests: XCTestCase {
         var tr = ExposureTracker()
         var t: TimeInterval = 0
         while t <= 60 * 60 {
-            if let c = acc.observe("bg", at: t0 + t, pClose: 1, risk: .contagious, tier: 1) {
+            if let c = acc.observe("bg", at: t0 + t, pClose: 1, risk: .contagious, distance: 0.5) {
                 XCTAssertEqual(c.seconds, 0, accuracy: 1e-9, "a 10-min gap must credit nothing")
-                tr.advance(simSeconds: c.seconds, contacts: [(pClose: c.pClose, risk: c.risk)], tiers: [c.tier])
+                tr.advance(simSeconds: c.seconds, contacts: [(pClose: c.pClose, risk: c.risk)], doses: [c.distance.map { DosePeer(id: "bg", distance: $0) }])
             }
             t += 600
         }
@@ -274,9 +373,10 @@ final class BlindPipelineTests: XCTestCase {
 
 final class BlindFusionTests: XCTestCase {
 
-    // Product rule "Freshness": UWB 3 s, BLE 6 s, GPS 20 s.
+    // Product rule "Freshness": BLE 6 s, GPS 20 s. README "Fusion" (updated): a UWB reading keeps full weight for
+    // 3 s, then stays usable to 6 s, so its maximum age is now 6 s (was 3 s).
     func testFreshnessPerSource() {
-        XCTAssertEqual(Source.uwb.maxAge, 3)
+        XCTAssertEqual(Source.uwb.maxAge, 6)
         XCTAssertEqual(Source.ble.maxAge, 6)
         XCTAssertEqual(Source.gps.maxAge, 20)
     }
@@ -294,12 +394,19 @@ final class BlindFusionTests: XCTestCase {
     // README "Fusion" (UWB dominates when present; BLE/GPS take over when it drops out) + freshness rule.
     func testStaleReadingsAreDropped() {
         let now = t0
-        let r = [Reading(source: .uwb, distance: 0.5, sigma: 0.1, at: now - 4),   // stale (> 3 s)
-                 Reading(source: .ble, distance: 2.0, sigma: 1.0, at: now - 5),   // fresh (< 6 s)
-                 Reading(source: .gps, distance: 9.0, sigma: 3.0, at: now - 21)]  // stale (> 20 s)
+        // README "Fusion" (updated): UWB keeps full weight to 3 s, usable to 6 s with sigma growing 1 m/s.
+        // At 7 s it is gone, so only BLE (5 s old, fresh) remains; GPS at 21 s is stale (> 20 s).
+        let r = [Reading(source: .uwb, distance: 0.5, sigma: 0.1, at: now - 7),
+                 Reading(source: .ble, distance: 2.0, sigma: 1.0, at: now - 5),
+                 Reading(source: .gps, distance: 9.0, sigma: 3.0, at: now - 21)]
         let e = Fusion.fuse(r, now: now)
         XCTAssertEqual(e?.sources, [.ble])
         XCTAssertEqual(e?.distance ?? .nan, 2.0, accuracy: 1e-6)
+        // A UWB reading 4 s old is in its grace period: sigma 0.1 + 1 m/s x (4 - 3) s = 1.1, still fused.
+        let g = Fusion.fuse([Reading(source: .uwb, distance: 0.5, sigma: 0.1, at: now - 4), r[1]], now: now)
+        XCTAssertEqual(Set(g?.sources ?? []), [.uwb, .ble])
+        let w1 = 1 / (1.1 * 1.1), w2 = 1.0
+        XCTAssertEqual(g?.distance ?? .nan, (w1 * 0.5 + w2 * 2.0) / (w1 + w2), accuracy: 0.01)
         XCTAssertEqual(Fusion.fuse([Reading(source: .gps, distance: 5, sigma: 5, at: now - 19)], now: now)?.sources, [.gps])
         XCTAssertNil(Fusion.fuse([Reading(source: .uwb, distance: 0.5, sigma: 0.1, at: now - 10)], now: now))
         XCTAssertNil(Fusion.fuse([], now: now))
@@ -330,24 +437,32 @@ final class BlindFusionTests: XCTestCase {
         XCTAssertTrue(fused.map(Fusion.isCoarseGPSOnly) ?? false)
     }
 
-    // docs/p-sick-format.md: the model's distance weights are announced "so the phone's own estimate
-    // matches"; model/infer.js DEFAULTS.tierWeight = [1, 0.6, 0.1, 0.02] for <1 m, 1-2 m, 2-5 m, >= 5 m.
-    func testTierWeightMatchesModelDistanceWeights() {
-        XCTAssertEqual(Fusion.tierWeight(Estimate(distance: 0.5, sigma: 0.05, sources: [.uwb])), 1.0, accuracy: 0.05)
-        XCTAssertEqual(Fusion.tierWeight(Estimate(distance: 1.5, sigma: 0.05, sources: [.uwb])), 0.6, accuracy: 0.05)
-    }
+    // (The old distance-tier weight test is gone: the dose now uses the fused distance itself, see the
+    // risk tests below.)
 
-    // README channel table: Bluetooth RSSI distance quality is +-50-70 %.
-    func testBLEReadingUncertaintyIs50To70Percent() {
-        let cal = BLECalibrator()
+    // README channel table: Bluetooth RSSI is "+-(70 % of the distance + 0.3 m); +-(40 % + 0.3 m) once
+    // calibrated against UWB". Read as the reading's sigma = fraction x distance + 0.3 m.
+    func testBLEReadingUncertaintyIs70PercentPlus30cmThen40Percent() {
+        var cal = BLECalibrator()
+        XCTAssertFalse(cal.isCalibrated)
         for rssi in stride(from: -80.0, through: -45.0, by: 5) {
             let r = cal.reading(rssi: rssi, at: t0)
             XCTAssertEqual(r.source, .ble)
             XCTAssertEqual(r.at, t0)
-            XCTAssertGreaterThanOrEqual(r.sigma / r.distance, 0.45, "rssi \(rssi)")
-            XCTAssertLessThanOrEqual(r.sigma / r.distance, 0.75, "rssi \(rssi)")
+            XCTAssertEqual(r.sigma, 0.7 * r.distance + 0.3, accuracy: 0.02, "uncalibrated, rssi \(rssi)")
         }
         XCTAssertGreaterThan(cal.distance(rssi: -80), cal.distance(rssi: -60), "weaker signal = farther")
+        // Calibrate against UWB truth (a model phone at the default power).
+        let n = cal.pathLossExponent
+        for i in 0..<100 {
+            let d = 0.5 + Double(i % 10) * 0.25
+            cal.observe(rssi: BLECalibrator.defaultTxPower - 10 * n * log10(d), trueDistance: d)
+        }
+        XCTAssertTrue(cal.isCalibrated)
+        for rssi in stride(from: -80.0, through: -45.0, by: 5) {
+            let r = cal.reading(rssi: rssi, at: t0)
+            XCTAssertEqual(r.sigma, 0.4 * r.distance + 0.3, accuracy: 0.02, "calibrated, rssi \(rssi)")
+        }
     }
 
     // README "Fusion": while UWB is live it calibrates the Bluetooth model for that phone pair, so
@@ -456,14 +571,14 @@ final class BlindExposureTests: XCTestCase {
     func testSightingAccrualGapRule() {
         XCTAssertEqual(SightingAccrual.maxGap, 300)
         var a = SightingAccrual()
-        let first = a.observe("p", at: t0, pClose: 0.8, risk: .contagious, tier: 1)
+        let first = a.observe("p", at: t0, pClose: 0.8, risk: .contagious, distance: 0.5)
         XCTAssertEqual(first?.seconds ?? 0, 0, accuracy: 1e-9, "a first sighting has no gap to credit")
-        let c = a.observe("p", at: t0 + 300, pClose: 0.7, risk: .contagious, tier: 1)
+        let c = a.observe("p", at: t0 + 300, pClose: 0.7, risk: .contagious, distance: 0.5)
         XCTAssertEqual(c?.seconds ?? 0, 300, accuracy: 1e-9, "a 5-min gap is credited in full")
         XCTAssertEqual(c?.pClose ?? 0, 0.7, accuracy: 1e-9, "at its latest P(<= 6 ft)")
-        let d = a.observe("p", at: t0 + 601, pClose: 0.7, risk: .contagious, tier: 1)
+        let d = a.observe("p", at: t0 + 601, pClose: 0.7, risk: .contagious, distance: 0.5)
         XCTAssertEqual(d?.seconds ?? 0, 0, accuracy: 1e-9, "a 301-s gap credits nothing")
-        let e = a.observe("p", at: t0 + 661, pClose: 0.7, risk: .contagious, tier: 1)
+        let e = a.observe("p", at: t0 + 661, pClose: 0.7, risk: .contagious, distance: 0.5)
         XCTAssertEqual(e?.seconds ?? 0, 60, accuracy: 1e-9, "after a long gap, the next short gap counts again")
     }
 
@@ -472,8 +587,8 @@ final class BlindExposureTests: XCTestCase {
         var a = SightingAccrual()
         var total = 0.0
         for s in 0...600 {
-            total += a.observe("p", at: t0 + Double(s), pClose: 1, risk: .contagious, tier: 1)?.seconds ?? 0
-            if s == 300 { total += a.observe("p", at: t0 + 300.5, pClose: 1, risk: .contagious, tier: 1)?.seconds ?? 0 }
+            total += a.observe("p", at: t0 + Double(s), pClose: 1, risk: .contagious, distance: 0.5)?.seconds ?? 0
+            if s == 300 { total += a.observe("p", at: t0 + 300.5, pClose: 1, risk: .contagious, distance: 0.5)?.seconds ?? 0 }
         }
         XCTAssertLessThanOrEqual(total, 600 + 1e-6, "more seconds credited than elapsed")
         XCTAssertGreaterThanOrEqual(total, 600 - SightingAccrual.minStep - 1e-6)
@@ -482,19 +597,19 @@ final class BlindExposureTests: XCTestCase {
     // README "How it works" (ID rotates every 15 min) + "Background": rotation must not break the gap.
     func testAccrualSurvivesIDRotation() {
         var a = SightingAccrual()
-        _ = a.observe("A1", at: t0, pClose: 1, risk: .contagious, tier: 1)
-        _ = a.observe("A1", at: t0 + 180, pClose: 1, risk: .contagious, tier: 1)
+        _ = a.observe("A1", at: t0, pClose: 1, risk: .contagious, distance: 0.5)
+        _ = a.observe("A1", at: t0 + 180, pClose: 1, risk: .contagious, distance: 0.5)
         a.rename(from: "A1", to: "A2")
-        let c = a.observe("A2", at: t0 + 360, pClose: 1, risk: .contagious, tier: 1)
+        let c = a.observe("A2", at: t0 + 360, pClose: 1, risk: .contagious, distance: 0.5)
         XCTAssertEqual(c?.seconds ?? 0, 180, accuracy: 1e-9)
     }
 
     // README "Background": a credited gap goes into exposure at its P; the feed must credit the whole gap.
     func testAccrualFeedCreditsWholeGap() {
-        let credits = [AccrualCredit(id: "p", seconds: 120, pClose: 1, risk: .contagious, tier: 1)]
+        let credits = [AccrualCredit(id: "p", seconds: 120, pClose: 1, risk: .contagious, distance: 0.5)]
         let fed = AccrualFeed.contacts(credits, wallSeconds: 60)
         var tr = ExposureTracker()
-        tr.advance(simSeconds: 60, contacts: fed.contacts, tiers: fed.tiers)
+        tr.advance(simSeconds: 60, contacts: fed.contacts, doses: fed.doses)
         XCTAssertEqual(tr.minutes, 2, accuracy: 0.01, "120 s at P = 1, contagious = 2 weighted minutes")
     }
 }
@@ -503,27 +618,58 @@ final class BlindExposureTests: XCTestCase {
 
 final class BlindRiskAgreementTests: XCTestCase {
 
-    // model/infer.js DEFAULTS (beta 0.015, xMax 0.3, prior 0.02); heatmap/app.js TIERS {elevated 0.1, high 0.4};
-    // docs/p-sick-format.md (prior 0.02, "the 0.3 contact cap").
+    // README "Risk estimate" (constants from infer.js DEFAULTS), heatmap/app.js TIERS {elevated 0.1, high 0.4}.
     func testConstantsMatchModelAndHeatMap() {
-        XCTAssertEqual(RiskEstimate.beta, 0.015)
-        XCTAssertEqual(RiskEstimate.xMax, 0.3)
         XCTAssertEqual(RiskEstimate.prior, 0.02)
+        XCTAssertEqual(RiskEstimate.posTest, 0.97)
+        XCTAssertEqual(RiskEstimate.selfReport, 0.6)
+        XCTAssertEqual(RiskEstimate.quantaPeak, 10)
+        XCTAssertEqual(RiskEstimate.breathingRate, 0.5)
+        XCTAssertEqual(RiskEstimate.doseRange, 10)
+        XCTAssertEqual(RiskEstimate.minDistance, 0.3)
+        XCTAssertEqual(RiskEstimate.stage, 0.352, accuracy: 1e-9, "the illness-average stage factor")
         XCTAssertEqual(RiskEstimate.elevatedFrom, 0.1)
         XCTAssertEqual(RiskEstimate.highFrom, 0.4)
         XCTAssertEqual(PSickFeed.prior, 0.02)
     }
 
-    // heatmap/app.js phoneEstimate = 1 - 0.98 * (1 - min(1 - e^(-0.015 dose), 0.3)).
-    func testProbabilityFormulaMatchesHeatMap() {
-        for dose in [0.0, 1, 7.5, 15, 30, 60, 1000] {
-            XCTAssertEqual(RiskEstimate.probability(dose: dose), phoneEstimate(dose), accuracy: 1e-9, "dose \(dose)")
+    // README "Risk estimate": unit dose values against infer.js doseModel (node), 15 min at each distance.
+    func testUnitDoseMatchesInferJS() {
+        for (d, dose) in jsDose900 {
+            XCTAssertEqual(RiskEstimate.unitDose(distance: d, seconds: 900), dose, accuracy: 1e-9, "d = \(d)")
         }
-        XCTAssertEqual(RiskEstimate.probability(dose: 0), 0.02, accuracy: 1e-12)
-        XCTAssertEqual(RiskEstimate.probability(dose: -5), 0.02, accuracy: 1e-12, "negative dose clamps to 0")
-        XCTAssertEqual(RiskEstimate.contactTerm(dose: 15), 1 - exp(-0.225), accuracy: 1e-9)
-        XCTAssertEqual(RiskEstimate.contactTerm(dose: 1000), 0.3, accuracy: 1e-12)
-        XCTAssertEqual(RiskEstimate.contactTerm(dose: -1), 0, accuracy: 1e-12)
+        XCTAssertEqual(RiskEstimate.unitDose(distance: 0.5, seconds: 1), 0.00018873883489128562, accuracy: 1e-12)
+    }
+
+    // README "Risk estimate": p <- p + (1-p) s (1 - e^(-0.352 dose)) per ID; prior with none; evidence mapping.
+    func testProbabilityFormula() {
+        XCTAssertEqual(RiskEstimate.probability([:]), 0.02, accuracy: 1e-12)
+        XCTAssertEqual(RiskEstimate.probability(["a": .init(dose: 0.5, s: 0.97)]),
+                       expectedP([(0.5, 0.97)]), accuracy: 1e-9)
+        XCTAssertEqual(RiskEstimate.probability(["a": .init(dose: 0.5, s: 0.6)]),
+                       expectedP([(0.5, 0.6)]), accuracy: 1e-9)
+        // Two sources fold one after the other (order does not matter for this formula).
+        XCTAssertEqual(RiskEstimate.probability(["a": .init(dose: 0.169865, s: 0.97), "b": .init(dose: 0.007828, s: 0.6)]),
+                       0.07669969037097955, accuracy: 1e-5)
+        XCTAssertEqual(RiskEstimate.probability(["a": .init(dose: 0, s: 0.97)]), 0.02, accuracy: 1e-12)
+        XCTAssertEqual(RiskEstimate.probability(["a": .init(dose: 1000, s: 0.97)]), 0.02 + 0.98 * 0.97, accuracy: 1e-9,
+                       "huge dose saturates at prior + (1 - prior) * s")
+        XCTAssertEqual(RiskEstimate.evidence(.contagious), 0.97)
+        XCTAssertEqual(RiskEstimate.evidence(.possible), 0.6)
+        XCTAssertEqual(RiskEstimate.evidence(.none), 0)
+    }
+
+    // Tier cut-offs at the dose level: a tested-positive source with dose 0.2494201 gives p = 0.0999, dose
+    // 0.2500727 gives p = 0.1001 (Low / Elevated); doses 1.4495162 and 1.4505120 give 0.3999 / 0.4001
+    // (Elevated / High). Doses solved by hand from the README formula.
+    func testBandBoundariesViaDose() {
+        func band(_ dose: Double) -> RiskEstimate.Band {
+            RiskEstimate.band(RiskEstimate.probability(["a": .init(dose: dose, s: 0.97)]))
+        }
+        XCTAssertEqual(band(0.2494201089356225), RiskEstimate.band(0.05))
+        XCTAssertEqual(band(0.2500727413967765), RiskEstimate.band(0.2))
+        XCTAssertEqual(band(1.4495161552194507), RiskEstimate.band(0.2))
+        XCTAssertEqual(band(1.4505119172664165), RiskEstimate.band(0.9))
     }
 
     // Product rule / heatmap/app.js riskTier: low < 10 %, elevated 10-40 %, high >= 40 %.
