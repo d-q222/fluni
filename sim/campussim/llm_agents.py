@@ -409,7 +409,8 @@ class LLMAgents:
     def _name_table(self):
         """First names unique across Claude agents and their friend groups (hash pick, then next free name)."""
         fg = np.asarray(self.pop.friend_group)
-        who = sorted(set(self.idx) | {int(j) for i in self.idx for j in np.flatnonzero(fg == fg[i])})
+        idx = getattr(self, "idx", [])
+        who = sorted(set(idx) | {int(j) for i in idx for j in np.flatnonzero(fg == fg[i])})
         used, out = set(), {}
         for i in who:
             k = _crc(self.pop.agent_id[i]) % len(NAMES)
