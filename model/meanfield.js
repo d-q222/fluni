@@ -408,8 +408,10 @@ export function meanFieldRisk(input, params = {}) {
       const lo = Math.max(0, n - maxBack);
       if (sEff < lo) { k0 += lo - sEff; sEff = lo; }
     } else { datedAt[i] = n; dEff[i] = sEff; dK0[i] = k0; }
-    if (kind === 'pos') // a positive outweighs an earlier negative: drop that negative's P_S = 1 from the dating on
-      for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[0] === 'sus' && c[1] === i)));
+    if (kind === 'pos') // a positive outweighs earlier evidence about the person: drop an earlier negative's P_S = 1, and
+      // a symptom report's posterior (dated 2.5 d back, so it would land after the positive's P_I = 1 and lower it),
+      // from the positive's dating on
+      for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[1] === i && (c[0] === 'sus' || c[0] === 'negsoft' || c[0] === 'infect'))));
     let wgt = 1;
     if (kind !== 'pos') { // Bayes: the posterior P(infected | report) from the model's current P_I
       const lr = kind === 'sym' ? P.lrSym : kind === 'test' ? P.lrTest : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));

@@ -81,5 +81,10 @@ const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
   const both = at(run([rep(100, 'A', 'test_result', 'positive'), rep(110, 'A', 'self_report', 'tested_positive')], contacts), 'B', 140);
   check('duplicate positive: same P for the contact (|diff| < 1e-9)', 1e-9, Math.abs(both - one));
 }
+{ // 5. a symptom report shortly before a positive doesn't lower the positive's P_I = 1 (the report is dated 2.5 d
+  //    back, the positive 3 d, so the report's posterior would otherwise land after it)
+  const m = run([rep(148, 'A', 'self_report', 'might_be_sick'), rep(150, 'A', 'test_result', 'positive')]);
+  check('report then positive: P_A ~ 1 after the positive', at(m, 'A', 152), 0.99);
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
