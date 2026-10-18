@@ -106,6 +106,11 @@ Claim a row before you start. Update the status as you go. Agents should name th
     and the compact timeline.
   - **When it lands:** the heat map and FlUni switch the default run together, and the model,
     building heat and app bundle are regenerated.
+  - **Checked locally (heat map, 2026-10-17):** that command on current main writes exactly
+    `influenza_none_n400_d3_s5_1513ab3f` in about 5 s: 78 infections, 40 infectious by day 3. The model
+    and precompute handle it in 1.3 s, and the expected count matches the truth by day 3
+    (`model/calibrate.py`). Publishing just needs that folder committed, with an `!runs/...` line in
+    `sim/.gitignore`.
   - **Possible blocker:** if `transmission_scale=4` is unrealistic for the sim, suggest the closest
     realistic busy config.
 

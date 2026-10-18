@@ -63,6 +63,10 @@ and `WORKSTREAMS.md`.
   - `node heatmap/tools/precompute.mjs <run>` → `building_heat.csv` and `totals.json.gz`;
   - `node heatmap/tools/build_app_bundle.mjs` → the FlUni bundle;
   - switch `DEFAULT_RUN` in `app.js` (after the product owner agrees) and tell fluni-11.
+  - The same command already reproduces that exact id locally in 5 s (78 infections, 40 infectious
+    by day 3). Use a scratch venv from `sim/requirements.txt`; the sim has no `.venv` here. It is
+    copied to `sim/runs/` (gitignored) with `model/out/<run>/p_sick.csv`. The whole pipeline takes
+    1.3 s and the presenter loads it.
 
 ## In flight at handoff (background agents)
 
@@ -83,7 +87,11 @@ and `WORKSTREAMS.md`.
    - Against Rio's formula it gives about 0.17× λ overall and 0.03× for a night asleep as a roommate.
    - Its recommendation: use it for the heat map and sum `states.I`.
    - The product owner decides. Our Rio port with review fixes already gives roommates 17–26%.
-3. **A complete user map for FlUni.**
+3. **A complete user map for FlUni (done: 6de233f, ddc13ae, eabc499, 2aff552; FlUni synced 81c8f50).**
+   - The product owner's final ruling: soft Leaflet bounds (campus pad 0.1), min zoom = the first
+     view, no hard clamp.
+   - Warm heat fills with a halo of at least 9 px, a muted base, a one-line legend with details
+     behind (i), and a fade outside campus.
    - Bounded to Stanford, with faint outside context.
    - Every building in neutral paper, plus footpaths, green spaces and labels.
    - Bundle under 3 MB. The agent messages fluni-11 to re-sync when done.
@@ -95,11 +103,23 @@ and `WORKSTREAMS.md`.
    - The lag agent's uncommitted edits are `tools/bench.mjs` and `tools/precompute.mjs`. Neither is
      mine to commit; let the agents commit their own paths.
 
+## Model results (for Rio: WORKSTREAMS Requests, 905aca5)
+
+- `model/COMPARISON.md` (`node model/compare.mjs`): Rio's script = our port on λ (0.0459 for a
+  15-min 1 m chat); `model/alt` is about 6× lower.
+- `model/TESTS.md` (`node model/test.mjs`, 13/13): each of the 9 spec inputs moves P the right way,
+  and the update matches Baker's product form.
+- `model/calibrate.py`: Σ P against the sim's true infections.
+  - Busy run: the model lags while the seeds are silent, then reaches 76 vs 77 by day 3. AUC ~0.63.
+  - Quiet n500 run: 6 false `report_other`s inflate the expected count to 28 vs 0–1 truly infected.
+- The web phone matches FlUni's golden vectors exactly (60/60, Δp = 0).
+
 ## Open questions for the product owner
 
 - "Vary the agents": different runs, different-looking people, or more varied sim behaviour?
 - Which flu model, Rio's (current) or the alternative, after the comparison?
 - Whether to switch the default run once Aiden publishes a busier one.
+- Whether to down-weight uncorroborated `report_other`s (they drive the false heat on quiet runs).
 - **Colour scale is relative to each run.** The user map's top colour is the 90th percentile of each
   step's busiest building, and the presenter heat scales per spread. A quiet run therefore looks as
   red as a busy one. An absolute scale (fixed expected-sick count), or a blend, would make runs
@@ -112,8 +132,12 @@ and `WORKSTREAMS.md`.
     `git add -A`, never stash or rebase.
   - Push only your commit from a clean worktree: `git worktree add --detach <tmp> origin/main`,
     cherry-pick, push.
-  - Then move the shared branch pointer: `git reset --soft origin/main && git reset` when local main
-    is an ancestor of origin.
+  - Then sync the shared tree with the safe sync script (in the session scratchpad as `sync.sh`).
+    A bare `git reset --soft origin/main` leaves stale copies of every file that changed upstream, and
+    they then look like local reverts of other people's work. This happened once and was repaired.
+    The script updates each upstream-changed file whose working copy still equals the old commit,
+    and leaves real local edits alone. An ff-merge fails whenever an untracked file collides with an
+    incoming one.
 - **Servers.**
   - `python3 heatmap/tools/serve.py <port>` serves the repo root with no cache.
   - 8766 serves the shared tree.

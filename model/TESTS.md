@@ -114,3 +114,46 @@ figures above (24-35% peak) are lower than the 49% shown in alt's comparison aga
 - Humidity changes dose by well under 1% for a close indoor chat; it matters only for far-field
   dominated exposures (long, distant, indoors), and not at all outdoors.
 - A positive test sets P to 0.97 for 7 days regardless of what the contacts predicted.
+
+## Calibration against the sim's truth
+
+`python3 model/calibrate.py sim/runs/<run>` compares, at noon and 23:00 each day:
+- how many agents the sim says are infected (E or I);
+- how many the model expects (Σ P);
+- the mean P of each group;
+- AUC, where 0.5 means no better than chance.
+
+**Busy run** (`influenza_none_n400_d3_s5_1513ab3f`, the config requested from the sim; generated
+locally, not yet committed):
+
+| moment | infected | expected | P(infected) | P(susceptible) | AUC |
+|---|---|---|---|---|---|
+| Mon 12:00 | 25 | 9.1 | 0.022 | 0.023 | 0.51 |
+| Mon 23:00 | 29 | 13.3 | 0.028 | 0.034 | 0.52 |
+| Tue 12:00 | 36 | 16.7 | 0.048 | 0.041 | 0.52 |
+| Tue 23:00 | 48 | 28.4 | 0.096 | 0.068 | 0.60 |
+| Wed 12:00 | 66 | 44.7 | 0.169 | 0.100 | 0.64 |
+| Wed 23:00 | 77 | 76.4 | 0.278 | 0.170 | 0.63 |
+
+- **The totals start low and catch up.** The 25 seed cases are invisible to an app until someone
+  reports, so day 1 sits at the 2% prior. By Wednesday night the expected count matches the truth
+  (76 vs 77).
+- **Total heat is about right; telling people apart is modest.** AUC rises from 0.5 to about 0.63 as
+  reports arrive. Most infected people are incubating or presymptomatic and have no signal yet.
+- **At 17% prevalence, most people are above 10%.** That is the "Elevated" tier, and it is correct,
+  not inflation.
+
+**Quiet run** (`influenza_none_n500_d2_s42_aea9db72`):
+- 0–1 people are truly infected, but the model expects 28 by the end of day 2.
+- All 6 reports in it are false `report_other`s.
+- Each one sets its target to 0.35 and looks back over the target's contacts, adding about 3 expected
+  infections per false report.
+
+**10-agent default** (`influenza_none_n10_d14_s2_bc5cae7a`): 2–3 infected while the model still
+expects 0.2, because nobody has reported yet.
+
+**What follows:**
+- Total heat (Σ P) is trustworthy once reports flow.
+- It underestimates a silent outbreak and overestimates when reports are false.
+- Down-weighting `report_other` with no corroboration is the lever for the second problem, and is
+  Rio's and the product owner's call.
