@@ -62,23 +62,32 @@ final class LiveClockTests: XCTestCase {
         XCTAssertEqual(at(date(2026, 10, 14, 10, 0), r), sim("2026-01-07T10:00:00"))
     }
 
-    func testRunShorterThanAWeekUsesModRule() {
-        // Mon-Tue run (2 days). Weekdays it has: Mon, Tue. Others: daysSinceMonday mod 2.
+    func testRunShorterThanAWeekUsesLastDayForMissingWeekdays() {
+        // Mon-Tue run (2 days). Weekdays it has: Mon, Tue. Every other weekday: the last day (Tue).
         let r = run("2026-01-05T00:00:00", "2026-01-06T23:45:00")
         XCTAssertEqual(at(date(2026, 10, 12, 7, 0), r), sim("2026-01-05T07:00:00"))   // Mon
         XCTAssertEqual(at(date(2026, 10, 13, 7, 0), r), sim("2026-01-06T07:00:00"))   // Tue
-        XCTAssertEqual(at(date(2026, 10, 14, 7, 0), r), sim("2026-01-05T07:00:00"))   // Wed: 2 mod 2 = 0
-        XCTAssertEqual(at(date(2026, 10, 15, 7, 0), r), sim("2026-01-06T07:00:00"))   // Thu: 3 mod 2 = 1
-        XCTAssertEqual(at(date(2026, 10, 17, 16, 55), r), sim("2026-01-06T16:55:00"))  // Sat: 5 mod 2 = 1
-        XCTAssertEqual(at(date(2026, 10, 18, 16, 55), r), sim("2026-01-05T16:55:00"))  // Sun: 6 mod 2 = 0
+        for d in [14, 15, 16, 17, 18] {                                                // Wed ... Sun
+            XCTAssertEqual(at(date(2026, 10, d, 16, 55), r), sim("2026-01-06T16:55:00"), "Oct \(d)")
+        }
+    }
+
+    /// The demo run 73b8452c: Mon-Thu. A Saturday or Sunday demo shows Thursday, after reports start (day 3).
+    func testFourDayMonToThuRunOnTheWeekendShowsThursday() {
+        let r = run("2026-01-05T00:00:00", "2026-01-08T23:45:00")
+        XCTAssertEqual(at(date(2026, 10, 17, 14, 30), r), sim("2026-01-08T14:30:00"))  // Sat
+        XCTAssertEqual(at(date(2026, 10, 18, 10, 0), r), sim("2026-01-08T10:00:00"))   // Sun
+        XCTAssertEqual(at(date(2026, 10, 16, 10, 0), r), sim("2026-01-08T10:00:00"))   // Fri
+        XCTAssertEqual(at(date(2026, 10, 14, 10, 0), r), sim("2026-01-07T10:00:00"))   // Wed is in the run
     }
 
     func testThreeDayRunStartingWednesday() {
-        // Wed-Fri. Monday has no match: 0 mod 3 = run day 0 (Wed). Sunday: 6 mod 3 = 0. Saturday: 5 mod 3 = 2 (Fri).
+        // Wed-Fri. Mon, Tue, Sat and Sun have no match: the last day (Fri). Thursday is in the run.
         let r = run("2026-01-07T00:00:00", "2026-01-09T23:45:00")
-        XCTAssertEqual(at(date(2026, 10, 12, 9, 0), r), sim("2026-01-07T09:00:00"))
+        XCTAssertEqual(at(date(2026, 10, 12, 9, 0), r), sim("2026-01-09T09:00:00"))
         XCTAssertEqual(at(date(2026, 10, 17, 9, 0), r), sim("2026-01-09T09:00:00"))
-        XCTAssertEqual(at(date(2026, 10, 18, 9, 0), r), sim("2026-01-07T09:00:00"))
+        XCTAssertEqual(at(date(2026, 10, 18, 9, 0), r), sim("2026-01-09T09:00:00"))
+        XCTAssertEqual(at(date(2026, 10, 15, 9, 0), r), sim("2026-01-08T09:00:00"))
     }
 
     func testSingleDayRun() {
