@@ -468,6 +468,8 @@ final class ProximityModel: ObservableObject {
         #if DEBUG
         if demoTimer != nil { return }  // -demoPeer: the pretend peer is the only exposure source
         #endif
+        let signpost = Signposts.poi.beginInterval("tick")
+        defer { Signposts.poi.endInterval("tick", signpost) }
         let now = Date()
         if let p = pauseState {
             lastTick = now  // so the first tick after resume doesn't count the paused time
@@ -564,6 +566,8 @@ final class ProximityModel: ObservableObject {
         var last = Date()
         let t = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, !self.isPaused else { return }
+            let signpost = Signposts.poi.beginInterval("tick")
+            defer { Signposts.poi.endInterval("tick", signpost) }
             let now = Date()
             let wall = min(max(now.timeIntervalSince(last), 0), ExposureTracker.window / self.speed)
             last = now

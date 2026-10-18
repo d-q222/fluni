@@ -66,9 +66,11 @@ struct FlUniApp: App {
                     }
                     .tint(Theme.ink)
                     .onAppear {
+                        Signposts.poi.emitEvent("tabs on screen")
                         startOnce(); router.becomeReady()
                         #if DEBUG
                         model.startDemoPeerFromLaunchArguments()  // -demoPeer contagious@0.5: watch p climb live
+                        PerfTour.startIfAsked(router)
                         #endif
                     }
                     // At the tab level so the close-contact moment shows whichever tab is open.
@@ -84,7 +86,7 @@ struct FlUniApp: App {
                 }
             }
             // Lisa's opening animation over whatever the first screen is (design pass).
-            .overlay { if showIntro { LaunchIntro { showIntro = false } } }
+            .overlay { if showIntro { LaunchIntro { showIntro = false; Signposts.poi.emitEvent("intro done") } } }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
@@ -124,3 +126,33 @@ struct FlUniApp: App {
         model.start()
     }
 }
+
+#if DEBUG
+/// Debug only: `-perfTour YES` walks the app the way a person would (Map, Me, the report sheet open and closed,
+/// back to Today) on a loop, so Instruments can record tab switches and sheets on a phone with nobody tapping.
+/// Each step is a Points of Interest interval named after it. Pair it with `-skipOnboarding YES` (a test launch
+/// keeps nothing) so the owner's data is never read or written.
+@MainActor
+enum PerfTour {
+    static func startIfAsked(_ router: AppRouter) {
+        guard UserDefaults.standard.bool(forKey: "perfTour") else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))  // after the intro
+            let steps: [(String, () -> Void)] = [
+                ("tab map", { router.tab = .map }), ("tab me", { router.tab = .me }),
+                ("sheet open", { router.sheet = .reportSymptoms }), ("sheet close", { router.sheet = nil }),
+                ("tab today", { router.tab = .today }),
+            ]
+            for _ in 0 ..< 5 {
+                for (name, step) in steps {
+                    let s = Signposts.poi.beginInterval("tour", "\(name)")
+                    step()
+                    try? await Task.sleep(for: .seconds(1.5))
+                    Signposts.poi.endInterval("tour", s)
+                }
+            }
+            Signposts.poi.emitEvent("tour done")
+        }
+    }
+}
+#endif
