@@ -29,6 +29,7 @@ const BIG_RUN = 2000;
 const BIG_AGENT_DAYS = 8000;
 let bigRun = false; // set by loadModel: this run uses the precomputed files
 const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
+let viewCountText = ''; // the demo legend's "≈ N expected sick", kept across legend re-renders
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
 const ROOM_HOT = 1;         // walk-in warning when the others in the room add up to ≥ 1 expected sick person
@@ -1119,7 +1120,7 @@ async function main() {
     const b = map.getBounds();
     let sum = 0;
     for (const a of current.values()) if (b.contains([a.lat, a.lon])) sum += a.p;
-    el.textContent = `≈ ${fmtSick(sum)} expected sick`;
+    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected sick`;
   }
 
   // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
@@ -1251,6 +1252,7 @@ async function main() {
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
       : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>'
       : `<span id="view-count"></span> people in view <span>Colour: expected infected above the ${Math.round(MODEL.prior * 100)}% baseline, per 1,000 m²</span>`;
+    if ($('view-count')) $('view-count').textContent = viewCountText;
     const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'

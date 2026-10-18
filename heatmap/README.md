@@ -50,6 +50,11 @@ Demo scenes on the sim's mock run:
 ## Demo map vs. user map
 
 - **Demo map** (presenter): sees everything, including agent dots, room-level heat and true status.
+- **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
+  (colours, colour max, halo) are shared with `tools/precompute.mjs` and `usermap.js`, so the same run and moment show the same
+  numbers; the presenter adds a count badge on each hot building, building names and tap-for-popup. **Room-level heat (demo)**:
+  hover a building for people and expected sick, click it for Σ P, above-baseline, Low/Elevated/High counts and the top 3 people
+  driving it (click one to open the phone).
 - **User map** (the phone, and "What users see" on the main map): built only from totals in
   `aggregate.js`, i.e. per-building people and expected sick. It never receives agent data.
   - Building outlines (`sim/data/osm/buildings.geojson`) are filled by expected sick people
