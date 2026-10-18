@@ -571,7 +571,7 @@ final class ScoreIsNeverShownTests: XCTestCase {
         }
         // ownScore is this user's own: allowed, and the risk card shows it.
         let today = try XCTUnwrap(views.first { $0.0 == "TodayView.swift" }?.1)
-        XCTAssertTrue(today.contains("RiskCardView(p: model.ownScore,"))
+        XCTAssertTrue(today.contains("RiskHero(p: model.ownScore,"))
     }
 
     /// Log lines never carry another phone's score or days (Release or not: the logs go to the Mac).

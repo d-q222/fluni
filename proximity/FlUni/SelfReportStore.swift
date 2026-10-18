@@ -89,9 +89,9 @@ final class SelfReportStore: ObservableObject {
         }
     }
 
-    func checkIn(stillSymptomatic: Bool, hasFever: Bool, model: ProximityModel, now: Date = Date()) {
+    func checkIn(stillSymptomatic: Bool, hasFever: Bool, feeling: Feeling? = nil, model: ProximityModel, now: Date = Date()) {
         let before = record
-        let after = reporter.checkIn(record, stillSymptomatic: stillSymptomatic, hasFever: hasFever, now: now)
+        let after = reporter.checkIn(record, stillSymptomatic: stillSymptomatic, hasFever: hasFever, feeling: feeling, now: now)
         commit(after, to: model)
         if before.risk == .contagious && !stillSymptomatic {
             notice = "Glad you feel better. You stay marked contagious until your isolation period is over and you've had no fever for 24 hours."

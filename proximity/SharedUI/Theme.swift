@@ -70,6 +70,21 @@ extension Font {
     }
 }
 
+extension Font {
+    /// Fredoka (titles, numbers) at a size the text styles don't have, still scaled with Dynamic Type like `style`.
+    static func fredoka(_ size: CGFloat, relativeTo style: Font.TextStyle, weight: Font.Weight = .semibold) -> Font {
+        guard FluniType.available else { return .system(style, design: .rounded, weight: weight) }
+        return .custom(weight == .medium || weight == .regular ? "Fredoka-Medium" : "Fredoka-SemiBold", size: size, relativeTo: style)
+    }
+
+    /// Nunito (text) at a size the text styles don't have, still scaled with Dynamic Type like `style`.
+    static func nunito(_ size: CGFloat, relativeTo style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
+        guard FluniType.available else { return .system(style, design: .rounded, weight: weight) }
+        let name = weight == .bold ? "Nunito-Bold" : (weight == .semibold || weight == .medium) ? "Nunito-SemiBold" : "Nunito-Regular"
+        return .custom(name, size: size, relativeTo: style)
+    }
+}
+
 enum FluniType {
     static let available = UIFont(name: "Nunito-Regular", size: 12) != nil && UIFont(name: "Fredoka-SemiBold", size: 12) != nil
 
@@ -172,5 +187,27 @@ struct PrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity, minHeight: 48)
             .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
             .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
+/// The home screen's chunky button (mockup v4): a fill, a 2 pt ink outline and an ink "shadow" under it that the
+/// button sinks into when pressed. "I don't feel well" (sun) and the check-in answers (surface).
+struct ChunkyButtonStyle: ButtonStyle {
+    var fill: Color = Theme.sun
+    var radius: CGFloat = 14
+    var lift: CGFloat = 3
+    var minHeight: CGFloat = 50
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(Theme.ink)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .frame(maxWidth: .infinity, minHeight: minHeight)
+            .background(fill, in: RoundedRectangle(cornerRadius: radius))
+            .overlay(RoundedRectangle(cornerRadius: radius).strokeBorder(Theme.ink, lineWidth: 2))
+            .offset(y: configuration.isPressed ? lift : 0)
+            .background(RoundedRectangle(cornerRadius: radius).fill(Theme.ink).offset(y: lift))
+            .contentShape(Rectangle())
     }
 }

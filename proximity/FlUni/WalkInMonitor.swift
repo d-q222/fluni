@@ -77,6 +77,7 @@ final class WalkInMonitor: ObservableObject {
     /// A background region entry for building `id`: same rules, same cooldown.
     func enteredRegion(_ id: String) {
         guard let b = store.heat?.buildings[id] else { return }
+        PlaceLogStore.shared.entered(id)  // Today's timeline: the arrival, kept on this phone for 24 h
         let reading = store.heat?.reading(id, at: clock.simTime)
         let o = warning.evaluate(now: Date(), building: b, reading: reading, paused: paused)
         if o.notify { post(b); save() }

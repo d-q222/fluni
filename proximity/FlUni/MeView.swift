@@ -46,7 +46,10 @@ struct MeView: View {
                     if let n = store.notice {
                         Text(n).font(.fluni(.footnote)).foregroundStyle(Theme.ink).card(fill: Theme.surface2)
                     }
-                    if model.myRisk != .none { AtHomeCard(model: model, store: store) }
+                    if model.myRisk != .none {
+                        AtHomeCard(model: model, store: store)
+                        VadenLink()
+                    }
                     Text("How are you doing?").font(.fluni(.title3, weight: .bold)).foregroundStyle(Theme.ink)
                         .accessibilityAddTraits(.isHeader)
                     ForEach(Choice.allCases, id: \.self) { row($0) }

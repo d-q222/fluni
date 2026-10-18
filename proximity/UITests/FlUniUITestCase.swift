@@ -25,7 +25,7 @@ class FlUniUITestCase: XCTestCase {
         let turnOn = app.buttons["onboarding.turnOn"]
         XCTAssertTrue(turnOn.waitForExistence(timeout: 5), file: file, line: line)
         turnOn.tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10), "should land on Today", file: file, line: line)
+        XCTAssertTrue(el("today.home").waitForExistence(timeout: 10), "should land on Today", file: file, line: line)
     }
 
     func launchPastOnboarding() {
@@ -40,8 +40,9 @@ class FlUniUITestCase: XCTestCase {
         let t = tab(name)
         XCTAssertTrue(t.waitForExistence(timeout: 10), "\(name) tab", file: file, line: line)
         t.tap()
-        // The Map tab is the bundled web map with no navigation bar; Today and Me have their titles.
-        let screen = name == "Map" ? app.webViews.firstMatch : app.navigationBars[name]
+        // The Map tab is the bundled web map and Today's header is the tissue's line (id today.home), neither with a
+        // navigation bar; Me has its title.
+        let screen = name == "Map" ? app.webViews.firstMatch : name == "Today" ? el("today.home") : app.navigationBars[name]
         XCTAssertTrue(screen.waitForExistence(timeout: 10), "\(name) screen", file: file, line: line)
     }
 
