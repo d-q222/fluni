@@ -951,7 +951,7 @@ async function main() {
   };
   if (!outlines) console.warn('No building outlines (serve from the repo root): the user map will be empty.');
 
-  const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
+  const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(1.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
     // ~6 screen px zoomed out, in 3 m steps (few cached scales), at most 15 m: a tight cloud around each person.
@@ -977,7 +977,7 @@ async function main() {
     if (fitted || !map.getSize().x || !map.getSize().y) return; // wait for real width *and* height
     fitted = true;
     map.fitBounds(viewBounds(frames) || [sw, ne]);
-    map.setMinZoom(map.getZoom() - 1);
+    map.setMinZoom(map.getZoom() - 2);
     // ?zoom=19 (with ?agent=…) opens close up on that person, e.g. to watch airflow in their room.
     const zoom = Number(new URLSearchParams(location.search).get('zoom'));
     const me = selected && current.get(selected);
