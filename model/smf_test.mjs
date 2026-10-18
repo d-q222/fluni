@@ -203,5 +203,21 @@ test('11 roommates 16 h/day for 10 days: i never exceeds P(j ever infected); the
   assert.ok(q.gap > 0.05, `per-day product should overshoot, gap ${q.gap}`);
 });
 
+test('12 cavity: a roommate cannot echo the reporter\'s own infection back (P_ever stays at the 0.6 report)', () => {
+  // as in 11: j (0) "might be sick" on day 2, i (1) shares the room 16 h/day for 10 days, prior 0
+  const rows = [];
+  for (let d = 0; d < 10; d++) for (let s = step(d, 6); s < step(d, 22); s++) rows.push([s, 0, 1, 2 / 192]);
+  const everJ = (cavity) => {
+    let e = 0;
+    const probe = (ph, D, d, s) => { if (ph === 'end' && D === d) e = Math.max(e, 1 - s.S[0]); };
+    smfRisk(input(2, 10, rows, [{ day: 2, h: 8, agent: 0, event: 'self_report', value: 'might_be_sick' }]), { prior: 0, cavity, probe });
+    return e;
+  };
+  const withC = everJ(true), without = everJ(false);
+  console.log(`     max P_ever(reporter): cavity ${withC.toFixed(4)}, no cavity ${without.toFixed(4)}`);
+  near(withC, SMF_DEFAULTS.selfReport, 0.02, 'P_ever with cavity');
+  assert.ok(without > SMF_DEFAULTS.selfReport + 0.1, `no cavity should echo: ${without}`);
+});
+
 console.log(`\n${passed} passed, ${failures.length} failed`);
 if (failures.length) process.exit(1);

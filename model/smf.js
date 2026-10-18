@@ -20,6 +20,13 @@
 // one chance per infection of j, and S_i = S_i(0) * prod_j (1 - A_ji) keeps the paper's product across
 // different sources. j's infectiousness is stage(age) only; Erlang survival only splits P_I from P_R.
 // pairMode: false is the pure per-day SMF above, for comparison.
+//
+// Cavity (default in pair mode): mean-field lets i's infection, caught from j, flow back to j's remaining S
+// and then to i again (echo), so a roommate of a "might be sick" (0.6) person lifted that person to 0.91.
+// As in dynamic message passing (Lokhov, Mezard & Zdeborova, PRE 91, 012811 (2015); the Baker SI calls
+// SMF its small-lambda limit), the mass j passes to i is inf_j[tau] - rec(j <- i)[tau], where rec is the
+// part of j's infection on day tau that came through this pair. Rows are applied one pair at a time, so
+// each drop in S has exactly one source. Clamps and community infections are attributed to no one.
 
 import { DEFAULTS, stageFactor } from './infer.js';
 
@@ -41,6 +48,8 @@ export const SMF_DEFAULTS = {
   windowDays: 10,               // tMF: each day's run starts this many days back, from the prior
   minDelta: 0.005,              // change points are written when P_I moved at least this much
   pairMode: true,               // one chance per infection of the source per pair (see above); false = paper
+  cavity: true,                 // pair mode: j's message to i leaves out what j caught from i (DMP cavity)
+  doseScale: 1,                 // multiplies every row's unit dose (calibration against the sim; see smf_calibrate)
   probe: null,                  // tests only: probe(phase 'start'|'end', D, d, {S, R, I, pend, G, inf, T, base})
 };
 
@@ -140,6 +149,9 @@ export function smfRisk(input, params = {}) {
   // pair mode: infection days tau = base .. base + T - 1 with base = w - (G - 1) (the prior's oldest age)
   const T = pair ? P.windowDays + G + 1 : 0;
   const pE = new Float64Array(maxSlots * T), pQ = new Float64Array(maxSlots * T); // E_tau, 1 - exp(-E_tau)
+  // cavity: rLo[tau] = lo's infection on day tau attributed to hi, rHi the other way round
+  const cav = pair && P.cavity;
+  const rLo = new Float64Array(cav ? maxSlots * T : 0), rHi = new Float64Array(cav ? maxSlots * T : 0);
   const pRun = new Int32Array(maxSlots).fill(-1);  // run that last zeroed the slot (lazy reset)
 
   // ---- state ----
@@ -257,29 +269,50 @@ export function smfRisk(input, params = {}) {
         if (a === b) continue;
         const lo = a < b ? a : b, hi = a < b ? b : a, s = slot[r];
         let Alo, Ahi;
+        const o = s * T, x = dose[r] * P.doseScale;
         if (pair) {
           // window-long exposure per infection day tau; only ages with stage > 0 grow
-          const o = s * T, x = dose[r];
-          if (pRun[s] !== D) { pRun[s] = D; pE.fill(0, o, o + T); pQ.fill(0, o, o + T); sAlo[s] = sAhi[s] = 0; }
+          if (pRun[s] !== D) {
+            pRun[s] = D; pE.fill(0, o, o + T); pQ.fill(0, o, o + T); sAlo[s] = sAhi[s] = 0;
+            if (cav) { rLo.fill(0, o, o + T); rHi.fill(0, o, o + T); }
+          }
           for (let g = 0; g < GS && g <= dk; g++) {
             const k = o + dk - g, e = pE[k] + st[g] * x;
             pE[k] = e; pQ[k] = -Math.expm1(-e);
           }
           Alo = 0; Ahi = 0;
-          for (let k = 0, ol = lo * T, oh = hi * T; k <= dk; k++) {
+          if (cav) for (let k = 0, ol = lo * T, oh = hi * T; k <= dk; k++) {
+            // cavity: what lo passes to hi leaves out lo's infection that came from hi (and back)
+            const q = pQ[o + k];
+            if (q > 0) {
+              const ml = inf0[ol + k] - rLo[o + k], mh = inf0[oh + k] - rHi[o + k];
+              if (ml > 0) Alo += ml * q;
+              if (mh > 0) Ahi += mh * q;
+            }
+          }
+          else for (let k = 0, ol = lo * T, oh = hi * T; k <= dk; k++) {
             const q = pQ[o + k];
             if (q > 0) { Alo += inf0[ol + k] * q; Ahi += inf0[oh + k] * q; }
           }
         } else {
-          const Dn = sD[s] + dose[r];
+          const Dn = sD[s] + x;
           sD[s] = Dn; Alo = lambdaSum(lo * G, Dn); Ahi = lambdaSum(hi * G, Dn);
         }
-        // lo -> hi: S_hi *= (1 - A_new) / (1 - A_old); what leaves S is today's infection (pend).
+        // lo -> hi: S_hi *= (1 - A_new) / (1 - A_old); what leaves S is today's infection (pend), infected
+        // day tau = d + 1, and with the cavity it is attributed to this source (rHi: hi's mass from lo).
         // A only counts up (a cap on the source later in the window does not hand S back).
         let Ao = sAlo[s];
-        if (Alo > Ao && Ao < 1) { const s1 = (S[hi] * (1 - Alo)) / (1 - Ao); pend[hi] += S[hi] - s1; S[hi] = s1; sAlo[s] = Alo; }
+        if (Alo > Ao && Ao < 1) {
+          const s1 = (S[hi] * (1 - Alo)) / (1 - Ao), dS = S[hi] - s1;
+          pend[hi] += dS; S[hi] = s1; sAlo[s] = Alo;
+          if (cav) rHi[o + dk + 1] += dS;
+        }
         Ao = sAhi[s];
-        if (Ahi > Ao && Ao < 1) { const s1 = (S[lo] * (1 - Ahi)) / (1 - Ao); pend[lo] += S[lo] - s1; S[lo] = s1; sAhi[s] = Ahi; }
+        if (Ahi > Ao && Ao < 1) {
+          const s1 = (S[lo] * (1 - Ahi)) / (1 - Ao), dS = S[lo] - s1;
+          pend[lo] += dS; S[lo] = s1; sAhi[s] = Ahi;
+          if (cav) rLo[o + dk + 1] += dS;
+        }
         if (out) { note(lo, rowMs); note(hi, rowMs); }
       }
       for (; ai < acts.length; ai++) { act(acts[ai]); if (out) note(acts[ai].i, acts[ai].t); }
