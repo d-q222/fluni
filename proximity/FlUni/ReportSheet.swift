@@ -415,12 +415,12 @@ private struct StepHeader: View {
             Text(title).font(.fluni(.display)).foregroundStyle(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier("report.title")
             if let subtitle {
                 Text(subtitle).font(.fluni(.reading)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("report.title")
     }
 }
 

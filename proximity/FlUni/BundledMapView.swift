@@ -15,7 +15,7 @@ struct BundledMapView: View {
                 VStack(spacing: 10) {
                     Image(systemName: "map").font(.largeTitle).foregroundStyle(Theme.ink2).accessibilityHidden(true)
                     Text("The map isn't available").font(.fluni(.headline, weight: .semibold))
-                    Text("This copy of FlUni is missing its map. Reinstalling the app should fix it.")
+                    Text(brand: "This copy of FlUni is missing its map. Reinstalling the app should fix it.")
                         .font(.fluni(.subheadline)).foregroundStyle(Theme.ink2).multilineTextAlignment(.center)
                 }
                 .padding(24)

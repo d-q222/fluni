@@ -6,7 +6,7 @@ import SwiftUI
 ///   SIMCTL_CHILD_FLUNI_PREVIEW_STATE=nearby SIMCTL_CHILD_FLUNI_PREVIEW_SCREEN=today xcrun simctl launch <udid> com.fluni.app
 ///
 /// FLUNI_PREVIEW_STATE: allClear | nearby | closeContact | walkIn | paused | sick (= sickPossible) | sickPossible |
-///   sickPositive | onboarding
+///   sickPositive | onboarding | riskElevated (about 18%) | riskHigh (about 45%)
 /// FLUNI_PREVIEW_SCREEN: today (default) | you | campus | report (step 1) | symptoms (step 2) | positive | history |
 ///   settings | how | calc | onboarding1 | onboarding2 | onboarding3
 ///
@@ -15,7 +15,7 @@ import SwiftUI
 /// The local data is wiped at launch so every capture starts clean. The model's exposure is private to Core, so
 /// Today reads `PreviewHook.exposure` / `peerCount` instead when set. The radios never start.
 enum PreviewHook {
-    enum State: String { case allClear, nearby, closeContact, walkIn, paused, sick, sickPossible, sickPositive, onboarding }
+    enum State: String { case allClear, nearby, closeContact, walkIn, paused, sick, sickPossible, sickPositive, onboarding, riskElevated, riskHigh }
 
     private static let env = ProcessInfo.processInfo.environment
     static let state = env["FLUNI_PREVIEW_STATE"].flatMap(State.init(rawValue:))
@@ -61,6 +61,16 @@ enum PreviewHook {
         switch state {
         case .nearby: t.advance(simSeconds: 6 * 60, contacts: [(0.8, .possible)], doses: [DosePeer(id: "a", distance: 1.2)])
         case .closeContact: t.advance(simSeconds: 18 * 60, contacts: [(0.95, .contagious)], doses: [DosePeer(id: "b", distance: 0.8)])
+        case .riskElevated, .riskHigh:
+            // Earlier time near someone who tested positive, mostly just outside 6 ft: the dose (and so the risk)
+            // builds while close-contact minutes stay low. Stops at the target, then nobody is near now.
+            let target = state == .riskHigh ? 0.45 : 0.18
+            var n = 0
+            while t.probability < target && n < 5000 {
+                t.advance(simSeconds: 20, contacts: [(0.04, .contagious)], doses: [DosePeer(id: "c", distance: 1.6)])
+                n += 1
+            }
+            t.advance(simSeconds: 0, contacts: [])
         case nil, .onboarding: return nil
         default: break
         }
@@ -69,7 +79,7 @@ enum PreviewHook {
 
     static var peerCount: Int? {
         switch state {
-        case .allClear, .walkIn, .sick, .sickPossible, .sickPositive: return 3
+        case .allClear, .walkIn, .sick, .sickPossible, .sickPositive, .riskElevated, .riskHigh: return 3
         case .nearby: return 5
         case .closeContact: return 2
         default: return nil
@@ -94,6 +104,11 @@ enum PreviewHook {
         case .nearby:
             episode(now.addingTimeInterval(-140 * 60), minutes: 4, .possible)
             ongoing(minutes: 6, .possible)
+        case .riskElevated:
+            episode(now.addingTimeInterval(-140 * 60), minutes: 5, .contagious)
+        case .riskHigh:
+            episode(now.addingTimeInterval(-240 * 60), minutes: 7, .contagious)
+            episode(now.addingTimeInterval(-140 * 60), minutes: 6, .contagious)
         case .closeContact:
             episode(now.addingTimeInterval(-140 * 60), minutes: 4, .possible)
             episode(now.addingTimeInterval(-25 * 60), minutes: 18, .contagious)

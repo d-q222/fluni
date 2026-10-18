@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage(AppNotifications.detailsKey) private var lockScreenDetails = true
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
+    @State private var choosePause = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
@@ -39,7 +40,7 @@ struct SettingsView: View {
             Button("Delete my data", role: .destructive) { deleteEverything() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This clears your saved status, recent contacts, map address and setup. FlUni will start over as if it were just installed.")
+            Text(brand: "This clears your saved status, recent contacts, today's places, map address and setup. FlUni will start over as if it were just installed.")
         }
     }
 
@@ -55,18 +56,21 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.ink)
                 Button("Turn detection back on") { model.resume() }
             }
-            Menu {
-                Button("For 1 hour") { model.pause(.oneHour) }
-                Button("Until tomorrow") { model.pause(.untilTomorrow) }
-                Button("Until I turn it back on") { model.pause(.untilResumed) }
-            } label: {
+            // A button and a confirmation dialog rather than a Menu: same choices as You, and reliably reachable.
+            Button { choosePause = true } label: {
                 Label(model.isPaused ? "Change how long" : "Pause detection", systemImage: "clock")
             }
             .accessibilityIdentifier("settings.pause")
+            .confirmationDialog("Pause detection", isPresented: $choosePause, titleVisibility: .visible) {
+                Button("For 1 hour") { model.pause(.oneHour) }
+                Button("Until tomorrow") { model.pause(.untilTomorrow) }
+                Button("Until I turn it back on") { model.pause(.untilResumed) }
+                Button("Cancel", role: .cancel) {}
+            }
         } header: {
             Text("Detection").foregroundStyle(Theme.ink2)
         } footer: {
-            Text(model.isPaused
+            Text(brand: model.isPaused
                  ? "While paused, FlUni doesn't share your status, look for nearby phones or count close-contact time, so it can't warn you either."
                  : "Pausing stops FlUni's use of Bluetooth, precise distance sensing and location, and saves battery.").foregroundStyle(Theme.ink2)
         }
@@ -85,7 +89,7 @@ struct SettingsView: View {
             .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: 6) {
                 Label("Your precise location", systemImage: "location.slash").font(.fluni(.subheadline, weight: .semibold))
-                Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                Text(brand: AlwaysLocationCopy.promise, style: .footnote).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
             .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: 6) {
@@ -94,7 +98,7 @@ struct SettingsView: View {
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
             }
         } header: {
-            Text("What FlUni shares").foregroundStyle(Theme.ink2)
+            Text(brand: "What FlUni shares", style: .footnote).foregroundStyle(Theme.ink2)
         }
         .font(.fluni(.footnote))
         .foregroundStyle(Theme.ink)
@@ -114,7 +118,7 @@ struct SettingsView: View {
         } header: {
             Text("Notifications").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("FlUni sends a notification when someone nearby may be sick or you have a close contact. The title is always just \"FlUni\". "
+            Text(brand: "FlUni sends a notification when someone nearby may be sick or you have a close contact. The title is always just \"FlUni\". "
                  + "With details off, the message only says there is an update, so people looking at your lock screen learn nothing about your health.")
         }
         .listRowBackground(Theme.surface)
@@ -123,9 +127,11 @@ struct SettingsView: View {
     // MARK: When FlUni is closed
 
     private var closedSection: some View {
-        Section("When FlUni is closed") {
-            Text("Nearby alerts keep working in the background using Bluetooth; they're less frequent than with FlUni open.")
-            Text("If you swipe FlUni away, iOS stops nearby alerts until you open it again; building warnings still work.")
+        Section {
+            Text(brand: "Nearby alerts keep working in the background using Bluetooth; they're less frequent than with FlUni open.", style: .footnote)
+            Text(brand: "If you swipe FlUni away, iOS stops nearby alerts until you open it again; building warnings still work.", style: .footnote)
+        } header: {
+            Text(brand: "When FlUni is closed", style: .footnote).foregroundStyle(Theme.ink2)
         }
         .font(.fluni(.footnote))
         .foregroundStyle(Theme.ink)
@@ -172,7 +178,7 @@ struct SettingsView: View {
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("settings.delete")
         } footer: {
-            Text("Removes everything FlUni saved on this phone. Nothing is stored on a server.").foregroundStyle(Theme.ink2)
+            Text(brand: "Removes everything FlUni saved on this phone. Nothing is stored on a server.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
@@ -186,6 +192,7 @@ struct SettingsView: View {
     /// "Delete my data" (Settings and You): radios off, every store forgets, files and defaults erased.
     static func deleteEverything(model: ProximityModel) {
         UserDefaults.standard.set(false, forKey: "hasOnboarded")  // back to onboarding first, so the view updates
+        AppRouter.shared.tab = .today  // a fresh start opens on Today, like a new install
         model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
         BuildingWatcher.shared.sync(paused: true)
         WalkInMonitor.shared.forgetEverything()

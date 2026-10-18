@@ -116,6 +116,8 @@ struct TodayView: View {
             .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false; report = nil }
             .task { places.attach(model) }
             .onChange(of: router.reportRequest) { _, _ in report = .choose }
+            // A later live close contact opens again by itself.
+            .onChange(of: level) { _, new in if new < .closeContact && seenMoment == Self.liveID.timeIntervalSince1970 { seenMoment = 0 } }
         }
     }
 
@@ -132,10 +134,11 @@ struct TodayView: View {
 
     /// Open the newest close contact in place and bring it into view.
     private func openLatestCloseContact(_ proxy: ScrollViewProxy) {
-        guard let m = moments.last(where: { $0.kind == .closeContact }) else { return }
-        openMoment = m.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            withAnimation(reduceMotion ? nil : .default) { proxy.scrollTo("moment-\(m.id.timeIntervalSince1970)", anchor: .top) }
+        let m = moments.last(where: { $0.kind == .closeContact })
+        openMoment = m?.id ?? Self.liveID
+        let anchor = m.map { "moment-\($0.id.timeIntervalSince1970)" } ?? "moment-live"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            withAnimation(FlMotion.standard(reduceMotion)) { proxy.scrollTo(anchor, anchor: .top) }
         }
     }
 
@@ -178,16 +181,29 @@ struct TodayView: View {
         let moments = self.moments
         let current = places.log.current
         let entries = DayTimeline.entries(visits: places.log.visits, current: current, moments: moments, now: Date())
-        let ccOpen = level == .closeContact && moments.contains { $0.kind == .closeContact && (openMoment == $0.id || autoOpen($0)) }
+        // The live alert can come before the history has a close-contact episode for it (time at pClose under 0.5
+        // counts toward the 15 minutes but doesn't start an episode): then the moment is drawn at "now".
+        let liveCC = level == .closeContact && !moments.contains { $0.kind == .closeContact }
+        let liveOpen = openMoment == Self.liveID || (openMoment == nil && seenMoment != Self.liveID.timeIntervalSince1970)
+        let ccOpen = level == .closeContact && (liveCC ? liveOpen : moments.contains { $0.kind == .closeContact && (openMoment == $0.id || autoOpen($0)) })
         let nowTone: DayTimeline.Tone = feed.isPaused ? .quiet : level == .closeContact ? .closeContact : level == .nearby ? .headsUp
             : current.map { DayTimeline.tone($0, moments: moments) } ?? (feed.peerCount > 0 ? .phones : .quiet)
         return VStack(alignment: .leading, spacing: 0) {
             RailRow(label: "Now", time: TimelineFormat.time(Date()), node: .now,
-                    line: entries.isEmpty ? .none : .tone(nowTone), nodeY: 22) {
+                    line: entries.isEmpty && !liveCC ? .none : .tone(nowTone), nodeY: 22) {
                 NowBlock(model: model, place: current, onReport: { report = .choose }, onRisk: { showCalc = true },
                          hidesReport: ccOpen)
             }
             Color.clear.frame(height: 0).id("earlier")
+            if liveCC {
+                RailRow(time: TimelineFormat.time(Date()), node: .moment(.closeContact), line: entries.isEmpty ? .none : .tone(.closeContact)) {
+                    CloseContactMoment(moment: nil, model: model, isOpen: liveOpen,
+                                       toggle: { openMoment = liveOpen ? nil : Self.liveID },
+                                       gotIt: { seenMoment = Self.liveID.timeIntervalSince1970; openMoment = nil },
+                                       report: { report = .choose }, how: { showCalc = true })
+                }
+                .id("moment-live")
+            }
             ForEach(Array(entries.enumerated()), id: \.element.id) { i, e in
                 let below: RailLine = {
                     guard i + 1 < entries.count else { return .none }
@@ -223,6 +239,9 @@ struct TodayView: View {
         }
         .accessibilityElement(children: .contain)
     }
+
+    /// Stands for "the close contact going on now" when no episode has been written for it yet.
+    static let liveID = Date(timeIntervalSince1970: 1)
 
     /// The newest close contact opens by itself while it's live and not yet acknowledged.
     private func autoOpen(_ m: TimelineMoment) -> Bool {
@@ -279,6 +298,7 @@ private struct NowBlock: View {
                 }
                 WalkInBanner(model: model)
                 MetricsStrip(minutes: feed.minutes, model: model, onRisk: onRisk)
+                LiveRiskAdvice(model: model)
             }
             if !hidesReport || feed.isPaused { reportButton }
         }
@@ -460,6 +480,19 @@ private struct LiveRiskBlock: View {
     }
 }
 
+/// Under the numbers once the estimate is elevated or high: what that means, in the map's words. Live.
+private struct LiveRiskAdvice: View {
+    @ObservedObject var model: ProximityModel
+    var body: some View {
+        let p = model.shownRisk
+        if RiskEstimate.band(p) != .low {
+            Text(RiskEstimate.summary(p)).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.fireInk)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("risk.advice")
+        }
+    }
+}
+
 /// The close-contact moment's risk line, live: "Your risk estimate went from 2.0% to 8.0%. That is still low."
 private struct LiveRiskLine: View {
     @ObservedObject var model: ProximityModel
@@ -521,7 +554,8 @@ private struct HeadsUpRow: View {
 /// The close contact as a moment on the line (B-2): folded to one line once seen, or open in place with the
 /// reason, the four steps word for word, the risk in context, and "Got it" / "I don't feel well".
 private struct CloseContactMoment: View {
-    let moment: TimelineMoment
+    /// Nil: the live alert, before the history has its episode.
+    let moment: TimelineMoment?
     let model: ProximityModel
     let isOpen: Bool
     let toggle: () -> Void
@@ -529,7 +563,7 @@ private struct CloseContactMoment: View {
     let report: () -> Void
     let how: () -> Void
 
-    private var e: ExposureEpisode { moment.episode }
+    private var place: String? { moment?.placeName }
 
     var body: some View {
         if isOpen { open } else { folded }
@@ -540,7 +574,7 @@ private struct CloseContactMoment: View {
             VStack(alignment: .leading, spacing: Space.xxs) {
                 Text(Advice.title(.closeContact)).font(.fluni(.strong)).foregroundStyle(Theme.fireInk)
                     .multilineTextAlignment(.leading)
-                Text("About \(TimelineFormat.duration(e.durationMinutes))\(moment.placeName.map { " at \($0)" } ?? ""). Show the steps again.")
+                Text("About \(moment.map { TimelineFormat.duration($0.episode.durationMinutes) } ?? "15 min")\(place.map { " at \($0)" } ?? ""). Show the steps again.")
                     .font(.fluni(.note)).foregroundStyle(Theme.ink2).multilineTextAlignment(.leading)
             }
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -551,8 +585,9 @@ private struct CloseContactMoment: View {
     }
 
     private var reason: String {
+        guard let e = moment?.episode else { return Advice.body(.closeContact)[0] }
         let who = e.maxRisk == .contagious ? "a phone whose owner reported a positive test" : "a phone whose owner reported symptoms"
-        let place = moment.placeName.map { ", at \($0)" } ?? ""
+        let place = self.place.map { ", at \($0)" } ?? ""
         return "From \(TimelineFormat.clock(e.start)) to \(TimelineFormat.clock(e.end)) you were within 6 ft of \(who)\(place). About \(TimelineFormat.duration(e.durationMinutes))."
     }
 

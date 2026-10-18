@@ -44,7 +44,6 @@ struct StayHomeView: View {
                 Text("Day \(day) of \(IsolationPolicy.days)").font(Face.serif(46, .largeTitle)).monospacedDigit()
                     .foregroundStyle(Theme.ink)
                     .accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("athome.day")
                 Text("Home through \(last.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))")
                     .font(.fluni(.strong)).foregroundStyle(Theme.ink)
             } else {
@@ -59,6 +58,7 @@ struct StayHomeView: View {
             .padding(.top, Space.xxs)
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("athome.heading")
     }
 
     // MARK: The track

@@ -107,7 +107,7 @@ struct OnboardingView: View {
     private func perm(_ title: String, _ why: String) -> some View {
         VStack(alignment: .leading, spacing: Space.xxs) {
             Text(title).font(.fluni(.heading))
-            Text(why).font(.fluni(.note)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
+            Text(brand: why, style: .subheadline).font(.fluni(.note)).foregroundStyle(Theme.ink2).fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(Theme.ink)
         .frame(maxWidth: .infinity, alignment: .leading)

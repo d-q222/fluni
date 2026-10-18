@@ -14,9 +14,9 @@ struct AlwaysLocationCard: View {
         if watcher.status == .authorizedWhenInUse && !dismissed {
             VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("Get warned even when FlUni is closed", systemImage: "bell.badge").font(.fluni(.subheadline, weight: .semibold))
+                    Label { Text(brand: "Get warned even when FlUni is closed", style: .subheadline) } icon: { Image(systemName: "bell.badge") }.font(.fluni(.subheadline, weight: .semibold))
                         .accessibilityAddTraits(.isHeader)
-                    Text(AlwaysLocationCopy.promise).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
+                    Text(brand: AlwaysLocationCopy.promise, style: .footnote).font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
                     Text("On the next screen, choose \u{201C}Change to Always Allow\u{201D}.").font(.fluni(.footnote)).foregroundStyle(Theme.ink2)
                 }
                 .accessibilityElement(children: .combine)
@@ -58,7 +58,7 @@ struct BackgroundWarningsSection: View {
         } header: {
             Text("Building warnings").foregroundStyle(Theme.ink2)
         } footer: {
-            Text(watcher.canWatchInBackground
+            Text(brand: watcher.canWatchInBackground
                  ? AlwaysLocationCopy.promise
                  : "Warnings still work while FlUni is open. To get them when it's closed, open iPhone Settings, choose Location, and pick Always. " + AlwaysLocationCopy.promise)
                 .foregroundStyle(Theme.ink2)
