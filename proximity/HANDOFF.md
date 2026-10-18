@@ -1,109 +1,105 @@
 # FlUni (proximity/): handoff
 
-Updated 2026-10-18 ~02:00 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
+Updated 2026-10-18 ~03:45 PDT. This covers the app's state, what is in flight, open decisions and how we work. It is read
 together with README.md (how things work), DEMO.md (the demo) and RISKS.md (known risks, kept out of the demo).
 
-## State of main (origin/main 953dcd2 or later)
-- **Targets.** There is one Xcode project, generated with XcodeGen from `project.yml`, with two apps: **FlUni**
-  (`com.fluni.app`, the student app) and **FluniProx** (`com.fluni.proxtest`, the test harness). `Core/` is shared
-  and has no SwiftUI. Unit tests (`xcodebuild test -scheme FluniProx`): **576 pass**.
-- **Window structure.** `FlUniApp` → `AppRoot` view → a TabView with tags. The system tab bar is hidden
-  (`UITabBar.appearance().isHidden` + `.toolbar(.hidden, for: .tabBar)`) and **Lisa's TissueTabBar** is overlaid.
-  The tabs are Today / Map / Me, with ids `tab.today` / `tab.map` / `tab.me`.
-  - Don't put tab content in a hand-made ZStack: Today's UIKit nav stack stayed on top.
-  - Don't put App-level @State overlays on the TabView root: they never drew.
-- **Intro.** Lisa's swirl intro is `IntroController`. It shows in its own UIWindow above everything and is triggered by
-  UIKit `didBecomeActive` / `didEnterBackground` through `IntroGate`. It plays on every open and never invisibly in the
-  background. SwiftUI's scenePhase missed the switch to active, and an earlier poster/cover approach got stuck on screen.
-- **Tissue alert** (`TissueAlert.swift`, Lisa's art):
-  - It pops on Today for a new alert.
-  - Drag up to pull: the frames follow the finger, hard cuts only, no fades, and the text appears instantly at the end.
-  - Drag down to push it back (the frames reverse). "Got it" closes at once and is recorded as read.
-  - The wiggle is ±0.4° with a ~2.6 s period. The owner says it's fine.
-- **Scroll room.** Each tab's scroll view has a bottom content margin of 0.75 × (bar height + allowance), so footers
-  clear the tissue box.
-- **Risk.** Rio's per-peer dose formula, golden-matched to `model/infer.js`.
-  - `liveRisk` updates every tick; `RiskEstimate.liveText` shows one decimal below 10%.
-  - Each phone broadcasts its own score: the FLU2 beacon carries the status, a sqrt-byte score and days since onset.
-    The owner ruled that other phones use it but it is never shown.
-  - The status floor is 0.97 for positive and 0.6 for symptoms. Per-building room context comes from the phone's
-    own fix.
-- **Persistence.** `RiskState` survives a swipe-away or crash. It holds the tracker, the AlertGate and the read state,
-  saved on level changes, notifications, resign-active and every 30 s.
-  - No re-notification on a cold launch.
-  - Test launches (keys in `LaunchMode.testKeys`, which now includes `-demoPeer`) never touch saved data.
-- **Sick mode.** A user who reported symptoms or a positive test sees the stay-home card on Today (and Me). They never
-  see "All clear" or a risk %.
-- **Off screen.**
-  - Held BLE links with RSSI polling, with an honest σ.
-  - Notifications fire with the app closed.
-  - Visits monitoring is on (owner: keep).
-  - Always-location keep-alive with the blue indicator (owner: request Always); the card is on Today.
-- **Crash fixes.**
-  - MPC `_BrowserCancel` (Apple bug): browsers are never stopped or restarted.
-  - `UWBRanger` token SIGSEGV.
-- **Demo run.** `influenza_none_n1000_d14_s42_f12e71fa` → now **`influenza_none_n1000_d4_s42_73b8452c`** (4-day,
-  spread housing). The live-clock rule 3 maps weekends to the run's last day (Thursday).
-  - Map bundle: `tools/sync_map_bundle.sh` copies `heatmap/out/app-bundle` (the heat map team's code).
-  - Every map tap answers, and shared outlines (dining inside a dorm) are one target.
+## State of main (origin/main bcf5666 or later)
+- **Targets.** One XcodeGen project (`project.yml`) with two apps: **FlUni** (`com.fluni.app`, the student app) and
+  **FluniProx** (`com.fluni.proxtest`, the harness). `Core/` is shared and has no SwiftUI. Tests: **618 unit** and
+  **12/12 UI** pass.
+- **Window structure.** `FlUniApp` → `AppRoot` → a TabView with tags. The system tab bar is hidden and **Lisa's
+  TissueTabBar** is overlaid (Today / Map / Me, ids `tab.today` / `tab.map` / `tab.me`).
+  - Don't put tabs in a hand-made ZStack.
+  - Don't put App-level @State overlays on the TabView root.
+- **Intro.** Lisa's swirl, `IntroController`, in its own UIWindow, triggered by UIKit active/background via `IntroGate`.
+- **Today: risk-first home (mock v4, owner-approved).**
+  - Header: a speech bubble plus a small tissue companion, top right. **No logo.** Lisa's logo is in the asset catalog
+    behind `TodayView.showLogo = false`; the owner will revisit it.
+  - The card holds only the % (`model.ownScore`), a "● Low" band marker ("up from X" when it rose) and "I don't feel
+    well". On a heads-up or close contact, a compact strip sits inside the card.
+  - "Your day so far": a timeline built from the on-phone place log (`Core/PlaceLog.swift`, building names only, never
+    sent) and Recent contacts (`Core/DayTimeline.swift`). The time column starts at the page margin.
+  - **Sick mode** (symptoms or a positive): "You're staying home / Day N of 5", with **no subtext**, the Better / The
+    same / Worse check-in, the recovery track, the tips, and a Vaden tap-to-call line. Never a % or "All clear".
+- **Owner rulings implemented 2026-10-18:**
+  - A negative **PCR** dated on or after the positive clears it; with symptoms the user stays "possibly sick". A rapid
+    test never clears it.
+  - "Pause until tomorrow" ends at **6 AM**.
+  - **Vaden**: (650) 498-2336, Mon–Fri 8:15–5.
+  - **UWB is not required** for a close contact.
+  - **Sick users** in a busy building get "You're out at X while you're unwell. Head home and rest up when you can."
+    instead of the illness warning.
+  - **Close-contact clock = the model's episode rule.** Status-weighted minutes (×1 contagious, ×0.5 possibly sick;
+    strongest peer only) within 6 ft. Gaps under 2 h are bridged; after **2 h** away from possibly-sick people it
+    resets to exactly 0. The alert fires at 15. Rio's dose / live % keeps its own 24 h window (unchanged, validated
+    against `model/infer.js`).
+- **Bug-hunt fixes:**
+  - the Map is full-bleed at the top and stops above the tissue box (legend (i) tappable);
+  - "Low, but follow the … steps" during alerts;
+  - "15 of 15 min" cap;
+  - the Pause dialog and the Delete alert with Cancel;
+  - Debug-only map address;
+  - one heads-up;
+  - an in-progress contact survives a kill.
+- **Unchanged from before:**
+  - Rio's per-peer dose formula, live risk, and FLU2 own-score sharing (never shown).
+  - `RiskState` persistence (no re-alert after a swipe-away).
+  - Lisa's tissue alert ("Got it" instant, drag-down reverses).
+  - Off-screen detection, Always location and Visits.
+  - The crash fixes.
+  - Demo run `influenza_none_n1000_d4_s42_73b8452c`.
 
-## In flight (subagents; the coordinator merges, pushes and installs)
-Updated 2026-10-18 ~02:00. Main is 3f30b91 (ZZExplore scratch test removed; 576 unit tests pass at 8bae016).
-
+## In flight (branches not on main yet)
 | Work | Where | State |
 |---|---|---|
-| Bug fixes from the phone bug hunt | `/Users/dqi26/fluni-bugs` (flu-bugs), screenshots to `/Users/dqi26/fluni-screens/bugfix/` | **Running.** 9 items (see below). Then merge, push and install on Daniel + Aiden. |
-| Tissue/scroll/info fixes | `/Users/dqi26/fluni-tissue` (flu-tissue) | Merged through e8e2392. Its final report (Map legend (i), large text, close-contact sheet, full UI run) is still to come. |
-| Screenshots for the heat map team | sim → `/Users/dqi26/fluni-screens/phoneref2/` | Running. Message the file list and risk % per shot to the heat map session ("Campus disease tracking app") when it lands. |
-| Home mockup v2 (risk-first) | `/Users/dqi26/fluni-screens/home-v2/` (mock2-sheet.png, compare2.png, NOTES.md, src/build2.py) | Re-rendering with Lisa's logo (`/Users/dqi26/fluni-screens/lisa-assets/Logo asset.png`, owner-provided) and the tissue companion moved up. **Then wait for the owner's verdict before building SwiftUI.** |
-
-The bug hunt (done) found no crashes, and the control run is clean: no stray contagious peer now that Fluniversity is deleted from Aiden's phone. The bugs now with the flu-bugs agent:
-1. The Map legend and (i) are hidden under the tissue box (a tap hits the Me tab).
-2. On a close contact, the risk card says "Low. No action needed".
-3. "49 of 15 min": cap the display.
-4. Settings → Pause doesn't open (port flu-design2's dialog fix).
-5. The Delete-my-data dialog has no Cancel and points at the wrong row.
-6. The stale "Map address" field in Settings.
-7. Duplicate heads-up warnings on Today.
-8. The newest Recent contacts entry was lost after a reinstall.
-9. Verify that sick mode shows the stay-home card (Daniel's phone showed "All clear" + 97% on a pre-fix build).
-
-## Design direction (owner)
-- **Old timeline redesign** (branch flu-design2, dc85913): ON HOLD, "too cluttered". Don't merge it wholesale. Parts
-  that can be cherry-picked: the sticker report, the stay-home track, the alert inbox, the place log, and the UI-test
-  fixes (which fix the 5 old UI test failures).
-- **New home plan.** The top box holds only the % (with a tiny band indicator) and "I don't feel well".
-  - A compact heads-up / close-contact strip sits above the %.
-  - The day history is below.
-  - Sick mode is smaller, with the day markers in front of the dotted line.
-  - Mockup v1 (`mock-*`) is kept for comparison.
-- **Lisa's work wins.** Use her type (Fredoka/Nunito, Fraunces only for "FlUni"), her tab bar, her intro and her
-  tissue alert.
-  - Merge her PRs fast (build check only) and send design feedback through GitHub issues.
-  - Open issues: **#21** (tab bar art: more room at the bottom/sides) and **#24** (logo: the owner shared it at
-    `/Users/dqi26/fluni-screens/lisa-assets/Logo asset.png`; Lisa was asked to add a trimmed copy to the repo).
+| Notification preferences + closed-app alerts | `flu-notify`, `/Users/dqi26/fluni-notify` | Wrapping up. Adds Settings toggles (Someone nearby may be sick / Close contact / Busy buildings, default on, gated at the single post point). Also checks whether a nearby alert notifies when backgrounded, locked or **swiped away** (iOS doesn't relaunch a force-quit app for Bluetooth; location relaunch may). Merge after reviewing its report. |
+| UWB reliability | `flu-uwb`, `/Users/dqi26/fluni-uwb` | Wrapping up. Audits why ranging stops (incl. `NIERROR_INVALID_CONFIGURATION_DESCRIPTION`), makes it self-heal, adds a Debug-only coverage metric. **No phone soak done yet.** iPhone↔iPhone UWB runs only in the foreground (iOS limit). |
+| Home v5 (text-light) mockup | `/Users/dqi26/fluni-screens/home-v5/` (`compare5.png`, `mock5-sheet.png`, `PRINCIPLES.md`, `AUDIT.md`, `NOTES.md`) | **Awaiting owner approval.** −54% words on the four home states. One-line timeline rows, the alert said once, close-contact steps in a one-tap sheet with Call Vaden, sick-mode action rows, ⓘ instead of the f(x) link. Self-scored 6.1 → 7.9; an independent re-grade is offered. |
 
 ## Open decisions for the owner
-1. Should a negative PCR clear a positive? (Today: never. The heat map mock lets it.)
-2. The Vaden phone number and hours for the stay-home card.
-3. Require UWB corroboration for a close contact (anti-spoofing)?
-4. "Pause until tomorrow": midnight or 7 am?
-5. Aiden's phone has pretend exposure from two `-demoPeer` runs before the fix. Reset it (Settings → Reset exposure)
-   or let it age out within 24 h.
-6. The home mockup v2 verdict: build it, or change it?
+1. **Home v5:** "build v5" or changes. Three sub-points:
+   - the privacy line shortened to "Your precise location stays on this phone." (it changes the exact promise; the
+     full sentence stays one tap away);
+   - the close-contact bubble "I'm right here." and the strip title "Close contact";
+   - short building names, which need a per-building short-name field.
+2. **Fluniversity on Rio's phone.** This third-party app earlier broadcast a contagious-looking beacon in our format
+   (false alerts). Delete it? The owner or Rio does that on the phone; agents never uninstall.
+3. **The model's starting prevalence** now comes from the run (Aiden, 878dc54), not a fixed 2%. Should FlUni's 2%
+   baseline follow the run?
+4. **Phone % vs presenter mock %.** The mock shows the campus model's P; the phone shows its own estimate (Rio's
+   formula). Align or keep?
+5. **Should the live % also reset after 2 h** like the close-contact minutes? It's 24 h today.
+6. Small ones:
+   - an explicit Cancel row in the Pause pop-up (iOS shows it as a popover, dismissed by tapping outside);
+   - clear old contact history on the demo phones for a clean timeline (exposure reset keeps the 14-day history).
+7. **Logo:** parked behind the flag (owner: "keep the option open").
+
+## Lisa (design)
+- **#25** (new home): her sign-off, four small companion poses (calm / watchful / worried / resting, ~42 pt), a
+  hand-drawn speech bubble, and optional hand-drawn icons, markers and check-in faces.
+- **#24** (logo): parked.
+- **#21** (tab bar art: more room at the bottom and sides): still needed.
+- The owner is telling her in person; the issues are the written record.
 
 ## Devices and how we work
-- **Phones:**
-  - Daniel's 17 Pro `00008150-001E213A0C80401C` (has a saved "tested positive" from testing).
-  - Aiden's 15 `00008120-001458620E63601E` (**at the 3-app free-profile limit**: FlUni, FluniProx, UITests-Runner).
-  - Rio's 14 `00008110-000E491A22A0201E` (locked or unavailable most of the night).
+- **Phones:** all three have bcf5666.
+  - **Daniel's** 17 Pro `00008150-001E213A0C80401C` (U2): healthy. Old contact history is on its timeline.
+  - **Aiden's** 15 `00008120-001458620E63601E`: healthy; **disconnected** at 03:30; at the 3-app free-profile limit.
+  - **Rio's** 14 "iPhone (84)" `00008110-000E491A22A0201E` (U1): locked at 03:40; **3 apps (FlUni, FluniProx,
+    Fluniversity), so no room for a UI test runner.**
   - Team `A5C3J42JT3`. Error 4016 means a phone is locked.
-- **Install:** build Debug with `FLUNI_TEAM=A5C3J42JT3 -allowProvisioningUpdates` into
-  `scratchpad/dd-device`, then `xcrun devicectl device install app` over the existing app. Never uninstall.
-- **Simulators:** never use iPhone Duo. Use "FlUni UITest Base" A153C27A…, "iPhone 18 Pro" A6203245… or
-  "FlUni Design" FB16F3FF….
+- **One automation per phone at a time.** Two UI-test runs or installs on one phone collide. The coordinator assigns
+  phones.
+- **Install:** Debug with `FLUNI_TEAM=A5C3J42JT3 -allowProvisioningUpdates`, then `xcrun devicectl device install app`
+  over the existing app. Never uninstall; never use `FLUNI_UITEST_RESET` or Delete my data on phones.
+- **Simulators:** never iPhone Duo. Use "iPhone 18 Pro", "FlUni UITest Base", "FlUni Design" or "FlUni Home".
 - **Working style:** the coordinator delegates implementation and UI/device testing to subagents (own worktrees under
-  `/Users/dqi26/fluni-<x>`). Merge (never rebase) into `proximity-work` in `/Users/dqi26/fluni-prox`, push
-  `HEAD:main`, install. Stage specific files only; never `git add -A`.
-- **Heat map team:** a separate Claude session ("Campus disease tracking app"). Message it for usermap/bundle changes;
-  it owns `heatmap/`.
+  `/Users/dqi26/fluni-<x>`). Merge (never rebase) into `proximity-work` in `/Users/dqi26/fluni-prox`, push `HEAD:main`,
+  install. Stage specific files only; never `git add -A`.
+- **Commit trailer (owner, 2026-10-18):** end with `Co-Authored-By: Claude <model> <noreply@anthropic.com>`; **no
+  Claude-Session line.** The rule is written in `CLAUDE.local.md` (gitignored, copied into each worktree). Use `-m` on
+  merge commits too.
+- **Git fetch:** origin carries large sim data (~1.3 GB). Never wrap `git fetch` in a short timeout; it kills the
+  download ("early EOF").
+- **Heat map team:** a separate Claude session ("Campus disease tracking app"). Its presenter phone mock matches the v4
+  home (e121b54) and will follow v5 once approved. The model session is "fluni-01".
