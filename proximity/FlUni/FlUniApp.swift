@@ -82,6 +82,8 @@ struct FlUniApp: App {
                         #if DEBUG
                         model.startDemoPeerFromLaunchArguments()  // -demoPeer contagious@0.5: watch p climb live
                         PerfTour.startIfAsked(router)
+                        // -keepAwake YES: the screen doesn't auto-lock while FlUni is open (Instruments needs it unlocked).
+                        if UserDefaults.standard.bool(forKey: "keepAwake") { UIApplication.shared.isIdleTimerDisabled = true }
                         #endif
                     }
                     // At the tab level so the close-contact moment shows whichever tab is open.
