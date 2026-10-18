@@ -39,7 +39,7 @@ URL options, which can be combined:
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
-- `?view=catch`: "Chance of catching flu here (1 h)". Darkness at a spot is proportional to the
+- `?view=catch`: "Catch risk (1 h)", the chance of catching flu here. Darkness at a spot is proportional to the
   chance you'd catch flu standing there for an hour (full at 1%). Each person leaves an exponentially
   fading circle of hazard (`riskfield.js`): its peak is λ's near-field dose at 1 m for 1 h, times the
   person's expected infectiousness from the mean-field model (`model/meanfield.js`: P(flu) at each

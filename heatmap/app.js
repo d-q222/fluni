@@ -1940,7 +1940,7 @@ async function main() {
     setPlaying(!playing);
   });
   // Chance of catching flu here (riskfield.js, from the mean-field model); added here so the page markup stays the design pass's.
-  if (model?.mf) $('view').append(new Option('Chance of catching flu here (1 h)', 'catch'));
+  if (model?.mf) $('view').append(new Option('Catch risk (1 h)', 'catch'));
   // Experimental airflow heat (aerosol.js), only with ?view=airflow. ("Air by room" was dropped by the product owner.)
   if (PARAMS.get('view') === 'airflow') $('view').append(new Option('Airflow heat (experimental)', 'airflow'));
 
