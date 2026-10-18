@@ -49,3 +49,18 @@ export const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x
 // the gradient behind the legend strip, matching buildingStyle's colours
 export const rampCss = () => `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map((q) => {
   const m = heatColor(RAMP_FROM + (1 - RAMP_FROM) * q).color.match(/\d+/g); return `rgba(${m[0]},${m[1]},${m[2]},${0.4 + 0.35 * q})`; }).join(', ')})`;
+
+// The map's base layers for the vector look (paper, pale outlines, faint roads, soft green and water): shared by usermap.js's
+// context and the presenter's phone mock. Keys are data/context.geojson's `k`.
+export const NEUTRAL_BUILDING = { stroke: true, color: INK, weight: 0.7, opacity: 0.17, fill: true, fillColor: '#faf4e8', fillOpacity: 1 };
+export const CONTEXT_STYLE = {
+  green: { stroke: false, fill: true, fillColor: '#c3cf9c', fillOpacity: 0.5 },
+  water: { stroke: false, fill: true, fillColor: '#adc9cc', fillOpacity: 0.7 },
+  road: { color: INK, weight: 1.2, opacity: 0.2, fill: false },
+  street: { color: INK, weight: 0.6, opacity: 0.11, fill: false },
+  rail: { color: INK, weight: 1.1, opacity: 0.2, dashArray: '5 4', fill: false },
+  town: { color: INK, weight: 0.6, opacity: 0.15, fill: false },
+  shopping: { color: INK, weight: 0.7, opacity: 0.2, fill: true, fillColor: INK, fillOpacity: 0.05 },
+  hospital: { color: INK, weight: 0.7, opacity: 0.2, fill: false },
+};
+export const CONTEXT_ORDER = ['green', 'water', 'street', 'road', 'rail', 'town', 'shopping', 'hospital']; // fills first, lines on top
