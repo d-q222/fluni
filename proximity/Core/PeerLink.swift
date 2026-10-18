@@ -12,6 +12,7 @@ struct Wire: Codable {
     var risk: Risk? = nil       // hello (informational: Bluetooth's risk is the one used)
     var ext: Bool? = nil        // hello, optional: this phone supports UWB extended distance. Older builds omit it
                                 // and ignore it (unknown JSON keys are skipped), so the format stays compatible.
+    var uwb: Bool? = nil        // hello, optional: this phone can range with UWB (for the UWB coverage metric only)
     var token: Data? = nil      // uwbToken: archived NIDiscoveryToken
     var lat: Double? = nil      // gps
     var lon: Double? = nil

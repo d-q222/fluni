@@ -84,6 +84,16 @@ final class ProximityModel: ObservableObject {
     private var linkIDs: [LinkPeer: String] = [:]
     /// When the link that carried this ID's UWB dropped, for the `link metric uwb_resume` line.
     private var uwbDropAt: [String: Date] = [:]
+    /// Each linked ID's hello said whether that phone has UWB (nil: older build / not linked). Coverage metric only.
+    private var uwbCapable: [String: Bool] = [:]
+    /// UWB health (Debug screen and `uwb metric` log lines only, never shown to students).
+    private var uwbCoverage = UWBCoverage()
+    private var lastCoverageTick: Date?
+    private var lastHealth = Date.distantPast
+    private var lastCoverageLog = Date()
+    /// When FlUni last came to the foreground, until the first UWB distance after it (resume metric).
+    private var foregroundAt: Date?
+    private var lastResume: TimeInterval?
     private var myFix: CLLocation?
     /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
     /// @Unobserved: WalkInMonitor subscribes to `$lastFix`; no view reads it, so a fix (~1 Hz) redraws nothing.
@@ -155,6 +165,7 @@ final class ProximityModel: ObservableObject {
         uwb.onToken = { [weak self] peer, data in self?.link.send(Wire(kind: .uwbToken, token: data), to: [peer]) }
         uwb.onDistance = { [weak self] peer, d in self?.uwbDistance(peer: peer, d: d) }
         uwb.onStopped = { [weak self] peer in self?.linkIDs[peer] = nil }
+        uwb.setActive(UIApplication.shared.applicationState != .background)
         status["UWB"] = UWBRanger.isSupported ? "waiting for peer" : "not supported on this device"
 
         gps.onState = { [weak self] in self?.setStatus("GPS", $0) }
@@ -178,12 +189,28 @@ final class ProximityModel: ObservableObject {
         // Back in the foreground: credit the gap now, so p shows what accrued in the background at once
         // rather than on the timer's next fire.
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
-                                               queue: .main) { [weak self] _ in self?.tick() }
+                                               queue: .main) { [weak self] _ in self?.cameForward(); self?.tick() }
+        // iOS suspends iPhone-to-iPhone UWB in the background; the ranger makes no sessions there and re-makes
+        // missing ones the moment FlUni is back (UWBRanger.setActive).
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil,
+                                               queue: .main) { [weak self] _ in self?.wentBack() }
         // flu-persist: iOS may end FlUni in the background and a swipe-away in the app switcher gives no
         // termination callback, so save on the way out (resign active, then background).
         for name in [UIApplication.willResignActiveNotification, UIApplication.didEnterBackgroundNotification] {
             NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.saveRiskState() }
         }
+    }
+
+    private func cameForward() {
+        uwb.setActive(true)
+        if !isPaused, enabled.contains(.uwb), UWBRanger.isSupported { foregroundAt = Date() }
+    }
+
+    private func wentBack() {
+        uwb.setActive(false)
+        foregroundAt = nil
+        lastCoverageTick = nil
+        logUWBHealth()
     }
 
     /// @Published fires on every set, even an equal one; skip those.
@@ -407,7 +434,8 @@ final class ProximityModel: ObservableObject {
     }
 
     private func hello() -> Wire {
-        Wire(kind: .hello, id: myID.hex, risk: myRisk, ext: UWBRanger.isSupported && UWBRanger.supportsExtendedDistance)
+        Wire(kind: .hello, id: myID.hex, risk: myRisk, ext: UWBRanger.isSupported && UWBRanger.supportsExtendedDistance,
+             uwb: UWBRanger.isSupported)
     }
 
     // MARK: Channel inputs
@@ -483,6 +511,8 @@ final class ProximityModel: ObservableObject {
             // the same ID always stands, so a link can neither raise nor hide anyone's status.
             guard let id = w.id else { return }
             linkIDs[peer] = id
+            if let c = w.uwb { uwbCapable[id] = c }
+            uwb.setHeard(boundID(peer) != nil, for: peer)  // UWB only with a phone Bluetooth hears (see UWBRanger)
             let ext = LinkGuard.useExtendedDistance(mine: UWBRanger.supportsExtendedDistance, theirs: w.ext)
             uwb.setExtended(ext, for: peer)
             log("link hello \(id.prefix(6)) from \(peer) heard=\(boundID(peer) != nil ? "yes" : "no") ext=\(ext ? "yes" : "no")")
@@ -508,6 +538,11 @@ final class ProximityModel: ObservableObject {
         let drop = uwbDropAt.removeValue(forKey: id).map { now.timeIntervalSince($0) }.flatMap { $0 < 120 ? $0 : nil }
         if drop != nil || (gap ?? 0) > 1 {
             log("link metric uwb_resume gap=\(gap.map(fmt) ?? "-") after_drop=\(drop.map(fmt) ?? "-") peer=\(id.prefix(6))")
+        }
+        if let f = foregroundAt {
+            foregroundAt = nil
+            let t = now.timeIntervalSince(f)
+            if t < 120 { lastResume = t; log("uwb metric resume_after_foreground=\(fmt(t))") }
         }
         var newlyCalibrated: Double?
         update(id) { p in
@@ -590,6 +625,10 @@ final class ProximityModel: ObservableObject {
 
         byID = byID.filter { now.timeIntervalSince($0.value.lastSeen) < 30 }
         heard = heard.filter { byID[$0.key] != nil }
+        uwbCapable = uwbCapable.filter { byID[$0.key] != nil || linkIDs.values.contains($0.key) }
+        // A linked peer becomes UWB-eligible once Bluetooth hears its hello ID (and stays so while heard).
+        for peer in linkIDs.keys { uwb.setHeard(boundID(peer) != nil, for: peer) }
+        trackUWBCoverage(now)
         if sharesLocationWithPeers, let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
             lastFixSent = now
             link.send(fixWire(f))
@@ -686,6 +725,43 @@ final class ProximityModel: ObservableObject {
     }
 
     private func fmt(_ x: Double) -> String { String(format: "%.2f", x) }
+
+    /// UWB coverage over foreground peer-seconds (UWBCoverage), shown as "UWB health" in Developer > Radios and
+    /// logged as `uwb metric` every minute and on each trip to the background.
+    private func trackUWBCoverage(_ now: Date) {
+        let counting = UWBRanger.isSupported && enabled.contains(.uwb) && UIApplication.shared.applicationState == .active
+        defer { lastCoverageTick = counting ? now : nil }
+        guard counting else { return }
+        if let last = lastCoverageTick {
+            var e = 0, c = 0
+            for p in byID.values {
+                let k = UWBCoverage.classify(bleAge: p.ble.map { now.timeIntervalSince($0.at) },
+                                             uwbAge: p.uwb.map { now.timeIntervalSince($0.at) }, capable: uwbCapable[p.id])
+                if k.eligible { e += 1 }
+                if k.covered { c += 1 }
+            }
+            uwbCoverage.add(dt: now.timeIntervalSince(last), eligiblePeers: e, coveredPeers: c)
+        }
+        if now.timeIntervalSince(lastHealth) >= 5 {
+            lastHealth = now
+            setStatus("UWB health", uwbHealth)
+        }
+        if now.timeIntervalSince(lastCoverageLog) >= 60 { logUWBHealth() }
+    }
+
+    private var uwbHealth: String {
+        let cov = uwbCoverage.percent.map { String(format: "%.0f%% of %.0f peer-s", $0, uwbCoverage.eligible) } ?? "no UWB peer yet"
+        return "coverage \(cov); resume \(lastResume.map { String(format: "%.1f s", $0) } ?? "-"); \(uwb.summary)"
+            + (ProcessInfo.processInfo.isLowPowerModeEnabled ? "; Low Power Mode" : "")
+    }
+
+    private func logUWBHealth() {
+        lastCoverageLog = Date()
+        let bad = uwb.failures.sorted { $0.key.rawValue < $1.key.rawValue }.map { "\($0.key.rawValue):\($0.value)" }.joined(separator: ",")
+        log("uwb metric coverage=\(uwbCoverage.percent.map { String(format: "%.1f", $0) } ?? "-") eligible_s=\(String(format: "%.0f", uwbCoverage.eligible))"
+            + " covered_s=\(String(format: "%.0f", uwbCoverage.covered)) sessions=\(uwb.sessionsCreated) timeouts=\(uwb.timeouts)"
+            + " suspended=\(uwb.suspensions) invalid=\(bad.isEmpty ? "-" : bad) lowPower=\(ProcessInfo.processInfo.isLowPowerModeEnabled ? "yes" : "no")")
+    }
 
     #if DEBUG
     private var demoTimer: Timer?

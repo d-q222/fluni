@@ -37,11 +37,11 @@ enum LinkGuard {
             return w.token == nil && w.lat == nil && w.lon == nil && w.acc == nil
         case .uwbToken:
             guard let t = w.token, (1 ... maxTokenBytes).contains(t.count) else { return false }
-            return w.id == nil && w.risk == nil && w.ext == nil && w.lat == nil && w.lon == nil && w.acc == nil
+            return w.id == nil && w.risk == nil && w.ext == nil && w.uwb == nil && w.lat == nil && w.lon == nil && w.acc == nil
         case .gps:
             guard let lat = w.lat, let lon = w.lon, let acc = w.acc, lat.isFinite, lon.isFinite, acc.isFinite,
                   abs(lat) <= 90, abs(lon) <= 180, (0 ... 100_000).contains(acc) else { return false }
-            return w.id == nil && w.risk == nil && w.ext == nil && w.token == nil
+            return w.id == nil && w.risk == nil && w.ext == nil && w.uwb == nil && w.token == nil
         }
     }
 
