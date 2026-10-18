@@ -172,8 +172,9 @@ export class AerosolField {
   }
 
   max() {
+    const { heat } = this;
     let m = 0;
-    for (const v of this.heat) if (v > m) m = v;
+    for (let i = 0; i < heat.length; i++) if (heat[i] > m) m = heat[i]; // indexed: for-of is ~10x slower
     return m;
   }
 }

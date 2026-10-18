@@ -83,6 +83,7 @@ export class DiffusionField {
     this.acc = new Float64Array(this.nx);
     this.maskBlur = null; // blurred mask, cached per sigma
     this.maskSigma = -1;
+    this.live = [];
   }
 
   // Zeroes only the cells deposited into: tracked ones, else their bounding box.
@@ -245,10 +246,12 @@ export class DiffusionField {
       this.maskSigma = sigmaM;
     }
     const outside = this.patches(this.cellsOut, this.boxOut, reach);
+    this.live = [...outside]; // where heat can be non-zero (for max())
     this.addOutdoor(this.depOut, heat, radii, outside);
     if (withPeople) this.addOutdoor(this.depOutP, people, radii, outside);
     if (mask) {
       const inside = this.patches(this.cellsIn, this.boxIn, reach);
+      this.live.push(...inside);
       this.addIndoor(this.depIn, heat, radii, inside);
       if (withPeople) this.addIndoor(this.depInP, people, radii, inside);
     }
@@ -257,9 +260,15 @@ export class DiffusionField {
     return this;
   }
 
+  // Heat is zero outside the last diffuse()'s patches, so only those are scanned.
   max() {
+    const { heat, nx } = this;
     let m = 0;
-    for (const v of this.heat) if (v > m) m = v;
+    for (const g of this.live) {
+      for (let y = g.y0; y <= g.y1; y++) {
+        for (let i = y * nx + g.x0, end = y * nx + g.x1; i <= end; i++) if (heat[i] > m) m = heat[i];
+      }
+    }
     return m;
   }
 }

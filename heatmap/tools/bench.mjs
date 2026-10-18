@@ -5,11 +5,12 @@
 // Usage (serve the repo root first, e.g. python3 -m http.server 8766):
 //   node heatmap/tools/bench.mjs [--base http://localhost:8766] [--run <sim run>] [--at 2115]
 //        [--secs 4] [--views demo,phone,zoom,public,airflow,embed] [--speeds 0,1,2,3] [--agent A0008]
-//        [--top 12] [--json out.json] [--shot dir] [--tiles] [--basemap streets|sim|drawn]
+//        [--top 12] [--json out.json] [--shot dir] [--tiles] [--basemap streets|sim|drawn] [--load]
 //
 // frame = time between animation frames (16.7 ms is a smooth 60 fps); work = JavaScript run inside
 // requestAnimationFrame callbacks that frame (the app's tick plus Leaflet's canvas redraws).
 // Map tiles are blocked by default so network noise doesn't skew runs (--tiles to allow them).
+// --load prints where load time goes (inclusive ms per function); the JS heap is measured after a GC.
 // --shot dir saves a screenshot of each view at --at, for before/after comparisons.
 
 import { spawn } from 'node:child_process';
@@ -39,6 +40,7 @@ const SCENES = {
   zoom: { q: `&agent=${AGENT}&zoom=18`, screen: DESKTOP }, // close up: the heat canvas is scaled way up
   public: { q: '&view=public', screen: DESKTOP },
   airflow: { q: '&view=airflow', screen: DESKTOP },
+  airborne: { q: '&view=airborne', screen: DESKTOP },
   embed: { q: '&embed=app', screen: PHONE },
 };
 
@@ -175,7 +177,6 @@ async function benchIn(cdp, name) {
   await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');
   await cdp.send('Profiler.enable');
-  await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: RAF_PROBE });
   if (!args.tiles) {
     await cdp.send('Network.enable');
@@ -183,13 +184,21 @@ async function benchIn(cdp, name) {
   }
   await cdp.send('Emulation.setDeviceMetricsOverride', scene.screen);
   const url = `${BASE}/heatmap/?at=${AT}${run}${scene.q}`;
+  // Load: profiled from navigation until window.fluni appears (1 ms samples keep a long load small).
+  await cdp.send('Profiler.setSamplingInterval', { interval: 1000 });
+  await cdp.send('Profiler.start');
   await cdp.send('Page.navigate', { url });
   let load = 0;
   for (let i = 0; i < 6000 && !load; i++) {
     await sleep(50);
     load = await cdp.evaluate('window.fluni ? performance.now() : 0').catch(() => 0);
   }
+  const loadProfile = (await cdp.send('Profiler.stop')).profile;
   if (!load) throw new Error(`${name}: page never became ready (${url})\n${cdp.errors.join('\n')}`);
+  const loadTop = [...breakdown(loadProfile).incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, ms }));
+  await cdp.send('HeapProfiler.collectGarbage');
+  const heapMB = (await cdp.send('Runtime.getHeapUsage')).usedSize / 1e6;
+  await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
   const agents = await cdp.evaluate('new Set(fluni.data.samples.map((a) => a.id)).size');
   await sleep(500); // let the first paint settle
   if (args.shot) {
@@ -247,7 +256,7 @@ async function benchIn(cdp, name) {
     }
   }
   const top = [...incl].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(([fn, ms]) => ({ fn, msPerFrame: ms / frameCount }));
-  return { name, load, agents, rows, busyPerFrame: busy / frameCount, top, gapAt, lag, errors: [...new Set(cdp.errors)] };
+  return { name, load, heapMB, loadTop, agents, rows, busyPerFrame: busy / frameCount, top, gapAt, lag, errors: [...new Set(cdp.errors)] };
 }
 
 // ---------- main ----------
@@ -257,7 +266,8 @@ for (const v of VIEWS) {
   {
     const r = await benchView(v);
     results.push(r);
-    console.log(`\n${v}: ready in ${f1(r.load)} ms, ${r.agents} agents, JS ${f1(r.busyPerFrame)} ms/frame`);
+    console.log(`\n${v}: ready in ${f1(r.load)} ms, JS heap ${f1(r.heapMB)} MB, ${r.agents} agents, JS ${f1(r.busyPerFrame)} ms/frame`);
+    if (args.load) for (const t of r.loadTop) console.log(`    load ${String(Math.round(t.ms)).padStart(6)} ms  ${t.fn}`);
     console.log('  speed  frames  frame p50  p95   work p50  p95   max');
     for (const x of r.rows) {
       console.log(`  ${String(x.speed).padEnd(5)}  ${String(x.frames).padStart(6)}  ${f1(x.frameP50).padStart(9)}  ${f1(x.frameP95).padStart(5)}  ${f1(x.workP50).padStart(8)}  ${f1(x.workP95).padStart(5)}  ${f1(x.workMax).padStart(5)}`);
