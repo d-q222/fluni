@@ -971,8 +971,8 @@ async function main() {
     const src = [];
     for (const st of states) {
       const shed = truth ? Number(st.infectious) || 0 : model.mf().shedAt(st.id, t);
-      const indoor = Boolean(st.buildingId) && !st.walking; // dilution only: walls come from where they stand
-      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, h0: (riskQ * shed) / (indoor ? 1 : MODEL.outdoorNearDilution) });
+      const indoor = Boolean(st.buildingId) && !st.walking;
+      if (shed > 0) src.push({ lat: st.lat, lon: st.lon, indoor, h0: (riskQ * shed) / (indoor ? 1 : MODEL.outdoorNearDilution) });
     }
     return riskField.compute(src, RISK.fadeM, RISK.vmax);
   };
@@ -1774,7 +1774,7 @@ async function main() {
       }
       if (view === 'catch') {
         heatLayer.setBounds(gridBounds(riskAt(now, current.values(), truthMode())));
-        paint(riskField, heatLayer.grid, RISK.vmax, { soft: true }); // soft: circles fade in with no rim
+        paint(riskField, heatLayer.grid, RISK.vmax);
         heatLayer.setGrid();
       } else if (view === 'airflow') {
         const st = [...current.values()];

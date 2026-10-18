@@ -66,7 +66,7 @@ export class RiskField {
       const cx = ((s.lon - bounds.west) * this.mPerDegLon) / cellM, cy = ((bounds.north - s.lat) * M_PER_DEG_LAT) / cellM;
       const ox = Math.floor(cx), oy = Math.floor(cy);
       if (ox < 0 || oy < 0 || ox >= nx || oy >= ny) continue;
-      if (this.region) this.spread(oy * nx + ox, cx, cy, s.h0, L, cut);
+      if (this.region) this.spread(oy * nx + ox, s.h0, L, cut, s.indoor);
       else this.disc(cx, cy, s.h0, L, cut);
     }
     let peak = 0;
@@ -91,13 +91,13 @@ export class RiskField {
     }
   }
 
-  // Walls: Dijkstra from the person's cell through cells of the same region as that cell (their building part,
-  // or open air), never across a link a wall cuts. Where the walk is about as short as the straight line (in
-  // sight, not around a wall) the hazard falls with the straight-line distance, so circles stay round and smooth;
-  // around a corner it falls with the walking distance.
-  spread(start, cx, cy, h0, L, cut) {
+  // Walls: Dijkstra from the person's cell through cells of the same region (their building part, or open air),
+  // never across a link a wall cuts; the hazard falls with that walking distance. A person whose cell isn't in
+  // their kind of space (a seat a little past the raster) lights only that cell.
+  spread(start, h0, L, cut, indoor) {
     const { nx, ny, heat, region, dist } = this, own = region[start];
     heat[start] += h0;
+    if ((own >= 0) !== Boolean(indoor)) return;
     const touched = [start];
     dist[start] = 0;
     let hd = this.heapD, hi = this.heapI, n = 0;
@@ -116,11 +116,8 @@ export class RiskField {
       for (;;) { let c = 2 * k + 1; if (c >= n) break; if (c + 1 < n && hd[c + 1] < hd[c]) c++; if (hd[c] >= ld) break; hd[k] = hd[c]; hi[k] = hi[c]; k = c; }
       hd[k] = ld; hi[k] = li;
       if (d > dist[i]) continue; // stale entry
+      if (i !== start) heat[i] += h0 * Math.exp(-d / L);
       const x = i % nx, y = (i - x) / nx;
-      if (i !== start) {
-        const e = Math.hypot(x + 0.5 - cx, y + 0.5 - cy); // grid walks overshoot a straight line by up to ~8%
-        heat[i] += h0 * Math.exp(-(d <= 1.1 * e + 1 ? e : d) / L);
-      }
       for (const [dx, dy, len, bit, rev] of NB) {
         const u = x + dx, v = y + dy;
         if (u < 0 || v < 0 || u >= nx || v >= ny) continue;
