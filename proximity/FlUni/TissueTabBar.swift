@@ -24,11 +24,8 @@ struct TissueTabBar: View {
     static var homeIndicator: CGFloat {
         UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
     }
-    /// How far the drawing sits above the bottom edge, so the tissues' lettering clears the home indicator
-    /// (with the drawing flush to the edge, "Today", "map" and "me" were partly hidden under it).
-    static var lift: CGFloat { homeIndicator * 0.75 }
     /// Space the bar takes above the home indicator. Screens add this as a bottom inset.
-    static var reserved: CGFloat { max(height - homeIndicator + lift, 0) }
+    static var reserved: CGFloat { max(height - homeIndicator, 0) }
 
     var body: some View {
         let w = Self.width, h = Self.height
@@ -55,10 +52,7 @@ struct TissueTabBar: View {
             }
         }
         .frame(width: w, height: h)
-        // Paper under the lifted box, so nothing scrolls into view beneath it.
-        .padding(.bottom, Self.lift)
-        .background(alignment: .bottom) { Theme.paper.frame(height: Self.lift + h * 0.2).allowsHitTesting(false) }
-        // Pin the drawing to the bottom of the screen, its base just under the home indicator.
+        // Pin the drawing to the bottom of the screen, under the home indicator.
         .frame(maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: .bottom)
     }
