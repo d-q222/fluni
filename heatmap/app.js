@@ -16,7 +16,7 @@ import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
 import { meanFieldRisk } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
-import { rampCss, fmt as fmtSick, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
+import { rampCss, NEUTRAL_BUILDING, CONTEXT_STYLE, CONTEXT_ORDER } from './userstyle.js';
 import { LabelLayer } from './maplabels.js';
 import { initPresenterUI, progress, dayTime } from './presenter-ui.js';
 import * as PV from './phone-views.js';
@@ -1045,13 +1045,49 @@ async function main() {
   // floor, so a crowded small building reads darker than the same count spread through a big or tall one, and a
   // building of healthy people at the baseline stays clear. truth: the number actually infected (sim), per 1,000 m².
   // People outdoors or walking count nowhere; empty buildings stay plain.
+  // Shaded, hovered and counted per drawn outline (a "shape"), not per sim place: a hand-placed indoor place on a real
+  // building takes that building's outline (footprints.js: Wilbur Dining is drawn as Cedro's, Stern Dining as Lucie
+  // Stern Hall's), and seats.js puts its people's dots inside it. Counting per place drew both features on top of each
+  // other (the later one's colour won) while hover found the first, so Cedro read dark red from Wilbur Dining's crowd
+  // and its card counted only Cedro's residents. Now an outline counts everyone seated in any of its places.
+  // Outlines sharing a polygon are one shape too: OSM maps Potter House as a 4-part multipolygon whose first part is
+  // also an unnamed building of its own, so hover found the unnamed one (empty) on top of Potter's residents.
   const shading = zoneHeat;
-  const footprint = footprintAreas(outlines); // buildingId -> footprint m² (the outline: one floor)
-  const floorsOf = (id) => runBuildings.floors.get(id) || 1;
+  const shapes = [], shapeOf = new Map(); // { id (the first place's id), ids: Set, names, parts, feature }; buildingId -> shape
+  {
+    const byPart = new Map(); // a polygon's coordinates (JSON) -> its shape
+    for (const f of outlines ? outlines.features : []) {
+      const id = 'bld_' + String(f.properties.id).split('/')[1];
+      const parts = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+      const keys = parts.map((p) => JSON.stringify(p));
+      const hits = [...new Set(keys.map((k) => byPart.get(k)).filter(Boolean))];
+      let s = hits[0];
+      if (!s) { s = { id, ids: new Set(), names: [], parts: [], keys: new Set(), props: f.properties }; shapes.push(s); }
+      for (const o of hits.slice(1)) { // this outline joins two shapes: fold the second into the first
+        for (const x of o.ids) { s.ids.add(x); shapeOf.set(x, s); }
+        for (const n of o.names) if (!s.names.includes(n)) s.names.push(n);
+        o.parts.forEach((p, k) => { const key = [...o.keys][k]; if (!s.keys.has(key)) { s.keys.add(key); s.parts.push(p); } byPart.set(key, s); });
+        shapes.splice(shapes.indexOf(o), 1);
+      }
+      parts.forEach((p, k) => { if (!s.keys.has(keys[k])) { s.keys.add(keys[k]); s.parts.push(p); } byPart.set(keys[k], s); });
+      s.ids.add(id);
+      if (f.properties.name && !s.names.includes(f.properties.name)) s.names.push(f.properties.name);
+      shapeOf.set(id, s);
+    }
+    for (const s of shapes) s.feature = { type: 'Feature', properties: { ...s.props, name: s.names.join(' · ') },
+      geometry: s.parts.length === 1 ? { type: 'Polygon', coordinates: s.parts[0] } : { type: 'MultiPolygon', coordinates: s.parts } };
+  }
+  const shapeOutlines = outlines && { type: 'FeatureCollection', features: shapes.map((s) => s.feature) }; // each outline once
+  const footprint = footprintAreas(shapeOutlines); // shape id -> footprint m² (the outline: one floor)
+  // A shared outline is the real building's: its floor count is the tallest of its places' (Cedro's 3, not the dining room's 1).
+  const floorsOf = (id) => Math.max(1, ...[...(shapeOf.get(id)?.ids || [id])].map((x) => runBuildings.floors.get(x) || 1));
   const floorArea = new Map([...footprint].map(([id, a]) => [id, a * floorsOf(id)]));
   const buildingSums = (states, truth = false) => {
     const out = new Map();
-    for (const s of states) if (s.buildingId && !s.walking) out.set(s.buildingId, (out.get(s.buildingId) || 0) + (truth ? Number(Boolean(s.sick)) : Math.max(0, s.p - MODEL.prior)));
+    for (const s of states) {
+      const sh = !s.walking && s.buildingId && shapeOf.get(s.buildingId);
+      if (sh) out.set(sh.id, (out.get(sh.id) || 0) + (truth ? Number(Boolean(s.sick)) : Math.max(0, s.p - MODEL.prior)));
+    }
     return out;
   };
   const buildingDensity = (states, truth = false) => {
@@ -1213,7 +1249,7 @@ async function main() {
   }).observe($('map'));
   const outdoorLayer = outlines ? new CanvasLayer([sw, ne]).addTo(map) : null; // outdoor heat, under the rooms' heat
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
-  const shadeLayer = new BuildingShadeLayer(outlines); // the default view's building shading
+  const shadeLayer = new BuildingShadeLayer(shapeOutlines); // the default view's building shading, one feature per outline
   const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
@@ -1682,10 +1718,11 @@ async function main() {
 
   // ---- Room-level demo: hover or click a building for the numbers behind its heat ----
   // Computed on demand (when the pointer enters a building, then twice a second), never every frame.
-  const hitShapes = (outlines ? outlines.features : []).map((f) => {
-    const rings = f.geometry.type === 'Polygon' ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
+  // One per drawn outline (shapes, above): hovering it covers every sim place sharing it, as its shading does.
+  const hitShapes = shapes.map((s) => {
+    const f = s.feature, rings = f.geometry.type === 'Polygon' ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
     const xs = rings.flat().map((c) => c[0]), ys = rings.flat().map((c) => c[1]);
-    return { id: 'bld_' + String(f.properties.id).split('/')[1], name: f.properties.name || '', rings,
+    return { id: s.id, ids: s.ids, names: s.names, name: s.names.join(' · '), rings,
       bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
   });
   const inRing = (x, y, ring) => {
@@ -1708,27 +1745,45 @@ async function main() {
     if (c) return `${Math.max(1, Math.round(c.durationMin))} min near ${c.other}${c.distanceM != null ? ` (${c.distanceM < 10 ? c.distanceM.toFixed(1) : Math.round(c.distanceM)} m${c.indoor === false ? ', outdoors' : ''})` : ''}`;
     return 'at the baseline';
   }
+  // Everyone seated in any of the outline's places, the same people buildingSums() shades it by. People walking
+  // (on a footpath that crosses the outline) are in transit, not in the building: not counted, but listed as such.
   function buildingInfo(h) {
-    const here = [...current.values()].filter((a) => a.buildingId === h.id && !a.walking);
-    const tiers = { low: 0, elevated: 0, high: 0 };
-    let expected = 0, excess = 0;
-    for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
+    const here = [], passing = [];
+    for (const a of current.values()) {
+      if (!a.walking) { if (h.ids.has(a.buildingId)) here.push(a); }
+      else if (a.lon >= h.bb[0] && a.lat >= h.bb[1] && a.lon <= h.bb[2] && a.lat <= h.bb[3] && h.rings.some((r) => inRing(a.lon, a.lat, r))) passing.push(a);
+    }
+    const tiers = { low: 0, elevated: 0, high: 0 }, perPlace = new Map();
+    let expected = 0, excess = 0, sick = 0;
+    for (const a of here) {
+      tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); sick += a.sick ? 1 : 0;
+      perPlace.set(a.buildingId, (perPlace.get(a.buildingId) || 0) + 1);
+    }
     here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
     const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
-    const area = floorArea.get(h.id), floors = floorsOf(h.id);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here, area, floors, density: area ? (1000 * excess) / area : null };
+    const area = floorArea.get(h.id), floors = floorsOf(h.id), truth = truthMode();
+    const places = h.ids.size > 1 ? [...h.ids].map((id) => ({ name: runBuildings.names.get(id) || id, n: perPlace.get(id) || 0 })) : [];
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, sick, truth, tiers, top, here, passing, places, area, floors,
+      density: area ? (1000 * (truth ? sick : excess)) / area : null }; // exactly what the shading shows (buildingDensity)
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
+  // A count that can be a small fraction of a person: never "0" for something above zero (14 people at 2% is 0.28).
+  const fmtExp = (x) => (!(x > 0) ? '0' : x >= 9.95 ? String(Math.round(x)) : x >= 0.995 ? x.toFixed(1) : x >= 0.01 ? x.toPrecision(2).replace(/0+$/, '') : '<0.01');
+  const shadeWhat = (i) => (i.truth ? 'actually infected (sim)' : `above the ${Math.round(MODEL.prior * 100)}% baseline`);
   function buildingCard(h, full) {
     const i = buildingInfo(h);
-    const per = i.density == null ? '' : ` · ${i.density.toPrecision(2)} above baseline per 1,000 m²`;
-    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtSick(i.expected)} expected infected${per} · ${i.n} ${i.n === 1 ? 'person' : 'people'}`;
+    const people = `${i.n} ${i.n === 1 ? 'person' : 'people'} inside`;
+    const shadeLine = i.density == null ? '' : `Shade: ${fmtExp(i.density)} ${shadeWhat(i)} per 1,000 m² of floor`;
+    if (!full) return `<b>${esc(i.name)}</b><br>≈ ${fmtExp(i.expected)} expected infected (Σ P) · ${people}${shadeLine ? `<br>${shadeLine}` : ''}`;
     const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
     return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
-      <div class="row"><span>Expected infected (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
-      ${i.density == null ? '' : `<div class="row"><span>Above baseline per 1,000 m² of floor (${Math.round(i.area / i.floors).toLocaleString()} m² × ${i.floors} floor${i.floors === 1 ? '' : 's'})</span><b>${i.density.toPrecision(2)}</b></div>`}
-      <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
-      <div class="row"><span>People here now</span><b>${i.n}</b></div>
+      <div class="row"><span>Expected infected (Σ P)</span><b>${fmtExp(i.expected)}</b></div>
+      <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline (Σ max(0, P − ${Math.round(MODEL.prior * 100)}%))</span><b>${fmtExp(i.excess)}</b></div>
+      ${i.truth ? `<div class="row"><span>Actually infected (sim)</span><b>${i.sick}</b></div>` : ''}
+      ${i.density == null ? '' : `<div class="row"><span>Shade: ${shadeWhat(i)} per 1,000 m² of floor (${Math.round(i.area / i.floors).toLocaleString()} m² × ${i.floors} floor${i.floors === 1 ? '' : 's'})</span><b>${fmtExp(i.density)}</b></div>`}
+      <div class="row"><span>People inside now</span><b>${i.n}</b></div>
+      ${i.places.length ? `<p style="margin:4px 0 0;color:var(--ink-3)">One outline, ${i.places.length} places: ${i.places.map((p) => `${esc(p.name)} ${p.n}`).join(' · ')}</p>` : ''}
+      ${i.passing.length ? `<p style="margin:4px 0 0;color:var(--ink-3)">${i.passing.length} walking through, not counted.</p>` : ''}
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
       ${i.top.length ? '' : '<p style="margin:6px 0 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}
       ${i.n ? `<h4>Everyone here${i.top.length ? ' · top drivers first' : ''}</h4><div class="bld-list">${i.here.map((a, k) => personRow(a, k < i.top.length)).join('')}</div>` : ''}</div>`;
@@ -1815,7 +1870,7 @@ async function main() {
     const b = map.getBounds();
     let sum = 0;
     for (const a of current.values()) if (b.contains([a.lat, a.lon])) sum += a.p;
-    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected infected`;
+    el.textContent = viewCountText = `≈ ${fmtExp(sum)} expected infected`;
   }
 
   // Playing, a dot glides from its route to its seat (and back) instead of jumping; the heat follows the
@@ -2119,7 +2174,7 @@ async function main() {
       totals.steps.forEach((st, i) => { for (const [id, b] of st.buildings) { const v = b.excess ?? b.expected; if (b.n >= MIN_PEOPLE && (!best || v > best.v)) best = { v, id, name: b.name, tMs: totals.times[i], expected: b.expected }; } });
       return best;
     },
-    buildingCenter: (id) => { const h = hitShapes.find((x) => x.id === id); return h && [(h.bb[1] + h.bb[3]) / 2, (h.bb[0] + h.bb[2]) / 2]; },
+    buildingCenter: (id) => { const h = hitShapes.find((x) => x.ids.has(id)); return h && [(h.bb[1] + h.bb[3]) / 2, (h.bb[0] + h.bb[2]) / 2]; },
     async firstReport() {
       const base = new URL(dataUrl, location.href);
       const cfg = await fetch(new URL('config.json', base)).then((r) => r.json());
@@ -2132,6 +2187,7 @@ async function main() {
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
     publicLayer, now: () => now, current: () => current, phoneScore: (id, t = now) => (model ? Math.max(phoneEstimate(id, t), statusFloor(id, t)) : null), heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
+    buildingAt: (lat, lon) => { const h = buildingAt({ lat, lng: lon }); return h && { id: h.id, ids: [...h.ids], name: h.name, info: buildingInfo(h), tip: buildingCard(h, false), density: buildingDensity(current.values(), truthMode()).get(h.id) }; }, // for checks
   };
 }
 
