@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 import WebKit
 
-/// Detection on/off, what is shared, notifications, the map address, deleting local data, and About.
+/// Detection on/off, what is shared, notifications, the laptop address (Debug), deleting local data, and About.
 struct SettingsView: View {
     @ObservedObject var model: ProximityModel
     @AppStorage("heatmapURL") private var heatmapURL = ""
@@ -21,7 +21,9 @@ struct SettingsView: View {
             notificationsSection
             closedSection
             BackgroundWarningsSection()
-            mapSection
+            #if DEBUG
+            mapSection  // Debug only: the laptop feed; the Map tab itself is built into the app
+            #endif
             dataSection
             aboutSection
         }
@@ -149,7 +151,7 @@ struct SettingsView: View {
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
 
-    // MARK: Map
+    // MARK: Map (Debug)
 
     private var mapSection: some View {
         Section {
@@ -161,7 +163,7 @@ struct SettingsView: View {
         } header: {
             Text("Map address").foregroundStyle(Theme.ink2)
         } footer: {
-            Text("Where the Map tab loads the campus heat map from.").foregroundStyle(Theme.ink2)
+            Text("Debug builds: the laptop that serves the model output (Developer > Demo override) and live building heat. The Map tab is built into the app.").foregroundStyle(Theme.ink2)
         }
         .listRowBackground(Theme.surface)
     }
