@@ -56,8 +56,13 @@ and `WORKSTREAMS.md`.
 - **`influenza_none_n7500_d2_s42_2a1d8bfd`:** local only, not in git, and has no trips. Its 290
   reports are all false. The model takes ~31 s on it. The lag agent regenerated it with the current
   sim as **`influenza_none_n7500_d2_s42_cca0fef5`** (gitignored, has trips): use that id.
-- **Wanted:** a busier official run from Aiden (~500 agents, 7 days, several seeds). The FlUni
-  session is exploring configs in scratch.
+- **Requested from Aiden (WORKSTREAMS Requests, 8e970c7):** a busier official demo run, using FlUni's
+  scored config: `n400 d3`, seed 5 (25 seeds tried), transmission ×4. Expected id
+  `influenza_none_n400_d3_s5_1513ab3f`. When it lands:
+  - `node model/cli.mjs sim/runs/<run>` → `p_sick.csv`;
+  - `node heatmap/tools/precompute.mjs <run>` → `building_heat.csv` and `totals.json.gz`;
+  - `node heatmap/tools/build_app_bundle.mjs` → the FlUni bundle;
+  - switch `DEFAULT_RUN` in `app.js` (after the product owner agrees) and tell fluni-11.
 
 ## In flight at handoff (background agents)
 
@@ -82,12 +87,23 @@ and `WORKSTREAMS.md`.
    - Bounded to Stanford, with faint outside context.
    - Every building in neutral paper, plus footpaths, green spaces and labels.
    - Bundle under 3 MB. The agent messages fluni-11 to re-sync when done.
+   - FlUni's screenshots of how the map looks in the app are in `/Users/dqi26/fluni-screens/mapdemo/`
+     (local). The app overlays a sheet on the bottom ~20% of the screen, so the map needs that much
+     bottom padding when fitting campus.
+   - Work in progress (uncommitted in the shared tree): `tools/fetch_context.mjs` (Overpass fetch of
+     paths, green space and labels) and `data/context.geojson`.
+   - The lag agent's uncommitted edits are `tools/bench.mjs` and `tools/precompute.mjs`. Neither is
+     mine to commit; let the agents commit their own paths.
 
 ## Open questions for the product owner
 
 - "Vary the agents": different runs, different-looking people, or more varied sim behaviour?
 - Which flu model, Rio's (current) or the alternative, after the comparison?
 - Whether to switch the default run once Aiden publishes a busier one.
+- **Colour scale is relative to each run.** The user map's top colour is the 90th percentile of each
+  step's busiest building, and the presenter heat scales per spread. A quiet run therefore looks as
+  red as a busy one. An absolute scale (fixed expected-sick count), or a blend, would make runs
+  comparable but leave quiet runs almost blank.
 
 ## How to work in this repo
 
