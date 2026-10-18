@@ -17,6 +17,9 @@ struct DeveloperView: View {
                 exposureSection
                 peersSection
                 demoSection
+                #if DEBUG
+                keepAwakeSection
+                #endif
                 statusSection
                 Section { Button("Open detailed map (laptop)") { showLaptopMap = true } } footer: {
                     Text("The full heat map, served from a laptop on the same Wi-Fi. For the team, not students.")
@@ -131,6 +134,17 @@ struct DeveloperView: View {
             if model.speed > 1 { Text("Time runs \(Int(model.speed))× faster: 15 minutes takes \(Int(15 * 60 / model.speed)) seconds.") }
         }
     }
+
+    #if DEBUG
+    private var keepAwakeSection: some View {
+        Section {
+            Toggle("Keep screen awake", isOn: $model.keepAwake)
+                .accessibilityIdentifier("keepScreenAwake")
+        } footer: {
+            Text("Keeps UWB ranging: iOS only ranges while FlUni is on screen.")
+        }
+    }
+    #endif
 
     private var statusSection: some View {
         Section("Radios") {

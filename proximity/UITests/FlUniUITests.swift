@@ -323,4 +323,16 @@ final class FlUniUITests: FlUniUITestCase {
         how.tap()
         XCTAssertTrue(app.navigationBars["How this works"].waitForExistence(timeout: 5), "footnote")
     }
+
+    // MARK: Keep screen awake (Debug)
+
+    /// Developer shows the Debug-only keep-awake toggle, off by default.
+    func testDeveloperHasKeepScreenAwakeToggleOffByDefault() {
+        launchPastOnboarding()
+        openTab("Me")
+        scrollTo(el("developer.row")).tap()
+        let toggle = scrollTo(el("keepScreenAwake"))
+        XCTAssertTrue(toggle.exists)
+        XCTAssertEqual(toggle.value as? String, "0")
+    }
 }
