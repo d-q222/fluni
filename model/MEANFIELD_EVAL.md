@@ -1,0 +1,35 @@
+# Mean-field evaluation log
+
+`node model/meanfield-eval.mjs <run>` scores P(ever infected by the end of day d) against the sim's infections:
+**KL** = KL(y ‖ p) per person in nats, which for a 0/1 label is the log loss, and **AUC**. "Oracle const" is the
+best constant guess (that day's true share infected), which no model can know in advance.
+
+Runs: the twelve 1,000-agent, 14-day runs. The nine training runs (`689ae9f0` = the fixed 1k, `f4bf301c`, `a986df0a`,
+`22a44427`, `9214956b`, `f4573d76`, `2329d271`, `291f8efd`, `14859125`) commit only five files, so they were rerun from
+their own `config.json` params (`sim/simulate.py --config <params.json> --set output.by_agent=false`; `infections.csv`
+byte-identical) to get `reports_tests.csv` and `map/`. Plus `25fe957a`, `183f262b`, `f12e71fa`. 5–79% infected,
+transmission scale 1.2–4.0, 5–50 initial cases. Contacts: `uv run model/tools/contacts_cache.py <run>`.
+
+Means over the 12 runs (per-run numbers in the commit messages):
+
+| Version | mean KL | final-day KL | mean AUC | final AUC | \|expected − actual\| / actual |
+|---|---|---|---|---|---|
+| oracle constant | 0.3426 | | | | |
+| before: prior = seed count / N (from the sim's config), lambdaScale 0.901 | 0.3331 | 0.5014 | 0.670 | 0.751 | 0.46 |
+| 1: self-calibrated online from reports (prior, lambdaScale), mass-rescaled, `priorAge=new` | 0.3243 | 0.4438 | 0.654 | 0.752 | 0.13 |
+| 8: + recovered keeps P_S, LR 60/20, soft negatives, test_taken, positives override, report censoring | 0.2890 | 0.3792 | 0.686 | 0.786 | 0.13 |
+
+## Iterations after the first full run (each tested on a randomly chosen run, against the previous version there)
+
+| # | Change | Test run | mean KL before → after | final AUC before → after |
+|---|---|---|---|---|
+| 2 | "recovered" ends an infection without asserting one (keeps P_S; `recoveredCertain` restores the SI's P_R = 1); likelihood ratios 60 / 20 (were 20 / 4) | `689ae9f0` (fixed 1k) | 0.1345 → 0.1038 (oracle const 0.1164) | 0.710 → 0.691 |
+| 3 | negative test as a likelihood (infected mass × 0.3, the sim test's miss rate); `negFnr: 0` restores the SI's P_S = 1 | `25fe957a` | 0.3295 → 0.3228 (oracle const 0.3812) | 0.717 → 0.739 |
+| 4 | `test_taken` as evidence (likelihood ratio 200; app-visible per the sim's app policy; all 616 tests in the runs were taken by infected people); a second kind of evidence about one illness updates the posterior on its first dating | `25fe957a` | 0.3229 → 0.3189 | 0.739 → 0.750 |
+| 5 | a positive drops that person's earlier report clamps from its dating on (a symptom report just before a positive no longer lowers its P_I = 1; paper re-check issue 1) | `22a44427` | 0.1553 → 0.1546 (oracle const 0.1601) | 0.760 → 0.761 |
+| (6, reverted) | contacts dropping vs the previous 3 days as evidence of illness (likelihood ratios 0.56–3.2 by size of drop) | `f12e71fa`, `f4bf301c` | 0.2643 → 0.2628, 0.1166 → 0.1157 | 0.746 → 0.742, 0.778 → 0.774 — not kept |
+| (7, reverted) | a second dose factor for the last 6 days, fitted to the last 3 days' reports (outbreaks accelerate) | `2329d271`, `f4bf301c` | 0.3851 → 0.3858, 0.1166 → 0.1168 | unchanged — not kept |
+| 8 | report censoring: every hour someone stays unreported, each infection age is weighted by (1 − its first-report hazard), from reportRate and reportDelayCdf (so old exposures without a report lose weight) | `14859125` | 0.4323 → 0.4229 (oracle const 0.4962) | 0.863 → 0.864 |
+| (9, reverted) | flu's latent-period infectiousness shape (none for 1.5 d, rise over the presymptomatic day, faster decay) instead of infer.js's stage profile | `f12e71fa`, `2329d271` | 0.2622 → 0.2762, 0.3811 → 0.3915 | 0.752 → 0.751, 0.792 → 0.792 — not kept |
+| (10, reverted) | the unreported's P as σ(a·logit p + b) with b matching the forward total, a ∈ {0.6, 0.8, 1.5, 2, 3} | `9214956b`, `a986df0a` | a = 1 (≈ the plain rescale) best in both — not kept |  |
+| (11, off by default) | backward messages: a reporter's likely infectors (contacts in the 30 h around the dated infection) get the likelihood of that infection given their state (`backward: true`) | all 12 runs | 0.2890 → 0.2892 | 0.786 → 0.786 (mean AUC 0.686 → 0.687) — kept as an option, off |
