@@ -587,12 +587,19 @@ function firstMove(tracks, t0) {
 // single extreme moment doesn't wash out the rest. Anything above it shows as the darkest colour.
 function scaleMax(heatAt, times) {
   const step = Math.max(1, Math.floor(times.length / 60));
-  const peaks = [];
-  for (let i = 0; i < times.length; i += step) peaks.push(heatAt(times[i]).max());
-  peaks.sort((a, b) => a - b);
-  // The 75th percentile, so outbreak buildings reach the dark end. Above the baseline most moments can be
-  // blank: then the busiest sampled moment sets the scale.
-  return peaks[Math.floor(0.75 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1;
+  // Per sampled moment, the 90th percentile of the warm cells (not the single hottest one: with heat kept
+  // in rooms, one crowded small room would set the scale and leave every other room pale); then the median
+  // moment. Typical hot rooms reach the dark end; the extreme ones simply max out.
+  const levels = [];
+  for (let i = 0; i < times.length; i += step) {
+    const { heat } = heatAt(times[i]), warm = [];
+    for (let k = 0; k < heat.length; k += 2) if (heat[k] > 0) warm.push(heat[k]);
+    if (!warm.length) continue;
+    warm.sort((a, b) => a - b);
+    levels.push(warm[Math.floor(0.9 * (warm.length - 1))]);
+  }
+  levels.sort((a, b) => a - b);
+  return levels[Math.floor(0.5 * (levels.length - 1))] || 1;
 }
 
 // Diffusion input: indoor people's heat is confined to buildings, outdoor people's spreads freely.
