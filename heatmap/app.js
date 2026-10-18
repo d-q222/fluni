@@ -382,7 +382,9 @@ let baseStyle = STYLES.includes(PARAMS.get('basemap')) ? PARAMS.get('basemap') :
 let drawnBounds = null, glReady = null, simMap = null; // simMap: { buildings, paths } from the run
 
 function baseMap(el, options) {
-  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, ...options });
+  // Zoom stops at room scale (20: ~15 cm a pixel, people at full size) and at the whole campus (13);
+  // the vector base would otherwise let you zoom in forever.
+  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, minZoom: 13, maxZoom: 20, ...options });
   map.createPane('simPane').style.zIndex = 250; // above base tiles, below heat, fills and people
   bases.set(map, {});
   applyBase(map);
