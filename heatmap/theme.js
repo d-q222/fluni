@@ -8,7 +8,7 @@
 // Images are swapped by watching the phone: any <img> under it that points into assets/ is pointed at
 // assets/night/ (and back), so screens drawn later by other modules pick it up with no changes there.
 
-const NIGHT_DIRS = ['checkin/', 'containers/', 'icons/', 'illustrations/', 'loading/', 'people/', 'tabbar/', 'tissue-alert/'];
+const NIGHT_DIRS = ['checkin/', 'companion/', 'containers/', 'icons/', 'illustrations/', 'loading/', 'people/', 'scenes/', 'tabbar/', 'tissue-alert/'];
 const KEY = 'fluni-night';
 const DAY = 'assets/', NIGHT = 'assets/night/';
 

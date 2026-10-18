@@ -45,10 +45,34 @@ export const MF_DEFAULTS = {
   asymRel: 0.5,           // ... at this relative infectiousness
   tauPosDays: 3,          // positive test: infected this long before the result
   tauSymDays: 2.5,        // "might be sick": infected this long before the report (onset now)
-  lrSym: 20,              // likelihood ratio of a symptom self-report
-  lrOther: 4,             // ... of a report by someone else
-  negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
+  lrSym: 60,              // likelihood ratio of a symptom self-report (was 20; on 3 sim runs 60 beat 20 and the
+  lrOther: 20,            // ... of a report by someone else (was 4)       measured per-day ratios, 270 and 90)
+  lrTest: 200,            // ... of taking a test (test_taken, app-visible as in sim/campussim/app_policy.py): in the sim only
+                          //   symptomatic people go; all 616 tests in twelve runs were taken by infected people. 0: ignore
+  recoveredCertain: false,
+  reportCensoring: true,
+  // Backward messages: a reporter dated to infection at tau was infected by someone near them then. Over the window
+  // [tau - backBeforeH, tau + backAfterH], with H the reporter's total hazard and, per contact j, L_j = their dose if
+  // infected and T_j = P_j L_j, j's infected mass x w (H - T_j + L_j) / H + 1 - w and the rest x w (H - T_j) / H + 1 - w
+  // (w: P that the reporter is infected). The paper's BP does this exactly; its simple mean-field doesn't.
+  backward: false,       // off: neutral on the twelve 1k runs (KL 0.2890 -> 0.2892, AUC 0.686 -> 0.687)
+  backBeforeH: 18,
+  backAfterH: 12,  // no report yet is evidence: infections that would have been reported by now lose weight // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
+  negFnr: 0.3,            // negative test: false-negative rate. > 0: a likelihood at the result (infected mass x this,
+                          //   renormalised); the sim's test has 70% sensitivity and every negative in twelve runs was
+                          //   a false negative. 0: the SI's P_S = 1 over negDays (eq. 4).
+  negDays: 3,             // negative test (negFnr 0): P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
                           //   the online pass can rerun this far back)
+  // Self-calibration (calibrateFromReports): the reporting process, fitted on twelve 1,000-agent sim runs with
+  // 5-79% infected (model/README.md "Self-calibration"); it is about people, not the epidemic, so it barely varies.
+  reportRate: 0.47,       // share of infections that are ever reported (symptoms, a positive test, or by someone else)
+  // P(first report <= k/2 days after infection | reported), k = 0..14 (median 2.7 days)
+  reportDelayCdf: [0.022, 0.023, 0.023, 0.033, 0.116, 0.358, 0.661, 0.816, 0.92, 0.953, 0.984, 0.992, 0.997, 0.998, 0.999],
+  falseReportPerDay: 0.0007, // reports about people who were never infected, per agent-day
+  priorMean: 0.01,        // Gamma prior on the starting prevalence (mean, shape) before the first reports say otherwise
+  priorShape: 1,
+  priorEarlyDays: 3.5,    // reports up to this many days in come almost all from people infected at the start
+  priorAge: 'uniform',    // the starting cases' infection ages: 'uniform' over the illness, or 'new' (just infected)
   lambdaScale: 0.901,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.836 with roomVolume 'map', 0.135 with legacyDose)
                           //   Refit per run. The 7,500-agent runs: --calibrate (true seeds, no reports) gives 1.128 (fixed) and
@@ -100,6 +124,90 @@ export function initialPrevalence(config) {
   return n > 0 && k >= 0 ? k / n : null;
 }
 
+// Self-calibration from reports, without ground truth or the sim's seed count: the starting prevalence and lambdaScale
+// that make the model's expected reports match the reports seen up to untilMs. Reports per person: a first report
+// (symptoms, positive test, or by someone else) comes a delay after infection (reportDelayCdf) with probability
+// reportRate, plus falseReportPerDay for people never infected.
+// - prior: reports in the first priorEarlyDays come almost all from people infected at the start, R ~ Poisson(N
+//   (prior reportRate F(d) + falseReportPerDay d)); with a Gamma(priorShape, priorShape / priorMean) prior, its
+//   posterior mean.
+// - lambdaScale: bisection on log scale so that the model run forward from that prior without reports (reports
+//   would pin reporters and bias it) expects as many reports by untilMs as were seen: N f D + rho sum_t F(D - t) dE(t).
+//   Kept at the default until 3 true-ish reports beyond the false-report background and 4 days of data.
+// Returns { prior, lambdaScale, reports: count used }.
+export function calibrateFromReports(input, params = {}, untilMs = Infinity) {
+  const P = { ...MF_DEFAULTS, ...params }, N = input.agentIds.length, stepMs = input.stepMin * 60000, DAYMS = 86400000;
+  const firsts = new Map();
+  for (const r of input.reports || []) {
+    const ev = r.event, v = r.value;
+    let who = r.agent_id;
+    if (ev === 'report_other' && v === 'might_be_sick') who = r.target_agent_id;
+    else if (!((ev === 'self_report' && (v === 'might_be_sick' || v === 'tested_positive')) || (ev === 'test_result' && v === 'positive'))) continue;
+    const t = input.startMs + Number(r.t) * stepMs;
+    if (t <= untilMs && (!firsts.has(who) || t < firsts.get(who))) firsts.set(who, t);
+  }
+  const times = [...firsts.values()];
+  const end = Math.min(untilMs, input.startMs + (input.days || 14) * DAYMS), D = (end - input.startMs) / DAYMS;
+  const F = (days) => { // CDF of the infection -> first report delay, linear between half days
+    const x = Math.max(0, days) * 2, k = Math.floor(x), c = P.reportDelayCdf;
+    return k >= c.length - 1 ? c[c.length - 1] : c[k] + (c[k + 1] - c[k]) * (x - k);
+  };
+  const dE = Math.min(D, P.priorEarlyDays), early = times.filter((t) => t <= input.startMs + dE * DAYMS).length;
+  const prior = Math.min(0.5, Math.max(1e-5, (P.priorShape + Math.max(0, early - N * P.falseReportPerDay * dE))
+    / (P.priorShape / P.priorMean + N * P.reportRate * F(dE))));
+  let lambdaScale = P.lambdaScale;
+  const seen = times.length, background = N * P.falseReportPerDay * D;
+  if (D >= 4 && seen - background >= 3) {
+    const base = { ...input, reports: [], initialPrevalence: prior }; // (no reports: no censoring either)
+    const expect = (lam) => { // expected first reports by `end` from the forward model
+      const m = meanFieldRisk(base, { ...params, prior, lambdaScale: lam });
+      let x = background, prev = prior * N;
+      for (let n = 0; n < m.everByStep.length; n++) {
+        const tEnd = input.startMs + (n + 1) * m.dtMs;
+        if (tEnd > end) break;
+        x += P.reportRate * (m.everByStep[n] - prev) * F((end - (tEnd - m.dtMs / 2)) / DAYMS);
+        prev = m.everByStep[n];
+      }
+      return x + P.reportRate * prior * N * F(D); // the starting cases, infected at t = 0
+    };
+    let lo = Math.log(0.02), hi = Math.log(30);
+    for (let it = 0; it < 10; it++) { const mid = (lo + hi) / 2; if (expect(Math.exp(mid)) < seen) lo = mid; else hi = mid; }
+    lambdaScale = Math.exp((lo + hi) / 2);
+  }
+  // The forward model at the fit: its expected infections per step are the run's total, which the report-driven
+  // model's own total overshoots (pinning a reporter adds their infection without taking it from anyone else).
+  const fwd = meanFieldRisk({ ...input, reports: [], initialPrevalence: prior }, { ...params, prior, lambdaScale });
+  return { prior, lambdaScale, reports: seen, expectedEver: fwd.everByStep, firsts };
+}
+
+// The report-driven model, rescaled so its total matches the calibrated forward model: at each time, everyone who
+// has been reported keeps their P(ever infected); everyone else's is scaled by one factor so the sum equals the
+// forward model's expected infections. The ranking among the unreported is unchanged; only the level moves.
+// input, params as meanFieldRisk; untilMs: use reports up to then (the fit and the model). Returns the model with
+// everAt replaced, plus the fit.
+export function meanFieldCalibrated(input, params = {}, untilMs = Infinity) {
+  const cal = calibrateFromReports(input, params, untilMs);
+  const reports = (input.reports || []).filter((r) => input.startMs + Number(r.t) * input.stepMin * 60000 <= untilMs);
+  const m = meanFieldRisk({ ...input, reports, initialPrevalence: cal.prior }, { ...params, prior: cal.prior, lambdaScale: cal.lambdaScale });
+  const ids = input.agentIds, nS = m.everByStep.length, scale = new Float64Array(nS).fill(1);
+  const firstMs = ids.map((a) => cal.firsts.get(a) ?? Infinity);
+  for (let n = 0; n < nS; n++) {
+    const t = input.startMs + (n + 1) * m.dtMs - 1;
+    let rep = 0, rest = 0;
+    for (let i = 0; i < ids.length; i++) { const p = m.everAt(ids[i], t + 1); if (firstMs[i] <= t) rep += p; else rest += p; }
+    const target = cal.expectedEver[n] - rep;
+    scale[n] = rest > 0 && target > 0 ? Math.min(1 / Math.max(1e-9, rest / ids.length), target / rest) : rest > 0 ? 0 : 1;
+  }
+  const idx = m.index, raw = m.everAt;
+  m.everAt = (id, tMs) => {
+    const i = idx.get(id), n = m.stepOf(tMs), p = raw(id, tMs);
+    if (i === undefined || n < 0 || firstMs[i] <= tMs) return p;
+    return Math.min(1, p * scale[n]);
+  };
+  m.fit = cal;
+  return m;
+}
+
 // input: { contacts, reports, rooms, agentIds, stepMin, startMs, weather?, days?, initialPrevalence? } (as inferRisk;
 // weather is config.json params.weather; initialPrevalence replaces MF_DEFAULTS.prior unless params.prior is set;
 // seeds, for calibration only: ids infected at the start). Returns { pAt, shedAt, shedStep, stepOf, changes, explain: null, flags: [], params }.
@@ -112,12 +220,18 @@ export function meanFieldRisk(input, params = {}) {
   const K = Math.max(1, Math.round(P.illnessDays / dtDays));
   const stage = stageCurve(K, dtDays, P, R);
   const contacts = input.contacts || [], reports = input.reports || [];
+  // input.columns: the same contacts as typed arrays (model/tools/contacts_cache.py: t, a, b agent indexes in agentIds
+  // order, dist, tier, indoor, room index into roomIds or -1, dur), for big runs where an object per row won't fit.
   // input.prep (optional, an object): the contact preprocessing below depends on the contacts, rooms and dose
   // parameters but not on lambdaScale, prior or importPerDay, so a calibration loop can pass the same object to every
   // call and skip it after the first. The caller must keep everything else fixed between those calls.
+  const C = input.columns || null, nRows = C ? C.t.length : contacts.length;
   const prep = input.prep && input.prep.pairs ? input.prep : null;
   let lastSimStep = 0;
-  if (!(prep && input.days)) for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
+  if (!(prep && input.days)) {
+    if (C) { for (let k = 0; k < nRows; k++) if (C.t[k] > lastSimStep) lastSimStep = C.t[k]; }
+    else for (const c of contacts) if (+c.t > lastSimStep) lastSimStep = +c.t;
+  }
   for (const r of reports) if (+r.t > lastSimStep) lastSimStep = +r.t;
   const nSteps = input.days ? Math.ceil((input.days * 24) / P.dtH) : Math.floor(lastSimStep / W) + 1;
 
@@ -161,30 +275,39 @@ export function meanFieldRisk(input, params = {}) {
   const occ = prep ? [] : Array.from({ length: nSteps }, () => new Map()); // room * N + agent -> sim steps present
   const lastT = new Float64Array(N).fill(-1);
   const stepsPerDay = 1440 / stepMin, stepH = stepMin / 60;
-  const sorted = prep || contacts.every((c, k) => k === 0 || +c.t >= +contacts[k - 1].t);
-  const rows = prep ? [] : sorted ? contacts : contacts.slice().sort((x, y) => x.t - y.t);
+  // Row order by time (objects or columns); the room-occupancy count needs it. With prep, no rows are read.
+  const nLoop = prep ? 0 : nRows;
+  const tOf = C ? (k) => C.t[k] : (k) => +contacts[k].t;
+  let order = null;
+  for (let k = 1; k < nLoop; k++) if (tOf(k) < tOf(k - 1)) { order = Uint32Array.from({ length: nRows }, (_, i) => i).sort((x, y) => tOf(x) - tOf(y)); break; }
+  const colRoom = C ? new Int32Array(C.roomIds.length).fill(-2) : null; // room index -> roomOf, cached
   const legacy = P.legacyDose, roomAir = P.roomAir && !legacy && P.roomVolume !== 'none';
-  for (const c of rows) {
-    const t = +c.t, n = Math.floor(t / W);
+  for (let kk = 0; kk < nLoop; kk++) {
+    const row = order ? order[kk] : kk, c = C ? null : contacts[row];
+    const t = C ? C.t[row] : +c.t, n = Math.floor(t / W);
     if (n >= nSteps) continue;
-    let a = idx.get(c.agent_a), b = idx.get(c.agent_b);
+    let a = C ? C.a[row] : idx.get(c.agent_a), b = C ? C.b[row] : idx.get(c.agent_b);
     if (a === undefined || b === undefined || a === b) continue;
-    const iv = c.indoor, indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1';
-    if (indoor && c.room_id === '') continue; // through a wall: no shared air (infer.js wallFactor 0)
+    let indoor, roomId, hasRoom;
+    if (C) { indoor = C.indoor[row] === 1; roomId = C.room[row]; hasRoom = roomId >= 0; }
+    else { const iv = c.indoor; indoor = iv == null || iv === '' || iv === true || iv === 1 || iv === 'True' || iv === 'true' || iv === '1'; roomId = c.room_id; hasRoom = roomId !== ''; }
+    if (indoor && !hasRoom) continue; // through a wall: no shared air (infer.js wallFactor 0)
     let unit;
-    if (legacy) unit = doseForDay(Math.floor(t / stepsPerDay))(c) / R.quantaPeak;
+    if (legacy) unit = doseForDay(Math.floor(t / stepsPerDay))(c || { distance_m: C.dist[row], distance_tier: C.tier[row], duration_s: C.dur[row], indoor, room_id: hasRoom ? C.roomIds[roomId] : '' }) / R.quantaPeak;
     else {
-      const r = indoor ? roomOf(c.room_id ?? '') : -1, shared = roomAir && c.room_id != null; // no room id: per pair
+      const r = !indoor ? -1 : C ? (colRoom[roomId] === -2 ? (colRoom[roomId] = roomOf(C.roomIds[roomId])) : colRoom[roomId]) : roomOf(roomId ?? '');
+      const shared = roomAir && (C ? true : roomId != null); // no room id column: per pair
       if (shared && r >= 0) for (const x of [a, b]) if (lastT[x] !== t) { // one room per agent per sim step
         lastT[x] = t;
         const k = r * N + x;
         occ[n].set(k, (occ[n].get(k) || 0) + 1);
       }
-      const dm = c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
-      const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, Number(c.distance_tier) || 4)) - 1]);
-      const f = r >= 0 ? rmF[r] : 1;
-      unit = (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
-      if (!shared && r >= 0 && P.roomVolume !== 'none') unit += (f * R.breathingRate * ((Math.round(Number(c.duration_s)) || 0) / 3600)) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
+      const dm = C ? C.dist[row] : c.distance_m == null || c.distance_m === '' ? NaN : Number(c.distance_m);
+      const tier = C ? C.tier[row] : Number(c.distance_tier);
+      const dist = Math.max(0.3, Number.isFinite(dm) ? dm : TIER_M[Math.min(4, Math.max(1, tier || 4)) - 1]);
+      const f = r >= 0 ? rmF[r] : 1, hrs = (C ? C.dur[row] : Math.round(Number(c.duration_s)) || 0) / 3600;
+      unit = (f * R.breathingRate * hrs) / (nearQ(dist) * (indoor ? 1 : R.outdoorNearDilution));
+      if (!shared && r >= 0 && P.roomVolume !== 'none') unit += (f * R.breathingRate * hrs) / (rmV[r] * (rmAch[r] + R.deposition + decayOfDay(Math.floor(t / stepsPerDay))));
     }
     if (!(unit > 0)) continue;
     if (a > b) [a, b] = [b, a];
@@ -219,8 +342,22 @@ export function meanFieldRisk(input, params = {}) {
     else if (ev === 'test_result' && val === 'negative') kind = 'neg';
     else if (ev === 'self_report' && val === 'might_be_sick') kind = 'sym';
     else if (ev === 'self_report' && val === 'recovered') kind = 'rec';
+    else if (ev === 'test_taken' && P.lrTest > 0) kind = 'test'; // went to get tested: seeking care with symptoms
     else if (ev === 'report_other' && val === 'might_be_sick') { kind = 'other'; who = r.target_agent_id; }
     if (kind && idx.has(who)) obs[n].push([kind, idx.get(who)]);
+  }
+
+  // Report censoring: each agent's first report step (symptoms, positive, or by someone else, as reportRate counts),
+  // and the per-step first-report hazard at each infection age from reportRate and reportDelayCdf.
+  const censor = P.reportCensoring && reports.length > 0;
+  const firstRepStep = new Int32Array(N).fill(1 << 30), repHaz = new Float64Array(K);
+  if (censor) {
+    for (let n = 0; n < nSteps; n++) for (const [kind, i] of obs[n]) if ((kind === 'sym' || kind === 'pos' || kind === 'other') && n < firstRepStep[i]) firstRepStep[i] = n;
+    const Fd = (days) => { if (days < 0) return 0; const x = days * 2, k = Math.floor(x), c = P.reportDelayCdf; return k >= c.length - 1 ? c[c.length - 1] : c[k] + (c[k + 1] - c[k]) * (x - k); };
+    for (let k = 0; k < K; k++) {
+      const f0 = P.reportRate * Fd(k * dtDays), f1 = P.reportRate * Fd((k + 1) * dtDays);
+      repHaz[k] = f0 < 1 ? Math.max(0, (f1 - f0) / (1 - f0)) : 0;
+    }
   }
 
   // ---------- dynamics ----------
@@ -231,8 +368,12 @@ export function meanFieldRisk(input, params = {}) {
   // the clamp already applied says nothing new (the paper's observations are about one infection).
   const episode = Math.round(P.illnessDays / dtDays);
   const lastPos = new Int32Array(N).fill(-1e9), lastSym = new Int32Array(N).fill(-1e9), lastOther = new Int32Array(N).fill(-1e9);
+  const backReqs = [], winAt = new Map(), lastReq = new Map(); // backward-message requests; step -> reporter -> request
+  const maxBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays);
+  const lastTest = new Int32Array(N).fill(-1e9), datedAt = new Int32Array(N).fill(-1e9), dEff = new Int32Array(N), dK0 = new Int32Array(N);
   const fresh = () => {
-    const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K).fill(P.prior / K), Rr = new Float64Array(N);
+    const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K), Rr = new Float64Array(N);
+    if (P.priorAge === 'new') for (let i = 0; i < N; i++) A[i * K] = P.prior; else A.fill(P.prior / K);
     for (const id of input.seeds || []) { // calibration only: known cases, just infected at the start
       const i = idx.get(id);
       if (i === undefined) continue;
@@ -261,14 +402,24 @@ export function meanFieldRisk(input, params = {}) {
       if (k0 < K) A[o + k0] = wgt; else Rr[i] += wgt;
     } else if (c[0] === 'sus') { // negative test (SI eq. 4): P_S = 1 at this step, so nothing was caught or passed on
       S[i] = 1; Rr[i] = 0; A.fill(0, o, o + K);
-    } else if (c[0] === 'rec') { // recovered (SI eq. 6): P_R = 1, no longer susceptible
-      S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1;
+    } else if (c[0] === 'backstart') { // no change to the state: it only makes the rerun start at the window (step()
+      // restarts the reporter's tallies there)
+    } else if (c[0] === 'negsoft') { // negative test as a likelihood: infected mass x the false-negative rate
+      let z = S[i] + Rr[i];
+      for (let k = 0; k < K; k++) { A[o + k] *= P.negFnr; z += A[o + k]; }
+      S[i] /= z; Rr[i] /= z;
+      for (let k = 0; k < K; k++) A[o + k] /= z;
+    } else if (c[0] === 'rec') { // recovered: an infection, if there was one, is over
+      if (P.recoveredCertain) { S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1; } // SI eq. 6: P_R = 1
+      else { let a = 0; for (let k = 0; k < K; k++) { a += A[o + k]; A[o + k] = 0; } Rr[i] += a; } // keeps P_S: the
+      // claim says nothing about whether they were ever infected (in the sim, false sick reports are later "recovered")
     }
   }
 
   // An observation learned in step n -> a list of [effect step, clamp] (empty: nothing new).
   function clampsFor(kind, i, n, st) {
     if (kind === 'rec') return [[n, ['rec', i]]];
+    if (kind === 'neg' && P.negFnr > 0) return [[n, ['negsoft', i]]];
     if (kind === 'neg') { // P_S = 1 at every step from negBack before the result up to it
       const out = [];
       for (let s = Math.max(0, n - negBack); s <= n; s++) out.push([s, ['sus', i]]);
@@ -278,16 +429,39 @@ export function meanFieldRisk(input, params = {}) {
     if (n - lastPos[i] < episode) return [];
     if (kind === 'sym' && n - lastSym[i] < episode) return [];
     if (kind === 'other' && n - Math.max(lastSym[i], lastOther[i]) < episode) return [];
-    (kind === 'pos' ? lastPos : kind === 'sym' ? lastSym : lastOther)[i] = n;
+    if (kind === 'test' && n - lastTest[i] < episode) return [];
+    (kind === 'pos' ? lastPos : kind === 'sym' ? lastSym : kind === 'test' ? lastTest : lastOther)[i] = n;
     const back = Math.round((kind === 'pos' ? P.tauPosDays : P.tauSymDays) / dtDays);
     let sEff = n - back, k0 = 0;
     if (sEff < 0) { k0 = -sEff; sEff = 0; }
-    if (kind === 'pos') // a positive outweighs an earlier negative: drop that negative's P_S = 1 from the dating on
-      for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[0] === 'sus' && c[1] === i)));
+    // A different kind of evidence about the same illness (a test after a symptom report) updates the posterior but
+    // keeps the illness's dating.
+    if (kind !== 'pos' && n - datedAt[i] < episode) {
+      sEff = dEff[i]; k0 = dK0[i];
+      // the online pass can only rerun maxBack steps: apply it there instead, at the same infection time (older age)
+      const lo = Math.max(0, n - maxBack);
+      if (sEff < lo) { k0 += lo - sEff; sEff = lo; }
+    } else { datedAt[i] = n; dEff[i] = sEff; dK0[i] = k0; }
+    if (kind === 'pos') // a positive outweighs earlier evidence about the person: drop an earlier negative's P_S = 1, and
+      // a symptom report's posterior (dated 2.5 d back, so it would land after the positive's P_I = 1 and lower it),
+      // from the positive's dating on
+      for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[1] === i && (c[0] === 'sus' || c[0] === 'negsoft' || c[0] === 'infect'))));
     let wgt = 1;
     if (kind !== 'pos') { // Bayes: the posterior P(infected | report) from the model's current P_I
-      const lr = kind === 'sym' ? P.lrSym : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
+      const lr = kind === 'sym' ? P.lrSym : kind === 'test' ? P.lrTest : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
       wgt = (lr * p) / (lr * p + 1 - p);
+    }
+    if (P.backward && reports.length) {
+      const tau = sEff - k0, s0 = Math.max(0, tau - Math.round(P.backBeforeH / P.dtH), n - maxBack), s1 = Math.min(n, tau + Math.round(P.backAfterH / P.dtH));
+      if (s1 >= s0) {
+        const req = { i, s0, s1, w: wgt, H: 0, src: new Map() };
+        const old = lastReq.get(i); // a newer report about the same person replaces its window
+        if (old) for (let x = old.s0; x <= old.s1; x++) if (winAt.get(x)?.get(i) === old) winAt.get(x).delete(i);
+        lastReq.set(i, req);
+        backReqs.push(req);
+        for (let x = s0; x <= s1; x++) { if (!winAt.has(x)) winAt.set(x, new Map()); winAt.get(x).set(i, req); }
+        return [[sEff, ['infect', i, k0, wgt]], [s0, ['backstart', i]]];
+      }
     }
     return [[sEff, ['infect', i, k0, wgt]]];
   }
@@ -297,6 +471,8 @@ export function meanFieldRisk(input, params = {}) {
     for (const c of clamps.get(s) || []) applyClamp(c, st);
     const { S, A, R: Rr, C } = st;
     logq.fill(-hImp);
+    const win = winAt.get(s) || null;
+    if (win) for (const req of win.values()) if (req.s0 === s) { req.H = 0; req.src.clear(); }
     // Room air: C' = Css + (C - Css) e^(-loss dt), Css = sum_j shed_j (h_j / dt) / (V loss); occupant i breathes
     // the step's mean C, less its own share (a person does not infect themselves).
     if (roomAir) {
@@ -337,20 +513,49 @@ export function meanFieldRisk(input, params = {}) {
         }
         logq[b] += Math.log1p(-Math.min(tab, 1 - 1e-12));
         logq[a] += Math.log1p(-Math.min(tba, 1 - 1e-12));
+        if (win) { // tallies for a reporter's possible infectors: their dose if infected, and its expectation
+          for (const [tgt, src, T, o] of [[b, a, tab, oa], [a, b, tba, ob]]) {
+            const req = win.get(tgt);
+            if (!req) continue;
+            let pj = 0; for (let k = 0; k < K; k++) pj += A[o + k];
+            if (!(pj > 1e-12)) continue;
+            const e = req.src.get(src) || { L: 0, T: 0 };
+            e.L += -Math.log1p(-Math.min(T / pj, 1 - 1e-12)); e.T += -Math.log1p(-Math.min(T, 1 - 1e-12));
+            req.src.set(src, e);
+          }
+        }
       }
     }
+    if (win) for (const [i, req] of win) req.H += -logq[i]; // the reporter's whole hazard this step (imports, rooms, pairs)
     for (let i = 0; i < N; i++) {
       const o = i * K, nw = S[i] * -Math.expm1(logq[i]);
       Rr[i] += A[o + K - 1];
       A.copyWithin(o + 1, o, o + K - 1);
       A[o] = nw;
       S[i] -= nw;
+      // Not reported yet (by the end of this step) is evidence too: an infection of age k would have produced a first
+      // report this step with hazard rep[k]. R carries the factor along from A, so no separate term for it.
+      if (censor && firstRepStep[i] > s) {
+        let z = S[i] + Rr[i];
+        for (let k = 0; k < K; k++) { const v = A[o + k] * (1 - repHaz[k]); A[o + k] = v; z += v; }
+        if (z > 0 && z < 1) { S[i] /= z; Rr[i] /= z; for (let k = 0; k < K; k++) A[o + k] /= z; }
+      }
+    }
+    if (win) for (const req of win.values()) if (req.s1 === s && req.H > 0) { // the backward messages
+      for (const [j, e] of req.src) {
+        if (e.L <= 0) continue;
+        const lrInf = (req.w * Math.max(0, req.H - e.T + e.L)) / req.H + 1 - req.w, lrUn = (req.w * Math.max(0, req.H - e.T)) / req.H + 1 - req.w;
+        const o = j * K;
+        let z = (S[j] + Rr[j]) * lrUn;
+        for (let k = 0; k < K; k++) { A[o + k] *= lrInf; z += A[o + k]; }
+        if (z > 0) { S[j] = (S[j] * lrUn) / z; Rr[j] = (Rr[j] * lrUn) / z; for (let k = 0; k < K; k++) A[o + k] /= z; }
+      }
     }
   }
 
   // Online pass: at each step add what was learned; if it reaches back, rerun from the nearest checkpoint.
   // Rows of pNow/shed are what the app would show at the end of each step.
-  const pNow = new Float32Array(nSteps * N), shed = new Float32Array(nSteps * N);
+  const pNow = new Float32Array(nSteps * N), shed = new Float32Array(nSteps * N), everNow = new Float32Array(nSteps * N);
   const clamps = new Map(), ckpt = new Map(), CK = P.checkpointSteps;
   const keepBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays) + CK;
   let st = fresh();
@@ -369,6 +574,7 @@ export function meanFieldRisk(input, params = {}) {
     }
     if (earliest < n) { // rerun from the checkpoint at or before the earliest step touched
       const c0 = Math.floor(earliest / CK) * CK;
+      if (!ckpt.has(c0) && c0 > 0) throw new Error(`meanfield: rerun from step ${c0}, older than the checkpoints kept`);
       st = copy(ckpt.get(c0) || fresh());
       for (let s = c0; s < n; s++) {
         if (s % CK === 0 && s > c0) ckpt.set(s, copy(st));
@@ -383,6 +589,7 @@ export function meanFieldRisk(input, params = {}) {
       for (let k = i * K, e = k + K, a = 0; k < e; k++, a++) { pa += st.A[k]; sh += st.A[k] * stage[a]; }
       pNow[row + i] = pa;
       shed[row + i] = sh;
+      everNow[row + i] = 1 - st.S[i]; // P(infected at some point up to now), for scoring "ever infected" labels
     }
   }
 
@@ -391,6 +598,10 @@ export function meanFieldRisk(input, params = {}) {
   const pAt = (id, tMs) => {
     const i = idx.get(id), n = stepOf(tMs);
     return i === undefined || n < 0 ? P.prior : pNow[n * N + i];
+  };
+  const everAt = (id, tMs) => {
+    const i = idx.get(id), n = stepOf(tMs);
+    return i === undefined || n < 0 ? P.prior : everNow[n * N + i];
   };
   const shedPrior = (P.prior / K) * stage.reduce((s, x) => s + x, 0);
   const shedAt = (id, tMs) => {
@@ -413,10 +624,13 @@ export function meanFieldRisk(input, params = {}) {
   }
   let ever = 0;
   for (let i = 0; i < N; i++) ever += 1 - st.S[i];
+  const everByStep = new Float64Array(nSteps); // sum over agents of P(ever infected), at the end of each step
+  for (let n = 0; n < nSteps; n++) { let x = 0; for (let i = 0, o = n * N; i < N; i++) x += everNow[o + i]; everByStep[n] = x; }
   return {
     expectedInfections: ever, // sum over agents of P(ever infected) by the end
+    everByStep, dtMs,
     sFinal: st.S, // each agent's P(never infected) at the end, indexed like agentIds; 1 - sFinal = P(ever infected)
-    pAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
+    pAt, everAt, shedAt, shedStep, stepOf, index: idx, changes, explain: null, flags: [],
     params: { ...R, ...P, method: 'meanfield' },
     // for the heat map's risk field: hazard at 1 m for 1 h per unit shed = q * breathingRate / nearFieldQ
     field: legacy ? { q, breathingRate: R.breathingRate, nearFieldQ: R.nearFieldQ, outdoorNearDilution: R.outdoorNearDilution, quietQuanta: R.quietQuanta / R.quantaPeak }

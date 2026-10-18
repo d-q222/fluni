@@ -6,7 +6,7 @@ import SwiftUI
 /// may be sick, or a close contact), a tissue pops out of the box on the Today tab and sways gently. Dragging it
 /// up pulls it out: her pull frames follow the finger (hard cuts, like hand animation), and letting go past
 /// halfway finishes the pull until the tissue becomes a sheet of paper with the alert on it; before that it
-/// slips back. VoiceOver gets the same as a button action. "Got it" puts it away at once; dragging the sheet back
+/// slips back. VoiceOver gets the same as a button action. The X puts it away at once; dragging the sheet back
 /// down plays the pull in reverse, following the finger. Either way it stays away until a different alert; after
 /// an all-clear, the next alert pops again. Reduce Motion skips the frames both ways.
 ///
@@ -59,7 +59,7 @@ struct TissueAlert: View {
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                     if isPopped { pullHandle(w, h) }
-                    if case .open = phase { note(w, h) }
+                    if case .open = phase { note(w, h); closeButton(w, h) }
                 }
                 .frame(width: w, height: h, alignment: .topLeading)
                 .rotationEffect(.degrees(wiggling ? Self.sway(at: clock.date) : 0), anchor: UnitPoint(x: 0.5, y: Self.slotLine))
@@ -211,7 +211,7 @@ struct TissueAlert: View {
 
     /// The alert written on the sheet (its paper spans about 4...98% across, 1...81% down). It never scrolls: when
     /// the whole advice doesn't fit (long close-contact advice, large text), the sheet keeps the title and as many
-    /// lines as fit, and says the rest is on Today, one tap ("Got it") away. VoiceOver always hears all of it.
+    /// lines as fit, and says the rest is on Today, one tap (the X) away. VoiceOver always hears all of it.
     private func note(_ w: CGFloat, _ h: CGFloat) -> some View {
         let lines = Advice.body(level)
         return VStack(alignment: .leading, spacing: 10) {
@@ -224,11 +224,6 @@ struct TissueAlert: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(([level == .closeContact ? "Close contact" : "Heads-up", Advice.title(level)] + lines).joined(separator: ". "))
             .accessibilityFocused($sheetFocused)
-            // Got it closes at once (no reverse, no fade; the owner asked) and records the alert as read, saved
-            // across a relaunch. Dragging the sheet down still runs the pull in reverse.
-            Button("Got it") { readLevel = level; onRead(level); pushFrame = nil; phase = .hidden }
-                .buttonStyle(PrimaryButtonStyle(fill: Theme.ink, text: Theme.paper))
-                .accessibilityIdentifier("tissueAlert.ok")
         }
         // Hide only the words while pushing: the frame keeps its content shape, so the drag keeps going.
         .opacity(pushFrame == nil ? 1 : 0)
@@ -251,6 +246,20 @@ struct TissueAlert: View {
         .offset(x: w * 0.18, y: h * 0.12)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
+    }
+
+    /// Lisa's hand-drawn red X in the sheet's top-right corner (drawing 42 pt, tap target 52 pt; web mock: right 10.5%, top 5.4%).
+    /// It closes at once (no reverse, no fade; the owner asked) and records the alert as read, saved across a
+    /// relaunch. Dragging the sheet down still runs the pull in reverse.
+    private func closeButton(_ w: CGFloat, _ h: CGFloat) -> some View {
+        Button { readLevel = level; onRead(level); pushFrame = nil; phase = .hidden } label: {
+            Image("TissueAlertClose").resizable().frame(width: 42, height: 42).rotationEffect(.degrees(-4))
+                .frame(width: 52, height: 52).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .offset(x: w * 0.895 - 52, y: h * 0.054)
+        .accessibilityLabel("Close")
+        .accessibilityIdentifier("tissueAlert.close")
     }
 
     private func noteText(_ lines: [String], more: Bool) -> some View {

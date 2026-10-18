@@ -89,7 +89,10 @@ function atHomeCard(d) {
 
 const SAY = { none: 'All calm nearby.', nearby: "I'm keeping watch.", close: 'What to do is below.', sick: 'Rest up.' };
 const BAND = { low: 'Low', elevated: 'Elevated', high: 'High' };
-const bubble = (key, sick) => `<div class="perch"><span class="say">${esc(SAY[key])}</span><img src="${ASSET}${sick ? 'illo-sick@600.png' : 'tissue.png'}" alt="" class="${sick ? 'sickc' : ''}"></div>`;
+// Lisa's companion poses (assets/companion/): calm with flowers when all is clear, masked and on the phone for a
+// heads-up or close contact, tucked under a blanket when sick.
+const POSE = { none: 'fine', nearby: 'alert', close: 'alert', sick: 'sick' };
+const bubble = (key) => `<div class="perch"><span class="say">${esc(SAY[key])}</span><img src="${ASSET.replace('illustrations/', 'companion/')}${POSE[key]}.png" alt="" class="pose ${POSE[key]}"></div>`;
 const pluralPhones = (n) => (n === 1 ? '1 other FlUni phone' : `${n} other FlUni phones`);
 const dur = (ms) => { const m = Math.max(1, Math.round(ms / 60000)); return m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`; };
 const howLink = () => `<button class="howlink" data-act="calc"><i>f(x)</i>How your risk estimate is worked out</button>`;
@@ -100,11 +103,21 @@ function strip(d) {
     <div><p class="st">${esc(a.title)}</p><p class="sl">${esc(close ? a.body[1] : a.body[0])}</p></div></div>`;
 }
 
+// Lisa's two-frame scenes at the top of the risk card (assets/scenes/<name>-1/-2.png), by state. Hand-drawn
+// animation: the two frames swap like a flipbook. Only states she has drawn get one; Reduce Motion holds frame 1.
+const SCENE = { none: 'fine' };
+const scene = (key) => {
+  const n = SCENE[key];
+  if (!n) return '';
+  const src = (i) => `${ASSET.replace('illustrations/', 'scenes/')}${n}-${i}.png`;
+  return `<div class="scene" aria-hidden="true"><img src="${src(1)}" alt=""><img class="f2" src="${src(2)}" alt=""></div>`;
+};
+
 function heroCard(d) {
   const b = band(d.p), flagged = d.level !== 'none';
   const up = flagged && d.p > PRIOR * 1.05 ? `<small>up from ${esc(liveText(PRIOR))}</small>` : '';
   const steps = flagged && b === 'low' ? `<p class="lowtxt">Low, but follow the ${d.level === 'close' ? 'close-contact' : 'heads-up'} steps</p>` : '';
-  return `${bubble(d.level, false)}${card('hero', '', `${flagged ? strip(d) : ''}
+  return `${bubble(d.level, false)}${card('hero', '', `${flagged ? strip(d) : scene(d.level)}
     <div class="numrow"><span class="big" data-live="risk">${esc(liveText(d.p))}</span><span class="ind"><span class="dot ${b}"></span>${BAND[b]}${up}</span></div>${steps}
     <button class="fbtn" data-act="report">I don't feel well</button>`)}${howLink()}`;
 }
