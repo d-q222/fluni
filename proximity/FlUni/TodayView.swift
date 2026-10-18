@@ -140,7 +140,7 @@ struct TodayView: View {
     // MARK: Risk
 
     private var riskCard: some View {
-        RiskCardView(p: model.ownScore) { showCalc = true }  // never low for someone who reported being sick
+        RiskCardView(p: model.ownScore, alert: level) { showCalc = true }  // never low for someone who reported being sick
     }
 
     // MARK: Minutes

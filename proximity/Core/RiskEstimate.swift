@@ -236,6 +236,19 @@ enum RiskEstimate {
         case .high: return "High. Consider getting tested at Vaden and staying home."
         }
     }
+
+    /// The risk card's advice line next to the status card. A low number can't say "No action needed" while
+    /// the status card asks you to act, so during a heads-up or close contact the low line points to those
+    /// steps; the band word stays (Low is still the true band). Elevated and high already ask for action.
+    /// Phone only: the map's advice (heatmap/app.js `advice`) has no alert, so `summary(_:)` stays shared.
+    static func summary(_ p: Double, alert: AlertLevel) -> String {
+        guard band(p) == .low else { return summary(p) }
+        switch alert {
+        case .none: return summary(p)
+        case .nearby: return "Low, but follow the heads-up steps."
+        case .closeContact: return "Low, but follow the close-contact steps."
+        }
+    }
 }
 
 /// This phone's own score and the value it broadcasts (product owner 2026-10-17: each phone broadcasts its
