@@ -13,8 +13,13 @@
 // when the run has config.json, contacts.csv.gz and reports_tests.csv, else app.js's appBelief rule.
 // The forecast is forecast.js reimplemented on streamed per-agent counts: it needs frames for every
 // step at once, which is too big at full scale. Same method, same numbers (see the check script).
+//   close_minutes.csv.gz     agent_id,hour,minutes: raw minutes within 6 ft (1.83 m) of anyone, per agent and hour
+//                            since the run start (sparse: nonzero only). Each contacts.csv.gz row is one step
+//                            (duration_s / 60 minutes). The phone mock's close-contact time on big runs.
 //
-// Usage: node heatmap/tools/precompute.mjs sim/runs/<run> --out <dir>
+// Usage: node heatmap/tools/precompute.mjs sim/runs/<run> --out <dir> [--model smf]
+//   --model smf  takes P(sick) from model/out/<run>/p_sick_smf.csv (Baker mean-field, model/smf.js) instead of
+//                running infer.js, and writes totals_smf.json.gz (no p_sick.csv, close minutes or building_heat.csv; timeline_changes.csv.gz is rewritten identically).
 
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createGunzip, createGzip, gzipSync } from 'node:zlib';
@@ -41,8 +46,11 @@ const TRUE = new Set(['1', 'true', 'True', 'TRUE']); // as app.js
 const args = process.argv.slice(2);
 const oi = args.indexOf('--out');
 const outDir = oi >= 0 ? args.splice(oi, 2)[1] : null;
+const mi = args.indexOf('--model');
+const modelOpt = mi >= 0 ? args.splice(mi, 2)[1] : 'infer';
+const SMF = modelOpt === 'smf';
 const runDir = args[0];
-if (!runDir || !outDir) { console.error('usage: node heatmap/tools/precompute.mjs <run_dir> --out <dir>'); process.exit(1); }
+if (!runDir || !outDir || !['infer', 'smf'].includes(modelOpt)) { console.error('usage: node heatmap/tools/precompute.mjs <run_dir> --out <dir> [--model smf]'); process.exit(1); }
 mkdirSync(outDir, { recursive: true });
 const runName = basename(resolve(runDir));
 const T0 = performance.now();
@@ -166,10 +174,53 @@ async function loadContacts(file, ids) {
   });
 }
 
+// close_minutes.csv.gz: streams contacts.csv.gz once; no contact objects are kept.
+const NEARBY_M = 1.83; // 6 ft, as app.js
+async function writeCloseMinutes(file, outFile) {
+  const bins = new Map(); // `${agent}\t${hour}` -> minutes
+  const stepH = (config.step_min || 5) / 60;
+  let head = null, iT, iA, iB, iD, iDur;
+  // Several contacts at one step overlap in time: per agent and step the longest counts once ("within 6 ft of anyone").
+  let curT = -1, cur = new Map();
+  const flush = () => {
+    const hour = Math.floor(curT * stepH);
+    for (const [id, m] of cur) { const k = `${id}\t${hour}`; bins.set(k, (bins.get(k) || 0) + m); }
+    cur = new Map();
+  };
+  for await (const batch of lineBatches(file)) {
+    for (const line of batch) {
+      if (!line) continue;
+      const f = line.replace(/\r$/, '').split(',');
+      if (!head) { head = f; [iT, iA, iB, iD, iDur] = ['t', 'agent_a', 'agent_b', 'distance_m', 'duration_s'].map((c) => head.indexOf(c)); continue; }
+      if (!(+f[iD] <= NEARBY_M)) continue;
+      const t = +f[iT], min = +f[iDur] / 60;
+      if (t !== curT) { if (t < curT) throw new Error('contacts are not sorted by t'); flush(); curT = t; }
+      for (const id of [f[iA], f[iB]]) if (!(cur.get(id) >= min)) cur.set(id, min);
+    }
+  }
+  flush();
+  const rows = ['agent_id,hour,minutes'];
+  for (const [k, m] of [...bins].sort((x, y) => (x[0] < y[0] ? -1 : 1))) rows.push(`${k.replace('\t', ',')},${round6(m)}`);
+  writeFileSync(outFile, gzipSync(rows.join('\n') + '\n', { level: 9 }));
+  console.log(`close_minutes.csv.gz: ${rows.length - 1} agent-hours (${lap()} ms)`);
+}
+
 let config = {}, risk = null, agentIds = [];
 const modelFiles = ['config.json', 'contacts.csv.gz', 'reports_tests.csv', 'agents_static.csv'];
 if (existsSync(join(runDir, 'config.json'))) config = JSON.parse(readFileSync(join(runDir, 'config.json'), 'utf8'));
-if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
+if (SMF) {
+  // P(sick) change points from the SMF model's CSV, in the shape inferRisk returns (changes: id -> [{ tMs, p }]).
+  const file = new URL(`../../model/out/${basename(resolve(runDir))}/p_sick_smf.csv`, import.meta.url);
+  if (!existsSync(file)) throw new Error(`${file.pathname} is missing: run model/smf_cli.mjs first.`);
+  const changes = new Map();
+  for (const r of parseCsv(readFileSync(file, 'utf8'))) {
+    if (!changes.has(r.agent_id)) changes.set(r.agent_id, []);
+    changes.get(r.agent_id).push({ tMs: Date.parse(r.t_iso), p: +r.p_sick });
+  }
+  for (const cs of changes.values()) cs.sort((a, b) => a.tMs - b.tMs);
+  risk = { changes, params: { prior: MODEL.prior } };
+  console.log(`model: SMF, ${changes.size} agents from p_sick_smf.csv`);
+} else if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   agentIds = parseCsv(readFileSync(join(runDir, 'agents_static.csv'), 'utf8')).map((a) => a.agent_id);
   const contacts = await loadContacts(join(runDir, 'contacts.csv.gz'), agentIds);
   const reports = parseCsv(readFileSync(join(runDir, 'reports_tests.csv'), 'utf8'));
@@ -189,6 +240,7 @@ if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   const lines = ['agent_id,t_iso,p_sick'];
   for (const [id, cs] of risk.changes) for (const c of cs) lines.push(`${id},${iso(c.tMs)},${c.p.toFixed(4)}`);
   writeFileSync(join(outDir, 'p_sick.csv'), lines.join('\n') + '\n');
+  await writeCloseMinutes(join(runDir, 'contacts.csv.gz'), join(outDir, 'close_minutes.csv.gz'));
 } else {
   console.warn(`Missing ${modelFiles.filter((f) => !existsSync(join(runDir, f))).join(', ')}: using the appBelief fallback for P(sick).`);
 }
@@ -476,7 +528,7 @@ const totals = {
 };
 const json = JSON.stringify(totals);
 const gzJson = gzipSync(json, { level: 9 });
-writeFileSync(join(outDir, 'totals.json.gz'), gzJson);
+writeFileSync(join(outDir, SMF ? 'totals_smf.json.gz' : 'totals.json.gz'), gzJson);
 
 // ---------- 4b. building_heat.csv (phones; docs/building-heat-format.md) ----------
 
@@ -485,6 +537,7 @@ writeFileSync(join(outDir, 'totals.json.gz'), gzJson);
 // peak), so a building the map shows dark is one the phone warns about: high = past the legend's
 // midpoint (heat ≥ 0.5). expected_sick stays the plain Σ P (the popups' count).
 const HEAT_EVERY_MIN = 15;
+if (!SMF) {
 const peaks = steps.map((st) => Math.max(0, ...st.ex.map((x) => x * scale))).sort((a, b) => a - b);
 const heatMax = peaks[Math.floor(0.9 * (peaks.length - 1))] || peaks[peaks.length - 1] || 1; // quiet runs: the top
 const where = new Map();
@@ -510,6 +563,7 @@ steps.forEach((st, i) => {
 });
 writeFileSync(join(outDir, 'building_heat.csv'), heatRows.join('\n') + '\n');
 console.log(`building_heat.csv: ${heatRows.length - 1} rows, every ${HEAT_EVERY_MIN} min; colour max ${heatMax.toFixed(2)} expected sick above the ${MODEL.prior * 100}% prior`);
+}
 
 // ---------- 5. summary ----------
 

@@ -73,3 +73,27 @@ export async function loadTotals(url) {
   const backtest = (h) => ({ rate: j.backtest[h] ?? NaN });
   return { totals: { times, steps, scale: j.scale }, forecaster: { forecast, backtest } };
 }
+
+// close_minutes.csv.gz (tools/precompute.mjs): raw minutes within 6 ft of anyone, per agent and hour since the
+// run start. Returns (id, tMs) => minutes in the 24 h before tMs, or null when the file is missing.
+// Approximation: whole hours inside the window are exact; the hour containing tMs counts by the elapsed
+// fraction f of that hour, and the hour 24 h earlier by the remaining 1 - f (minutes assumed spread evenly in an hour).
+export async function loadCloseMinutes(url, startMs) {
+  const HOUR = 3600000;
+  let rows;
+  try { rows = (await loadCsv(url, ['agent_id', 'hour', 'minutes'])).data; } catch { return null; }
+  if (!rows.length) return null;
+  const by = new Map(); // id -> Map(hour -> minutes)
+  for (const r of rows) {
+    if (!by.has(r.agent_id)) by.set(r.agent_id, new Map());
+    by.get(r.agent_id).set(Number(r.hour), Number(r.minutes));
+  }
+  return (id, tMs) => {
+    const m = by.get(id);
+    if (!m) return 0;
+    const x = (tMs - startMs) / HOUR, h = Math.floor(x), f = x - h;
+    let sum = (m.get(h) || 0) * f + (m.get(h - 24) || 0) * (1 - f);
+    for (let k = h - 23; k < h; k++) sum += m.get(k) || 0;
+    return sum;
+  };
+}

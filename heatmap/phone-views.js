@@ -82,14 +82,14 @@ function riskCard(d) {
     <p class="t-head">Your risk estimate</p>
     <p class="t-large" data-live="risk">${esc(liveText(d.p))}</p>
     <p class="t-sub">${esc(summary(d.p))}</p>
-    <p class="t-foot ${note}">Based on the last 24 hours: time near each person, how close (closer counts much more), shared room air, and whether they reported symptoms or a positive test. It's an estimate, not a diagnosis.</p>
+    <p class="t-foot ${note}">The campus model's estimate (${esc(d.modelName)}), worked out from contacts and reports. It's an estimate, not a diagnosis.</p>
     <button class="link ${note}" data-act="calc">${ico('fn')}See how this is worked out</button></div>`);
 }
 
 function minutesCard(d) {
   const mins = d.minutes, done = mins >= CLOSE_MIN;
   const caption = done ? `You've reached the ${CLOSE_MIN}-minute close-contact mark.`
-    : mins > 0 ? `About ${Math.ceil(CLOSE_MIN - d.exactMinutes)} more minutes would make this a close contact.` : 'No time near someone with symptoms or a positive test.';
+    : mins > 0 ? `About ${Math.ceil(CLOSE_MIN - d.exactMinutes)} more minutes would make this a close contact.` : 'Time within 6 ft of other people in the last 24 h.';
   return card('', '', `<div class="vstack" style="gap:10px"><p class="t-head">Close-contact time</p>
     <div style="display:flex;align-items:baseline;gap:6px"><span class="t-large">${mins}</span><span class="t-sub ink2">of ${CLOSE_MIN} min</span></div>
     <div class="progress ${done ? 'done' : ''}" role="progressbar" aria-valuenow="${Math.min(d.exactMinutes, CLOSE_MIN).toFixed(0)}" aria-valuemax="${CLOSE_MIN}"><i style="width:${Math.min(1, d.exactMinutes / CLOSE_MIN) * 100}%"></i></div>
@@ -179,12 +179,9 @@ const sheet = (title, inner) => `<div class="sheet" role="dialog" aria-label="${
 
 export function calcSheetHtml(d) {
   return sheet('How is this calculated?',
-    block('Close contact', `Minutes within 6 ft of someone. They count in full if the person tested positive and half if they have symptoms. At ${CLOSE_MIN} of these in a day, FlUni tells you it's a close contact.`, `You: ${d.exactMinutes.toFixed(1)} of ${CLOSE_MIN}`)
-    + block('What adds to your risk', 'Time near each person, how close you were (closer counts much more), the room air you shared, and whether they reported symptoms or a positive test. Together these make your exposure dose. Phones up to about 10 m away (Bluetooth range) count.', `Your exposure dose: ${d.dose.toFixed(3)}`)
-    + block('The estimate', `Each person's dose becomes a chance they passed flu on to you. Someone who reported a positive test counts at ${Math.round(d.posTest * 100)}%, someone with symptoms at ${Math.round(d.selfReport * 100)}%. Those chances are added on top of a ${Math.round(PRIOR * 100)}% everyday baseline. It's the same exposure formula as the campus model.`, `This phone's estimate: ${liveText(d.p)}`)
-    + block('What counts', "Only the last 24 hours. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", null)
-    + block('Campus model vs this phone', "The campus model is the official number, worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick) and the actual rooms. This phone's estimate uses only what this phone detected in the last 24 hours, assumes a standard classroom-sized room and an average day of illness, so the two can differ.",
-      d.campusP != null ? `Campus model: ${percentText(d.campusP)} · This phone's estimate: ${liveText(d.p)}` : null)
+    block('Close contact', `Minutes within 6 ft of other people in the last 24 hours, whoever they are. At ${CLOSE_MIN} of these in a day, FlUni shows a close-contact alert.`, `You: ${d.exactMinutes.toFixed(1)} of ${CLOSE_MIN}`)
+    + block('Your risk estimate', `It is the campus model's estimate (${d.modelName}), worked out from everyone's contacts, reports and tests, including second-hand risk (being near someone who was near someone sick). It is not a dose this phone adds up on its own. If you report symptoms or a positive test, it never shows low.`, `Your estimate: ${liveText(d.p)}`)
+    + block('What counts', "Only contacts a phone can measure. GPS alone doesn't count, because it's too coarse to tell 3 feet from 30. Bluetooth and precise distance sensing do.", null)
     + '<p class="fineprint">This is an estimate to help you decide what to do. It isn\'t a diagnosis.</p>');
 }
 

@@ -12,7 +12,7 @@ import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
-import { loadPSick, loadTotals } from './precomputed.js';
+import { loadPSick, loadTotals, loadCloseMinutes } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -252,7 +252,14 @@ async function loadModel(dataUrl, agentIds) {
     }
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
       const risk = smfRisk || await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      if (risk) return { risk, contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
+      if (risk) {
+        const startMs = Date.parse(config.start);
+        // Raw close-contact minutes come from hourly bins (precompute.mjs close_minutes.csv.gz), not from contacts.
+        const closeMin = (await loadCloseMinutes(new URL(`out/${config.run_id}/close_minutes.csv.gz`, location.href), startMs))
+          || (await loadCloseMinutes(new URL('close_minutes.csv.gz', base), startMs));
+        if (!closeMin) console.warn('No close_minutes.csv.gz for this run: close-contact time shows 0 (run tools/precompute.mjs).');
+        return { risk, contacts: [], startMs, stepMs: config.step_min * 60000, traits: new Map(), closeMin };
+      }
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
     const [contacts, reports, rooms] = await Promise.all([
@@ -909,8 +916,16 @@ async function main() {
   if (trips) attachTrips(tracks, trips);
   // Big runs: the user map's totals from tools/precompute.mjs, kept in heatmap/out/<run>/ (or next to the timeline).
   const runDir = new URL('.', new URL(dataUrl, location.href)), run = runDir.pathname.split('/').filter(Boolean).at(-1);
-  const pre = tracks.size < BIG_RUN && !bigRun ? null
-    : (await loadTotals(new URL(`out/${run}/totals.json.gz`, location.href))) || (await loadTotals(new URL('totals.json.gz', runDir)));
+  // In SMF mode the totals must be built from SMF's P (precompute.mjs --model smf); infer.js totals are the fallback.
+  const loadRunTotals = async () => {
+    if (WANT_SMF && modelLabel.includes('SMF')) {
+      const smf = (await loadTotals(new URL(`out/${run}/totals_smf.json.gz`, location.href))) || (await loadTotals(new URL('totals_smf.json.gz', runDir)));
+      if (smf) return smf;
+      console.warn(`No totals_smf.json.gz for ${run}: the user map uses totals.json.gz (infer.js).`);
+    }
+    return (await loadTotals(new URL(`out/${run}/totals.json.gz`, location.href))) || (await loadTotals(new URL('totals.json.gz', runDir)));
+  };
+  const pre = tracks.size < BIG_RUN && !bigRun ? null : await loadRunTotals();
   if (!pre && /timeline_changes\.csv(\.gz)?$/.test(dataUrl)) { // with precomputed totals, nothing needs every step
     Object.assign(data, expandSteps(tracks, data.times, model && model.risk.pAt));
   }
@@ -1285,6 +1300,20 @@ async function main() {
     }
     return total;
   }
+  // Raw measured minutes within 6 ft of anyone (whatever their risk) in the 24 h before t: the phone's
+  // "Close-contact time". Big runs have no contacts in the page: hourly bins from close_minutes.csv.gz instead.
+  function closeMinutes(id, t) {
+    if (model.closeMin) return model.closeMin(id, t);
+    // Contacts at the same step overlap in time (a full room is many pairs): the longest one counts once.
+    let total = 0, stepT = -1, stepMin = 0;
+    for (const e of exposureLog.get(id) || []) {
+      if (e.tMs > t) break;
+      if (e.tMs < t - EXPOSURE_WINDOW_MS || e.d > NEARBY_M) continue;
+      const m = Math.min(e.min, (t - e.tMs) / 60000);
+      if (e.tMs !== stepT) { total += stepMin; stepT = e.tMs; stepMin = m; } else if (m > stepMin) stepMin = m;
+    }
+    return total + stepMin;
+  }
   // Each person's own status as their phone knows it (product owner, 2026-10-17): 0.97 after a positive
   // test, 0.6 after reporting symptoms, for 7 days; a negative test or "recovered" clears it.
   const statusLog = new Map();
@@ -1345,7 +1374,7 @@ async function main() {
   // (a heads-up, then a close-contact alert at 15 weighted minutes); the walk-in warning uses building
   // totals only (the building's high flag: heat = sqrt(expected / colour max) >= 0.5).
   function phoneState(me) {
-    const live = model ? exposureMinutes(me.id, now, EXPOSURE_WINDOW_MS, false) : 0;
+    const live = model ? closeMinutes(me.id, now) : 0;
     const later = model ? exposureMinutes(me.id, now, NOTICE_WINDOW_MS, true) : 0;
     const near = (data.hasTruth && someoneNear(me, ADJACENT_M, (a) => a.infectious)) || someoneNear(me, NEARBY_M, (a) => a.p >= RISKY);
     // As FlUni: "Close contact" means 15 weighted minutes in the last 24 h. People who were near someone
@@ -1410,7 +1439,8 @@ async function main() {
 
   function phoneData(me, st) {
     const sr = selfStatus(me.id);
-    const phoneP = model ? Math.max(phoneEstimate(me.id, now), statusFloor(me.id, now)) : MODEL.prior; // never low when they're sick
+    // The campus model's P (the one on the map and the presenter strip), never low once they're sick themselves.
+    const phoneP = model ? Math.max(me.p, statusFloor(me.id, now)) : MODEL.prior;
     const dayNo = sr.startMs == null ? 0 : Math.round((midnight(now) - midnight(sr.startMs)) / DAYMS);
     const stay = sr.startMs == null ? null : {
       day: dayNo, over: dayNo > 5, positive: sr.positive, startMs: sr.startMs, lastMs: midnight(sr.startMs) + 5 * DAYMS + 12 * 3600000,
@@ -1419,7 +1449,7 @@ async function main() {
     return {
       now, statusSetMs: sr.setMs,
       level: st.level, peers: st.peers, walkIn: st.walkIn, minutes: Math.min(99, Math.floor(st.live)), exactMinutes: st.live,
-      p: phoneP, campusP: me.p, dose: lastPhoneDose, posTest: MODEL.posTest, selfReport: MODEL.selfReport,
+      p: phoneP, modelName: WANT_SMF && modelLabel.includes('SMF') ? 'Baker mean-field model' : 'infer.js',
       status: sr.status, stamp: sr.status === 'possible', stay,
       contacts: recentEpisodes(me.id).map((e) => ({ startMs: e.start, close: e.weighted >= CLOSE_CONTACT_MIN,
         text: `About ${Math.max(1, Math.round(e.min))} min near ${e.contagious ? 'someone who tested positive' : 'someone with symptoms'}` })),
