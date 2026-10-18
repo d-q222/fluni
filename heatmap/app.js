@@ -282,7 +282,8 @@ const CanvasLayer = L.Layer.extend({
     this.rings = clip ? clip.features.flatMap((f) => {
       const g = f.geometry;
       if (!g) return [];
-      return g.type === 'Polygon' ? g.coordinates : g.type === 'MultiPolygon' ? g.coordinates.flat() : [];
+      // [ring, isHole]: holes are wound the other way below, so courtyards stay clear under nonzero.
+      return (g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []).flatMap((poly) => poly.map((r, k) => [r, k > 0]));
     }) : null;
     this.canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-animated');
   },
@@ -311,12 +312,12 @@ const CanvasLayer = L.Layer.extend({
     this.canvas.style.height = `${br.y - tl.y}px`;
     if (this.rings) {
       const parts = [];
-      for (const ring of this.rings) {
-        let d = '';
-        for (const [lon, lat] of ring) {
-          const q = this._map.latLngToLayerPoint([lat, lon]);
-          d += `${d ? 'L' : 'M'}${(q.x - tl.x).toFixed(1)} ${(q.y - tl.y).toFixed(1)}`;
-        }
+      for (const [ring, hole] of this.rings) {
+        const pts = ring.map(([lon, lat]) => this._map.latLngToLayerPoint([lat, lon]));
+        let area = 0;
+        for (let i = 0; i + 1 < pts.length; i++) area += pts[i].x * pts[i + 1].y - pts[i + 1].x * pts[i].y;
+        if ((area > 0) === hole) pts.reverse(); // outer rings clockwise on screen, holes anticlockwise
+        const d = pts.map((q, i) => `${i ? 'L' : 'M'}${(q.x - tl.x).toFixed(1)} ${(q.y - tl.y).toFixed(1)}`).join('');
         if (d) parts.push(`${d}Z`);
       }
       this.canvas.style.clipPath = `path('${parts.join('')}')`; // nonzero: duplicate outlines don't cancel
@@ -508,6 +509,28 @@ function* asPoints(states, truth, indoorOnly = false) {
   }
 }
 
+// The heat grid's building mask: cells whose centre is inside an outline (masks.js), plus the cells an
+// outline's corners fall in (a small building on a coarse grid had no cell, and the normalisation moved
+// its heat into other buildings), grown by one cell, so heat reaches every outline's edge and the canvas
+// clip (CanvasLayer) cuts it exactly on the drawn line.
+function heatMask(outlines, grid) {
+  const inside = rasterizeBuildings(outlines, grid).inside, { nx, ny, cellM, bounds } = grid;
+  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM;
+  for (const f of outlines.features) {
+    const g = f.geometry, polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : [];
+    for (const poly of polys) for (const [lon, lat] of poly[0]) {
+      const x = Math.floor((lon - bounds.west) * kx), y = Math.floor((bounds.north - lat) * ky);
+      if (x >= 0 && y >= 0 && x < nx && y < ny) inside[y * nx + x] = 1;
+    }
+  }
+  const out = new Uint8Array(inside.length);
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    if (!inside[y * nx + x]) continue;
+    for (let v = Math.max(0, y - 1); v <= Math.min(ny - 1, y + 1); v++) out.fill(1, v * nx + Math.max(0, x - 1), v * nx + Math.min(nx - 1, x + 1) + 1);
+  }
+  return out;
+}
+
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
 // One set of risk tiers for everything the presenter and user see: the phone's advice, the risk card's
 // colour, the people badges and the legend. Low < 10% (sage), Elevated 10–40% (sun), High ≥ 40% (fire).
@@ -678,7 +701,7 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const mask = outlines ? rasterizeBuildings(outlines, probe).inside : null;
+  const mask = outlines ? heatMask(outlines, probe) : null;
   const field = new DiffusionField(bounds, DEMO.cellM, { mask });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
@@ -686,7 +709,7 @@ async function main() {
   const fieldFor = (sigma) => {
     const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
     if (!fields.has(cell)) {
-      const m = outlines ? rasterizeBuildings(outlines, new DiffusionField(bounds, cell)).inside : null;
+      const m = outlines ? heatMask(outlines, new DiffusionField(bounds, cell)) : null;
       fields.set(cell, new DiffusionField(bounds, cell, { mask: m }));
     }
     return fields.get(cell);
@@ -814,7 +837,9 @@ async function main() {
   const map = baseMap('map', { maxBounds: L.latLngBounds(sw, ne).pad(0.5) });
   const sigmaForZoom = () => {
     const mPerPx = 156543.03 * Math.cos(map.getCenter().lat * Math.PI / 180) / 2 ** map.getZoom();
-    return Math.min(120, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6)); // 6 m steps: few cached scales
+    // 6 m steps: few cached scales. At most 30 m: with heat kept to the outlines, a wider spread only smears a
+    // building's heat into empty neighbours.
+    return Math.min(30, Math.max(DEMO.sigmaM, Math.round(16 * mPerPx / 6) * 6));
   };
   // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
   map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
