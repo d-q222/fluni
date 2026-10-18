@@ -83,7 +83,7 @@ SYSTEM = """You are simulating the day-to-day decisions of one Stanford undergra
 simulation of campus life. Researchers use the result to study how real students behave, so realism \
 matters more than good behavior: real students skip some classes, stay up late, go to parties, \
 sometimes ignore health advice and sometimes go out while sick. Stay in character with the persona and \
-tendencies you are given, and keep continuity with your diary.
+tendencies you are given, and keep continuity with your diary. Everyone in this simulation, you included, uses they/them; never assume anyone's gender.
 
 Each turn you plan the given time window as a list of blocks. Rules:
 - Times are 24-hour HH:MM. The day runs from the window start to the same time the next day; times \
@@ -97,14 +97,14 @@ will remember tomorrow (what you plan or did, how you feel, anything notable).
 - `worry`: how worried you are right now about getting sick or making others sick, 1 (not at all) to 5 (very).
 - `messages`: texts to people in your friend group, usually none. `to` is a friend's id, or "group" for \
 the whole friend group. `kind`: `invite` (do something together at `place` at `time`), `warn` (a \
-heads-up about illness going around), `tell_sick` (you tell them you are sick). Leave `place` and \
-`time` empty unless inviting.
-- `accept`: ids of messages you say yes to (an invite you will go to, a warning you take seriously)."""
+heads-up about illness going around), `tell_sick` (you tell them you are sick), `reply` (answering \
+a text, e.g. thanks or ok). Leave `place` and `time` empty unless inviting.
+- `accept`: ids of invites you say yes to (you will go)."""
 TALK_SYSTEM = """You are role-playing one Stanford undergraduate inside an epidemic simulation of \
 campus life. Another student is right next to you and you may talk. Researchers use the result to study \
 how real students influence each other, so realism matters more than good behavior: students chat, make \
 plans, talk friends into parties or out of them, warn each other, downplay or hide being sick, or just \
-nod at a stranger and say nothing. Stay in character with your persona and diary.
+nod at a stranger and say nothing. Stay in character with your persona and diary. Everyone in this simulation, you included, uses they/them; never assume anyone's gender.
 
 You only know what your prompt tells you. Your symptoms, test results and app status are private unless \
 you choose to share them; about the other person you only see what is visible and hear what they say.
@@ -115,14 +115,15 @@ When asked to reflect after the conversation: `memory` is one or two sentences y
 you learned, anything you agreed to do), `replan` is true only if the conversation changes what you \
 will do for the rest of today, and `worry` is how worried you are now about getting sick or making \
 others sick, 1 (not at all) to 5 (very). `messages`: texts to people in your friend group, usually \
-none (`to` a friend's id or "group"; `kind` invite at `place` and `time`, warn, or tell_sick; leave \
-`place` and `time` empty unless inviting)."""
+none (`to` a friend's id or "group"; `kind` invite at `place` and `time`, warn, tell_sick, or reply to \
+answer a text; leave `place` and `time` empty unless inviting)."""
 TALK_SCHEMA = {"type": "object", "properties": {"say": {"type": "string"}, "end": {"type": "boolean"},
                                                 "shared_health": {"type": "boolean"}},
                "required": ["say", "end", "shared_health"], "additionalProperties": False}
 WORRY_SCHEMA = {"type": "integer", "enum": [1, 2, 3, 4, 5]}
 WORRY_WORDS = ["not worried", "a little worried", "somewhat worried", "quite worried", "very worried"]
-MSG_KINDS = ["invite", "warn", "tell_sick"]
+MSG_KINDS = ["invite", "warn", "tell_sick", "reply"]
+HEED_SOCIAL = [ACT[a] for a in ("party", "hangout", "event", "study_group", "gym")]
 RELATIONS = ["friend", "roommate", "dormmate", "teammate", "classmate", "stranger"]
 TALK_DEFAULTS = {"on": True, "radius_m": 3.0, "small_room_max_capacity": 8, "min_minutes": 10, "max_turns": 6, "cooldown_h": 6,
                  "max_per_agent_per_day": 4, "memory": 5}
@@ -145,7 +146,21 @@ NAMES = ["Alex", "Jordan", "Taylor", "Sam", "Casey", "Riley", "Morgan", "Avery",
          "Charlie", "Skyler", "Dakota", "Emerson", "Finley", "Hayden", "Kai", "Logan", "Parker", "Reese",
          "Sage", "Drew", "Eden", "Ari", "Noa", "Jules", "Remy", "Robin", "Shay", "Blake", "Cameron", "Devon",
          "Elliot", "Harper", "Jesse", "Kendall", "Lane", "Marley", "Nico", "Oakley", "Peyton", "River",
-         "Sasha", "Tatum", "Wren", "Ash", "Bailey", "Billie", "Mika"]
+         "Sasha", "Tatum", "Wren", "Ash", "Bailey", "Billie", "Mika", "Adrian", "Alexis", "Amari", "Angel",
+         "Arden", "Ariel", "Armani", "Aspen", "Aubrey", "August", "Bellamy", "Bowie", "Brook", "Cal", "Campbell",
+         "Carter", "Cary", "Cassidy", "Cedar", "Channing", "Chris", "Cody", "Corey", "Dallas", "Dana", "Darby",
+         "Darian", "Dell", "Denver", "Dylan", "Ellis", "Ember", "Emery", "Ezra", "Fallon", "Frankie", "Gale",
+         "Gray", "Greer", "Hadley", "Halo", "Haven", "Hollis", "Hunter", "Indigo", "Irie", "Jaden", "Jai",
+         "Jalen", "Jean", "Jody", "Joey", "Jupiter", "Justice", "Kamari", "Keegan", "Kelly", "Kennedy", "Kerry",
+         "Kit", "Lake", "Landry", "Laramie", "Lee", "Lennon", "Lennox", "Linden", "London", "Lou", "Lux", "Lyric",
+         "Mackenzie", "Maddox", "Marlowe", "Max", "Merritt", "Micah", "Milan", "Monroe", "Murphy", "Navy", "Nova",
+         "Ocean", "Onyx", "Pat", "Perry", "Phoenix", "Presley", "Raleigh", "Ray", "Reagan", "Reed", "Remington",
+         "Rio", "Ripley", "Rory", "Royal", "Ryan", "Sailor", "Salem", "Sawyer", "Scout", "Sidney", "Sky",
+         "Spencer", "Stevie", "Sterling", "Story", "Sutton", "Sydney", "Teagan", "Terry", "Toby", "Tracy",
+         "Tristan", "True", "Tyler", "Valentine", "Vesper", "Wallace", "Waverly", "Wesley", "Winter", "Wynn",
+         "Yael", "Zion", "Zuri", "Ainsley", "Alva", "Arlo", "Bay", "Bryce", "Cypress", "Dorian", "Ellery",
+         "Hale", "Ira", "Jordy", "Kellan", "Lyle", "Mars", "Neo", "Oli", "Paxton", "Rain", "Rumi", "Shiloh",
+         "Sol", "Tam", "Tenzin", "Umi", "Val", "Wilder"]
 
 
 def _hhmm(m):
@@ -387,7 +402,24 @@ class LLMAgents:
 
     def _name(self, i):
         aid = self.pop.agent_id[i]
-        return f"{NAMES[_crc(aid) % len(NAMES)]} ({aid})"
+        if not hasattr(self, "_names"):
+            self._names = self._name_table()
+        return f"{self._names.get(int(i), NAMES[_crc(aid) % len(NAMES)])} ({aid})"
+
+    def _name_table(self):
+        """First names unique across Claude agents and their friend groups (hash pick, then next free name)."""
+        fg = np.asarray(self.pop.friend_group)
+        who = sorted(set(self.idx) | {int(j) for i in self.idx for j in np.flatnonzero(fg == fg[i])})
+        used, out = set(), {}
+        for i in who:
+            k = _crc(self.pop.agent_id[i]) % len(NAMES)
+            for d in range(len(NAMES)):
+                if NAMES[(k + d) % len(NAMES)] not in used:
+                    k = (k + d) % len(NAMES)
+                    break
+            used.add(NAMES[k])
+            out[i] = NAMES[k]
+        return out
 
     def _health(self, i, dis):
         out = []
@@ -442,9 +474,13 @@ class LLMAgents:
                           }.get(reason, ""))
         if self.inbox[i]:
             parts += ["", "Notifications:"] + [f"- {m}" for m in self.inbox[i]]
-        if self._awaiting[i]:
-            parts += ["", "Texts waiting for your answer (put the id in `accept` to say yes):"] + \
-                [f"- [{mid}] {self._msg_line(self._open[mid])}" for mid in self._awaiting[i]]
+        inv = self._invites_waiting(i)
+        if inv:
+            parts += ["", "Invites waiting for your answer (put the id in `accept` to say yes):"] + \
+                [f"- [{mid}] {self._msg_line(self._open[mid])}" for mid in inv]
+        other = [mid for mid in self._awaiting[i] if mid not in inv]
+        if other:
+            parts += ["", "Texts you got:"] + [f"- {self._msg_line(self._open[mid])}" for mid in other]
         if self.commit[i]:
             parts += ["", "Plans you agreed to (kept in your plan):"] + \
                 [f"- {self._clock(c[0])}-{self._clock(c[1])} {c[6]}" for c in self.commit[i]]
@@ -474,10 +510,13 @@ class LLMAgents:
         }
         if self._can_text(i):
             props["messages"] = self._msg_schema(i, menu)
-        if self._awaiting[i]:
-            props["accept"] = {"type": "array", "items": {"type": "string", "enum": list(self._awaiting[i])}}
+        if self._invites_waiting(i):
+            props["accept"] = {"type": "array", "items": {"type": "string", "enum": self._invites_waiting(i)}}
         props["diary"] = {"type": "string"}
         return {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}
+
+    def _invites_waiting(self, i):
+        return [mid for mid in self._awaiting[i] if self._open[mid]["blk"] is not None]
 
     def _can_text(self, i):
         return bool(self.mcfg["on"]) and bool(self._friends(i))
@@ -938,9 +977,13 @@ class LLMAgents:
         """After an applied plan: replies to texts, the worry answer, new texts, and llm_events rows for the
         sick response, app compliance and reactions to observations."""
         acc = set(resp.get("accept") or [])
+        heeded = self._heeded(i, t0, t1, resp, old)
         for mid in shown:
             if mid in self._open and mid in self._awaiting[i]:
-                self._claude_reply(mid, i, t0, mid in acc, model)
+                if self._open[mid]["blk"] is not None:
+                    self._claude_reply(mid, i, t0, mid in acc, model)
+                else:  # warn / tell_sick: heeded only if the new plan is more careful than the old one
+                    self._claude_reply(mid, i, t0, bool(heeded), model, how=heeded)
         self._measure(i, resp, t0, reason, model)
         for m in (resp.get("messages") or [])[: int(self.mcfg["max_per_call"])]:
             self._send(i, t0, m, menu, reason)
@@ -1078,6 +1121,16 @@ class LLMAgents:
             blk = (s, e, a, r, k_ev, k_sec, label)
         aid = self.pop.agent_id
         mid = f"m{len(self.msgs) + 1}"
+        if kind == "reply":  # a plain answer: delivered as a note, no response, no re-plan, not influence
+            text = str(m.get("text", ""))
+            self.msgs.append({"id": mid, "t": t, "timestamp": (self.start + timedelta(minutes=t * self.step_min)).isoformat(),
+                              "from": aid[i], "to": [aid[j] for j in rec_to], "group": to == "group", "kind": kind,
+                              "place": "", "place_label": "", "time": "", "text": text, "source": source,
+                              "responses": [], "accepted": [], "outcome": "delivered"})
+            for j in rec_to:
+                if self.mask[j]:
+                    self.inbox[j].append(f"{self._clock(t)} {self._name(i)} texted {'the group' if to == 'group' else 'you'}: \"{text}\"")
+            return
         rec = {"id": mid, "t": t, "timestamp": (self.start + timedelta(minutes=t * self.step_min)).isoformat(),
                "from": aid[i], "to": [aid[j] for j in rec_to], "group": to == "group", "kind": kind,
                "place": m.get("place", "") if blk else "", "place_label": label,
@@ -1125,14 +1178,35 @@ class LLMAgents:
                                  "accepted": acc, "vaden": vaden})
         self._event(j, t, "influence", kind, outcome=int(acc), value=_f(p), other=i, model="rule")
 
-    def _claude_reply(self, mid, j, t, acc, model):
+    def _heeded(self, i, t0, t1, resp, old):
+        """How the plan after a warning is more careful than the one before it: a list of 'vaden', 'mask',
+        'less_social', 'more_home' (empty = not heeded)."""
+        if old is None:
+            return []
+        o_room, o_act, o_masked = old
+        P, vr, home = self.plans, self.beh.vaden_room, self._home(i)
+        rooms, acts = P.room[i, t0:t1], P.act[i, t0:t1]
+        social = np.isin(acts, HEED_SOCIAL)
+        how = []
+        if vr >= 0 and (rooms == vr).any() and not (o_room == vr).any():
+            how.append("vaden")
+        if bool(resp.get("wear_mask")) and not o_masked:
+            how.append("mask")
+        if social.sum() < np.isin(o_act, HEED_SOCIAL).sum():
+            how.append("less_social")
+        if (rooms == home).sum() > (o_room == home).sum():
+            how.append("more_home")
+        return how
+
+    def _claude_reply(self, mid, j, t, acc, model, how=None):
         o = self._open[mid]
         rec, i, kind = o["rec"], o["i"], o["rec"]["kind"]
         self._awaiting[j].remove(mid)
-        if acc and kind != "invite":
-            self._bump(j, "warning_text", t, other=i)
+        if kind != "invite":
+            self._bump(j, "warning_text", t, other=i)  # hearing a warning raises worry whether or not it is heeded
         o["replies"][j] = acc
-        rec["responses"].append({"agent": self.pop.agent_id[j], "t": t, "by": "claude", "accepted": acc})
+        rec["responses"].append({"agent": self.pop.agent_id[j], "t": t, "by": "claude", "accepted": acc,
+                                 **({"heeded_by": how} if how is not None else {})})
         self._event(j, t, "influence", kind, outcome=int(acc), other=i, model=model)
         self._resolve(mid, t)
 
