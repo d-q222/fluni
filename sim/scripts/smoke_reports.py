@@ -192,9 +192,10 @@ def main():
 
     # 4) report_other via same-room contacts (agent 1 roommate of sick agent 0; 3 roommate of healthy 2)
     def contacts_fn(t, dis):
-        return {"a": np.array([0, 2]), "b": np.array([1, 3]), "same_room": np.array([True, True])}
+        return {"a": np.array([0, 2]), "b": np.array([1, 3]), "same_room": np.array([True, True]),
+                "tier": np.array([1, 2])}
     cfgR = load_config()
-    cfgR["reports"]["report_other"].update(p_per_step=0.05, false_p_per_step=0.01)
+    cfgR["reports"]["report_other"].update(p_per_step=0.05, false_daily_p=0.5)
     popR, behR, disR = FakePop(4, honesty=0.0), FakeBeh(4), FakeDisease(4)
     repR = Reports(cfgR, FakeCampus(), popR, np.random.default_rng(3))
     for t in range(4 * spd):
