@@ -3,62 +3,130 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { inferRisk, DEFAULTS } from '../../../../model/infer.js'; // the real model
+import { gunzipSync } from 'node:zlib';
+import { inferRisk, doseModel, indoorRH, virusDecay, DEFAULTS } from '../../../../model/infer.js'; // the real model
 
 const here = dirname(fileURLToPath(import.meta.url));
-const out = { source: 'model/infer.js DEFAULTS + heatmap/app.js', defaults: { beta: DEFAULTS.beta, xMax: DEFAULTS.xMax, prior: DEFAULTS.prior, tierWeight: DEFAULTS.tierWeight } };
+const PHONE_KEYS = ['prior', 'selfReport', 'posTest', 'quantaPeak', 'breathingRate', 'nearFieldQ', 'deposition',
+  'defaultRoomM2', 'ceilingM', 'defaultAch', 'outdoorRH', 'outdoorTempC', 'indoorTempC', 'stageProfile'];
+const out = { source: 'model/infer.js (doseModel, indoorRH, virusDecay, DEFAULTS, inferRisk) + heatmap/app.js',
+  defaults: Object.fromEntries(PHONE_KEYS.map((k) => [k, DEFAULTS[k]])) };
 
-// ---------- (a) risk: real inferRisk ----------
-// Source A has a positive test at step 0 (posTest overridden to s => source risk s), then B has contacts with A.
-// infer.js:204-205 folds each contact: xd = min(xMax, 1-(1-xd)(1-pi*s)), pi = 1-exp(-beta*w*min).
-// B's p right after the last contact = pAt(B) with minDelta 0 so no change is dropped.
+// ---------- (a) Rio's dose and the phone's estimate ----------
+// The phone rule (heatmap/app.js phoneEstimate, d850081): per peer, doseModel() with no rooms, indoors,
+// quantaPeak, summed over 24 h; peers count only within Bluetooth range (d <= 10 m, inclusive);
+// stage = mean of stageProfile; p += (1 - p) * s * (1 - e^(-stage * dose)) from the prior.
+const D = doseModel(); // no params, no rooms: the default room, as the phone and the web mock-up use
+const BT_RANGE_M = 10; // heatmap/app.js BT_RANGE_M (`if (!(d <= BT_RANGE_M)) continue`)
+const stageMean = DEFAULTS.stageProfile.reduce((a, b) => a + b, 0) / DEFAULTS.stageProfile.length;
+const unit = (d, durS) => D({ distance_m: d, duration_s: durS, indoor: true });
+D({ distance_m: 1, duration_s: 60, indoor: true });
+const room = D.info.room;
+out.derived = { indoorRH: D.indoorRH, virusDecay: D.virusDecay, roomVolume: room.volume, roomLoss: room.loss,
+  roomFar: room.far, stage: stageMean, btRangeM: BT_RANGE_M };
+// The exported functions agree with what doseModel used.
+if (indoorRH(DEFAULTS.outdoorRH, DEFAULTS.outdoorTempC, DEFAULTS.indoorTempC) !== D.indoorRH) throw new Error('indoorRH');
+if (virusDecay(D.indoorRH) !== D.virusDecay) throw new Error('virusDecay');
+if (inferRisk({ agentIds: ['x'], stepMin: 5, startMs: 0, contacts: [], reports: [] }).params.stageMean !== stageMean) throw new Error('stageMean');
+// The functions themselves over their ranges (Swift ports both).
+out.virusDecay = [0, 10, 25, 25.5, 29.6, 30, 35, 40, 44.9, 45, 60, 100].map((rh) => ({ rh, decay: virusDecay(rh) }));
+out.indoorRH = [[60, 10, 21], [60, -5, 21], [30, 0, 21], [90, 20, 21], [60, 21, 21], [60, 30, 21], [100, -20, 21], [80, 15, 22]]
+  .map(([o, t, ti]) => ({ outdoorRH: o, outdoorTempC: t, indoorTempC: ti, rh: indoorRH(o, t, ti) }));
+
+// unitDose at (distance m, seconds). doseModel rounds duration_s to whole seconds, so these are whole.
+const pairs = [[0, 60], [0.1, 60], [0.2, 900], [0.29, 1], [0.3, 60], [0.31, 60], [0.5, 1], [0.5, 60], [0.5, 900],
+  [1, 60], [1, 3600], [1.5, 300], [1.83, 900], [2, 60], [2.5, 7200], [3, 900], [4, 60], [5, 900], [5, 14400],
+  [7.5, 600], [9.99, 60], [10, 60], [0.2, 86400], [1.2, 37], [3.3, 1234]];
+out.unitDose = pairs.map(([d, s]) => ({ distance: d, seconds: s, dose: unit(d, s) }));
+
+// p for scenarios, from the REAL inferRisk: the phone's user 'B' meets sources with evidence (a positive
+// test -> posTest 0.97, a "might be sick" self-report -> selfReport 0.6) from step 1 on. inferRisk sets a
+// source's stage from days since onset and lets exposure recover (Erlang); the phone knows neither, so
+// for the cross-check every day of the profile is set to the illness average and recovery is switched
+// off (illnessMeanDays Infinity). Everything else is infer.js as shipped.
 const STEP_MIN = 5, START = Date.parse('2026-01-05T00:00:00Z');
-function exactRisk(s, contacts) {
-  const risk = inferRisk({
-    agentIds: ['A', 'B'], stepMin: STEP_MIN, startMs: START,
-    reports: [{ t: 0, agent_id: 'A', event: 'test_result', value: 'positive', target_agent_id: '' }],
-    contacts: contacts.map((c, i) => ({ t: 1 + i, agent_a: 'A', agent_b: 'B', distance_m: 1, distance_tier: c.tier, duration_s: Math.round(c.minutes * 60) })),
-  }, { posTest: s, minDelta: 0 });
-  return risk.pAt('B', START + (1 + contacts.length) * STEP_MIN * 60000);
-}
-// Independent copy of the fold (infer.js:204-205, lamOf at :91) as a self-check of the harness above.
-function foldCopy(s, contacts) {
-  let xd = 0;
-  for (const c of contacts) {
-    const lam = DEFAULTS.beta * DEFAULTS.tierWeight[c.tier - 1] * (Math.round(c.minutes * 60) / 60);
-    const pi = 1 - Math.exp(-lam);
-    xd = Math.min(DEFAULTS.xMax, 1 - (1 - xd) * (1 - pi * s));
+const phoneP = (sources) => { // the phone rule, in JS (heatmap/app.js phoneEstimate)
+  let p = DEFAULTS.prior;
+  for (const src of [...sources].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    let dose = 0;
+    for (const c of src.contacts) if (c.distance <= BT_RANGE_M) dose += unit(c.distance, c.seconds);
+    if (dose > 0) p += (1 - p) * src.s * (1 - Math.exp(-stageMean * dose));
   }
-  return 1 - (1 - DEFAULTS.prior) * (1 - xd);
-}
-// Our approximation (RiskEstimate.swift): one dose = sum s*w*min, x = min(1-exp(-beta*dose), xMax).
-function foldedDose(s, contacts) {
-  const dose = contacts.reduce((a, c) => a + s * DEFAULTS.tierWeight[c.tier - 1] * Math.round(c.minutes * 60) / 60, 0);
-  return { dose, p: 1 - (1 - DEFAULTS.prior) * (1 - Math.min(1 - Math.exp(-DEFAULTS.beta * dose), DEFAULTS.xMax)) };
-}
-const single = [];
-for (const s of [1, 0.5]) for (const tier of [1, 2, 3, 4]) for (const minutes of [0, 1, 5, 15, 45, 90, 200]) single.push({ s, tier, minutes });
-out.risk = [];
-const mkCase = (s, contacts) => {
-  const exact = exactRisk(s, contacts);
-  const copy = foldCopy(s, contacts);
-  if (Math.abs(exact - copy) > 1e-12) throw new Error(`harness disagrees with fold copy: ${exact} vs ${copy}`);
-  const f = foldedDose(s, contacts);
-  return { s, contacts, exactP: exact, foldedDose: f.dose, foldedP: f.p };
+  return p;
 };
-for (const c of single) out.risk.push({ kind: 'single', ...mkCase(c.s, [{ tier: c.tier, minutes: c.minutes }]) });
-const multi = [
-  [1, [[1, 15], [1, 15]]], [1, [[1, 15], [2, 30], [3, 60]]], [1, [[1, 5], [1, 5], [1, 5], [1, 5]]],
-  [0.5, [[1, 15], [2, 30]]], [0.5, [[2, 20], [2, 20], [3, 120]]], [1, [[4, 200], [4, 200], [4, 200]]],
-  [1, [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]]],
-  [0.5, [[1, 45], [1, 45], [1, 45]]], [1, [[1, 60], [1, 60]]], [1, [[2, 10], [3, 40], [4, 100], [1, 3]]],
-  [0.5, [[3, 90], [4, 200]]], [1, [[1, 8], [2, 8]]],
-];
-for (const [s, cs] of multi) out.risk.push({ kind: 'multi', ...mkCase(s, cs.map(([tier, minutes]) => ({ tier, minutes }))) });
+function inferP(sources) {
+  const reports = sources.map((src) => (src.s === DEFAULTS.posTest
+    ? { t: 0, agent_id: src.id, event: 'test_result', value: 'positive', target_agent_id: '' }
+    : { t: 0, agent_id: src.id, event: 'self_report', value: 'might_be_sick', target_agent_id: '' }));
+  const contacts = [];
+  let t = 1;
+  for (const src of sources) for (const c of src.contacts) {
+    contacts.push({ t: t++, agent_a: src.id, agent_b: 'B', distance_m: c.distance, distance_tier: 4, duration_s: c.seconds });
+  }
+  contacts.sort((a, b) => a.t - b.t);
+  const risk = inferRisk({ agentIds: ['B', ...sources.map((s) => s.id)], stepMin: STEP_MIN, startMs: START, reports, contacts },
+    { minDelta: 0, stageProfile: DEFAULTS.stageProfile.map(() => stageMean), illnessMeanDays: Infinity });
+  return risk.pAt('B', START + t * STEP_MIN * 60000);
+}
+const S1 = DEFAULTS.posTest, S2 = DEFAULTS.selfReport;
+const src = (id, s, ...cs) => ({ id, s, contacts: cs.map(([distance, minutes]) => ({ distance, seconds: Math.round(minutes * 60) })) });
+const scenarios = [];
+for (const s of [S1, S2]) for (const d of [0.2, 0.5, 1, 1.83, 3, 5]) for (const m of [1, 15, 60, 240]) scenarios.push([src('A', s, [d, m])]);
+scenarios.push(
+  [src('A', S1, [0.5, 15]), src('C', S2, [2, 60])],
+  [src('A', S1, [1, 30]), src('A2', S1, [1, 30])],                // one person seen under two rotating IDs
+  [src('A', S1, [1, 60])],                                        // ... and the same time under one ID
+  [src('A', S1, [0.2, 5], [3, 100]), src('C', S1, [5, 240]), src('E', S2, [0.4, 20], [0.4, 20])],
+  [src('A', S2, [1.5, 10]), src('C', S2, [1.5, 10]), src('E', S2, [1.5, 10]), src('F', S2, [1.5, 10])],
+  [src('A', S1, [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1], [0.3, 1])],
+  [src('A', S1, [2.5, 45]), src('C', S2, [0.25, 3])],
+);
+out.scenarios = [{ name: 'no contacts', sources: [], p: phoneP([]), inferP: inferP([]) }];
+for (const sc of scenarios) {
+  const p = phoneP(sc), ip = inferP(sc);
+  if (Math.abs(p - ip) > 1e-12) throw new Error(`phone rule disagrees with inferRisk: ${p} vs ${ip} ${JSON.stringify(sc)}`);
+  out.scenarios.push({ name: sc.map((x) => `${x.id} s=${x.s} ${x.contacts.map((c) => `${c.distance}m/${c.seconds}s`).join('+')}`).join(', '),
+    sources: sc, p, inferP: ip });
+}
+if (out.scenarios[0].p !== DEFAULTS.prior || out.scenarios[0].inferP !== DEFAULTS.prior) throw new Error('prior');
+// Beyond Bluetooth range: the phone adds nothing (inferRisk would still count it, so no inferP here).
+for (const d of [9.99, 10, 10.01, 12]) {
+  const sc = [src('A', S1, [d, 60])];
+  out.scenarios.push({ name: `range ${d} m`, sources: sc, p: phoneP(sc), inferP: null });
+}
 
-// tier weights by distance (metres): infer.js distance_tier 1..4 = <1, 1-2, 2-5, >=5 (DEFAULTS.tierWeight)
-out.tierWeights = [[0, 1], [0.5, 1], [0.999, 1], [1, 2], [1.5, 2], [1.999, 2], [2, 3], [4.99, 3], [5, 4], [12, 4]]
-  .map(([d, tier]) => ({ distance: d, weight: DEFAULTS.tierWeight[tier - 1] }));
+// The heat map team's reference: A0005 at ?at=5700 on the default run shows "This phone's estimate: 3%".
+// heatmap/app.js phoneEstimate (d850081) replayed here on the same files; Swift recomputes p from the
+// per-peer contacts and must agree.
+{
+  const run = join(here, '../../../../sim/runs/influenza_none_n10_d14_s2_bc5cae7a');
+  const csv = (text) => { const L = text.split(/\r?\n/), h = L[0].split(','); return L.slice(1).filter(Boolean).map((l) => { const f = l.split(','), r = {}; h.forEach((c, i) => (r[c] = f[i])); return r; }); };
+  const rd = (f) => readFileSync(join(run, f));
+  const config = JSON.parse(rd('config.json'));
+  const contacts = csv(gunzipSync(rd('contacts.csv.gz')).toString());
+  const rooms = new Map(csv(rd('map/rooms.csv').toString()).map((r) => [r.room_id, r]));
+  const agentIds = csv(rd('agents_static.csv').toString()).map((a) => a.agent_id);
+  const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
+  const risk = inferRisk({ contacts, reports: csv(rd('reports_tests.csv').toString()), rooms, agentIds, stepMin: config.step_min, startMs });
+  const CONTAGIOUS = 0.9, RISKY = 0.5, WINDOW = 24 * 3600000, me = 'A0005', atMin = 5700, t = startMs + atMin * 60000; // app.js:29,36,38
+  const peers = new Map();
+  for (const c of contacts) {
+    const d = Number(c.distance_m);
+    if (!(d <= BT_RANGE_M)) continue;
+    const other = c.agent_a === me ? c.agent_b : c.agent_b === me ? c.agent_a : null;
+    if (!other) continue;
+    const tMs = startMs + Number(c.t) * stepMs, min = Number(c.duration_s) / 60;
+    if (tMs > t || tMs < t - WINDOW) continue;
+    const pp = risk.pAt(other, tMs), s = pp >= CONTAGIOUS ? DEFAULTS.posTest : pp >= RISKY ? DEFAULTS.selfReport : 0;
+    if (!s) continue;
+    const k = peers.get(other) || { id: other, s: 0, contacts: [] };
+    k.s = Math.max(k.s, s);
+    k.contacts.push({ distance: d, seconds: Math.round(60 * Math.min(min, (t - tMs) / 60000)) }); // doseModel rounds
+    peers.set(other, k);
+  }
+  const sources = [...peers.values()];
+  out.webReference = { run: 'influenza_none_n10_d14_s2_bc5cae7a', agent: me, atMin, sources, p: phoneP(sources) };
+}
 
 // ---------- (b) tiers and advice: heatmap/app.js:448-466 (copied) ----------
 const TIERS = { elevated: 0.1, high: 0.4 };                                                        // app.js:448
@@ -158,4 +226,4 @@ if (bq.filter((x) => x.reading === null).length < 3) throw new Error('need some 
 out.heatQueryCount = bq.length;
 
 writeFileSync(join(here, 'golden.json'), JSON.stringify(out, null, 1) + '\n');
-console.log(`golden.json: ${out.risk.length} risk, ${out.tiers.length} tiers, ${out.psick.length} p_sick, ${out.heat.length} heat`);
+console.log(`golden.json: ${out.unitDose.length} unitDose, ${out.scenarios.length} scenarios (web reference p ${out.webReference.p}), ${out.tiers.length} tiers, ${out.psick.length} p_sick, ${out.heat.length} heat`);

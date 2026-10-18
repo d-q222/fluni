@@ -8,77 +8,147 @@ final class CrossCheckTests: XCTestCase {
         .deletingLastPathComponent().appendingPathComponent("Fixtures/xcheck")
 
     private struct Golden: Decodable {
-        struct Risk: Decodable {
-            struct Contact: Decodable { let tier: Int; let minutes: Double }
-            let kind: String; let s: Double; let contacts: [Contact]
-            let exactP: Double; let foldedDose: Double; let foldedP: Double
+        struct Defaults: Decodable {
+            let prior, selfReport, posTest, quantaPeak, breathingRate, nearFieldQ, deposition: Double
+            let defaultRoomM2, ceilingM, defaultAch, outdoorRH, outdoorTempC, indoorTempC: Double
+            let stageProfile: [Double]
         }
-        struct TierW: Decodable { let distance: Double; let weight: Double }
+        struct Derived: Decodable {
+            let indoorRH, virusDecay, roomVolume, roomLoss, roomFar, stage, btRangeM: Double
+        }
+        struct Decay: Decodable { let rh: Double; let decay: Double }
+        struct RH: Decodable { let outdoorRH, outdoorTempC, indoorTempC, rh: Double }
+        struct Dose: Decodable { let distance: Double; let seconds: Double; let dose: Double }
+        struct Contact: Decodable { let distance: Double; let seconds: Double }
+        struct Src: Decodable { let id: String; let s: Double; let contacts: [Contact] }
+        struct Scenario: Decodable { let name: String; let sources: [Src]; let p: Double; let inferP: Double? }
+        struct WebRef: Decodable { let agent: String; let atMin: Int; let sources: [Src]; let p: Double }
         struct Tier: Decodable { let p: Double; let tier: String; let advice: String }
         struct PQ: Decodable { let agent: String; let t_iso: String; let p: Double }
         struct Reading: Decodable { let people: Double; let expectedSick: Double; let heat: Double; let high: Bool }
         struct HQ: Decodable { let building: String; let t_iso: String; let reading: Reading? }
-        let risk: [Risk]; let tierWeights: [TierW]; let tiers: [Tier]; let psick: [PQ]; let heat: [HQ]
+        let defaults: Defaults; let derived: Derived; let virusDecay: [Decay]; let indoorRH: [RH]
+        let unitDose: [Dose]; let scenarios: [Scenario]; let webReference: WebRef
+        let tiers: [Tier]; let psick: [PQ]; let heat: [HQ]
     }
 
     private func golden() throws -> Golden {
         try JSONDecoder().decode(Golden.self, from: Data(contentsOf: Self.dir.appendingPathComponent("golden.json")))
     }
 
-    /// Representative distance (metres) for each infer.js distance_tier 1...4.
-    private func weight(tier: Int) -> Double {
-        let d = [0.5, 1.5, 3.0, 8.0][tier - 1]
-        return Fusion.tierWeight(Estimate(distance: d, sigma: 0.1, sources: [.uwb]))
+    // MARK: Rio's dose and the phone's estimate (golden.json from the real model/infer.js)
+
+    func testDefaultsAreInferJS() throws {
+        let d = try golden().defaults
+        XCTAssertEqual(RiskEstimate.prior, d.prior)
+        XCTAssertEqual(RiskEstimate.selfReport, d.selfReport)
+        XCTAssertEqual(RiskEstimate.posTest, d.posTest)
+        XCTAssertEqual(RiskEstimate.quantaPeak, d.quantaPeak)
+        XCTAssertEqual(RiskEstimate.breathingRate, d.breathingRate)
+        XCTAssertEqual(RiskEstimate.nearFieldQ, d.nearFieldQ)
+        XCTAssertEqual(RiskEstimate.deposition, d.deposition)
+        XCTAssertEqual(RiskEstimate.defaultRoomM2, d.defaultRoomM2)
+        XCTAssertEqual(RiskEstimate.ceilingM, d.ceilingM)
+        XCTAssertEqual(RiskEstimate.defaultAch, d.defaultAch)
+        XCTAssertEqual(RiskEstimate.outdoorRH, d.outdoorRH)
+        XCTAssertEqual(RiskEstimate.outdoorTempC, d.outdoorTempC)
+        XCTAssertEqual(RiskEstimate.indoorTempC, d.indoorTempC)
+        XCTAssertEqual(RiskEstimate.stageProfile, d.stageProfile)
     }
 
-    func testTierWeightsMatchInferJS() throws {
-        for w in try golden().tierWeights {
-            let e = Estimate(distance: w.distance, sigma: 0.1, sources: [.uwb])
-            XCTAssertEqual(Fusion.tierWeight(e), w.weight, "distance \(w.distance)")
-        }
-    }
-
-    private func swiftP(_ r: Golden.Risk) -> (dose: Double, p: Double) {
-        let dose = r.contacts.reduce(0.0) { $0 + r.s * weight(tier: $1.tier) * $1.minutes }
-        return (dose, RiskEstimate.probability(dose: dose))
-    }
-
-    /// Fully contagious source (s = 1): exact to 1e-9.
-    func testSingleContactSicknessOneMatchesInferJS() throws {
-        let cases = try golden().risk.filter { $0.kind == "single" && $0.s == 1 }
-        XCTAssertGreaterThanOrEqual(cases.count, 14)
-        for r in cases {
-            let (dose, p) = swiftP(r)
-            XCTAssertEqual(dose, r.foldedDose, accuracy: 1e-9)
-            XCTAssertEqual(p, r.exactP, accuracy: 1e-9, "tier \(r.contacts[0].tier), \(r.contacts[0].minutes) min")
-        }
-    }
-
-    /// Half-contagious source (s = 0.5): infer.js gives x = s*(1-e^(-lam)); dose-sum gives 1-e^(-s*lam).
-    /// These differ, so this is a real mismatch (reported as a finding), not tuned away.
-    func testSingleContactSicknessHalfMatchesInferJS() throws {
-        let cases = try golden().risk.filter { $0.kind == "single" && $0.s == 0.5 }
-        XCTAssertGreaterThanOrEqual(cases.count, 14)
-        for r in cases {
-            XCTAssertEqual(swiftP(r).p, r.exactP, accuracy: 1e-9, "s 0.5, tier \(r.contacts[0].tier), \(r.contacts[0].minutes) min")
-        }
-    }
-
-    /// Several contacts: the folded-dose approximation vs the exact infer.js fold. Measured worst gap is
-    /// about 1.19 percentage points (s = 1, [tier1 15 min, tier2 30 min, tier3 60 min]); bound set at 2 pp.
-    func testMultiContactWithinDocumentedBound() throws {
-        let bound = 0.02
-        let cases = try golden().risk.filter { $0.kind == "multi" }
-        XCTAssertGreaterThanOrEqual(cases.count, 5)
+    /// The derived constants come from Swift's ports of indoorRH / virusDecay / mkRoom, not hardcoded.
+    func testDerivedConstantsMatchInferJS() throws {
+        let g = try golden().derived
+        let pairs: [(String, Double, Double)] = [
+            ("indoorRH", RiskEstimate.roomRH, g.indoorRH), ("virusDecay", RiskEstimate.roomDecay, g.virusDecay),
+            ("V", RiskEstimate.roomVolume, g.roomVolume), ("loss", RiskEstimate.roomLoss, g.roomLoss),
+            ("1/(V loss)", RiskEstimate.roomFar, g.roomFar), ("stage", RiskEstimate.stage, g.stage),
+            ("Bluetooth range", RiskEstimate.doseRange, g.btRangeM),
+        ]
         var worst = 0.0
-        for r in cases {
-            let (dose, p) = swiftP(r)
-            XCTAssertEqual(dose, r.foldedDose, accuracy: 1e-9)
-            XCTAssertEqual(p, r.foldedP, accuracy: 1e-9)
-            worst = max(worst, abs(p - r.exactP))
+        for (name, swift, js) in pairs {
+            XCTAssertEqual(swift, js, accuracy: 1e-9, name)
+            worst = max(worst, abs(swift - js))
+            print("CROSSCHECK \(name): Swift \(swift) JS \(js)")
         }
-        print("CROSSCHECK max multi-contact gap: \(worst)")
-        XCTAssertLessThanOrEqual(worst, bound)
+        print("CROSSCHECK max |Swift - JS| derived: \(worst)")
+    }
+
+    func testVirusDecayAndIndoorRHMatchInferJS() throws {
+        let g = try golden()
+        XCTAssertGreaterThanOrEqual(g.virusDecay.count, 10)
+        for c in g.virusDecay { XCTAssertEqual(RiskEstimate.virusDecay(rh: c.rh), c.decay, accuracy: 1e-12, "rh \(c.rh)") }
+        XCTAssertGreaterThanOrEqual(g.indoorRH.count, 6)
+        for c in g.indoorRH {
+            XCTAssertEqual(RiskEstimate.indoorRH(outdoorRH: c.outdoorRH, outdoorTempC: c.outdoorTempC, indoorTempC: c.indoorTempC),
+                           c.rh, accuracy: 1e-12, "\(c.outdoorRH)% at \(c.outdoorTempC) C")
+        }
+    }
+
+    func testUnitDoseMatchesInferJS() throws {
+        let cases = try golden().unitDose
+        XCTAssertGreaterThanOrEqual(cases.count, 20)
+        XCTAssertTrue(cases.contains { $0.distance < 0.3 }, "the 0.3 m floor must be exercised")
+        var worst = 0.0
+        for c in cases {
+            let u = RiskEstimate.unitDose(distance: c.distance, seconds: c.seconds)
+            XCTAssertEqual(u, c.dose, accuracy: 1e-9, "\(c.distance) m, \(c.seconds) s")
+            XCTAssertEqual(u / c.dose, 1, accuracy: 1e-12, "relative, \(c.distance) m, \(c.seconds) s")
+            XCTAssertEqual(RiskEstimate.contactDose(distance: c.distance, seconds: c.seconds), u, "within 10 m")
+            worst = max(worst, abs(u - c.dose))
+        }
+        print("CROSSCHECK max |Swift - JS| unitDose: \(worst)")
+    }
+
+    /// Plays a source's contacts through ExposureTracker the way the phone does: 60 s ticks.
+    private func track(_ sources: [Golden.Src], into t: inout ExposureTracker) {
+        for src in sources {
+            let risk: Risk = src.s == RiskEstimate.posTest ? .contagious : .possible
+            XCTAssertEqual(RiskEstimate.evidence(risk), src.s)
+            for c in src.contacts {
+                var left = c.seconds
+                while left > 0 {
+                    let dt = min(60, left)
+                    t.advance(simSeconds: dt, contacts: [(pClose: 1, risk: risk)], doses: [DosePeer(id: src.id, distance: c.distance)])
+                    left -= dt
+                }
+            }
+        }
+    }
+
+    /// p through the real tracker vs the JS phone rule, and vs the real inferRisk (stage set to the illness
+    /// average, recovery off; make_golden.mjs checks the two JS numbers agree to 1e-12).
+    func testScenariosThroughTheTrackerMatchInferJS() throws {
+        let cases = try golden().scenarios
+        XCTAssertGreaterThanOrEqual(cases.count, 50)
+        XCTAssertTrue(cases.contains { $0.sources.count > 1 }, "multi-source")
+        XCTAssertTrue(cases.contains { $0.sources.contains { $0.s == 0.6 } } && cases.contains { $0.sources.contains { $0.s == 0.97 } })
+        var worst = 0.0
+        for c in cases {
+            var t = ExposureTracker()
+            track(c.sources, into: &t)
+            XCTAssertEqual(t.probability, c.p, accuracy: 1e-9, c.name)
+            worst = max(worst, abs(t.probability - c.p))
+            if let ip = c.inferP {
+                XCTAssertEqual(t.probability, ip, accuracy: 1e-9, "vs inferRisk: \(c.name)")
+                worst = max(worst, abs(t.probability - ip))
+            }
+        }
+        print("CROSSCHECK max |Swift - JS| p: \(worst)")
+        let none = try XCTUnwrap(cases.first { $0.sources.isEmpty })
+        XCTAssertEqual(ExposureTracker().probability, none.p)
+        XCTAssertEqual(none.p, RiskEstimate.prior)
+    }
+
+    /// The heat map team's reference (A0005 at ?at=5700 on the default run: "This phone's estimate: 3%").
+    func testWebPhoneMockReferenceA0005() throws {
+        let r = try golden().webReference
+        XCTAssertEqual(r.agent, "A0005"); XCTAssertEqual(r.atMin, 5700)
+        XCTAssertFalse(r.sources.isEmpty)
+        var t = ExposureTracker()
+        track(r.sources, into: &t)
+        XCTAssertEqual(t.probability, r.p, accuracy: 1e-9)
+        XCTAssertEqual(RiskEstimate.percentText(t.probability), "3%")
     }
 
     func testTiersAndAdviceMatchApp() throws {

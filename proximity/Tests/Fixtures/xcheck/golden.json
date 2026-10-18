@@ -1,1056 +1,1509 @@
 {
- "source": "model/infer.js DEFAULTS + heatmap/app.js",
+ "source": "model/infer.js (doseModel, indoorRH, virusDecay, DEFAULTS, inferRisk) + heatmap/app.js",
  "defaults": {
-  "beta": 0.015,
-  "xMax": 0.3,
   "prior": 0.02,
-  "tierWeight": [
+  "selfReport": 0.6,
+  "posTest": 0.97,
+  "quantaPeak": 10,
+  "breathingRate": 0.5,
+  "nearFieldQ": 30,
+  "deposition": 0.3,
+  "defaultRoomM2": 50,
+  "ceilingM": 2.7,
+  "defaultAch": 2,
+  "outdoorRH": 60,
+  "outdoorTempC": 10,
+  "indoorTempC": 21,
+  "stageProfile": [
+   0.05,
+   0.3,
    1,
+   0.9,
    0.6,
-   0.1,
+   0.35,
+   0.18,
+   0.08,
+   0.04,
    0.02
   ]
  },
- "risk": [
+ "derived": {
+  "indoorRH": 29.651210954856275,
+  "virusDecay": 0.5950703345803319,
+  "roomVolume": 135,
+  "roomLoss": 2.895070334580332,
+  "roomFar": 0.002558627788392292,
+  "stage": 0.35200000000000004,
+  "btRangeM": 10
+ },
+ "virusDecay": [
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
+   "rh": 0,
+   "decay": 0.28768207245178085
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.034590299188998586,
-   "foldedDose": 1,
-   "foldedP": 0.034590299188998586
+   "rh": 10,
+   "decay": 0.28768207245178085
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.0908113833980182,
-   "foldedDose": 5,
-   "foldedP": 0.0908113833980182
+   "rh": 25,
+   "decay": 0.28768207245178085
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.21745410561581047,
-   "foldedDose": 15,
-   "foldedP": 0.21745410561581047
+   "rh": 25.5,
+   "decay": 0.3207259684513388
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 45,
-   "foldedP": 0.31400000000000006
+   "rh": 29.6,
+   "decay": 0.5916859156477144
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 90,
-   "foldedP": 0.31400000000000006
+   "rh": 30,
+   "decay": 0.6181210324473607
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 200,
-   "foldedP": 0.31400000000000006
+   "rh": 35,
+   "decay": 0.9485599924429406
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
+   "rh": 40,
+   "decay": 1.2789989524385204
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.028780428802574032,
-   "foldedDose": 0.6,
-   "foldedP": 0.028780428802574032
+   "rh": 44.9,
+   "decay": 1.6028291332341886
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.06312246780356201,
-   "foldedDose": 3,
-   "foldedP": 0.06312246780356201
+   "rh": 45,
+   "decay": 1.6094379124341003
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.14375840654572625,
-   "foldedDose": 9,
-   "foldedP": 0.14375840654572625
+   "rh": 60,
+   "decay": 1.6094379124341003
   },
   {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 27,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 54,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 120,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.02146889805104335,
-   "foldedDose": 0.1,
-   "foldedP": 0.02146889805104335
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.02732250627724442,
-   "foldedDose": 0.5,
-   "foldedP": 0.02732250627724442
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.04180378755053038,
-   "foldedDose": 1.5,
-   "foldedP": 0.04180378755053038
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.083966833796293,
-   "foldedDose": 4.5,
-   "foldedP": 0.0839668337962931
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.14375840654572625,
-   "foldedDose": 9,
-   "foldedP": 0.14375840654572625
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.27399814373191644,
-   "foldedDose": 20,
-   "foldedP": 0.27399814373191644
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.020293955904409633,
-   "foldedDose": 0.02,
-   "foldedP": 0.020293955904409633
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.02146889805104335,
-   "foldedDose": 0.1,
-   "foldedP": 0.02146889805104335
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.024400092367020898,
-   "foldedDose": 0.3,
-   "foldedP": 0.024400092367020898
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.03314109800862197,
-   "foldedDose": 0.9,
-   "foldedP": 0.03314109800862197
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.04610598330615001,
-   "foldedDose": 1.8,
-   "foldedP": 0.04610598330615001
-  },
-  {
-   "kind": "single",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.07707075708743627,
-   "foldedDose": 4,
-   "foldedP": 0.07707075708743627
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.0272951495944993,
-   "foldedDose": 0.5,
-   "foldedP": 0.02732250627724442
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.05540569169900911,
-   "foldedDose": 2.5,
-   "foldedP": 0.05606947063359469
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.1187270528079053,
-   "foldedDose": 7.5,
-   "foldedP": 0.12427459983365463
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.2605133539023009,
-   "foldedDose": 22.5,
-   "foldedP": 0.30071906478762767
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 45,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 100,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.02439021440128708,
-   "foldedDose": 0.3,
-   "foldedP": 0.024400092367020898
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.041561233901781014,
-   "foldedDose": 1.5,
-   "foldedP": 0.04180378755053038
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.08187920327286313,
-   "foldedDose": 4.5,
-   "foldedP": 0.0839668337962931
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.1831813626793476,
-   "foldedDose": 13.5,
-   "foldedP": 0.1996472470538514
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.2920195475507589,
-   "foldedDose": 27,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 60,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.020734449025521684,
-   "foldedDose": 0.05,
-   "foldedP": 0.02073472444389335
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.023661253138622218,
-   "foldedDose": 0.25,
-   "foldedP": 0.0236681179802124
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.0309018937752652,
-   "foldedDose": 0.75,
-   "foldedP": 0.030963216280991634
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.05198341689814645,
-   "foldedDose": 2.25,
-   "foldedP": 0.052523085832888006
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.08187920327286313,
-   "foldedDose": 4.5,
-   "foldedP": 0.0839668337962931
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.1469990718659583,
-   "foldedDose": 10,
-   "foldedP": 0.15650618310344333
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 0
-    }
-   ],
-   "exactP": 0.020000000000000018,
-   "foldedDose": 0,
-   "foldedP": 0.020000000000000018
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.02014697795220477,
-   "foldedDose": 0.01,
-   "foldedP": 0.020146988975551228
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.020734449025521684,
-   "foldedDose": 0.05,
-   "foldedP": 0.02073472444389335
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.022200046183510347,
-   "foldedDose": 0.15,
-   "foldedP": 0.02220252123442268
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.026570549004310995,
-   "foldedDose": 0.45,
-   "foldedP": 0.026592724523002986
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 90
-    }
-   ],
-   "exactP": 0.03305299165307507,
-   "foldedDose": 0.9,
-   "foldedP": 0.03314109800862197
-  },
-  {
-   "kind": "single",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.048535378543718144,
-   "foldedDose": 2,
-   "foldedP": 0.048963377122462015
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 15
-    },
-    {
-     "tier": 1,
-     "minutes": 15
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 30,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 15
-    },
-    {
-     "tier": 2,
-     "minutes": 30
-    },
-    {
-     "tier": 3,
-     "minutes": 60
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 39,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 5
-    },
-    {
-     "tier": 1,
-     "minutes": 5
-    },
-    {
-     "tier": 1,
-     "minutes": 5
-    },
-    {
-     "tier": 1,
-     "minutes": 5
-    }
-   ],
-   "exactP": 0.27399814373191655,
-   "foldedDose": 20,
-   "foldedP": 0.27399814373191644
-  },
-  {
-   "kind": "multi",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 15
-    },
-    {
-     "tier": 2,
-     "minutes": 30
-    }
-   ],
-   "exactP": 0.22299067800382777,
-   "foldedDose": 16.5,
-   "foldedP": 0.23486478360529284
-  },
-  {
-   "kind": "multi",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 20
-    },
-    {
-     "tier": 2,
-     "minutes": 20
-    },
-    {
-     "tier": 3,
-     "minutes": 120
-    }
-   ],
-   "exactP": 0.2427554865594399,
-   "foldedDose": 18,
-   "foldedP": 0.2518880955498839
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 4,
-     "minutes": 200
-    },
-    {
-     "tier": 4,
-     "minutes": 200
-    },
-    {
-     "tier": 4,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.1814351928169533,
-   "foldedDose": 12,
-   "foldedP": 0.18143519281695342
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    },
-    {
-     "tier": 1,
-     "minutes": 1
-    }
-   ],
-   "exactP": 0.15650618310344344,
-   "foldedDose": 10,
-   "foldedP": 0.15650618310344333
-  },
-  {
-   "kind": "multi",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 45
-    },
-    {
-     "tier": 1,
-     "minutes": 45
-    },
-    {
-     "tier": 1,
-     "minutes": 45
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 67.5,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 60
-    },
-    {
-     "tier": 1,
-     "minutes": 60
-    }
-   ],
-   "exactP": 0.31400000000000006,
-   "foldedDose": 120,
-   "foldedP": 0.31400000000000006
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 2,
-     "minutes": 10
-    },
-    {
-     "tier": 3,
-     "minutes": 40
-    },
-    {
-     "tier": 4,
-     "minutes": 100
-    },
-    {
-     "tier": 1,
-     "minutes": 3
-    }
-   ],
-   "exactP": 0.21745410561581047,
-   "foldedDose": 15,
-   "foldedP": 0.21745410561581047
-  },
-  {
-   "kind": "multi",
-   "s": 0.5,
-   "contacts": [
-    {
-     "tier": 3,
-     "minutes": 90
-    },
-    {
-     "tier": 4,
-     "minutes": 200
-    }
-   ],
-   "exactP": 0.10861279968456605,
-   "foldedDose": 6.5,
-   "foldedP": 0.11103970527531437
-  },
-  {
-   "kind": "multi",
-   "s": 1,
-   "contacts": [
-    {
-     "tier": 1,
-     "minutes": 8
-    },
-    {
-     "tier": 2,
-     "minutes": 8
-    }
-   ],
-   "exactP": 0.1911992688781513,
-   "foldedDose": 12.8,
-   "foldedP": 0.1911992688781512
+   "rh": 100,
+   "decay": 1.6094379124341003
   }
  ],
- "tierWeights": [
+ "indoorRH": [
+  {
+   "outdoorRH": 60,
+   "outdoorTempC": 10,
+   "indoorTempC": 21,
+   "rh": 29.651210954856275
+  },
+  {
+   "outdoorRH": 60,
+   "outdoorTempC": -5,
+   "indoorTempC": 21,
+   "rh": 10.21042164450526
+  },
+  {
+   "outdoorRH": 30,
+   "outdoorTempC": 0,
+   "indoorTempC": 21,
+   "rh": 7.390853852491133
+  },
+  {
+   "outdoorRH": 90,
+   "outdoorTempC": 20,
+   "indoorTempC": 21,
+   "rh": 84.61981166341819
+  },
+  {
+   "outdoorRH": 60,
+   "outdoorTempC": 21,
+   "indoorTempC": 21,
+   "rh": 60
+  },
+  {
+   "outdoorRH": 60,
+   "outdoorTempC": 30,
+   "indoorTempC": 21,
+   "rh": 60
+  },
+  {
+   "outdoorRH": 100,
+   "outdoorTempC": -20,
+   "indoorTempC": 21,
+   "rh": 5.077387855007613
+  },
+  {
+   "outdoorRH": 80,
+   "outdoorTempC": 15,
+   "indoorTempC": 22,
+   "rh": 51.6163576516073
+  }
+ ],
+ "unitDose": [
   {
    "distance": 0,
-   "weight": 1
+   "seconds": 60,
+   "dose": 0.031077416513230222
+  },
+  {
+   "distance": 0.1,
+   "seconds": 60,
+   "dose": 0.031077416513230222
+  },
+  {
+   "distance": 0.2,
+   "seconds": 900,
+   "dose": 0.46616124769845335
+  },
+  {
+   "distance": 0.29,
+   "seconds": 1,
+   "dose": 0.0005179569418871704
+  },
+  {
+   "distance": 0.3,
+   "seconds": 60,
+   "dose": 0.031077416513230222
+  },
+  {
+   "distance": 0.31,
+   "seconds": 60,
+   "dose": 0.02911829471366444
   },
   {
    "distance": 0.5,
-   "weight": 1
+   "seconds": 1,
+   "dose": 0.00018873883489128562
   },
   {
-   "distance": 0.999,
-   "weight": 1
+   "distance": 0.5,
+   "seconds": 60,
+   "dose": 0.011324330093477136
+  },
+  {
+   "distance": 0.5,
+   "seconds": 900,
+   "dose": 0.16986495140215704
   },
   {
    "distance": 1,
-   "weight": 0.6
+   "seconds": 60,
+   "dose": 0.0029909967601438017
+  },
+  {
+   "distance": 1,
+   "seconds": 3600,
+   "dose": 0.17945980560862812
   },
   {
    "distance": 1.5,
-   "weight": 0.6
+   "seconds": 300,
+   "dose": 0.007238934418002961
   },
   {
-   "distance": 1.999,
-   "weight": 0.6
+   "distance": 1.83,
+   "seconds": 900,
+   "dose": 0.01564018107956354
   },
   {
    "distance": 2,
-   "weight": 0.1
+   "seconds": 60,
+   "dose": 0.0009076634268104687
   },
   {
-   "distance": 4.99,
-   "weight": 0.1
+   "distance": 2.5,
+   "seconds": 7200,
+   "dose": 0.07891961121725626
+  },
+  {
+   "distance": 3,
+   "seconds": 900,
+   "dose": 0.007827914365119995
+  },
+  {
+   "distance": 4,
+   "seconds": 60,
+   "dose": 0.00038683009347713544
   },
   {
    "distance": 5,
-   "weight": 0.02
+   "seconds": 900,
+   "dose": 0.004864951402157032
   },
   {
-   "distance": 12,
-   "weight": 0.02
+   "distance": 5,
+   "seconds": 14400,
+   "dose": 0.07783922243451251
+  },
+  {
+   "distance": 7.5,
+   "seconds": 600,
+   "dose": 0.00262601698415407
+  },
+  {
+   "distance": 9.99,
+   "seconds": 60,
+   "dose": 0.00024105239914394116
+  },
+  {
+   "distance": 10,
+   "seconds": 60,
+   "dose": 0.00024099676014380212
+  },
+  {
+   "distance": 0.2,
+   "seconds": 86400,
+   "dose": 44.75147977905152
+  },
+  {
+   "distance": 1.2,
+   "seconds": 37,
+   "dose": 0.0013210426522944393
+  },
+  {
+   "distance": 3.3,
+   "seconds": 1234,
+   "dose": 0.00963126706419931
   }
  ],
+ "scenarios": [
+  {
+   "name": "no contacts",
+   "sources": [],
+   "p": 0.02,
+   "inferP": 0.02
+  },
+  {
+   "name": "A s=0.97 0.2m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.030342180644634238,
+   "inferP": 0.03034218064463423
+  },
+  {
+   "name": "A s=0.97 0.2m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.1638574429943885,
+   "inferP": 0.16385744299438854
+  },
+  {
+   "name": "A s=0.97 0.2m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.4774870144397294,
+   "inferP": 0.4774870144397293
+  },
+  {
+   "name": "A s=0.97 0.2m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.9017676927293496,
+   "inferP": 0.9017676927293495
+  },
+  {
+   "name": "A s=0.97 0.5m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.023781705424947057,
+   "inferP": 0.023781705424947064
+  },
+  {
+   "name": "A s=0.97 0.5m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.0751728192911298,
+   "inferP": 0.07517281929112984
+  },
+  {
+   "name": "A s=0.97 0.5m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.22221053874062377,
+   "inferP": 0.2222105387406238
+  },
+  {
+   "name": "A s=0.97 0.5m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.60541139071634,
+   "inferP": 0.6054113907163399
+  },
+  {
+   "name": "A s=0.97 1m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.021000294352328176,
+   "inferP": 0.021000294352328086
+  },
+  {
+   "name": "A s=0.97 1m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.03489439607172471,
+   "inferP": 0.03489439607172473
+  },
+  {
+   "name": "A s=0.97 1m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.078191923701249,
+   "inferP": 0.07819192370124894
+  },
+  {
+   "name": "A s=0.97 1m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.2322529600664042,
+   "inferP": 0.23225296006640428
+  },
+  {
+   "name": "A s=0.97 1.83m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.020348827966105598,
+   "inferP": 0.020348827966105598
+  },
+  {
+   "name": "A s=0.97 1.83m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.025219000381908434,
+   "inferP": 0.025219000381908496
+  },
+  {
+   "name": "A s=0.97 1.83m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.040704709247418425,
+   "inferP": 0.040704709247418425
+  },
+  {
+   "name": "A s=0.97 1.83m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.10015213692159138,
+   "inferP": 0.1001521369215913
+  },
+  {
+   "name": "A s=0.97 3m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.02017460448379942,
+   "inferP": 0.020174604483799374
+  },
+  {
+   "name": "A s=0.97 3m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.0226157024771422,
+   "inferP": 0.022615702477142174
+  },
+  {
+   "name": "A s=0.97 3m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.030419704351123636,
+   "inferP": 0.030419704351123622
+  },
+  {
+   "name": "A s=0.97 3m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.06099853732634318,
+   "inferP": 0.060998537326343194
+  },
+  {
+   "name": "A s=0.97 5m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.020108518287205255,
+   "inferP": 0.02010851828720528
+  },
+  {
+   "name": "A s=0.97 5m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.021626474190794394,
+   "inferP": 0.021626474190794442
+  },
+  {
+   "name": "A s=0.97 5m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.026489218441813546,
+   "inferP": 0.02648921844181351
+  },
+  {
+   "name": "A s=0.97 5m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.04569229155276966,
+   "inferP": 0.04569229155276966
+  },
+  {
+   "name": "A s=0.6 0.2m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.026397225141010866,
+   "inferP": 0.02639722514101095
+  },
+  {
+   "name": "A s=0.6 0.2m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.10898398535735372,
+   "inferP": 0.10898398535735365
+  },
+  {
+   "name": "A s=0.6 0.2m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.30298165841632746,
+   "inferP": 0.3029816584163275
+  },
+  {
+   "name": "A s=0.6 0.2m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.5654233150903193,
+   "inferP": 0.5654233150903194
+  },
+  {
+   "name": "A s=0.6 0.5m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.022339199231926017,
+   "inferP": 0.022339199231926066
+  },
+  {
+   "name": "A s=0.6 0.5m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.05412751708729678,
+   "inferP": 0.054127517087296795
+  },
+  {
+   "name": "A s=0.6 0.5m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.14507868375708685,
+   "inferP": 0.14507868375708688
+  },
+  {
+   "name": "A s=0.6 0.5m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.38211013858742676,
+   "inferP": 0.3821101385874267
+  },
+  {
+   "name": "A s=0.6 1m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.020618738774635985,
+   "inferP": 0.020618738774636047
+  },
+  {
+   "name": "A s=0.6 1m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.029213028497974046,
+   "inferP": 0.029213028497974025
+  },
+  {
+   "name": "A s=0.6 1m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.05599500435128804,
+   "inferP": 0.055995004351288014
+  },
+  {
+   "name": "A s=0.6 1m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.15129049076272422,
+   "inferP": 0.15129049076272427
+  },
+  {
+   "name": "A s=0.6 1.83m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.02021576987594161,
+   "inferP": 0.020215769875941647
+  },
+  {
+   "name": "A s=0.6 1.83m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.023228247658912432,
+   "inferP": 0.023228247658912404
+  },
+  {
+   "name": "A s=0.6 1.83m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.032807036647887686,
+   "inferP": 0.032807036647887644
+  },
+  {
+   "name": "A s=0.6 1.83m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.83,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.06957864139479879,
+   "inferP": 0.06957864139479886
+  },
+  {
+   "name": "A s=0.6 3m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.020108002773484176,
+   "inferP": 0.020108002773484235
+  },
+  {
+   "name": "A s=0.6 3m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.021617960295139505,
+   "inferP": 0.021617960295139516
+  },
+  {
+   "name": "A s=0.6 3m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.02644517794914864,
+   "inferP": 0.02644517794914869
+  },
+  {
+   "name": "A s=0.6 3m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 3,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.04535991999567619,
+   "inferP": 0.04535991999567612
+  },
+  {
+   "name": "A s=0.6 5m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.02006712471373521,
+   "inferP": 0.020067124713735174
+  },
+  {
+   "name": "A s=0.6 5m/900s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 900
+      }
+     ]
+    }
+   ],
+   "p": 0.02100606650976973,
+   "inferP": 0.02100606650976966
+  },
+  {
+   "name": "A s=0.6 5m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.024013949551637243,
+   "inferP": 0.02401394955163727
+  },
+  {
+   "name": "A s=0.6 5m/14400s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 14400
+      }
+     ]
+    }
+   ],
+   "p": 0.03589213910480597,
+   "inferP": 0.03589213910480604
+  },
+  {
+   "name": "A s=0.97 0.5m/900s, C s=0.6 2m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.5,
+       "seconds": 900
+      }
+     ]
+    },
+    {
+     "id": "C",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 2,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.08570879001783929,
+   "inferP": 0.08570879001783938
+  },
+  {
+   "name": "A s=0.97 1m/1800s, A2 s=0.97 1m/1800s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800
+      }
+     ]
+    },
+    {
+     "id": "A2",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 1800
+      }
+     ]
+    }
+   ],
+   "p": 0.07821949122336251,
+   "inferP": 0.07821949122336247
+  },
+  {
+   "name": "A s=0.97 1m/3600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 1,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.078191923701249,
+   "inferP": 0.07819192370124894
+  },
+  {
+   "name": "A s=0.97 0.2m/300s+3m/6000s, C s=0.97 5m/14400s, E s=0.6 0.4m/1200s+0.4m/1200s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.2,
+       "seconds": 300
+      },
+      {
+       "distance": 3,
+       "seconds": 6000
+      }
+     ]
+    },
+    {
+     "id": "C",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 5,
+       "seconds": 14400
+      }
+     ]
+    },
+    {
+     "id": "E",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.4,
+       "seconds": 1200
+      },
+      {
+       "distance": 0.4,
+       "seconds": 1200
+      }
+     ]
+    }
+   ],
+   "p": 0.22785251684188446,
+   "inferP": 0.22785251684188434
+  },
+  {
+   "name": "A s=0.6 1.5m/600s, C s=0.6 1.5m/600s, E s=0.6 1.5m/600s, F s=0.6 1.5m/600s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.5,
+       "seconds": 600
+      }
+     ]
+    },
+    {
+     "id": "C",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.5,
+       "seconds": 600
+      }
+     ]
+    },
+    {
+     "id": "E",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.5,
+       "seconds": 600
+      }
+     ]
+    },
+    {
+     "id": "F",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 1.5,
+       "seconds": 600
+      }
+     ]
+    }
+   ],
+   "p": 0.03190120933073985,
+   "inferP": 0.0319012093307397
+  },
+  {
+   "name": "A s=0.97 0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s+0.3m/60s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      },
+      {
+       "distance": 0.3,
+       "seconds": 60
+      }
+     ]
+    }
+   ],
+   "p": 0.11850258422840643,
+   "inferP": 0.11850258422840632
+  },
+  {
+   "name": "A s=0.97 2.5m/2700s, C s=0.6 0.25m/180s",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 2.5,
+       "seconds": 2700
+      }
+     ]
+    },
+    {
+     "id": "C",
+     "s": 0.6,
+     "contacts": [
+      {
+       "distance": 0.25,
+       "seconds": 180
+      }
+     ]
+    }
+   ],
+   "p": 0.048644170658130315,
+   "inferP": 0.048644170658130315
+  },
+  {
+   "name": "range 9.99 m",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 9.99,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.02482723174341837,
+   "inferP": null
+  },
+  {
+   "name": "range 10 m",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 10,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.024826120369268387,
+   "inferP": null
+  },
+  {
+   "name": "range 10.01 m",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 10.01,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.02,
+   "inferP": null
+  },
+  {
+   "name": "range 12 m",
+   "sources": [
+    {
+     "id": "A",
+     "s": 0.97,
+     "contacts": [
+      {
+       "distance": 12,
+       "seconds": 3600
+      }
+     ]
+    }
+   ],
+   "p": 0.02,
+   "inferP": null
+  }
+ ],
+ "webReference": {
+  "run": "influenza_none_n10_d14_s2_bc5cae7a",
+  "agent": "A0005",
+  "atMin": 5700,
+  "sources": [
+   {
+    "id": "A0006",
+    "s": 0.97,
+    "contacts": [
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     },
+     {
+      "distance": 4.74,
+      "seconds": 300
+     }
+    ]
+   }
+  ],
+  "p": 0.0328742563480591
+ },
  "tiers": [
   {
    "p": 0,
