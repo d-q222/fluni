@@ -23,6 +23,13 @@ struct YouView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.xl) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("You").font(.fluni(.display)).foregroundStyle(Theme.ink).accessibilityAddTraits(.isHeader)
+                            .accessibilityIdentifier("you.title")
+                        Spacer()
+                        Wordmark(size: 22).accessibilityHidden(true)
+                    }
+                    .padding(.top, Space.s)
                     if let n = store.notice {
                         Text(n).font(.fluni(.fine)).foregroundStyle(Theme.ink).panel()
                             .fixedSize(horizontal: false, vertical: true)
@@ -43,6 +50,7 @@ struct YouView: View {
             .contentMargins(.bottom, Space.xl, for: .scrollContent)
             .background(Theme.paper)
             .navigationTitle("You")
+            .toolbar(.hidden, for: .navigationBar)
             #if DEBUG
             .sheet(isPresented: $showDeveloper) { DeveloperView(model: model, demoOverride: AnyView(DemoOverrideLink())) }
             #endif

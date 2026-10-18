@@ -58,6 +58,7 @@ struct FlUniApp: App {
                             .accessibilityIdentifier("tab.today")
                         // The heat map team's real campus map, unchanged inside.
                         BundledMapView()
+                            .background(Theme.paper.ignoresSafeArea())
                             .tabItem { Label("Campus", systemImage: "map") }
                             .tag(AppRouter.Tab.campus)
                             .accessibilityIdentifier("tab.campus")

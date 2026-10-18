@@ -79,6 +79,13 @@ struct TodayView: View {
                     .padding(.bottom, Space.l)
                 }
                 .onChange(of: router.closeContactRequest) { _, _ in openLatestCloseContact(proxy) }
+                #if DEBUG
+                .task {
+                    guard let a = PreviewHook.scrollAnchor else { return }
+                    try? await Task.sleep(for: .milliseconds(900))
+                    proxy.scrollTo(a, anchor: .top)
+                }
+                #endif
                 .onAppear { if router.closeContactRequest > 0 { openLatestCloseContact(proxy) } }
             }
             .contentMargins(.bottom, Space.xl, for: .scrollContent)
@@ -159,6 +166,7 @@ struct TodayView: View {
                 NowBlock(model: model, place: current, onReport: { report = .choose }, onRisk: { showCalc = true },
                          hidesReport: ccOpen)
             }
+            Color.clear.frame(height: 0).id("earlier")
             ForEach(Array(entries.enumerated()), id: \.element.id) { i, e in
                 let below: RailLine = {
                     guard i + 1 < entries.count else { return .none }
@@ -203,6 +211,7 @@ struct TodayView: View {
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: Space.s) {
+            Color.clear.frame(height: 0).id("footer")
             HandRule()
             RailLegend()
             Text("Places here are building names, kept on this phone for 24 hours. Your precise location never leaves this phone and is never seen by anyone.")
@@ -242,8 +251,10 @@ private struct NowBlock: View {
                 paused
             } else {
                 if level == .nearby { headsUp }
-                Text(detail).font(.fluni(.note)).foregroundStyle(Theme.ink2)
-                    .fixedSize(horizontal: false, vertical: true)
+                if level != .closeContact {
+                    Text(detail).font(.fluni(.note)).foregroundStyle(Theme.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 WalkInBanner(model: model)
                 MetricsStrip(exposure: model.shownExposure, risk: model.shownRisk, onRisk: onRisk)
             }
@@ -345,15 +356,20 @@ private struct MetricsStrip: View {
     let exposure: ExposureTracker
     let risk: Double
     let onRisk: () -> Void
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: Space.m) {
-                minutes
-                Rectangle().fill(Theme.hairline).frame(width: 1).accessibilityHidden(true)
-                riskBlock.frame(maxWidth: 150, alignment: .leading)
+        Group {
+            if typeSize >= .xxxLarge {
+                VStack(alignment: .leading, spacing: Space.m) { minutes; riskBlock }
+            } else {
+                HStack(alignment: .top, spacing: Space.s) {
+                    minutes.frame(maxWidth: .infinity, alignment: .leading)
+                    Rectangle().fill(Theme.hairline).frame(width: 1).accessibilityHidden(true)
+                    riskBlock.frame(width: 124, alignment: .leading)
+                }
+                .fixedSize(horizontal: false, vertical: true)
             }
-            VStack(alignment: .leading, spacing: Space.m) { minutes; riskBlock }
         }
         .padding(.vertical, Space.s)
         .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
@@ -396,9 +412,9 @@ private struct MetricsStrip: View {
                         .contentTransition(.numericText(value: risk))
                     Text(word).font(.fluni(.note).weight(.semibold)).foregroundStyle(Theme.ink)
                 }
-                Text("risk estimate, last 24 h").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
+                Text("risk estimate,\nlast 24 h").font(.fluni(.fine)).foregroundStyle(Theme.ink2)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("How is this worked out?").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.ink2)
+                Text("Why this number").font(.fluni(.fine).weight(.semibold)).foregroundStyle(Theme.ink2)
                     .underline(true, color: Theme.ink2.opacity(0.5))
             }
             .frame(minHeight: 44, alignment: .leading)
@@ -525,7 +541,12 @@ private struct CloseContactMoment: View {
             }
             Button("How we worked this out", action: how).buttonStyle(QuietLinkStyle())
         }
-        .card(.peach)
+        .padding(Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // A light fire wash with a fire-ink edge (B-2): ink text on it is 12:1, fire-ink 7:1.
+        .background(Theme.fire.opacity(0.16), in: RoundedRectangle(cornerRadius: 18))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.fireInk, lineWidth: Theme.stroke))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("today.closeContact")
     }

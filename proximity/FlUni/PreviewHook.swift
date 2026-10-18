@@ -31,13 +31,25 @@ enum PreviewHook {
         let record: SelfReportRecord?
         switch state {
         case .sick, .sickPossible:
-            record = try? r.reportSymptoms(SelfReportRecord(), symptoms: [.fever, .cough, .soreThroat], onset: now.addingTimeInterval(-2 * 86_400), now: now)
+            // Reported yesterday evening, so today's check-in is still to do.
+            record = try? r.reportSymptoms(SelfReportRecord(), symptoms: [.fever, .cough, .soreThroat], onset: now.addingTimeInterval(-2 * 86_400),
+                                           now: Calendar.current.startOfDay(for: now).addingTimeInterval(-4 * 3600))
         case .sickPositive:
             record = try? r.reportPositive(SelfReportRecord(), kind: .rapid, date: now.addingTimeInterval(-86_400), now: now)
         default: record = nil
         }
         if let record, let url = SelfReportStore.defaultURL { SelfReportFile.save(record, to: url) }
         return true
+    }
+
+    /// Report step 2 with Fever and Cough picked, starting yesterday ("symptomsPicked", and "stamp", which saves it).
+    static var pickSymptoms: Bool { state != nil && (screen == "symptomsPicked" || screen == "stamp") }
+    static var autoSubmit: Bool { state != nil && screen == "stamp" }
+    /// Today scrolls to this anchor once seeded: "earlier" (the rows under Now) or "footer".
+    static var scrollAnchor: String? {
+        guard state != nil else { return nil }
+        if screen == "moment" { return "earlier" }
+        return ["earlier", "footer"].contains(screen) ? screen : nil
     }
 
     static var onboardingPage: Int {
@@ -99,6 +111,7 @@ enum PreviewHook {
         switch screen {
         case "you", "me": router.tab = .you
         case "campus", "map": router.tab = .campus
+        case "moment": router.showCloseContact()
         default: break
         }
     }
@@ -138,12 +151,12 @@ struct PreviewHookModifier: ViewModifier {
                 seeded = true
                 try? await Task.sleep(for: .milliseconds(300))
                 PreviewHook.seed(model: model, store: store, router: AppRouter.shared)
-                if ["report", "symptoms", "positive", "history", "settings", "how", "calc"].contains(PreviewHook.screen) { shown = PreviewHook.screen }
+                if ["report", "symptoms", "symptomsPicked", "stamp", "positive", "history", "settings", "how", "calc"].contains(PreviewHook.screen) { shown = PreviewHook.screen }
             }
             .sheet(item: Binding(get: { shown.map(Shown.init) }, set: { shown = $0?.id })) { s in
                 switch s.id {
                 case "report": ReportFlow(start: .choose, model: model, store: store)
-                case "symptoms": ReportFlow(start: .symptoms, model: model, store: store)
+                case "symptoms", "symptomsPicked", "stamp": ReportFlow(start: .symptoms, model: model, store: store)
                 case "positive": ReportFlow(start: .positive, model: model, store: store)
                 case "history": NavigationStack { ExposureHistoryView(store: model.exposureHistory) }
                 case "settings": NavigationStack { SettingsView(model: model) }

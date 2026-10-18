@@ -158,7 +158,7 @@ private struct TodayCheckIn: View {
             if due || changing {
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: Space.xs) { answers }
-                    VStack(spacing: Space.xs) { answers }
+                    VStack(alignment: .leading, spacing: Space.xs) { answers }
                 }
             } else {
                 answered
@@ -175,7 +175,7 @@ private struct TodayCheckIn: View {
                 store.checkIn(stillSymptomatic: true, hasFever: false, feeling: f, model: model)
                 changing = false
             }
-            .buttonStyle(SecondaryButtonStyle())
+            .buttonStyle(PillStyle())
             .accessibilityIdentifier("checkin.\(f.rawValue)")
         }
     }
@@ -208,6 +208,22 @@ private struct TodayCheckIn: View {
         case .worse: return "Checked in: worse. If it keeps getting worse, call Vaden before you go in."
         case nil: return "You've checked in today."
         }
+    }
+}
+
+/// One of three equal answers (B-5): an ink-outlined pill, 50 pt tall, sized to its word.
+private struct PillStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.fluni(.heading))
+            .foregroundStyle(Theme.ink)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, Space.m)
+            .frame(minHeight: 50)
+            .background(Capsule().fill(configuration.isPressed ? Theme.surface2 : Theme.surface))
+            .overlay(Capsule().stroke(Theme.ink, lineWidth: Theme.stroke))
+            .contentShape(Capsule())
     }
 }
 

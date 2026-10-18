@@ -39,7 +39,11 @@ struct ReportFlow: View {
         // Closes a moment after the stamp lands. A task, so it's cancelled if the sheet goes away first.
         .task(id: stamped) {
             guard stamped else { return }
-            try? await Task.sleep(for: .milliseconds(800))
+            var hold = 800
+            #if DEBUG
+            if PreviewHook.autoSubmit { hold = 60_000 }  // screenshots: keep the stamp on screen
+            #endif
+            try? await Task.sleep(for: .milliseconds(hold))
             if !Task.isCancelled { dismiss() }
         }
         .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
@@ -230,6 +234,14 @@ private struct SymptomsStep: View {
         }
         .background(Theme.paper)
         .navigationBarTitleDisplayMode(.inline)
+        #if DEBUG
+        .onAppear {
+            guard PreviewHook.pickSymptoms else { return }
+            picked = [.fever, .cough]
+            onset = Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date()))!
+            if PreviewHook.autoSubmit { DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { submit() } }
+        }
+        #endif
     }
 
     /// One sticker: Lisa's drawing and its word. Picked = a 2.5 pt ink edge, an ink tick badge and a small tilt
@@ -405,16 +417,14 @@ private struct DayChips: View {
         let today = cal.startOfDay(for: Date())
         let d1 = cal.date(byAdding: .day, value: -1, to: today)!
         let d2 = cal.date(byAdding: .day, value: -2, to: today)!
-        return [("Today", today), ("Yesterday", d1), (d2.formatted(.dateTime.weekday(.wide)), d2)]
+        return [("Today", today), ("Yesterday", d1), (d2.formatted(.dateTime.weekday(.abbreviated)), d2)]
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: Space.xs)], alignment: .leading, spacing: Space.xs) {
-                ForEach(days, id: \.1) { label, d in
-                    chip(label, on: !earlier && cal.isDate(date, inSameDayAs: d)) { earlier = false; date = d }
-                }
-                chip("Earlier", on: earlier) { earlier = true; date = cal.date(byAdding: .day, value: -3, to: cal.startOfDay(for: Date()))! }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Space.xs) { chips }
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: Space.xs), GridItem(.flexible())], alignment: .leading, spacing: Space.xs) { chips }
             }
             if earlier {
                 DatePicker("Pick the day", selection: $date, in: ...Date(), displayedComponents: .date)
@@ -424,12 +434,20 @@ private struct DayChips: View {
         }
     }
 
+    @ViewBuilder private var chips: some View {
+        ForEach(days, id: \.1) { label, d in
+            chip(label, on: !earlier && cal.isDate(date, inSameDayAs: d)) { earlier = false; date = d }
+        }
+        chip("Earlier", on: earlier) { earlier = true; date = cal.date(byAdding: .day, value: -3, to: cal.startOfDay(for: Date()))! }
+    }
+
     private func chip(_ label: String, on: Bool, _ act: @escaping () -> Void) -> some View {
         Button(action: act) {
             Text(label).font(.fluni(on ? .strong : .reading))
                 .foregroundStyle(on ? Theme.paper : Theme.ink)
-                .lineLimit(1).minimumScaleFactor(0.8)
-                .padding(.horizontal, Space.s)
+                .lineLimit(1)
+                .fixedSize()
+                .padding(.horizontal, Space.m)
                 .frame(maxWidth: .infinity, minHeight: 46)
                 .background(Capsule().fill(on ? Theme.ink : Theme.surface))
                 .overlay(Capsule().stroke(Theme.ink.opacity(on ? 1 : 0.35), lineWidth: 1.25))
