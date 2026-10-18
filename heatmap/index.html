@@ -273,6 +273,13 @@
     #phone[data-theme="night"] .ta-kicker { color: #7a2e1e; }
     #phone[data-theme="night"] .ta-ok { background: #33241c; color: #faf4e8; }
     #phone[data-theme="night"] .ta-hint { color: #7a2e1e; background: #f1e2c6; box-shadow: 0 0 0 1.5px #7a2e1e; }
+    /* Lisa's hand-drawn speech bubble (assets/bubble/, 1987 x 434): the left cap and the right end with its tail keep
+       their shape, only the plain middle stretches with the text. The body is the top 91%; the tail points at the tissue. */
+    #phone .say { background: none; border: 0 solid transparent; border-radius: 0; box-sizing: border-box; height: 34px;
+      border-width: 0 80px 0 22px; border-image: url("assets/bubble/bubble.png") 0 1012 0 280 fill / 0 80px 0 22px stretch;
+      padding: 7px 0 10px 7px; line-height: 17px; margin-right: -4px; } /* 7px: the body runs on into the right end, so the text centres in it */
+    #phone .say::after { display: none; }
+    #phone[data-theme="night"] .say { border-image-source: url("assets/night/bubble/bubble.png"); }
     .presenter button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 
     .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px 0;
