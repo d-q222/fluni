@@ -34,7 +34,9 @@ struct SettingsView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await refreshNotifications() } }
         }
-        .confirmationDialog("Delete all data on this phone?", isPresented: $confirmDelete, titleVisibility: .visible) {
+        // An alert, not a confirmation dialog: on the Form the dialog became a popover with no Cancel, its arrow
+        // pointing at whatever row sat in the middle of the screen.
+        .alert("Delete all data on this phone?", isPresented: $confirmDelete) {
             Button("Delete my data", role: .destructive) { deleteEverything() }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -181,6 +183,7 @@ struct SettingsView: View {
 
     private func deleteEverything() {
         hasOnboarded = false  // back to onboarding; set first so the view updates, the erase below removes the key
+        AppRouter.shared.tab = .today  // a fresh start opens on Today, like a new install (not on Me, where this began)
         heatmapURL = ""
         model.forgetEverything()  // stops the radios; they stay off until onboarding's "Turn on"
         BuildingWatcher.shared.sync(paused: true)

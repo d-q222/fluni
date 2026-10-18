@@ -46,12 +46,16 @@ class FlUniUITestCase: XCTestCase {
     /// Any element type, by accessibility identifier (SwiftUI combined elements vary in type).
     func el(_ id: String) -> XCUIElement { app.descendants(matching: .any)[id].firstMatch }
 
-    /// Swipes up until the element can be tapped.
+    /// Swipes up until the element exists and can be tapped (a Form only builds rows near the screen, so
+    /// Settings' Delete row doesn't exist until scrolled to). From flu-design2.
     @discardableResult
     func scrollTo(_ e: XCUIElement, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
-        XCTAssertTrue(e.waitForExistence(timeout: 10), "\(e) should exist", file: file, line: line)
         var n = 0
-        while !e.isHittable && n < 10 { app.swipeUp(); n += 1 }
+        while !(e.exists && e.isHittable) && n < 12 {
+            if n == 0 && e.waitForExistence(timeout: 3) && e.isHittable { break }
+            app.swipeUp(); n += 1
+        }
+        XCTAssertTrue(e.exists, "\(e) should exist", file: file, line: line)
         return e
     }
 

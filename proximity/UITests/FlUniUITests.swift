@@ -214,8 +214,10 @@ final class FlUniUITests: FlUniUITestCase {
         scrollTo(el("settings.row")).tap()
         let delete = app.buttons["settings.delete"]
         scrollTo(delete).tap()
-        XCTAssertTrue(app.staticTexts["Delete all data on this phone?"].waitForExistence(timeout: 5))
-        dialogButton("Delete my data").tap()
+        let alert = app.alerts["Delete all data on this phone?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Cancel"].exists, "a way out")
+        alert.buttons["Delete my data"].tap()
 
         XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 10), "back to onboarding")
         XCTAssertTrue(app.staticTexts["Know when someone sick is near"].exists)
