@@ -130,7 +130,7 @@ final class PSickFeedTests: XCTestCase {
         // Our own copy of model/out/influenza_none_n10_d14_s2_f1f772f6/p_sick.csv (that run is being retired).
         let fixtures = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent()
             .appendingPathComponent("Fixtures")
-        let data = try Data(contentsOf: fixtures.appendingPathComponent("p_sick_f1f772f6.csv"))
+        let data = try Fixture.data("p_sick_f1f772f6.csv", sourcePath: fixtures.appendingPathComponent("p_sick_f1f772f6.csv"))
         let f = try PSickFeed.parse(data)
         XCTAssertEqual(f.rejected, 0)
         XCTAssertEqual(f.rowCount, 136)

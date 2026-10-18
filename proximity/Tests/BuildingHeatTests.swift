@@ -138,7 +138,7 @@ final class BuildingHeatTests: XCTestCase {
     func testBundledFile() throws {
         let url = URL(fileURLWithPath: #filePath).resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("FlUni/Resources/building_heat.csv")
-        let b = try BuildingHeat.parse(try Data(contentsOf: url))
+        let b = try BuildingHeat.parse(try Fixture.data("building_heat.csv", sourcePath: url))
         XCTAssertEqual(b.rejected, 0)
         XCTAssertEqual(b.rowCount, 4507)
         XCTAssertEqual(b.snapshots.count, 1344)
