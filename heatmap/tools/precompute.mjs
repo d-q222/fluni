@@ -23,11 +23,10 @@ import { once } from 'node:events';
 import { basename, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { inferRisk, DEFAULTS as MODEL } from '../../model/infer.js';
+import { MIN_PEOPLE, userScale } from '../userscale.js';
 
 // Same constants as app.js and forecast.js.
-// Runs are scaled to a ~7,000-person campus: under 500 agents each counts as 50; up to FULL_RUN_AGENTS
-// as CAMPUS_PEOPLE / n (x7 at 1,000), so buildings clear MIN_PEOPLE; full runs count as themselves.
-const SMALL_RUN_SCALE = 50, SMALL_RUN_AGENTS = 500, FULL_RUN_AGENTS = 5000, CAMPUS_PEOPLE = 7000, MIN_PEOPLE = 4;
+// Counting rules (scale, MIN_PEOPLE) live in userscale.js, shared with app.js.
 // Colour is risk above the baseline: a person adds max(0, P - prior), so a crowd at the prior is blank.
 const excessOf = (p) => Math.max(0, p - MODEL.prior);
 const HORIZONS = [60, 120, 180], EVERY_MIN = 60, SLOT_MIN = 30;
@@ -379,7 +378,7 @@ const tPass = lap();
 
 // ---------- 3. forecast (forecast.js on streamed counts) ----------
 
-const scale = usable < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : usable < FULL_RUN_AGENTS ? Math.round(CAMPUS_PEOPLE / usable) : 1;
+const scale = userScale(usable);
 const nSteps = steps.length;
 const nB = buildings.length;
 

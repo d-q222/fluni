@@ -11,6 +11,8 @@ import { buildForecaster } from './forecast.js';
 import { BuildingTotalsLayer } from './buildings.js';
 import { loadPSick, loadTotals } from './precomputed.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
+import { MIN_PEOPLE, userScale } from './userscale.js';
+import { rampCss, fmt as fmtSick } from './userstyle.js';
 
 // Room-level heat for the presenter (the user map gets building totals instead).
 const DEMO = { cellM: 3, sigmaM: 18 };
@@ -18,22 +20,16 @@ const DEMO = { cellM: 3, sigmaM: 18 };
 // there, spread by the diffusion kernel (which integrates to 1, so a cloud holds exactly its people's
 // expected count). No trail of past positions: that counted people who had already left. Infectious
 // air that lingers after people leave is the sim's own room view ("Infectious air by room").
-// The user-facing map sees only per-building totals. Small runs (the mock has 10 agents) are scaled
-// so each agent stands for SMALL_RUN_SCALE people; full runs (thousands of agents) show real counts.
-const SMALL_RUN_SCALE = 50;
-const SMALL_RUN_AGENTS = 500;
-// Mid-size runs are scaled up to a ~7,000-person campus (x7 at 1,000 agents), so buildings still clear
-// MIN_PEOPLE; from FULL_RUN_AGENTS on, agents count as themselves. Same rule as tools/precompute.mjs.
-const FULL_RUN_AGENTS = 5000;
-const CAMPUS_PEOPLE = 7000;
+// The user-facing map sees only per-building totals, counted by userscale.js (the same rule precompute.mjs and
+// FlUni's bundle use): small runs are scaled so each agent stands for several people, full runs count as themselves.
 // From this many agents, read the precomputed P(sick) and user-map totals when the run has them
 // (precomputed.js): the model in the page and per-step totals take minutes and gigabytes there.
 const BIG_RUN = 2000;
 // Long runs too: 1,000 agents x 14 days is 11 M contacts (21 s and 3.6 GB in the page); 4 days loads in 6 s.
 const BIG_AGENT_DAYS = 8000;
 let bigRun = false; // set by loadModel: this run uses the precomputed files
-const MIN_PEOPLE = 4;
 const MAX_DOTS = 600;       // above this, draw a fixed sample of dots; heat and totals still use everyone       // buildings with only 1–3 people are hidden; 4 or more are always shown
+let viewCountText = ''; // the demo legend's "≈ N expected sick", kept across legend re-renders
 const HORIZONS = [[0, 'Now'], [60, 'In 1 hour'], [120, 'In 2 hours'], [180, 'In 3 hours']];
 const ADJACENT_M = 1.83;    // "the person next to you" (demo proof of concept, uses sim truth); 6 ft
 const ROOM_HOT = 1;         // walk-in warning when the others in the room add up to ≥ 1 expected sick person
@@ -637,7 +633,7 @@ async function main() {
     return f.diffuse(sigmaM, { people: false });
   };
   // Everything the user-facing map gets is computed here, from totals only.
-  const scale = tracks.size < SMALL_RUN_AGENTS ? SMALL_RUN_SCALE : tracks.size < FULL_RUN_AGENTS ? Math.round(CAMPUS_PEOPLE / tracks.size) : 1;
+  const scale = userScale(tracks.size);
   const totals = pre ? pre.totals : buildTotals(frames, times, { scale, prior: MODEL.prior });
   const forecaster = pre ? pre.forecaster : buildForecaster(frames, times, { scale, prior: MODEL.prior });
   const backtestRate = forecaster.backtest(60).rate;
@@ -760,7 +756,7 @@ async function main() {
     if (zoom && me) map.setView([me.lat, me.lon], zoom);
   }).observe($('map'));
   const heatLayer = new CanvasLayer([sw, ne]).addTo(map);
-  const publicLayer = outlines ? new BuildingTotalsLayer(outlines) : null; // shown in "What users see"
+  const publicLayer = outlines ? new BuildingTotalsLayer(outlines, { avoid: () => [$('ulegend')?.getBoundingClientRect(), document.querySelector('.embed-chip')?.getBoundingClientRect()] }) : null; // shown in "What users see"
 
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
@@ -879,7 +875,7 @@ async function main() {
     const level = live >= CLOSE_CONTACT_MIN ? 'close' : near ? 'nearby' : 'none';
     let walkIn = null;
     const b = !me.walking && me.buildingId && totalsAt(totals, now).buildings.get(me.buildingId);
-    if (b && b.n >= MIN_PEOPLE && Math.sqrt(Math.min(1, b.expected / vmax.public)) >= 0.5) walkIn = b.name || me.building || 'This building';
+    if (b && b.n >= MIN_PEOPLE && Math.sqrt(Math.min(1, (b.excess ?? b.expected) / vmax.public)) >= 0.5) walkIn = b.name || me.building || 'This building';
     // Other phones within Bluetooth range (~10 m, same room indoors) that run the app.
     let peers = 0;
     for (const a of current.values()) {
@@ -1033,6 +1029,100 @@ async function main() {
     }
   }
 
+  // ---- Room-level demo: hover or click a building for the numbers behind its heat ----
+  // Computed on demand (when the pointer enters a building, then twice a second), never every frame.
+  const hitShapes = (outlines ? outlines.features : []).map((f) => {
+    const rings = f.geometry.type === 'Polygon' ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
+    const xs = rings.flat().map((c) => c[0]), ys = rings.flat().map((c) => c[1]);
+    return { id: 'bld_' + String(f.properties.id).split('/')[1], name: f.properties.name || '', rings,
+      bb: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
+  });
+  const inRing = (x, y, ring) => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const buildingAt = (ll) => hitShapes.find((h) => ll.lng >= h.bb[0] && ll.lat >= h.bb[1] && ll.lng <= h.bb[2] && ll.lat <= h.bb[3]
+    && h.rings.some((r) => inRing(ll.lng, ll.lat, r)));
+  // Why is this person's P what it is: an active report, else their biggest contact (the model's own explain()).
+  function whyText(id) {
+    if (!model?.risk.explain) return '';
+    const e = model.risk.explain(id, now, 1);
+    const ev = [...e.evidence].reverse().find((x) => x.active);
+    if (ev) return `${ev.kind === 'test' ? 'tested' : 'reported'} ${String(ev.value).replace(/_/g, ' ')}`;
+    const c = e.contributions[0];
+    if (c) return `${Math.max(1, Math.round(c.durationMin))} min near ${c.other}${c.distanceM != null ? ` (${c.distanceM < 10 ? c.distanceM.toFixed(1) : Math.round(c.distanceM)} m${c.indoor === false ? ', outdoors' : ''})` : ''}`;
+    return 'at the baseline';
+  }
+  function buildingInfo(h) {
+    const here = [...current.values()].filter((a) => a.buildingId === h.id && !a.walking);
+    const tiers = { low: 0, elevated: 0, high: 0 };
+    let expected = 0, excess = 0;
+    for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
+    const top = here.filter((a) => a.p > MODEL.prior).sort((a, b) => b.p - a.p).slice(0, 3);
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top };
+  }
+  const pct = (p) => `${Math.round(p * 100)}%`;
+  function buildingCard(h, full) {
+    const i = buildingInfo(h);
+    if (!full) return `<b>${esc(i.name)}</b><br>${i.n} ${i.n === 1 ? 'person' : 'people'} · ≈${fmtSick(i.expected)} expected sick`;
+    const tier = (k, label) => `<span style="--c:${riskColor(k === 'low' ? 0 : TIERS[k])}">${i.tiers[k]} ${label}</span>`;
+    return `<div class="bld-pop"><h3>${esc(i.name)}</h3>
+      <div class="row"><span>Expected sick (Σ P)</span><b>${fmtSick(i.expected)}</b></div>
+      <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
+      <div class="row"><span>People here now</span><b>${i.n}</b></div>
+      <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
+      ${i.top.length ? `<h4>Driving it</h4>${i.top.map((a) => `<button class="who" data-id="${esc(a.id)}">${esc(a.id)} · P ${pct(a.p)}<small>${esc(whyText(a.id))}</small></button>`).join('')}`
+        : '<h4>Driving it</h4><p style="margin:2px 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}</div>`;
+  }
+  let hover = null, hoverAt = 0, openBld = null;
+  const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 300 });
+  const hoverTip = L.tooltip({ direction: 'top', offset: [0, -6], className: 'bld-tip' });
+  function refreshBuilding(realNow) {
+    if (hover && realNow - hoverAt > 500) { hoverAt = realNow; hoverTip.setContent(buildingCard(hover, false)); }
+    if (openBld && realNow - hoverAt > 500) demoPop.setContent(buildingCard(openBld, true));
+  }
+  let moveQueued = false;
+  map.on('mousemove', (e) => {
+    if ($('view').value !== 'demo' || moveQueued) return;
+    moveQueued = true;
+    requestAnimationFrame(() => {
+      moveQueued = false;
+      const h = buildingAt(e.latlng);
+      if (!h) { if (hover) { map.closeTooltip(hoverTip); hover = null; } return; }
+      if (h !== hover) { hover = h; hoverAt = performance.now(); hoverTip.setContent(buildingCard(h, false)); }
+      hoverTip.setLatLng(e.latlng); if (!map.hasLayer(hoverTip)) map.openTooltip(hoverTip);
+    });
+  });
+  map.on('mouseout', () => { if (hover) { map.closeTooltip(hoverTip); hover = null; } });
+  map.on('click', (e) => {
+    if ($('view').value !== 'demo') return;
+    const h = buildingAt(e.latlng);
+    if (!h) { map.closePopup(demoPop); return; }
+    openBld = h; hoverAt = performance.now();
+    demoPop.setLatLng(e.latlng).setContent(buildingCard(h, true)).openOn(map);
+  });
+  map.on('popupclose', (e) => { if (e.popup === demoPop) openBld = null; });
+  map.getContainer().addEventListener('click', (e) => { // a person in the popup opens their phone
+    const b = e.target.closest?.('.bld-pop .who');
+    if (b) { map.closePopup(demoPop); select(b.dataset.id); }
+  });
+  // Legend count: Σ P(sick) of everyone in view (cheap loop, a few times a second).
+  let viewCountAt = 0;
+  function updateViewCount(realNow) {
+    if (realNow - viewCountAt < 300 || $('view').value !== 'demo') return;
+    viewCountAt = realNow;
+    const el = $('view-count');
+    if (!el || !map._loaded) return;
+    const b = map.getBounds();
+    let sum = 0;
+    for (const a of current.values()) if (b.contains([a.lat, a.lon])) sum += a.p;
+    el.textContent = viewCountText = `≈ ${fmtSick(sum)} expected sick`;
+  }
+
   // Move every dot to its interpolated position; repaint heat every frame while it's cheap enough.
   function render(realNow) {
     const view = $('view').value;
@@ -1091,6 +1181,8 @@ async function main() {
       }
     }
     renderPhone(heatDue);
+    refreshBuilding(realNow);
+    updateViewCount(realNow);
   }
 
   // Jump over stretches where nobody has a sample (e.g. 23:00 → 07:00).
@@ -1120,8 +1212,28 @@ async function main() {
     setPhoneTab(phoneTab);
   }
 
+  // The app's slim legend for "What users see": a gradient strip, with the counting rules behind (i).
+  function userLegend() {
+    let el = $('ulegend');
+    if (el) return el;
+    el = Object.assign(document.createElement('section'), { id: 'ulegend', hidden: true, ariaLabel: 'Legend' });
+    el.innerHTML = `<div class="strip"><span>Fewer</span><div class="ramp" role="img" aria-label="Fewer to more expected sick people per building"></div><span>More sick</span>
+      <button type="button" class="info" aria-expanded="false" aria-label="About this map">i</button></div>
+      <div class="more" hidden><div class="scale"><span>0</span><span class="mid"></span><span class="max"></span></div><p class="fine"></p></div>`;
+    el.querySelector('.ramp').style.background = rampCss();
+    el.querySelector('.info').addEventListener('click', (e) => {
+      const more = el.querySelector('.more');
+      more.hidden = !more.hidden;
+      e.currentTarget.setAttribute('aria-expanded', String(!more.hidden));
+      publicLayer?.labels?.schedule();
+    });
+    document.querySelector('main').append(el);
+    return el;
+  }
+
   function renderLegend() {
     const v = $('view').value;
+    map.getContainer().classList.toggle('muted-base', v === 'public'); // heat is the strongest colour on screen
     $('ramp').style.background = `linear-gradient(to right, ${HEAT_STOPS.map(([t, c]) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(c[3], 40) / 255}) ${t * 100}%`).join(', ')})`;
     // Colour scale is √, so the midpoint is a quarter of the maximum.
     const unit = v === 'public' ? 1 : 1000; // public: sick people per building; demo: per 1,000 m²
@@ -1138,13 +1250,22 @@ async function main() {
       ? `Infectious air <span>relative, experimental${truthMode() ? ' (sim truth)' : ''}</span>`
       : v === 'public'
       ? `Expected sick people <span>per building${scale > 1 ? ` (each sim agent = ${scale})` : ''}</span>`
-      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>' : `Expected infected above the ${Math.round(MODEL.prior * 100)}% baseline <span>per 1,000 m²</span>`;
+      : truthMode() ? 'Infectiousness <span>per 1,000 m², from the simulation (truth)</span>'
+      : `<span id="view-count"></span> people in view <span>Colour: expected infected above the ${Math.round(MODEL.prior * 100)}% baseline, per 1,000 m²</span>`;
+    if ($('view-count')) $('view-count').textContent = viewCountText;
     const showDots = $('show-dots').checked && v !== 'public';
     const key = (color, label) => `<div class="key"><span class="swatch" style="background:${color}"></span>${label}</div>`;
     $('dot-legend').innerHTML = !showDots ? '' : $('dot-mode').value === 'truth'
       ? key(COLORS.healthy, 'Healthy (sim truth)') + key(COLORS.infected, 'Infected (sim truth)')
       : `<div class="key">App's estimate of P(sick)${data.beliefFrom === 'column' ? '' : data.beliefFrom === 'reports' ? ' (placeholder: from self-reports and tests)' : ' (placeholder: true status)'}:</div><div class="tiers"><span style="--c:${riskColor(0)}">Low<small>&lt;${TIERS.elevated * 100}%</small></span><span style="--c:${riskColor(TIERS.elevated)}">Elevated<small>${TIERS.elevated * 100}–${TIERS.high * 100}%</small></span><span style="--c:${riskColor(TIERS.high)}">High<small>${TIERS.high * 100}%+</small></span></div>`;
     const isPublic = v === 'public';
+    const ul = userLegend();
+    ul.hidden = !isPublic;
+    document.querySelector('.legend').hidden = isPublic;
+    ul.querySelector('.mid').textContent = (vmax.public / 4).toFixed(1);
+    ul.querySelector('.max').textContent = `${vmax.public.toFixed(1)}+`;
+    ul.querySelector('.fine').textContent = `Buildings with fewer than ${MIN_PEOPLE} people are hidden${scale > 1 ? `; each counted person stands for ${scale}` : ''}. May be incomplete because not everyone shares their status.`
+      + (Number.isFinite(backtestRate) ? ` Forecasts landed in their range ${Math.round(backtestRate * 100)}% of the time when tested on past days.` : '');
     $('dot-mode').disabled = !data.hasTruth || isPublic;
     $('show-dots').disabled = isPublic; // the user map never shows people
     $('horizon').hidden = !isPublic;    // forecasts are a user-map feature
@@ -1237,7 +1358,7 @@ async function main() {
   if (PARAMS.get('why') && model?.risk.explain) { mathOpen = true; renderMath(); } // ?why=1 opens the explanation
   window.fluni = {
     data, map, vmax, totals, forecaster, model, select, seek: (t) => { now = t; heatDirty = true; render(performance.now()); },
-    current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
+    publicLayer, now: () => now, current: () => current, heatField: () => ($('view').value === 'airflow' ? aero : lastField), // for tools/bench.mjs
   };
 }
 

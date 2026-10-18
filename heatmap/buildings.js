@@ -1,88 +1,121 @@
-// Building-level view for the user-facing map: each campus building outline filled by how many sick
-// people are expected there. It takes only per-building totals, never agent positions, so nothing
-// finer than a building can be drawn. Colours come from the shared heat palette.
-
-import { HEAT_STOPS } from './heat.js';
-
-const MAX_FILL = 0.75;       // fill opacity at the palette's most opaque stop
-const FORECAST_FILL = 0.5;   // forecasts are drawn lighter than measurements
-const INK = '#33241c';       // --ink from the design palette; warm dark outline, never pure black
-const MUTED = '#a8988a';     // outline when too few people to show anything
-const HIDDEN = { stroke: false, fill: false, interactive: false };
-
-// Same piecewise-linear interpolation as the LUT in heat.js.
-function heatColor(t) {
-  let j = 1;
-  while (j < HEAT_STOPS.length - 1 && HEAT_STOPS[j][0] < t) j++;
-  const [t0, c0] = HEAT_STOPS[j - 1], [t1, c1] = HEAT_STOPS[j];
-  const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
-  const c = c0.map((v, i) => v + f * (c1[i] - v));
-  return { color: `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`, alpha: c[3] / 255 };
-}
-
-// Integers from 10 up, one decimal below.
-const fmt = (x) => (x >= 10 ? String(Math.round(x)) : String(Math.round(x * 10) / 10));
+// Building-level view for the user-facing map: each campus building filled by how many sick people are
+// expected there, drawn exactly as FlUni's map draws it (userstyle.js is shared with the app bundle):
+// warm sun -> fire fills, a halo with a pixel floor so a small hot building registers zoomed out, tap a
+// building for "about X sick of Y people". The presenter adds a count badge on each hot building and building
+// names. It takes only per-building totals, never agent positions, so nothing finer than a building can be drawn.
+import { buildingStyle, HIDDEN, haloRadius, GLOW, HALO_BLUR, fmt } from './userstyle.js';
+import { LabelLayer, escapeHtml as esc } from './maplabels.js';
 
 export class BuildingTotalsLayer {
-  constructor(geojson, { renderer } = {}) {
-    this.group = L.layerGroup();
+  // avoid: () => [DOMRect, ...] the labels must stay clear of (legend, chip)
+  constructor(geojson, { avoid = () => [] } = {}) {
+    this.geojson = geojson;
+    this.avoid = avoid;
     this.totals = new Map();
     this.opts = { minPeople: 4, forecast: false };
-    this.items = new Map(); // buildingId → { layer, shown, key }
-    for (const f of geojson.features) {
+    this.items = new Map(); // buildingId -> { layer, halo, name, center, shown, key, badge }
+    this.added = false;
+    this.openId = null;
+  }
+
+  _build(map) {
+    const pane = (name, z) => { const p = map.getPane(name) || map.createPane(name); p.style.zIndex = z; return { pane: name, renderer: L.canvas({ pane: name }) }; };
+    this.P = { halo: pane('ub-halo', 425), fill: pane('ub-fill', 430) };
+    map.getPane('ub-halo').style.filter = HALO_BLUR;
+    map.getPane('ub-halo').style.pointerEvents = 'none';
+    map.getPane('ub-fill').style.filter = GLOW; // hot buildings glow so they read zoomed out
+    this.group = L.layerGroup();
+    this.haloGroup = L.layerGroup();
+    this.pop = L.popup({ closeButton: false, autoPanPadding: [20, 80], className: 'ub-pop' });
+    for (const f of this.geojson.features) {
       const id = 'bld_' + String(f.properties.id).split('/')[1];
-      const layer = L.geoJSON(f, { renderer, style: () => HIDDEN });
-      layer.bindTooltip(() => this._tip(id), { sticky: true, className: 'bld-tip' });
-      this.items.set(id, { layer, shown: false, key: '' });
+      const layer = L.geoJSON(f, { ...this.P.fill, style: () => HIDDEN });
+      layer.on('click', (e) => { L.DomEvent.stopPropagation(e); this._open(id, e.latlng); });
+      this.items.set(id, { layer, halo: null, name: f.properties.name || '', center: layer.getBounds().getCenter(), shown: false, key: '', badge: '', f });
     }
+    this.labels = new LabelLayer(map, { pane: 'ub-label', avoid: this.avoid });
+    this._zoom = () => { const r = haloRadius(map.getZoom()); for (const it of this.items.values()) if (it.halo) it.halo.setRadius(r); };
+    map.on('zoomend', this._zoom);
+    map.on('popupclose', (e) => { if (e.popup === this.pop) this.openId = null; });
   }
 
   addTo(map) {
+    if (!this.group) this._build(map);
     this.map = map;
     this.group.addTo(map);
+    this.haloGroup.addTo(map);
+    this.added = true;
+    if (this.last) this.update(...this.last);
     return this;
   }
 
   remove() {
-    this.group.remove();
+    this.group?.remove();
+    this.haloGroup?.remove();
+    this.labels?.setItems([]);
+    this.map?.closePopup(this.pop);
     this.map = null;
+    this.added = false;
+    this._labelsBuilt = false;
   }
 
+  // totals: Map buildingId -> { name, n, expected, excess, lo?, hi? }; vmax: colour max (expected sick above baseline)
   update(totals, vmax, { minPeople = 4, forecast = false } = {}) {
+    this.last = [totals, vmax, { minPeople, forecast }];
+    if (!this.map) return;
     this.totals = totals;
     this.opts = { minPeople, forecast };
+    let labelsDirty = false;
     for (const [id, it] of this.items) {
       const d = totals.get(id);
       if (!d) {
         if (it.shown) { this.group.removeLayer(it.layer); it.shown = false; it.key = ''; }
+        if (it.halo) { it.halo.remove(); it.halo = null; }
+        if (it.badge) { it.badge = ''; labelsDirty = true; }
         continue;
       }
-      const style = this._style(d, vmax, minPeople, forecast);
+      const style = buildingStyle(d.n, d.excess ?? d.expected, vmax, { minPeople, forecast });
       const key = JSON.stringify(style);
       if (key !== it.key) { it.layer.setStyle(style); it.key = key; }
       if (!it.shown) { this.group.addLayer(it.layer); it.shown = true; }
-      if (it.layer.isTooltipOpen()) it.layer.setTooltipContent(this._tip(id));
+      // a halo with a floor on its on-screen size, so a small hot building still registers when zoomed out
+      if (style.fill) {
+        if (!it.halo) it.halo = L.circleMarker(it.center, { interactive: false, stroke: false, radius: haloRadius(this.map.getZoom()), ...this.P.halo }).addTo(this.haloGroup);
+        it.halo.setStyle({ fill: true, fillColor: style.fillColor, fillOpacity: style.fillOpacity * 0.55 });
+      } else if (it.halo) { it.halo.remove(); it.halo = null; }
+      const badge = style.fill ? (d.expected < 0.5 ? '&lt;1' : String(Math.round(d.expected))) : '';
+      if (badge !== it.badge) { it.badge = badge; labelsDirty = true; }
+      it.d = d; it.hot = d.expected;
     }
+    if (labelsDirty || !this._labelsBuilt) { this._labelsBuilt = true; this._setLabels(); }
+    if (this.openId) { if (this.items.get(this.openId)?.badge !== undefined && this._shown(this.openId)) this.pop.setContent(this._html(this.openId)); else this.map.closePopup(this.pop); }
   }
 
-  _style(d, vmax, minPeople, forecast) {
-    const base = { stroke: true, weight: 1, interactive: true, dashArray: forecast ? '4 3' : null };
-    if (d.n < minPeople) return { ...base, color: MUTED, opacity: 0.45, fill: false };
-    const t = Math.sqrt(Math.min(1, (d.excess ?? d.expected) / vmax)); // colour: risk above the baseline
-    const { color, alpha } = heatColor(t);
-    const op = alpha * MAX_FILL * (forecast ? FORECAST_FILL : 1);
-    return { ...base, color: INK, opacity: 0.45, fill: op > 0.01, fillColor: color, fillOpacity: op };
+  _setLabels() {
+    const out = [];
+    for (const [id, it] of this.items) {
+      if (it.badge) out.push({ key: 'b:' + id, lat: it.center.lat, lon: it.center.lng, html: it.badge, cls: 'ub-badge', p: 0, minZoom: 0 });
+      if (it.name) out.push({ key: 'n:' + id, lat: it.center.lat, lon: it.center.lng, html: esc(it.name.slice(0, 28)), cls: 'ub-name',
+        p: it.badge ? 1 : 2, minZoom: it.badge ? 16 : 17 });
+    }
+    this.labels.setItems(out);
   }
 
-  _tip(id) {
+  _shown(id) {
     const d = this.totals.get(id);
-    if (!d) return '';
-    const name = d.name || 'Building';
-    if (d.n < this.opts.minPeople) return `${name} · Not enough people to show safely`;
-    if (this.opts.forecast) {
-      const range = d.lo != null && d.hi != null ? ` (${fmt(d.lo)}–${fmt(d.hi)})` : '';
-      return `${name} · ~${fmt(d.expected)} expected sick${range}`;
-    }
-    return `${name} · ~${fmt(d.n)} people · ~${fmt(d.expected)} expected sick`;
+    return d && d.n >= this.opts.minPeople;
+  }
+
+  _html(id) {
+    const d = this.totals.get(id), name = d.name || this.items.get(id).name || 'Building';
+    return this.opts.forecast
+      ? `<b>${esc(name)}</b>: about ${fmt(d.expected)} sick expected${d.lo != null && d.hi != null ? ` (${fmt(d.lo)}–${fmt(d.hi)})` : ''}`
+      : `<b>${esc(name)}</b>: about ${fmt(d.expected)} sick of ${fmt(d.n)} people`;
+  }
+
+  _open(id, latlng) {
+    if (!this._shown(id)) return; // hidden buildings show nothing
+    this.openId = id;
+    this.pop.setLatLng(latlng).setContent(this._html(id)).openOn(this.map);
   }
 }
