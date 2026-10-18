@@ -101,7 +101,7 @@ for (const run of runs) {
           cur = meanFieldRisk({ ...input, initialPrevalence: cal.prior }, { ...sets, prior: cal.prior, lambdaScale: cal.lambdaScale });
         } else {
           cur = meanFieldCalibrated(input, sets, until);
-          fits.push({ day: cps[ci], prior: cur.fit.prior, lambdaScale: cur.fit.lambdaScale, reports: cur.fit.reports });
+          fits.push({ day: cps[ci], prior: cur.fit.prior, lambdaScale: cur.fit.lambdaScale, lateScale: cur.fit.lateScale, reports: cur.fit.reports });
         }
         ci++;
       }
@@ -146,7 +146,7 @@ for (const run of runs) {
   results.push(res);
   if (!quiet) {
     console.log(`\n${id}: ${agentIds.length} agents, ${reports.length} reports, prior ${risk.params.prior.toPrecision(3)}, lambdaScale ${risk.params.lambdaScale.toPrecision(3)}, ${res.seconds.toFixed(0)} s`);
-    for (const f of fits) console.log(`  fit at day ${f.day}: prior ${f.prior.toPrecision(3)}, lambdaScale ${f.lambdaScale.toPrecision(3)} (${f.reports} reporters)`);
+    for (const f of fits) console.log(`  fit at day ${f.day}: prior ${f.prior.toPrecision(3)}, lambdaScale ${f.lambdaScale.toPrecision(3)}${f.lateScale ? `, late x${f.lateScale.toPrecision(3)}` : ''} (${f.reports} reporters)`);
     console.log('day  infected  expected   KL     AUC   KL const=truth  KL const=prior');
     for (const x of perDay) console.log(`${String(x.day).padStart(3)} ${String(x.actual).padStart(8)} ${x.expected.toFixed(0).padStart(9)} ${x.kl.toFixed(4).padStart(7)} ${x.auc.toFixed(3).padStart(6)} ${x.klConstOracle.toFixed(4).padStart(10)} ${x.klConstPrior.toFixed(4).padStart(13)}`);
   }

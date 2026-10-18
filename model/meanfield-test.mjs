@@ -68,7 +68,7 @@ const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
 { // 3. negative test. Default: a likelihood (infected mass x negFnr) at the result. negFnr 0: the SI's P_S = 1 back
   //    to 3 days before it, so what A "passed on" then is gone.
   const contacts = meet(40), sick = rep(46, 'A', 'self_report', 'might_be_sick'), neg = rep(50, 'A', 'test_result', 'negative');
-  const exposed = at(run([sick], contacts), 'B', 60), alone = at(run([]), 'B', 60);
+  const exposed = at(run([sick], contacts), 'B', 60), alone = at(run([sick, neg], [], { negFnr: 0 }), 'B', 60); // alone: no meeting
   const cleared = at(run([sick, neg], contacts, { negFnr: 0 }), 'B', 60);
   check('negative test, negFnr 0: clears the meeting\'s risk back to baseline', exposed - alone, 10 * Math.abs(cleared - alone));
   const pA = at(run([sick], contacts), 'A', 60), pAneg = at(run([sick, neg], contacts), 'A', 60);

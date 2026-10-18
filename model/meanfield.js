@@ -49,7 +49,8 @@ export const MF_DEFAULTS = {
   lrOther: 20,            // ... of a report by someone else (was 4)       measured per-day ratios, 270 and 90)
   lrTest: 200,            // ... of taking a test (test_taken, app-visible as in sim/campussim/app_policy.py): in the sim only
                           //   symptomatic people go; all 616 tests in twelve runs were taken by infected people. 0: ignore
-  recoveredCertain: false, // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
+  recoveredCertain: false,
+  reportCensoring: true,  // no report yet is evidence: infections that would have been reported by now lose weight // "recovered": true = the SI's P_R = 1; false = only ends a current infection (keeps P_S)
   negFnr: 0.3,            // negative test: false-negative rate. > 0: a likelihood at the result (infected mass x this,
                           //   renormalised); the sim's test has 70% sensitivity and every negative in twelve runs was
                           //   a false negative. 0: the SI's P_S = 1 over negDays (eq. 4).
@@ -149,7 +150,7 @@ export function calibrateFromReports(input, params = {}, untilMs = Infinity) {
   let lambdaScale = P.lambdaScale;
   const seen = times.length, background = N * P.falseReportPerDay * D;
   if (D >= 4 && seen - background >= 3) {
-    const base = { ...input, reports: [], initialPrevalence: prior };
+    const base = { ...input, reports: [], initialPrevalence: prior }; // (no reports: no censoring either)
     const expect = (lam) => { // expected first reports by `end` from the forward model
       const m = meanFieldRisk(base, { ...params, prior, lambdaScale: lam });
       let x = background, prev = prior * N;
@@ -329,6 +330,19 @@ export function meanFieldRisk(input, params = {}) {
     if (kind && idx.has(who)) obs[n].push([kind, idx.get(who)]);
   }
 
+  // Report censoring: each agent's first report step (symptoms, positive, or by someone else, as reportRate counts),
+  // and the per-step first-report hazard at each infection age from reportRate and reportDelayCdf.
+  const censor = P.reportCensoring && reports.length > 0;
+  const firstRepStep = new Int32Array(N).fill(1 << 30), repHaz = new Float64Array(K);
+  if (censor) {
+    for (let n = 0; n < nSteps; n++) for (const [kind, i] of obs[n]) if ((kind === 'sym' || kind === 'pos' || kind === 'other') && n < firstRepStep[i]) firstRepStep[i] = n;
+    const Fd = (days) => { if (days < 0) return 0; const x = days * 2, k = Math.floor(x), c = P.reportDelayCdf; return k >= c.length - 1 ? c[c.length - 1] : c[k] + (c[k + 1] - c[k]) * (x - k); };
+    for (let k = 0; k < K; k++) {
+      const f0 = P.reportRate * Fd(k * dtDays), f1 = P.reportRate * Fd((k + 1) * dtDays);
+      repHaz[k] = f0 < 1 ? Math.max(0, (f1 - f0) / (1 - f0)) : 0;
+    }
+  }
+
   // ---------- dynamics ----------
   const q = R.quantaPeak * P.lambdaScale;
   const hImp = -Math.log1p(-P.importPerDay * dtDays);
@@ -473,6 +487,13 @@ export function meanFieldRisk(input, params = {}) {
       A.copyWithin(o + 1, o, o + K - 1);
       A[o] = nw;
       S[i] -= nw;
+      // Not reported yet (by the end of this step) is evidence too: an infection of age k would have produced a first
+      // report this step with hazard rep[k]. R carries the factor along from A, so no separate term for it.
+      if (censor && firstRepStep[i] > s) {
+        let z = S[i] + Rr[i];
+        for (let k = 0; k < K; k++) { const v = A[o + k] * (1 - repHaz[k]); A[o + k] = v; z += v; }
+        if (z > 0 && z < 1) { S[i] /= z; Rr[i] /= z; for (let k = 0; k < K; k++) A[o + k] /= z; }
+      }
     }
   }
 
