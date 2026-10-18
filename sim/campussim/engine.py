@@ -20,6 +20,7 @@ from .population import build_population
 from .reports import Reports, reports_frame
 from .schedule import build_events, build_sections, events_frame_for_csv, sections_frame_for_csv
 from .summary import compute_summary
+from . import rates as _rates
 from .worry import is_on as _worry_on
 
 RNG_STREAMS = ["map", "population", "sections", "events", "plans", "behavior", "disease", "reports", "intervention"]
@@ -42,13 +43,22 @@ def recorded_config(cfg):
     if not _llm_on(rec):  # keeps run ids of runs without Claude-driven agents unchanged
         rec.pop("llm_agents", None)
     pc = rec.get("personality", {})
-    if pc.get("mode", "off") == "off" or pc.get("weights_source", "config") != "calibrated":
+    use_w = pc.get("mode", "off") != "off" and pc.get("weights_source", "config") == "calibrated"
+    use_r = _rates.is_on(rec)
+    if not (use_w or use_r):
         rec.pop("behavior_calibrated", None)  # configs/behavior_calibrated.json only counts when used
     else:
         bc = rec.get("behavior_calibrated", {})
-        rec["behavior_calibrated"] = {k: bc.get(k) for k in ("weights", "weights_fitted", "source_runs", "created")}
-    if rec.get("personality", {}).get("mode", "off") == "off":  # keeps run ids of runs without Big Five
+        if use_r and not bc:
+            bc = _rates.load_calibrated(rec)
+        keys = ("weights", "weights_fitted", "source_runs", "created") if use_w else ("source_runs", "created")
+        rec["behavior_calibrated"] = {k: bc.get(k) for k in keys}
+        if use_r:
+            rec["behavior_calibrated"]["rates"] = _rates.extract(bc)
+    if pc.get("mode", "off") == "off":  # keeps run ids of runs without Big Five
         rec.pop("personality", None)
+        if use_r:  # ... but the rates setting still counts
+            rec["personality"] = {k: pc[k] for k in ("rates_source", "rates_prior_n") if k in pc}
     if not _worry_on(rec):  # keeps run ids of runs without worry
         rec.pop("worry", None)
     return rec
@@ -88,6 +98,8 @@ def run(cfg, external_provider=None, quiet=False, llm_client=None, scenario=None
     campus = Campus.build(cfg["map"], data_dir=ROOT / "data" / "osm")
     log(f"campus: {len(campus.buildings)} buildings, {len(campus.rooms)} rooms")
     pop = build_population(cfg, campus, rngs["population"])
+    for line in _rates.summary(cfg):
+        log(line)
     sections = build_sections(cfg, campus, pop, rngs["sections"])
     events = build_events(cfg, campus, pop, sections, rngs["events"])
     log(f"population {pop.N}, {len(sections)} sections, {len(events)} events")

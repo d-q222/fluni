@@ -116,6 +116,18 @@ rule-based population loads that file when `population.personality = "big_five"`
 existing R ≈ 1.6 check is rerun (`scripts/calibrate.py`) and `transmission_scale` adjusted if
 behavior shifts the epidemic.
 
+**Base rates.** A single small calibration run mostly pins down base rates, not Big Five slopes.
+`personality.rates_source = "calibrated"` (default `"config"`, read with `.get`; `campussim/rates.py`)
+takes the pooled fitted rates from the file and shrinks each toward the config value,
+`new = (n * fitted + k * current) / (n + k)` with `k = personality.rates_prior_n` (default 30) and `n`
+its row count. It applies them as one pooled shift that keeps archetype differences: log-prob space
+(then renormalized) for the sick response shares in `sick_profile_p`, the logit scale for the
+`compliance_beta` means. Both apply with personality off and as the `big_five` intercept targets.
+It also sets a per-advice-kind compliance multiplier (`pop.compliance_kind_mult`, used in
+`apply_actions`), and the worry `jumps[kind]` and `half_life_days`. Entries that are unfitted or have
+n = 0 are left as they are. Disclosure, influence and notice rates are not applied yet. Check with
+`scripts/smoke_rates.py`.
+
 **Validate.** A `validation.md` report compares fitted rates with published ones. Examples are the
 share of students who stay home with flu-like illness, presenteeism, contact-tracing app alert
 compliance, and disclosure to close contacts. **Each published number gets a citation, collected as
@@ -158,7 +170,8 @@ silently tuned away.
    `configs/calibration.json`, `campussim/calibration.py`, `campussim/budget.py` (see the README's
    "Calibration run"). `--opus-subset K` runs K Claude agents on Opus (`LLMAgents.agent_models`).
 7. **Fit script** and `behavior_calibrated.json`. **Done** (`scripts/calibrate_agents.py`,
-   `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; the validation
+   `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; fitted base rates via
+   `personality.rates_source = "calibrated"`, `campussim/rates.py`, `scripts/smoke_rates.py`; the validation
    report from step 8 is `scripts/validation_report.py`, waiting on `configs/published_rates.json`).
 8. **Published-rate table** with citations, and the validation report. **Done** (`configs/published_rates.json`,
    `docs/PUBLISHED_RATES.md`, `scripts/validation_report.py`).

@@ -140,6 +140,16 @@ its placeholder and is marked `"fitted": false`. The JSON holds:
 `personality.weights_source=calibrated` uses the fitted weight for each trait marked fitted, and
 `personality.json` for the rest. Intercepts are still solved so archetype means match today's.
 With the default (`config`), the file is ignored and run ids don't change.
+
+The weights only change how agents vary around the archetype means. To move the means themselves
+toward what Claude agents did, add `--set personality.rates_source=calibrated` (works with personality
+off or `big_five`). This takes the pooled fitted sick-response shares, the app compliance rate (and a
+multiplier per advice kind), and the worry jumps and half-life. Each is shrunk toward its config
+value: `new = (n * fitted + k * current) / (n + k)`, where `n` is the number of rows and
+`k = personality.rates_prior_n` (default 30). Each is applied as one shift on the logit or log-prob
+scale, so archetype differences are kept. Unfitted rates stay as they are. The run log prints
+old -> new for each applied rate. The default (`config`) leaves run ids unchanged. Check it with
+`scripts/smoke_rates.py`.
 `validation_report.py` writes `validation.md`, which compares each fitted rate with
 `configs/published_rates.json` and flags gaps outside tolerance. It lists rates with no published
 match as unvalidated. Check all of this with `scripts/smoke_calibrate_agents.py`, which recovers
