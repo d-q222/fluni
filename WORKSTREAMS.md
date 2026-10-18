@@ -85,6 +85,12 @@ Claim a row before you start. Update the status as you go. Agents should name th
   leaves the phone and is never seen by anyone. To make that true, FlUni no longer sends GPS fixes to
   nearby phones (GPS ranging between phones stays in the test harness only).
 
+- **2026-10-17 — FlUni anti-spoofing (proximity).** Bluetooth beacons aren't authenticated, so a ContactGuard
+  limits what they can add: at most the top 2 risky contacts count per tick, a burst of more than 4 new contagious
+  IDs in 5 minutes pauses Bluetooth-only alerts ("unusual signals"), implausible RSSI (> -30 dBm or a > 20 dB jump
+  in 2 s) is ignored, and an ID whose risk reverses direction within 15 minutes is ignored. A one-way climb
+  (symptoms, then positive) is trusted. Open product question: should a full close-contact alert require UWB?
+
 ## Requests
 
 - **heat map → synthetic data (@aidenyj), 2026-10-17: hand-placed boxes in `map/buildings.csv`.** The
