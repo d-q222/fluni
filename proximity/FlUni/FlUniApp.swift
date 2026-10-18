@@ -99,7 +99,13 @@ struct FlUniApp: App {
     /// Idempotent (model.start() only runs once).
     private static func startDetection() {
         let model = sharedModel
+        #if DEBUG
+        // Debug builds obey the Mac tools' test arguments (-risk, -speed, ...) so phone tests need no taps. A test
+        // launch keeps nothing: saved status, pause, self-report and history are neither read nor written.
+        model.acceptsLaunchArguments = LaunchMode.isTestLaunch
+        #else
         model.acceptsLaunchArguments = false  // the product ignores test launch arguments
+        #endif
         #if DEBUG
         let saved = UserDefaults.standard.double(forKey: "demoSpeed")
         if saved > 1 { model.speed = saved }
