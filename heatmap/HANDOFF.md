@@ -53,19 +53,31 @@ and `WORKSTREAMS.md`.
 - **Default:** `influenza_none_n10_d14_s2_bc5cae7a`: 10 agents, 14 days, 3 infections. It looks sparse
   live.
 - **`influenza_none_n500_d2_s42_aea9db72`:** almost no illness.
-- **`influenza_none_n7500_d2_s42_2a1d8bfd`:** local only, not in git. Its 290 reports are all false.
-  The model takes ~31 s on it.
+- **`influenza_none_n7500_d2_s42_2a1d8bfd`:** local only, not in git, and has no trips. Its 290
+  reports are all false. The model takes ~31 s on it. The lag agent regenerated it with the current
+  sim as **`influenza_none_n7500_d2_s42_cca0fef5`** (gitignored, has trips): use that id.
 - **Wanted:** a busier official run from Aiden (~500 agents, 7 days, several seeds). The FlUni
   session is exploring configs in scratch.
 
 ## In flight at handoff (background agents)
 
-1. **7,500-agent performance (the lag agent).**
+1. **7,500-agent performance (the lag agent).** ETA ~1.5 h from 17:30.
+   - Done: on the 10-agent run, heat costs 1.9 ms and redraws every frame (it was 23 ms every
+     ~60 ms); the cloud sits 1–2 m from its dot (p50; it was 5–10 m); load takes 1.0 s.
+   - Next: read `p_sick.csv` and `totals.json.gz` for big runs, heat from stay positions for
+     non-sampled agents, and ≤600 dots.
    - Product owner direction: show a dot sample, but compute the heat from all 7,500.
    - Use precomputed `p_sick.csv` and `totals.json.gz` for big runs.
    - Its benchmark is `tools/bench.mjs`.
-2. **Alternative flu model, `model/alt/`.** It is independent, from the product owner's "best existing
-   methodologies" prompt, and will be compared with Rio's. Not integrated: the product owner chooses.
+2. **Alternative flu model, `model/alt/` (done, f61ae54; not integrated).** It works from the product
+   owner's "best existing methodologies" prompt.
+   - Method: a two-zone transient Wells–Riley dose, humidity via absolute humidity, emission scaled by
+     the shedding stage, a summed pair-day dose, and S/E/I/R with Erlang phases (so recovered people
+     are immune).
+   - Calibration: a 15-min close chat gives λ 0.7%; a roommate over an illness reaches 20.7%.
+   - Against Rio's formula it gives about 0.17× λ overall and 0.03× for a night asleep as a roommate.
+   - Its recommendation: use it for the heat map and sum `states.I`.
+   - The product owner decides. Our Rio port with review fixes already gives roommates 17–26%.
 3. **A complete user map for FlUni.**
    - Bounded to Stanford, with faint outside context.
    - Every building in neutral paper, plus footpaths, green spaces and labels.
