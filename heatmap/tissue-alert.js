@@ -3,7 +3,7 @@
 // Normally the tissue box in the tab bar is empty. When the phone raises an alert (someone within 6 ft
 // may be sick, or a close contact), a tissue pops out of the box and wiggles. Tapping it pulls the
 // tissue out frame by frame (her drawings, hard cuts like hand animation) until it becomes a sheet of
-// paper with the alert on it. "Got it" puts it away until the next, different alert.
+// paper with the alert on it. Her X in the corner puts it away until the next, different alert.
 //
 // Every layer is the same size as the phone screen above and including the tab bar, so they all
 // line up with the box drawn in the tab bar. The layers only hold what differs from the empty box.
@@ -22,7 +22,7 @@ export function mountTissueAlert(frame) {
     <img class="ta-art" alt="" src="${ART}pull-0-tissue.png">
     <button type="button" class="ta-pop" aria-label="New alert. Tap the tissue to read it."><span class="ta-hint">Pull me</span></button>
     <div class="ta-note" role="alertdialog" aria-modal="false" hidden><div class="ta-text"></div>
-      <button type="button" class="ta-ok">Got it</button></div>
+</div>
     <button type="button" class="ta-x" aria-label="Close alert" hidden><img src="assets/icons/close.png" alt=""></button>`;
   frame.appendChild(root);
   // Preload so the pull never stutters on first tap.
@@ -40,11 +40,11 @@ export function mountTissueAlert(frame) {
     root.dataset.state = s;
     pop.hidden = s !== 'popped';
     note.hidden = s !== 'open';
-    root.querySelector('.ta-x').hidden = s !== 'open'; // Lisa's hand-drawn X, the same as Got it
+    root.querySelector('.ta-x').hidden = s !== 'open'; // Lisa's hand-drawn X closes it (owner: the X replaces Got it, as in the app)
     // Popped: only the tissue wiggles; the box rim it pokes out of is its own still layer (the whole
     // layer used to rotate, shaking the back of the box).
     if (s === 'popped') art.src = `${ART}pull-0-tissue.png`;
-    if (s === 'open') { art.src = `${ART}sheet.png`; root.querySelector('.ta-ok').focus({ preventScroll: true }); }
+    if (s === 'open') { art.src = `${ART}sheet.png`; root.querySelector('.ta-x').focus({ preventScroll: true }); }
   }
 
   function render() {
@@ -64,7 +64,6 @@ export function mountTissueAlert(frame) {
     step();
   });
   const putAway = () => { readLevel = level; clearTimeout(timer); show('idle'); };
-  root.querySelector('.ta-ok').addEventListener('click', putAway);
   root.querySelector('.ta-x').addEventListener('click', putAway);
 
   return {
