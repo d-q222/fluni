@@ -181,12 +181,15 @@ async function loadModel(dataUrl, agentIds) {
   try {
     const base = new URL(dataUrl, location.href);
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
-    const [contacts, reports] = await Promise.all([
-      loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s']),
+    const [contacts, reports, rooms] = await Promise.all([
+      loadCsv(new URL('contacts.csv.gz', base), ['t', 'agent_a', 'agent_b', 'distance_m', 'distance_tier', 'duration_s', 'room_id', 'indoor']),
       loadCsv(new URL('reports_tests.csv', base), ['t', 'agent_id', 'event', 'value', 'target_agent_id']),
+      // Room volume and ventilation for Rio's room-air term (model/README.md); default room without it.
+      loadCsv(new URL('map/rooms.csv', base), ['room_id', 'volume_m3', 'ventilation_ach', 'room_type'])
+        .then((r) => new Map(r.data.map((x) => [x.room_id, x])), () => null),
     ]);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, agentIds, stepMin: config.step_min, startMs });
+    const risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());
