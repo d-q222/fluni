@@ -82,6 +82,7 @@ struct ExposureHistoryView: View {
             }
             .padding(16)
         }
+        .tissueTabBarScrollRoom(alert: true)
         .background(Theme.paper)
         .navigationTitle("Recent contacts")
         .navigationBarTitleDisplayMode(.inline)

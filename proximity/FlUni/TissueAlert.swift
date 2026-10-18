@@ -88,6 +88,11 @@ struct TissueAlert: View {
         .onChange(of: visible) { _, _ in sync() }
     }
 
+    /// How far the popped tissue (top of its drawing at row 854 of 1123) rises above the tab bar's frame.
+    static var poppedRise: CGFloat {
+        max(TissueTabBar.width / aspect * (1 - 854.0 / 1123.0) - TissueTabBar.height, 0)
+    }
+
     private var wiggling: Bool { isPopped && dragFrame == nil && !reduceMotion }
     private var isShown: Bool { if case .hidden = phase { return false }; return true }
     private var isPopped: Bool { if case .popped = phase { return true }; return false }

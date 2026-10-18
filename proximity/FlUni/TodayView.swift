@@ -44,6 +44,7 @@ struct TodayView: View {
                 }
                 .padding(16)
             }
+            .tissueTabBarScrollRoom(alert: true)
             .background(Theme.paper)
             .navigationTitle("Today")
             .animation(reduceMotion ? nil : .default, value: level)

@@ -69,6 +69,7 @@ struct MeView: View {
                 }
                 .padding(16)
             }
+            .tissueTabBarScrollRoom()
             .background(Theme.paper)
             .navigationTitle("Me")
             #if DEBUG

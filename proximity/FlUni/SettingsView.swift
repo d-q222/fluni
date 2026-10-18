@@ -25,6 +25,7 @@ struct SettingsView: View {
             aboutSection
         }
         .scrollContentBackground(.hidden)
+        .tissueTabBarScrollRoom()
         .background(Theme.paper)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
