@@ -230,11 +230,20 @@ infectiousness `shed = Σ_a P(a) · stage(a)`, which the heat map's "Chance of c
 
 ```
 node model/meanfield-test.mjs                          # each λ input moves the risk the right way
-node model/meanfield-cli.mjs sim/runs/<run> [--calibrate [--holdout ids.json]]   # scores vs sim truth; writes model/out/<run>/meanfield.csv
+node model/meanfield-cli.mjs sim/runs/<run>                    # online self-calibrated (what the heat map shows); writes model/out/<run>/meanfield.csv
+node model/meanfield-cli.mjs sim/runs/<run> --calibrate [--holdout ids.json] | --scale x   # one fixed lambdaScale (seed count as prior)
+node model/meanfield-eval.mjs sim/runs/<run> --calibrate online # per-day KL and AUC (model/MEANFIELD_EVAL.md)
 ```
 
-**Starting prevalence.** `prior` (2%) is only a fallback now: `input.initialPrevalence` replaces it, and the CLI and
-the heat map's `?model=meanfield` pass `initialPrevalence(config)` = `params.run.initial_seeds / n_agents` (a count,
+**Self-calibration (the default since 2026-10-18).** `meanFieldOnline` estimates the starting prevalence and
+`lambdaScale` from the reports seen so far (`calibrateFromReports`: the reporting process, 47% of infections reported
+at a median 2.7 days, is about people, not the epidemic) and refits each day; `meanFieldCalibrated` rescales the
+unreported to the forward model's total. Plus: "recovered" keeps P_S, likelihood ratios 60 / 20, soft negatives,
+`test_taken` as evidence, positives override earlier reports, report censoring. On twelve 1k sim runs: KL 0.333 →
+0.289, final AUC 0.751 → 0.786; the log is `model/MEANFIELD_EVAL.md`. The heat map shows it by default.
+
+**Starting prevalence (fixed-scale mode).** `prior` (2%) is only a fallback: `input.initialPrevalence` replaces it, and
+`--calibrate` / `--scale` pass `initialPrevalence(config)` = `params.run.initial_seeds / n_agents` (a count,
 not who). On the 7,500-agent runs (5 seeds, 0.07%) the 2% prior started ~150 phantom cases; with R ~ 1.5-2 they
 put mean P(ever infected) at ~0.40 on runs with 4-10% infected, per-agent KL 0.56 vs 0.18-0.34 for a constant guess.
 `--holdout` keeps a list of agents out of `--calibrate`'s target, so the fitted model can be scored on them.
