@@ -59,6 +59,16 @@ struct TissueTabBar: View {
 }
 
 extension View {
+    /// One screen behind the tissue tab bar: kept alive, shown, tappable and accessible only while selected.
+    func tissueTab(_ tab: AppRouter.Tab, selected: AppRouter.Tab) -> some View {
+        let on = tab == selected
+        return tissueTabBarInset()
+            .opacity(on ? 1 : 0)
+            .allowsHitTesting(on)
+            .accessibilityHidden(!on)
+            .zIndex(on ? 1 : 0)
+    }
+
     /// Keeps a tab's content clear of the tissue tab bar.
     func tissueTabBarInset() -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: TissueTabBar.reserved) }

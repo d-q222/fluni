@@ -61,22 +61,14 @@ struct FlUniApp: App {
                 if needsOnboarding {
                     OnboardingView { hasOnboarded = true; startOnce(); if started { model.resume() } }  // resume: radios are off after "Delete my data"
                 } else {
-                    TabView(selection: $router.tab) {
-                        TodayView(model: model)
-                            .tabItem { Label("Today", systemImage: "sun.max") }
-                            .tag(AppRouter.Tab.today)
-                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
-                            .tissueTabBarInset()
-                        BundledMapView()
-                            .tabItem { Label("Map", systemImage: "map") }
-                            .tag(AppRouter.Tab.map)
-                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
-                            .tissueTabBarInset()
-                        MeView(model: model)
-                            .tabItem { Label("Me", systemImage: "person.crop.circle") }
-                            .tag(AppRouter.Tab.me)
-                            .toolbar(.hidden, for: .tabBar)   // Lisa's tissue box replaces it
-                            .tissueTabBarInset()
+                    // Lisa's tissue box is the tab bar. No system TabView: hidden under her drawing it still showed
+                    // its own Today/Map/Me buttons to VoiceOver and kept hers out of the accessibility tree. All three
+                    // screens stay alive (the map's web view isn't reloaded); only the selected one is visible,
+                    // tappable and accessible.
+                    ZStack {
+                        TodayView(model: model).tissueTab(.today, selected: router.tab)
+                        BundledMapView().tissueTab(.map, selected: router.tab)
+                        MeView(model: model).tissueTab(.me, selected: router.tab)
                     }
                     .overlay { TissueTabBar(selection: $router.tab) }
                     .tint(Theme.ink)
