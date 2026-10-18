@@ -37,6 +37,7 @@ struct TodayView: View {
             .animation(reduceMotion ? nil : .default, value: level)
             .sheet(isPresented: $showHow) { HowItWorksSheet() }
             .sheet(isPresented: $showCalc) { CalculationSheet(minutes: model.exposure.minutes, dose: model.exposure.dose) }
+            .onReceive(AppRouter.shared.dismissSheets) { showHow = false; showCalc = false }
         }
     }
 
@@ -211,6 +212,7 @@ struct CalculationSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .sheet(isPresented: $showDemo) { PSickDemoSheet() }
+            .onReceive(AppRouter.shared.dismissSheets) { showDemo = false }
         }
     }
 

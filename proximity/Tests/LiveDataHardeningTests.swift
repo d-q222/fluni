@@ -29,7 +29,7 @@ final class LiveDataHardeningTests: XCTestCase {
 
     func testParseUsesSanitizedNameAndFallsBackToId() throws {
         let b = try heat("""
-        2026-01-05T00:00:00,b1,"Evil\u{202E}\nName",37.4,-122.1,100,5.00,0.250,0
+        2026-01-05T00:00:00,b1,"Evil\u{202E}\u{0007}\tName",37.4,-122.1,100,5.00,0.250,0
         2026-01-05T00:00:00,b2,"\u{200B}\u{202E}",37.4,-122.1,100,5.00,0.250,0
 
         """)

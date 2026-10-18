@@ -75,6 +75,12 @@ struct MeView: View {
             .sheet(isPresented: $showDeveloper) { DeveloperView(model: model) }
             #endif
             .sheet(item: $sheet) { ReportSheet(kind: $0, model: model, store: store) }
+            .onReceive(AppRouter.shared.dismissSheets) {
+                sheet = nil
+                #if DEBUG
+                showDeveloper = false
+                #endif
+            }
             .alert("Can't change that yet", isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: { Text(blocked ?? "") }

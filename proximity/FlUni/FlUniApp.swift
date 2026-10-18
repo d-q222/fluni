@@ -33,7 +33,7 @@ struct FlUniApp: App {
         WindowGroup {
             Group {
                 if needsOnboarding {
-                    OnboardingView { hasOnboarded = true; startOnce() }
+                    OnboardingView { hasOnboarded = true; startOnce(); if started { model.resume() } }  // resume: radios are off after "Delete my data"
                 } else {
                     TabView(selection: $router.tab) {
                         TodayView(model: model)
@@ -53,7 +53,7 @@ struct FlUniApp: App {
                     .onAppear { startOnce(); router.becomeReady() }
                     // At the tab level so the close-contact moment shows whichever tab is open.
                     .onChange(of: model.exposure.level) { old, new in
-                        if new == .closeContact && old < .closeContact { router.sheet = .closeContact }
+                        if new == .closeContact && old < .closeContact { router.showCloseContact() }
                     }
                     .fullScreenCover(isPresented: Binding(get: { router.sheet == .closeContact }, set: { if !$0 { router.sheet = nil } })) {
                         CloseContactSheet { router.sheet = nil }
@@ -67,8 +67,8 @@ struct FlUniApp: App {
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
             .tint(Theme.ink)
-            // The app may be killed in the background: save an exposure that is still going on.
-            .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.finishOngoing() } }
+            // The app may be killed in the background: save an exposure that is still going on, so a relaunch continues it.
+            .onChange(of: phase) { _, p in if p == .background { model.exposureHistory.saveOngoing() } }
         }
     }
 
