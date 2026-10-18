@@ -25,6 +25,10 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # numpy, pa
 - `--set key.path=value` overrides any parameter (e.g. `--set disease.transmission_scale=1.5`);
   `--config file.json` deep-merges a JSON file. Parameters live in `configs/*.json`, one file per
   module; disease presets (influenza, covid19, norovirus) are in `configs/diseases.json`.
+- Humidity: `configs/weather.json` sets outdoor RH and temperature (default 60%, 10 °C, optionally per
+  day via `daily`). For influenza, heated indoor air (~30% RH by default) sets how fast airborne virus
+  dies off in each room, using the same formula as `model/` and `exposure/`. Example:
+  `--set 'weather.daily=[{"outdoor_rh_pct":80},{"outdoor_rh_pct":40}]'`.
 - `--intervention`: `none` (baseline), `self_report_isolate` (acts only on what the app can see),
   `symptomatic_isolate_oracle` (reads ground truth; flagged as an oracle).
 - Same seed + config → byte-identical output. The run id is
