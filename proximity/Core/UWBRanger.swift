@@ -38,8 +38,18 @@ final class UWBRanger: NSObject, NISessionDelegate {
         var theirTokenData: Data?
         var linkUp = true
         var downSince: Date?
-        var extended = false
+        var extended = false       // both hellos said the phones support extended distance
+        var extendedRejected = false  // NI rejected an extended configuration with this peer: plain from now on
+        var ranExtended = false    // the last run() asked for extended distance
         var restarts = 0           // consecutive invalidations without a distance in between
+    }
+
+    /// Whether to ask NI for extended distance. Apple: only if this phone AND the peer's token say they
+    /// support it. The hello alone was not enough: on 2026-10-17 every extended run with an iPhone 15 failed
+    /// at once with NIERROR_INVALID_CONFIGURATION_DESCRIPTION (19 times, no distance ever), so after one
+    /// rejection the pair ranges without it.
+    static func wantsExtended(helloSaysBoth: Bool, mine: Bool, tokenSupports: Bool, rejected: Bool) -> Bool {
+        helloSaysBoth && mine && tokenSupports && !rejected
     }
 
     private var peers: [LinkPeer: Peer] = [:]
@@ -123,7 +133,10 @@ final class UWBRanger: NSObject, NISessionDelegate {
 
     private func run(_ s: NISession, _ token: NIDiscoveryToken, _ p: LinkPeer) {
         let config = NINearbyPeerConfiguration(peerToken: token)
-        let ext = (peers[p]?.extended ?? false) && Self.supportsExtendedDistance
+        let ext = Self.wantsExtended(helloSaysBoth: peers[p]?.extended ?? false, mine: Self.supportsExtendedDistance,
+                                     tokenSupports: token.deviceCapabilities.supportsExtendedDistanceMeasurement,
+                                     rejected: peers[p]?.extendedRejected ?? false)
+        peers[p]?.ranExtended = ext
         if ext { config.isExtendedDistanceMeasurementEnabled = true }
         s.run(config)
         onState?(ext ? "ranging (extended)" : "ranging")
@@ -165,6 +178,12 @@ final class UWBRanger: NSObject, NISessionDelegate {
         guard let p = handle(of: s) else { return }
         peers[p]?.session = nil
         if (error as? NIError)?.code == .userDidNotAllow { onState?("not allowed"); stop(for: p); return }  // retrying can't help
+        // Invalid configuration, or a second failure in a row with no distance: drop extended for this pair.
+        if peers[p]?.ranExtended == true,
+           (error as? NIError)?.code == .invalidConfiguration || (peers[p]?.restarts ?? 0) >= 1 {
+            peers[p]?.extendedRejected = true
+            onState?("extended distance rejected, ranging without it")
+        }
         onState?("restarting: \(error.localizedDescription)")
         // A new session has a new token, which needs the link. Their token is still good. Backoff
         // (0.25, 0.5, 1, 2, 4 s) so a persistent failure can't spin; skipped if the peer left meanwhile.
