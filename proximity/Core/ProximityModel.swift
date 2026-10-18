@@ -94,6 +94,14 @@ final class ProximityModel: ObservableObject {
     /// When FlUni last came to the foreground, until the first UWB distance after it (resume metric).
     private var foregroundAt: Date?
     private var lastResume: TimeInterval?
+    #if DEBUG
+    /// Debug only: stops the screen sleeping while FlUni is on screen, because iOS ranges iPhone-to-iPhone UWB only
+    /// in the foreground. Saved in UserDefaults (default off); `-FLUNIKeepAwake YES` at launch turns it on.
+    @Published var keepAwake = UserDefaults.standard.bool(forKey: "FLUNIKeepAwake") {
+        didSet { UserDefaults.standard.set(keepAwake, forKey: "FLUNIKeepAwake"); applyKeepAwake() }
+    }
+    private var lastSnapshot = Date.distantPast
+    #endif
     private var myFix: CLLocation?
     /// This phone's latest own GPS fix, for on-phone use only (the walk-in warning). Not shared by this property.
     /// @Unobserved: WalkInMonitor subscribes to `$lastFix`; no view reads it, so a fix (~1 Hz) redraws nothing.
@@ -196,17 +204,28 @@ final class ProximityModel: ObservableObject {
                                                queue: .main) { [weak self] _ in self?.wentBack() }
         // flu-persist: iOS may end FlUni in the background and a swipe-away in the app switcher gives no
         // termination callback, so save on the way out (resign active, then background).
+        #if DEBUG
+        applyKeepAwake()
+        NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil,
+                                               queue: .main) { [weak self] _ in self?.applyKeepAwake() }
+        #endif
         for name in [UIApplication.willResignActiveNotification, UIApplication.didEnterBackgroundNotification] {
             NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.saveRiskState() }
         }
     }
 
     private func cameForward() {
+        #if DEBUG
+        applyKeepAwake()
+        #endif
         uwb.setActive(true)
         if !isPaused, enabled.contains(.uwb), UWBRanger.isSupported { foregroundAt = Date() }
     }
 
     private func wentBack() {
+        #if DEBUG
+        applyKeepAwake()
+        #endif
         uwb.setActive(false)
         foregroundAt = nil
         lastCoverageTick = nil
@@ -629,6 +648,9 @@ final class ProximityModel: ObservableObject {
         // A linked peer becomes UWB-eligible once Bluetooth hears its hello ID (and stays so while heard).
         for peer in linkIDs.keys { uwb.setHeard(boundID(peer) != nil, for: peer) }
         trackUWBCoverage(now)
+        #if DEBUG
+        writeHealthSnapshot(now)
+        #endif
         if sharesLocationWithPeers, let f = myFix, now.timeIntervalSince(lastFixSent) >= 10 {
             lastFixSent = now
             link.send(fixWire(f))
@@ -764,6 +786,42 @@ final class ProximityModel: ObservableObject {
     }
 
     #if DEBUG
+    private func applyKeepAwake() {
+        UIApplication.shared.isIdleTimerDisabled = keepAwake && UIApplication.shared.applicationState == .active
+    }
+
+    /// Debug only: every 30 s writes UWB health to Library/Caches/fluni-uwb-health.json so a soak can be read off a
+    /// phone without a UI test runner:
+    ///   devicectl device copy from --device <udid> --domain-type appDataContainer --domain-identifier com.fluni.app \
+    ///     --source Library/Caches/fluni-uwb-health.json --destination <file>
+    private func writeHealthSnapshot(_ now: Date) {
+        guard now.timeIntervalSince(lastSnapshot) >= 30 else { return }
+        lastSnapshot = now
+        let peerRows: [[String: Any]] = byID.values.sorted { $0.id < $1.id }.map { p in
+            var r: [String: Any] = ["id": String(p.id.prefix(6))]
+            if let u = p.uwb { r["uwb_m"] = u.distance; r["uwb_age_s"] = now.timeIntervalSince(u.at) }
+            if let b = p.ble { r["ble_m"] = b.distance; r["ble_age_s"] = now.timeIntervalSince(b.at) }
+            return r
+        }
+        let last = byID.values.compactMap { $0.uwb }.max { $0.at < $1.at }
+        var j: [String: Any] = [
+            "written_at": now.timeIntervalSince1970,
+            "foreground": UIApplication.shared.applicationState == .active,
+            "keep_awake": keepAwake,
+            "eligible_s": uwbCoverage.eligible,
+            "ranging_s": uwbCoverage.covered,
+            "errors_by_reason": Dictionary(uniqueKeysWithValues: uwb.failures.map { ($0.key.rawValue, $0.value) }),
+            "sessions_created": uwb.sessionsCreated, "timeouts": uwb.timeouts, "suspensions": uwb.suspensions,
+            "peers": peerRows,
+        ]
+        if let c = uwbCoverage.percent { j["coverage_percent"] = c }
+        if let r = lastResume { j["resume_s"] = r }
+        if let l = last { j["last_distance_m"] = l.distance }
+        guard let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
+              let data = try? JSONSerialization.data(withJSONObject: j, options: [.sortedKeys]) else { return }
+        try? data.write(to: dir.appendingPathComponent("fluni-uwb-health.json"), options: .atomic)
+    }
+
     private var demoTimer: Timer?
     private var demoAccrual = SightingAccrual()
 
