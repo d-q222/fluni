@@ -277,14 +277,14 @@ final class FlUniUITests: FlUniUITestCase {
     // MARK: Tissue alert
 
     /// Lisa's tissue alert near a pretend sick peer: a short drag snaps the tissue back, a long one pulls out the
-    /// sheet, "Got it" puts it away, the risk card shows the heads-up strip, and the Today footnote opens How this works.
-    func testTissueAlertPullsOutAndGotItPutsItAway() {
+    /// sheet, the X puts it away, the risk card shows the heads-up strip, and the Today footnote opens How this works.
+    func testTissueAlertPullsOutAndXPutsItAway() {
         app.launchArguments += ["-hasOnboarded", "YES", "-demoPeer", "contagious@0.5"]
         app.launch()
         let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
         if allow.waitForExistence(timeout: 4) { allow.tap() }
 
-        let pop = el("tissueAlert.pop"), ok = el("tissueAlert.ok")
+        let pop = el("tissueAlert.pop"), ok = el("tissueAlert.close")
         XCTAssertTrue(pop.waitForExistence(timeout: 20), "the tissue pops for a heads-up")
         if allow.exists { allow.tap() }
         let start = pop.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
@@ -295,7 +295,7 @@ final class FlUniUITests: FlUniUITestCase {
         XCTAssertTrue(ok.waitForExistence(timeout: 5), "a long drag pulls out the sheet")
         ok.tap()
         XCTAssertTrue(ok.waitForNonExistence(timeout: 3))
-        XCTAssertFalse(pop.exists, "Got it puts it away")
+        XCTAssertFalse(pop.exists, "the X puts it away")
 
         XCTAssertTrue(el("today.alert").exists, "the heads-up strip in the risk card")
         let how = scrollTo(app.buttons["How FlUni works and what it shares"])
