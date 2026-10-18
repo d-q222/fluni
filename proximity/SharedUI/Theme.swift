@@ -42,7 +42,73 @@ enum Theme {
     static let ink2 = Color(hex: 0x6a5244)
     static let ink3 = Color(hex: 0x7a6152)
     static let hairline = Color(red: 0x33 / 255, green: 0x24 / 255, blue: 0x1c / 255, opacity: 0.12)
+    /// The stroke colour of Lisa's drawn boxes (sampled), for the hand-drawn rule. Decorative only, never text.
+    static let pencil = Color(hex: 0x8a4e4a)
+
+    // MARK: Shape
+    /// One corner for every flat shape (buttons, fields, quiet panels, chips). Drawn boxes bring their own.
     static let radius: CGFloat = 12
+    /// Strokes: `hairline` 1 pt between rows; 1.5 pt ink on secondary buttons and unchecked boxes;
+    /// 2 pt ink marks the selected choice. No shadows anywhere: depth comes from Lisa's drawn edge.
+    static let stroke: CGFloat = 1.5
+    static let selectedStroke: CGFloat = 2
+}
+
+/// Spacing: a 4-pt grid. Use the names, not numbers.
+///   xxs 4  inside a line (icon to text)      s 12  between rows of a group
+///   xs  8  label to its value / note         m 16  page gutter, inside panels
+///   l  24  between groups on a screen        xl 32 before a new part of the screen
+enum Space {
+    static let xxs: CGFloat = 4
+    static let xs: CGFloat = 8
+    static let s: CGFloat = 12
+    static let m: CGFloat = 16
+    static let l: CGFloat = 24
+    static let xl: CGFloat = 32
+}
+
+/// Surfaces, and what each one means. One hero per screen; everything else sits on paper.
+///   paper          the page. Lists, numbers and prose sit straight on it, split by `HandRule` or hairlines.
+///   drawn paper    `.card()`: the one thing that matters most on a screen (Today's status, a sheet's lead).
+///   drawn peach    `.card(.peach)`: a heads-up that asks you to act (someone nearby, close contact). Ink text only.
+///   tint in a box  `.card(fill:)`: sage = fine, sun = take care, fire 22% = act now. Only inside the hero.
+///   quiet panel    `.panel()`: surface2, radius 12, no stroke. Asides: what is shared, privacy, banners.
+///   peach strip    `.panel(.peach)`: a short heads-up that isn't the hero (walk-in).
+enum Surface {}
+
+/// Type roles. System rounded so Dynamic Type works; pick a role, never a raw size.
+enum TextRole {
+    /// Today's status, a sheet's lead headline. largeTitle bold.
+    case display
+    /// Screen part titles ("Recent contacts", "What to do"). title3 bold, a header for VoiceOver.
+    case section
+    /// Card titles, row titles, the question being asked. headline.
+    case heading
+    /// Reading text. body.
+    case reading
+    /// Row titles that are also the tap target. body semibold.
+    case strong
+    /// Supporting text under a heading. subheadline.
+    case note
+    /// Fine print: privacy lines, timestamps. footnote.
+    case fine
+    /// Numbers that are the point (minutes, %, day). largeTitle bold, tabular.
+    case figure
+}
+
+extension Font {
+    static func fluni(_ role: TextRole) -> Font {
+        switch role {
+        case .display: return .system(.largeTitle, design: .rounded, weight: .bold)
+        case .section: return .system(.title3, design: .rounded, weight: .bold)
+        case .heading: return .system(.headline, design: .rounded, weight: .semibold)
+        case .reading: return .system(.body, design: .rounded)
+        case .strong: return .system(.body, design: .rounded, weight: .semibold)
+        case .note: return .system(.subheadline, design: .rounded)
+        case .fine: return .system(.footnote, design: .rounded)
+        case .figure: return .system(.largeTitle, design: .rounded, weight: .bold).monospacedDigit()
+        }
+    }
 }
 
 extension Color {
@@ -121,15 +187,101 @@ extension View {
     func card(_ style: CardStyle = .paper, fill: Color? = nil) -> some View { modifier(Card(style: style, fill: fill)) }
 }
 
+/// A flat quiet panel (see `Surface`): surface2, or Lisa's peach as a flat strip.
+struct Panel: ViewModifier {
+    var style: CardStyle = .paper
+    @Environment(\.colorSchemeContrast) private var contrast
+    func body(content: Content) -> some View {
+        content
+            .padding(Space.s)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(style == .peach ? style.flat : Theme.surface2, in: RoundedRectangle(cornerRadius: Theme.radius))
+            .overlay {
+                if contrast == .increased { RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.ink, lineWidth: 1) }
+            }
+    }
+}
+
+extension View {
+    func panel(_ style: CardStyle = .paper) -> some View { modifier(Panel(style: style)) }
+}
+
+/// A hand-drawn rule, cut at runtime from the top edge of Lisa's paper box (no new art). The cream fill is
+/// keyed out so only her pencil line is left. Decorative: hidden from VoiceOver. Plain hairline elsewhere.
+struct HandRule: View {
+    var body: some View {
+        Group {
+            if let image = Self.image {
+                Image(uiImage: image).resizable().foregroundStyle(Theme.pencil.opacity(0.55)).frame(height: 4)
+            } else {
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private static let image: UIImage? = {
+        // Box top edge in image px (960x579 PNG): the straight run between the two rounded corners.
+        guard let cg = UIImage(named: "BoxPaper")?.cgImage?.cropping(to: CGRect(x: 150, y: 0, width: 700, height: 18)) else { return nil }
+        let w = cg.width, h = cg.height
+        var px = [UInt8](repeating: 0, count: w * h * 4)
+        let made: CGImage? = px.withUnsafeMutableBytes { buf in
+            guard let ctx = CGContext(data: buf.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+            let p = buf.bindMemory(to: UInt8.self)
+            for i in stride(from: 0, to: p.count, by: 4) {
+                let a = Double(p[i + 3])
+                guard a > 0 else { continue }
+                let lum = (Double(p[i]) + Double(p[i + 1]) + Double(p[i + 2])) / 3 * 255 / a   // un-premultiply
+                let ink = min(max((225 - lum) / 120, 0), 1) * a / 255                         // dark pencil -> opaque
+                p[i] = 0; p[i + 1] = 0; p[i + 2] = 0; p[i + 3] = UInt8(ink * 255)
+            }
+            return ctx.makeImage()
+        }
+        return made.map { UIImage(cgImage: $0, scale: 4, orientation: .up).withRenderingMode(.alwaysTemplate) }
+    }()
+}
+
+/// The one filled action per state.
 struct PrimaryButtonStyle: ButtonStyle {
     var fill: Color = Theme.sage
     var text: Color = Theme.ink
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.fluni(.headline))
+            .font(.fluni(.heading))
             .foregroundStyle(text)
-            .frame(maxWidth: .infinity, minHeight: 48)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Space.m).padding(.vertical, Space.xs)
+            .frame(maxWidth: .infinity, minHeight: 50)
             .background(fill, in: RoundedRectangle(cornerRadius: Theme.radius))
             .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
+/// Second choice next to a primary: ink outline on clear, same size and corner.
+struct SecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.fluni(.heading))
+            .foregroundStyle(Theme.ink)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Space.m).padding(.vertical, Space.xs)
+            .frame(maxWidth: .infinity, minHeight: 48)
+            .background(configuration.isPressed ? Theme.surface2 : .clear, in: RoundedRectangle(cornerRadius: Theme.radius))
+            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.ink, lineWidth: Theme.stroke))
+    }
+}
+
+/// A text-only way onward ("See the last 14 days"): ink-2 semibold, underlined, 44 pt tall.
+struct QuietLinkStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.fluni(.note).weight(.semibold))
+            .foregroundStyle(Theme.ink2)
+            .underline(true, color: Theme.ink2.opacity(0.5))
+            .frame(minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+            .opacity(configuration.isPressed ? 0.6 : 1)
     }
 }
