@@ -11,7 +11,9 @@ struct BundledMapView: View {
     var body: some View {
         Group {
             if BundledMap.indexExists {
-                BundledMapWebView().ignoresSafeArea(edges: .bottom)
+                // Stops at the tissue box (the tab's tissueTabBarInset), so the web map's bottom legend and its
+                // (i) "About this map" button sit above the box instead of under it, where they couldn't be tapped.
+                BundledMapWebView()
             } else {
                 VStack(spacing: 10) {
                     Image(systemName: "map").font(.largeTitle).foregroundStyle(Theme.ink2).accessibilityHidden(true)
@@ -24,6 +26,7 @@ struct BundledMapView: View {
                 .background(Theme.paper)
             }
         }
+        .background(Theme.paper.ignoresSafeArea())  // around the box's top, under the map's bottom edge
         // "Show on map" from a notification: the web map has no focus hook, so open that building's card natively.
         .onAppear { if router.focusBuilding != nil { showFocus = true } }
         .onChange(of: router.focusBuilding) { _, id in if id != nil { showFocus = true } }
