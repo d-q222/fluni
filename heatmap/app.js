@@ -587,8 +587,8 @@ function noteFit(sentences) {
 const percentText = (p) => (p <= 0 ? '0%' : Math.round(p * 100) < 1 ? '<1%' : `${Math.min(100, Math.round(p * 100))}%`);
 // The phone's own estimate, as FlUni computes it on the device (Rio's formula with what a phone can know):
 // per peer, Rio's dose summed over the last 24 h with quantaPeak, the default room and indoor = true;
-// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); the peer's broadcast
-// status sets s (tested positive 0.97, possibly sick 0.6); p += (1 - p) * s * lambda from the prior.
+// lambda = 1 - e^(-0.352 * dose) (illness-average stage: a phone never knows onset); s = the peer's own
+// P(sick) above the prior (Rio's P_j; product owner 2026-10-17, was 0.97/0.6 tiers from 50%); p += (1 - p) * s * lambda.
 // No second-hand term, no recovery.
 const PHONE_DOSE = doseModel(), PHONE_STAGE = 0.352, BT_RANGE_M = 10;
 const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -980,8 +980,11 @@ async function main() {
     for (const e of exposureLog.get(id) || []) {
       if (e.tMs > t) break;
       if (e.tMs < t - EXPOSURE_WINDOW_MS) continue;
-      const peer = model.risk.pAt(e.other, e.tMs), s = peer >= CONTAGIOUS ? MODEL.posTest : peer >= RISKY ? MODEL.selfReport : 0;
-      if (!s) continue;
+      // Rio's P_j: the other person's own probability of having flu (not a 50%/90% tier), above the campus
+      // baseline the prior already counts. So getting closer to anyone who might be sick raises this phone's
+      // estimate, more for sicker people and shorter distances; ordinary classmates add nothing.
+      const s = Math.max(0, model.risk.pAt(e.other, e.tMs) - MODEL.prior);
+      if (!(s > 0)) continue;
       const durS = 60 * Math.min(e.min, (t - e.tMs) / 60000);
       const k = dose.get(e.other) || { s: 0, dose: 0 };
       k.dose += PHONE_DOSE({ distance_m: e.d, duration_s: durS, indoor: true });
