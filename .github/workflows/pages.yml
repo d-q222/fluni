@@ -1,0 +1,65 @@
+# Publish the heat map to GitHub Pages (myfluni.com) on every push to main.
+# The repo is over Pages' 1 GB limit, so the site holds only what heatmap/index.html loads:
+# heatmap/, model/, the OSM building outlines and the two runs in the run picker.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  RUNS: influenza_none_n1000_d4_s42_73b8452c influenza_none_n1000_d14_s42_25fe957a
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Sparse checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /heatmap/
+            /model/
+            /sim/data/osm/buildings.geojson
+            /sim/runs/influenza_none_n1000_d4_s42_73b8452c/
+            /sim/runs/influenza_none_n1000_d14_s42_25fe957a/
+
+      - name: Build site
+        run: |
+          mkdir -p _site/sim/data/osm _site/sim/runs
+          cp -r heatmap model _site/
+          cp sim/data/osm/buildings.geojson _site/sim/data/osm/
+          for r in $RUNS; do cp -r "sim/runs/$r" _site/sim/runs/; done
+          # The page lives at /heatmap/ (it reaches ../sim and ../model), so the root forwards there.
+          cat > _site/index.html <<'EOF'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Fluni</title>
+          <script>location.replace('heatmap/' + location.search + location.hash);</script>
+          <meta http-equiv="refresh" content="0; url=heatmap/">
+          <a href="heatmap/">Fluni heat map</a>
+          EOF
+          echo myfluni.com > _site/CNAME
+          touch _site/.nojekyll
+          du -sh _site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
