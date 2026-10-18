@@ -98,8 +98,8 @@ header.bar { gap: 10px 18px; }
 
 /* shortcut hint and toast */
 .hint-btn { position: absolute; right: 12px; bottom: 28px; z-index: 600; width: 28px; height: 28px; border-radius: 50%; border: 0;
-  background: var(--surface); color: var(--ink-2); box-shadow: var(--shadow); font: 600 14px/1 var(--font); cursor: pointer; opacity: .8; }
-.hint-btn:hover { opacity: 1; }
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow); font: 600 14px/1 var(--font); cursor: pointer; opacity: .8; }
+.hint-btn:hover { opacity: 1; } /* ink, not ink-2: at .8 opacity ink-2 was 4.2:1 */
 .hint-card { position: absolute; right: 12px; bottom: 64px; z-index: 600; padding: 10px 14px; background: var(--surface); border-radius: var(--radius);
   box-shadow: var(--shadow); font-size: 13px; color: var(--ink-2); }
 .hint-card h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }

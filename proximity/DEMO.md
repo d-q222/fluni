@@ -143,6 +143,7 @@ Leave the laptop map on screen. Do not reset until the room has left.
   contacts, map address, setup), reopen, redo onboarding, map address and 60x. This is the only way to
   undo "I tested positive" without a reinstall.
 - **Same-data replay, no status change:** on B and C, Me > Developer tools > Demo controls > "Reset exposure".
+  (Relaunching FlUni no longer resets the risk: it is saved on the phone for 24 h. Reset exposure clears it.)
   Then move A away for a few seconds and bring it back.
 - Preview any command with `DRY_RUN=1`.
 

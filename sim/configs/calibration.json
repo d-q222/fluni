@@ -1,0 +1,60 @@
+{
+  "_doc": "Calibration scenario (docs/AGENT_FRAMEWORK.md section 4), run by scripts/calibration_run.py. Not loaded into the normal cfg (config.load_config skips this file), so ordinary run ids are unchanged. 'run' and 'overrides' are deep-merged into the normal config; 'scenario' becomes cfg['calibration'] (hashed into the run id). Everything random is drawn from run.seed and logged to calibration_forced.csv (t, agent_id, kind, detail).",
+  "run": {
+    "n_agents": 300,
+    "days": 7,
+    "seed": 7,
+    "initial_seeds": 3,
+    "intervention": "fluni"
+  },
+  "overrides": {
+    "llm_agents": {
+      "n_agents": 50,
+      "pick": "friend_groups",
+      "model": "claude-sonnet-5-5",
+      "effort": "low",
+      "cache_dir": "llm_cache"
+    },
+    "personality": {"mode": "big_five"},
+    "worry": {"mode": "on"}
+  },
+  "opus_model": "claude-opus-5-5",
+  "scenario": {
+    "opus_subset": 0,
+    "extra_seeds": {
+      "_doc": "n extra infections among members of Claude agents' friend groups, at uniform random times in [t_days[0], t_days[1]) days, so symptom onsets spread over the week. force_symptomatic makes them symptomatic (asym=false).",
+      "n": 8,
+      "t_days": [0, 3],
+      "force_symptomatic": true
+    },
+    "alerts": {
+      "_doc": "n forced FlUni app alerts to random Claude agents at random times between hours[0] and hours[1] (local clock) on random days, each with one advice kind. Delivered through the intervention's actions, so llm_agents turns them into notifications and an app_advice re-plan. require_app=true picks only agents with the app.",
+      "n": 20,
+      "hours": [8, 22],
+      "kinds": ["isolate_until", "wear_mask", "leave_location", "go_to_vaden"],
+      "require_app": false,
+      "isolation_days": 5,
+      "mask_days": 1
+    },
+    "severity_mix": {
+      "_doc": "Peak severity for every infection of a member of a Claude agent's friend group (forced or natural) is drawn from these levels instead of disease.severity's Beta: level -> [peak severity, weight]. Asymptomatic infections stay at 0. null keeps the disease preset's Beta.",
+      "levels": {"mild": [0.25, 0.35], "moderate": [0.55, 0.4], "severe": [0.85, 0.25]}
+    }
+  },
+  "budget_usd": 20.0,
+  "estimate": {
+    "_doc": "Dry-run assumptions. Input tokens ~ chars / chars_per_token of system + user + JSON schema. The dry run's talk turns end after one line, so talk calls are scaled to turns_per_conversation. Output tokens per call (incl. adaptive thinking at effort low) are assumptions, not measurements; replace them with cost.json numbers after the first real run.",
+    "chars_per_token": 4,
+    "turns_per_conversation": 4,
+    "output_tokens": {"plan": 1200, "talk": 150, "reflect": 250},
+    "min_cacheable_tokens": 512
+  },
+  "pricing": {
+    "_source": "claude-api skill (Claude Code bundled skill 2.1.302), 'Current Models' table cached 2026-10-06 and shared/prompt-caching.md 'Economics'; read 2026-10-17. USD per million tokens, Claude API first-party rates. Sonnet 5.5 and Opus 5.5 cache reads ($0.20) are stated explicitly; cache writes are 1.25x input (5-minute TTL). Haiku 5.5 cache prices are derived from the generic multipliers (1.25x write, ~0.1x read), not stated explicitly. Check https://claude.com/pricing before a large run.",
+    "models": {
+      "claude-sonnet-5-5": {"input": 2.0, "output": 10.0, "cache_write": 2.5, "cache_read": 0.2},
+      "claude-opus-5-5": {"input": 4.0, "output": 20.0, "cache_write": 5.0, "cache_read": 0.2},
+      "claude-haiku-5-5": {"input": 0.1, "output": 0.5, "cache_write": 0.125, "cache_read": 0.01}
+    }
+  }
+}

@@ -103,6 +103,36 @@ let hoverDot = null; // the person under the pointer: drawn solid
 const personRing = (r) => (r < 4 ? 0.75 : r < 8 ? 1.25 : 2); // outline width for a dot of radius r
 const personRadius = (zoom) => (Number.isFinite(zoom) ? Math.min(16, Math.max(2, (PERSON_M * 2 ** zoom) / M_PER_PX_Z0)) : PERSON.radius);
 PERSON.img.src = 'assets/people/tissue.png';
+// People's canvas renderer: a click or hover goes to the NEAREST dot within reach (its radius + the tolerance),
+// not the one drawn last, so a click between two close dots never opens the neighbour's phone.
+const NearestCanvas = L.Canvas.extend({
+  _nearest(point, e) {
+    let best = null, bd = Infinity;
+    for (let o = this._drawFirst; o; o = o.next) {
+      const l = o.layer;
+      if (!l.options.interactive || !l._containsPoint(point)) continue;
+      if (e && (e.type === 'click' || e.type === 'preclick') && this._map._draggableMoved(l)) continue;
+      const d = point.distanceTo(l._point);
+      if (d <= bd) { bd = d; best = l; } // a tie goes to the one on top
+    }
+    return best;
+  },
+  _onClick(e) {
+    const l = this._nearest(this._map.mouseEventToLayerPoint(e), e);
+    this._fireEvent(l ? [l] : false, e);
+  },
+  _handleMouseHover(e, point) {
+    if (this._mouseHoverThrottled) return;
+    const l = this._nearest(point);
+    if (l !== this._hoveredLayer) {
+      this._handleMouseOut(e);
+      if (l) { L.DomUtil.addClass(this._container, 'leaflet-interactive'); this._fireEvent([l], e, 'mouseover'); this._hoveredLayer = l; }
+    }
+    this._fireEvent(this._hoveredLayer ? [this._hoveredLayer] : false, e);
+    this._mouseHoverThrottled = true;
+    setTimeout(() => { this._mouseHoverThrottled = false; }, 32);
+  },
+});
 const PersonMarker = L.CircleMarker.extend({
   _updatePath() {
     this._renderer._updateCircle(this);
@@ -470,8 +500,9 @@ let drawnBounds = null, glReady = null, simMap = null; // simMap: { buildings, p
 
 function baseMap(el, options) {
   // Zoom stops at room scale (20: ~15 cm a pixel, people at full size) and at the whole campus (13);
-  // the vector base would otherwise let you zoom in forever.
-  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.5, minZoom: 13, maxZoom: 20, ...options });
+  // the vector base would otherwise let you zoom in forever. Quarter-level wheel and trackpad steps (half
+  // the default speed per pixel) and half-level +/- clicks, so zooming glides instead of jumping.
+  const map = L.map(el, { preferCanvas: true, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, minZoom: 13, maxZoom: 20, ...options });
   map.createPane('simPane').style.zIndex = 250; // above base tiles, below heat, fills and people
   bases.set(map, {});
   applyBase(map);
@@ -985,27 +1016,37 @@ async function main() {
     if (zoneHeat && z >= FINE_ZOOM) return Math.min(10, 8 + Math.round(z - FINE_ZOOM));
     return Math.min(15, Math.max(DEMO.sigmaM, Math.round(6 * mPerPx / 3) * 3));
   };
-  // The heat only covers the visible map (plus a margin): redo it after a pan while paused.
-  map.on('moveend', () => { if (!playing) { heatDirty = true; render(performance.now()); } });
+  // People are sized on the ground: resize them at every zoom step. Set directly, not with setRadius and
+  // setStyle (each reprojects and queues a repaint per dot): the dots' renderer, whose zoomend handler runs
+  // after this one, reprojects and redraws them all once anyway.
   map.on('zoomend', () => {
-    const r = personRadius(map.getZoom());
-    for (const [id, m] of dots) if (m.getRadius() !== r) {
-      m.setRadius(r);
-      m.setStyle({ weight: ringWeight(r, $('dot-mode').value !== 'truth' && Boolean(current.get(id)?.sick)) });
+    const r = personRadius(map.getZoom()), mode = $('dot-mode').value;
+    for (const [id, m] of dots) if (m._radius !== r) {
+      m.options.radius = m._radius = r;
+      m.options.weight = ringWeight(r, mode !== 'truth' && Boolean(current.get(id)?.sick));
     }
-    const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
-    if (next === sigmaM && nextFine === fine) return;
-    sigmaM = next;
-    fine = nextFine;
-    heatDirty = true;
-    renderLegend();
-    render(performance.now());
+  });
+  // The heat covers only the visible map (plus a margin) at a spread set by the zoom, so a zoom or pan
+  // redoes it, but once the gesture settles, not at every wheel step (a 50-100 ms stall each). Meanwhile
+  // the heat canvases keep their last heat, scaled with the map and redrawn crisp at each step.
+  const SETTLE_MS = 140;
+  let zooming = false, settleTimer = 0;
+  map.on('zoomstart', () => { zooming = true; clearTimeout(settleTimer); });
+  map.on('moveend', () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      zooming = false;
+      const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
+      if (next !== sigmaM || nextFine !== fine) { sigmaM = next; fine = nextFine; renderLegend(); }
+      heatDirty = true;
+      if (!playing) render(performance.now()); // playing: the next frame does it
+    }, SETTLE_MS);
   });
   // Smooth zooming: the first zoom to a new spread or grid built that grid and its kernels on the spot
   // (a visible stall at zoom 16 and 18). Build every zoom level's once, in idle time after the page loads.
   const warmLevels = [];
   const planWarm = () => { // once the map has a view (sigmaForZoom reads its centre)
-    for (let z = 13; z <= 20; z += 0.5) {
+    for (let z = 13; z <= 20; z += map.options.zoomSnap) {
       const lv = { sigma: sigmaForZoom(z), fine: zoneHeat && z >= FINE_ZOOM };
       if (!warmLevels.some((w) => w.sigma === lv.sigma && w.fine === lv.fine)) warmLevels.push(lv);
     }
@@ -1042,7 +1083,8 @@ async function main() {
   if (dotSample) {
     document.querySelector('.legend .fine').prepend(`Dots: ${dotSample.size} of ${ids.length.toLocaleString()} people (sample). `);
   }
-  const dotRenderer = L.canvas({ padding: 0.5, tolerance: 6 });
+  // 8 px of reach beyond each dot, so the 2 px dots at campus zoom are easy to hit (the nearest wins).
+  const dotRenderer = new NearestCanvas({ padding: 0.5, tolerance: 8 });
   const dotLayer = L.layerGroup().addTo(map);
   const dots = new Map(); // agent id -> person marker
   PERSON.onload = () => { for (const m of dots.values()) if (m._map) m.redraw(); };
@@ -1077,6 +1119,7 @@ async function main() {
     if (dots.has(id)) return dots.get(id);
     const m = new PersonMarker([0, 0], {
       renderer: dotRenderer, radius: personRadius(map.getZoom()), weight: personRing(personRadius(map.getZoom())), color: COLORS.ring, fillOpacity: 1,
+      bubblingMouseEvents: false, // a click on a person opens their phone, not the building under them
     });
     m.bindTooltip(() => {
       const a = current.get(id);
@@ -1534,8 +1577,9 @@ async function main() {
     const tiers = { low: 0, elevated: 0, high: 0 };
     let expected = 0, excess = 0;
     for (const a of here) { tiers[riskTier(a.p)]++; expected += a.p; excess += Math.max(0, a.p - MODEL.prior); }
-    const top = here.filter((a) => a.p > MODEL.prior).sort((a, b) => b.p - a.p).slice(0, 3);
-    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top };
+    here.sort((a, b) => b.p - a.p || (a.id < b.id ? -1 : 1));
+    const top = here.filter((a) => a.p > MODEL.prior).slice(0, 3);
+    return { name: h.name || here[0]?.building || 'Building', n: here.length, expected, excess, tiers, top, here };
   }
   const pct = (p) => `${Math.round(p * 100)}%`;
   function buildingCard(h, full) {
@@ -1547,15 +1591,39 @@ async function main() {
       <div class="row"><span>Above the ${Math.round(MODEL.prior * 100)}% baseline</span><b>${fmtSick(i.excess)}</b></div>
       <div class="row"><span>People here now</span><b>${i.n}</b></div>
       <div class="tiers3">${tier('low', 'Low')}${tier('elevated', 'Elevated')}${tier('high', 'High')}</div>
-      ${i.top.length ? `<h4>Driving it</h4>${i.top.map((a) => `<button class="who" data-id="${esc(a.id)}">${esc(a.id)} · P ${pct(a.p)}<small>${esc(whyText(a.id))}</small></button>`).join('')}`
-        : '<h4>Driving it</h4><p style="margin:2px 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}</div>`;
+      ${i.top.length ? '' : '<p style="margin:6px 0 0;color:var(--ink-3)">Nobody here is above the baseline.</p>'}
+      ${i.n ? `<h4>Everyone here${i.top.length ? ' · top drivers first' : ''}</h4><div class="bld-list">${i.here.map((a, k) => personRow(a, k < i.top.length)).join('')}</div>` : ''}</div>`;
   }
-  let hover = null, hoverAt = 0, openBld = null;
-  const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 300 });
+  // One row per person: tier chip, id, the app's estimate, the sim's truth (as the dot's dark ring), and why.
+  function personRow(a, top) {
+    const truth = a.sick == null ? '' : a.sick ? '<span class="truth"><i class="truth-ring"></i>infected</span>' : '<span class="truth">healthy</span>';
+    return `<button class="who${top ? ' top' : ''}" data-id="${esc(a.id)}"><span class="line"><i class="chip" style="background:${riskColor(Math.min(1, a.p))}"></i>`
+      + `<span class="id">${esc(a.id)}</span><b>${pct(a.p)}</b>${truth}</span><small>${esc(whyText(a.id))}</small></button>`;
+  }
+  let hover = null, hoverAt = 0, openBld = null, openAt = 0, rowDot = null;
+  const demoPop = L.popup({ closeButton: false, autoPanPadding: [20, 80], maxWidth: 320 });
+  // Hovering a row rings that person's dot on the map.
+  const rowRing = L.circleMarker([0, 0], { renderer: L.svg({ pane: 'markerPane' }), interactive: false, radius: 11, weight: 3, fill: false });
+  function ringRow(id) {
+    rowDot = id;
+    const a = id && current.get(id);
+    if (!a) { rowRing.remove(); return; }
+    rowRing.setLatLng([a.lat, a.lon]).setStyle({ color: getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#000' });
+    if (!map.hasLayer(rowRing)) rowRing.addTo(map);
+  }
+  function setBuildingCard(h) { // keeps the list's scroll; skips the DOM when nothing changed (paused)
+    const html = buildingCard(h, true);
+    if (html === demoPop.getContent()) return;
+    const list = demoPop.getElement()?.querySelector('.bld-list'), top = list ? list.scrollTop : 0;
+    demoPop.setContent(html);
+    const next = demoPop.getElement()?.querySelector('.bld-list');
+    if (next) next.scrollTop = top;
+    if (rowDot) ringRow(rowDot);
+  }
   const hoverTip = L.tooltip({ direction: 'top', offset: [0, -6], className: 'bld-tip' });
   function refreshBuilding(realNow) {
     if (hover && realNow - hoverAt > 500) { hoverAt = realNow; hoverTip.setContent(buildingCard(hover, false)); }
-    if (openBld && realNow - hoverAt > 500) demoPop.setContent(buildingCard(openBld, true));
+    if (openBld && realNow - openAt > 1000) { openAt = realNow; setBuildingCard(openBld); }
   }
   let moveQueued = false;
   map.on('mousemove', (e) => {
@@ -1563,22 +1631,37 @@ async function main() {
     moveQueued = true;
     requestAnimationFrame(() => {
       moveQueued = false;
+      if (hoverDot) { if (hover) { map.closeTooltip(hoverTip); hover = null; } return; } // over a person: their tooltip only
       const h = buildingAt(e.latlng);
       if (!h) { if (hover) { map.closeTooltip(hoverTip); hover = null; } return; }
       if (h !== hover) { hover = h; hoverAt = performance.now(); hoverTip.setContent(buildingCard(h, false)); }
       hoverTip.setLatLng(e.latlng); if (!map.hasLayer(hoverTip)) map.openTooltip(hoverTip);
     });
   });
-  map.on('moveend', () => updateViewCount(performance.now(), true));
+  // The "expected sick in view" count follows the map as it moves (~1,000 bounds checks, once a frame),
+  // on its own: never the legend's redraw or the heat's recompute.
+  let viewCountQueued = false;
+  map.on('move', () => {
+    if (viewCountQueued) return;
+    viewCountQueued = true;
+    requestAnimationFrame(() => { viewCountQueued = false; updateViewCount(performance.now(), true); });
+  });
   map.on('mouseout', () => { if (hover) { map.closeTooltip(hoverTip); hover = null; } });
   map.on('click', (e) => {
     if ($('view').value !== 'demo') return;
     const h = buildingAt(e.latlng);
     if (!h) { map.closePopup(demoPop); return; }
-    openBld = h; hoverAt = performance.now();
+    openBld = h; openAt = performance.now();
     demoPop.setLatLng(e.latlng).setContent(buildingCard(h, true)).openOn(map);
   });
-  map.on('popupclose', (e) => { if (e.popup === demoPop) openBld = null; });
+  map.on('popupclose', (e) => { if (e.popup === demoPop) { openBld = null; ringRow(null); } });
+  map.getContainer().addEventListener('mouseover', (e) => {
+    const b = e.target.closest?.('.bld-pop .who');
+    if (b && b.dataset.id !== rowDot) ringRow(b.dataset.id);
+  });
+  map.getContainer().addEventListener('mouseout', (e) => {
+    if (rowDot && !e.relatedTarget?.closest?.('.bld-pop .who')) ringRow(null);
+  });
   map.getContainer().addEventListener('click', (e) => { // a person in the popup opens their phone
     const b = e.target.closest?.('.bld-pop .who');
     if (b) { map.closePopup(demoPop); select(b.dataset.id); }
@@ -1639,7 +1722,7 @@ async function main() {
     $('time').textContent = dayTime(now, t0, data.numericTime);
     $('slider').value = (now - t0) / 60000;
 
-    const heatDue = heatDirty || realNow - lastHeat >= heatInterval;
+    const heatDue = !zooming && (heatDirty || realNow - lastHeat >= heatInterval); // zooming: when it settles
     if (heatDue) {
       const started = performance.now();
       heatLayer.canvas.style.display = view === 'public' || view === 'airborne' ? 'none' : '';

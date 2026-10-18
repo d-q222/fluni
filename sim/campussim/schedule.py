@@ -630,6 +630,10 @@ def build_events(cfg, campus, pop, sections, rng):
     event_p = np.clip(_param(pop, "event_p", 0.2), 0, 1)
     hang_rate = np.maximum(_param(pop, "hangout_rate", 0.2), 0)
     sg_rate = np.maximum(_param(pop, "study_group_rate", 0.2), 0)
+    if getattr(pop, "social_scale", None) is not None:  # Big Five: extraverts go out more
+        party_p = np.clip(party_p * pop.social_scale, 0, 1)
+        event_p = np.clip(event_p * pop.social_scale, 0, 1)
+        hang_rate = hang_rate * pop.social_scale
 
     def group_attend(prob, member_p, indiv_mult, s, e, cap, extra=()):
         """Friend-group correlated attendance; returns list of agent idx (capped)."""

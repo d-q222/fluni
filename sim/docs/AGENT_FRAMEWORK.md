@@ -1,7 +1,7 @@
 # Agent framework: personalities, interactions, behavior change
 
-Status: **design, not built yet.** Owner: Synthetic agent data (`sim/`). Decisions made with Aiden on
-2026-10-17. The build order is at the end.
+Status: **design; built steps are marked Done in the build order** (at the end). Owner: Synthetic
+agent data (`sim/`). Decisions made with Aiden on 2026-10-17.
 
 ## Goal
 
@@ -61,9 +61,9 @@ Claude agents are the `llm_agents` subset; rule-based agents are everyone else.
 | Interaction | Who | Status | Mechanism |
 |---|---|---|---|
 | **Talk** | Claude ↔ Claude | built | Within 3 m, or in the same small room, for 10 min. Alternating lines, each from the speaker's own private state; a reflection afterwards; can trigger a re-plan. |
-| **Notice** | Claude sees rule-based | new | A Claude agent near a visibly sick agent (coughing, flushed) for 5+ min, or in a crowded room, gets an observation in its notifications, e.g. "the person next to you in Green Library has been coughing for 10 minutes". At most 2 observations per agent per day can trigger a re-plan. No extra call unless it re-plans. |
-| **Message** | Claude → anyone in its friend group | new | Daily plans, re-plans and reflections can return `messages`: `{to, kind: invite \| warn \| tell_sick, place, time, text}`. Texting needs no proximity. A Claude recipient gets the text in its notifications and decides itself. A rule-based recipient accepts with P(accept) from its influence traits, the relationship and its worry. An accepted invite rewrites its plan; a warning raises its worry and may send it to Vaden. |
-| **Group plans** | friend groups | new | An invite sent to the whole group is a group plan, e.g. "dinner at Wilbur 18:30, who's in?". Claude members reply (in their next plan); rule-based members accept by probability. The plan happens if 2 or more people accept. |
+| **Notice** | Claude sees rule-based | built | A Claude agent near a visibly sick agent (coughing, flushed) for 5+ min, or in a crowded room, gets an observation in its notifications, e.g. "the person next to you in Green Library has been coughing for 10 minutes". At most 2 observations per agent per day can trigger a re-plan. No extra call unless it re-plans. |
+| **Message** | Claude → anyone in its friend group | built | Daily plans, re-plans and reflections can return `messages`: `{to, kind: invite \| warn \| tell_sick, place, time, text}`. Texting needs no proximity. A Claude recipient gets the text in its notifications and decides itself. A rule-based recipient accepts with P(accept) from its influence traits, the relationship and its worry. An accepted invite rewrites its plan; a warning raises its worry and may send it to Vaden. |
+| **Group plans** | friend groups | built | An invite sent to the whole group is a group plan, e.g. "dinner at Wilbur 18:30, who's in?". Claude members reply (in their next plan); rule-based members accept by probability. The plan happens if 2 or more people accept. |
 
 Rule-based agents never start interactions; they only respond. That keeps the API cost
 proportional to the number of Claude agents, not the population.
@@ -128,23 +128,40 @@ silently tuned away.
 |---|---|
 | `llm_agents.jsonl` | every plan call (exists) |
 | `llm_conversations.jsonl` | every conversation with reflections (exists) |
-| `llm_messages.jsonl` | every text, its recipient's response, and whether an invite happened |
-| `llm_events.csv` | one row per measured decision (calibration input) |
+| `llm_messages.jsonl` | every text, its recipients' responses, and whether an invite happened (built) |
+| `llm_events.csv` | one row per measured decision (calibration input; built) |
 | `configs/behavior_calibrated.json` | fitted rules for rule-based agents, with source run ids |
 | `validation.md` | fitted vs published rates |
 
 ## Build order
 
 1. **Big Five personalities** for all agents, with traits derived from them. Off by default; check
-   that the trait means match today's and R is unchanged.
+   that the trait means match today's and R is unchanged. **Done** (`campussim/personality.py`,
+   `configs/personality.json`, `scripts/smoke_personality.py`).
 2. **Worry state and drift** (rule-based jumps and decay), plus the `worry` answer from Claude
-   agents.
-3. **Structured outcomes and `llm_events.csv`**, including `shared_health` on talk turns.
-4. **Notice** (Claude agents observing rule-based agents).
-5. **Messages and group plans**, including the P(accept) rule for rule-based recipients.
-6. **Calibration scenario**: oversampled events, a cost estimate and a cap.
-7. **Fit script** and `behavior_calibrated.json`.
-8. **Published-rate table** with citations, and the validation report.
+   agents. **Done** (`campussim/worry.py`, `configs/worry.json`, `scripts/smoke_worry.py`; Claude agents
+   report worry 1–5 in plans and reflections).
+3. **Structured outcomes and `llm_events.csv`**, including `shared_health` on talk turns. **Done.**
+4. **Notice** (Claude agents observing rule-based agents). **Done.**
+5. **Messages and group plans**, including the P(accept) rule for rule-based recipients. **Done.**
+   Built as follows (`llm_agents.py`, knobs under `llm_agents.notice` and `llm_agents.messages`):
+   - A Claude recipient sees each open text with an id (`[m3]`) and answers in its next plan through
+     `accept` (a re-plan with trigger `message`). An accepted invite is kept in its later plans.
+   - A text closes once every Claude recipient has answered, or when the invite starts. A group
+     invite happens if `group_min` recipients (the sender not counted) say yes. It then goes into the
+     plans of the sender and everyone who accepted, and Claude members are told.
+   - `w_worry` is per message kind, so worry can lower invite acceptance and raise warning acceptance.
+   - In `llm_events.csv`, `worry` rows from Claude's answers have context `measured`; bump rows
+     have the event kind. `notice_reaction` is measured only on re-plans, not on the next
+     day plan.
+6. **Calibration scenario**: oversampled events, a cost estimate and a cap. **Done**: `scripts/calibration_run.py`,
+   `configs/calibration.json`, `campussim/calibration.py`, `campussim/budget.py` (see the README's
+   "Calibration run"). `--opus-subset K` runs K Claude agents on Opus (`LLMAgents.agent_models`).
+7. **Fit script** and `behavior_calibrated.json`. **Done** (`scripts/calibrate_agents.py`,
+   `personality.weights_source = "calibrated"`, `scripts/smoke_calibrate_agents.py`; the validation
+   report from step 8 is `scripts/validation_report.py`, waiting on `configs/published_rates.json`).
+8. **Published-rate table** with citations, and the validation report. **Done** (`configs/published_rates.json`,
+   `docs/PUBLISHED_RATES.md`, `scripts/validation_report.py`).
 
 ## Open questions
 

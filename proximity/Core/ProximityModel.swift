@@ -96,7 +96,7 @@ final class ProximityModel: ObservableObject {
     private var timer: Timer?
     /// flu-offdetect: which alert levels get a notification (crossings up, per-level cooldown), the same on a
     /// background wake-up as in the foreground.
-    private var alertGate = AlertGate()
+    private(set) var alertGate = AlertGate()
     /// Posts alerts; the default keeps FlUni running until iOS has taken the request (UNPoster).
     var alertPoster: AlertPosting = UNPoster()
     /// Per-peer "credited up to" times: exposure accrues from sightings, so it keeps counting while iOS
@@ -106,6 +106,21 @@ final class ProximityModel: ObservableObject {
     private var backgroundTickPending = false
     /// Local-only list of past exposure episodes (14 days), shown on Today.
     let exposureHistory = ExposureHistoryStore()
+    /// flu-persist: the exposure and alert state on this phone, so a relaunch keeps the estimate.
+    let riskStore: RiskStateStore
+
+    /// flu-persist: starts from the saved state (moved on to now; nothing credited for the time FlUni wasn't
+    /// running), so the first frame already shows the restored estimate.
+    init(riskStore: RiskStateStore = RiskStateStore()) {
+        self.riskStore = riskStore
+        if let r = riskStore.load(now: Date()) {
+            exposure = r.exposure
+            alertGate = r.gate
+            liveRisk = r.exposure.probability
+            own = OwnScoreLag(liveRisk: liveRisk)
+            ownScore = own.current
+        }
+    }
 
     /// Ephemeral IDs rotate like GAEN's rolling proximity IDs (shorter via -rotate for tests).
     private var rotationInterval: TimeInterval = 15 * 60
@@ -164,6 +179,11 @@ final class ProximityModel: ObservableObject {
         // rather than on the timer's next fire.
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil,
                                                queue: .main) { [weak self] _ in self?.tick() }
+        // flu-persist: iOS may end FlUni in the background and a swipe-away in the app switcher gives no
+        // termination callback, so save on the way out (resign active, then background).
+        for name in [UIApplication.willResignActiveNotification, UIApplication.didEnterBackgroundNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.saveRiskState() }
+        }
     }
 
     /// @Published fires on every set, even an equal one; skip those.
@@ -278,7 +298,22 @@ final class ProximityModel: ObservableObject {
         setExposure(ExposureTracker())
         accrual.reset()
         alertGate = AlertGate()
+        riskStore.clear()  // flu-persist
     }
+
+    /// flu-persist: writes the exposure and alert state now (going to the background).
+    func saveRiskState() {
+        riskStore.save(exposure, gate: alertGate, now: Date())
+    }
+
+    /// flu-persist: the user read the in-app alert for `level` (the tissue's "Got it"); saved at once, so it doesn't
+    /// pop again after a relaunch within the level's cooldown.
+    func markAlertRead(_ level: AlertLevel, now: Date = Date()) {
+        alertGate.markRead(level, now: now)
+        riskStore.save(exposure, gate: alertGate, now: now)
+    }
+
+    func isAlertRead(_ level: AlertLevel, now: Date = Date()) -> Bool { alertGate.isRead(level, now: now) }
 
     /// The harness (com.fluni.proxtest) obeys test launch arguments; the FlUni product sets this to
     /// false so a stray argument can never change what a student sees.
@@ -592,13 +627,16 @@ final class ProximityModel: ObservableObject {
         setExposure(e)  // unchanged ticks don't republish; any change in p does
         tickOwnScore()
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        if let kind = alertGate.step(exposure.level, now: now) {
+        let kind = alertGate.step(exposure.level, now: now)
+        if let kind {
             log("notify \(kind.rawValue) state=\(UIApplication.shared.applicationState == .active ? "active" : "background")")
             if UIApplication.shared.applicationState == .active {
                 UINotificationFeedbackGenerator().notificationOccurred(kind == .closeContact ? .error : .warning)
             }
             alertPoster.post(kind)
         }
+        // flu-persist: a level change or a notification is written at once (a swipe-away gives no callback).
+        riskStore.saveIfDue(exposure, gate: alertGate, now: now, levelChanged: exposure.level != before || kind != nil)
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
         // flu-offdetect: kept alive off screen, so restart Bluetooth scanning now and then (iOS reports each phone
         // once per background scan; a restart lets phones that came near be found again).
@@ -680,10 +718,12 @@ final class ProximityModel: ObservableObject {
             let wall = min(max(now.timeIntervalSince(last), 0), ExposureTracker.window / self.speed)
             last = now
             var e = self.exposure
+            let before = e.level
             ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
                              accrues: true, accrual: &self.demoAccrual, exposure: &e, room: self.currentRoom(now))
             self.setExposure(e)
             self.tickOwnScore()
+            self.riskStore.saveIfDue(e, gate: self.alertGate, now: now, levelChanged: e.level != before)  // flu-persist
         }
         demoTimer = t
     }

@@ -100,6 +100,15 @@ Claim a row before you start. Update the status as you go. Agents should name th
 
 ## Requests
 
+- **heat map → pitch demo (`demo/`, @aidenyj), 2026-10-18: text contrast on the pitch page.**
+  - A WCAG audit found page text under 4.5:1:
+    - white on the fire-red "40%+", "contagious" and "Library" pills and on the scene "1" badge: 3.0:1;
+    - the red "FlUni s42/43/44" chart labels: 3.2:1;
+    - the "simulated" pill: 4.36:1;
+    - the "→" arrows: 2.25:1.
+  - The embedded heat map's own text was fixed separately (presenter footnote, phone banner in Night mode).
+  - Audit script: run it against /demo/ with the heat map team's audit.mjs/inpage.js (ask us).
+
 - **heat map → synthetic data (@aidenyj), 2026-10-17: 1,000-agent runs put 77% of agents in one dorm.**
   - **Done, with Aiden's OK (2026-10-17):** opt-in `--set population.housing.assignment=spread`
     (40d482d) puts residents in whole bedrooms across all dorms. Default runs are unchanged: same run
