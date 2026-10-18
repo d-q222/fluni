@@ -6,7 +6,26 @@ probability of having the flu, using the mean-field (MF) method of Baker et al.,
 ["Epidemic mitigation by statistical inference from contact tracing data"](https://www.pnas.org/doi/full/10.1073/pnas.2106548118),
 PNAS 118 (2021).
 
-## Run it
+## Watch it on the map: P(flu) as agents move
+
+`movement.py` follows the sim's agents along their tracks (`timeline_changes.csv.gz`: position,
+room and floor every 5 min). It finds every meeting from those movements itself, without
+`contacts.csv`. Two agents meet when they share a room's air, or when they're both outdoors within
+5 m. The model then updates everyone's P(flu) every hour. `map.html` plays the run on the
+campus: dots walk between buildings, coloured by their live P(flu). Click one to follow them, see
+who is sharing their air right now, and see which meetings so far raised their risk, with every
+λ input.
+
+```bash
+uv run exposure/network/calibrate.py sim/runs/influenza_none_n1000_d14_s42_25fe957a --movement   # -> 0.105
+uv run exposure/network/movement.py sim/runs/influenza_none_n1000_d14_s42_25fe957a --lambda-scale 0.105
+python3 -m http.server -d exposure/network 8000    # then open http://localhost:8000/map.html
+```
+
+It takes about 2 minutes: 9.4 M agent-pair × 5-min co-locations, 336 hourly steps. Scores match
+the contact-file version within ±0.01 AUC.
+
+## Run it (from contacts.csv)
 
 ```bash
 uv run exposure/network/calibrate.py sim/runs/influenza_none_n1000_d14_s42_25fe957a

@@ -498,19 +498,8 @@ def auc(score, label):
     return float((ranks[label].sum() - pos * (pos + 1) / 2) / (pos * neg))
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("run", help="sim run folder, e.g. sim/runs/<run_id>")
-    ap.add_argument("--out", help="output folder (default exposure/network/out/<run_id>)")
-    for k, v in PARAMS.items():
-        ap.add_argument("--" + k.replace("_", "-"), type=type(v), default=v)
-    a = ap.parse_args()
-    params = {k: getattr(a, k) for k in PARAMS}
-    run = a.run.rstrip("/")
-    run_id = os.path.basename(run)
-    out = a.out or os.path.join(HERE, "out", run_id)
-
-    m = Model(run, params)
+def run_all(m, params):
+    """Model pass, explanations, the reports-only baseline, and scores against truth."""
     m.run_model()
     top = m.explain()
     p_now, p_ever = m.p_now, m.p_ever
@@ -520,6 +509,7 @@ def main():
     m.run_model()
     p_base = m.p_now
     m.p["lambda_scale"] = params["lambda_scale"]
+    m.p_now, m.p_ever = p_now, p_ever
     truth, first = m.truth()
 
     metrics = []
@@ -538,6 +528,37 @@ def main():
                 x[name + "top50_hits"] = int(truth[n][np.argsort(-P, kind="stable")[:50]].sum())
             x["unreported_infected"] = int(truth[n][~reported].sum())
             metrics.append(x)
+    return p_now, p_base, truth, first, top, metrics
+
+
+def print_metrics(metrics, params):
+    if not metrics:
+        return
+    print("\n                         contacts + reports   |  reports only")
+    print("day  sum P  infected   AUC  AUC-unrep  top50  |  AUC  AUC-unrep  top50  (random 50)")
+    per_day = int(round(24 / params["dt_h"]))
+    f = lambda v: "  -  " if v is None else f"{v:.3f}"
+    for x in metrics[per_day - 1::per_day]:
+        print(f"{(x['n'] + 1) // per_day:>3}  {x['expected']:>5.0f}  {x['actual']:>8}  {f(x['auc'])}  "
+              f"{f(x['auc_unreported']):>9}  {x['top50_hits']:>5}  |  {f(x['base_auc'])}  "
+              f"{f(x['base_auc_unreported']):>9}  {x['base_top50_hits']:>5}  ({x['random50']})")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("run", help="sim run folder, e.g. sim/runs/<run_id>")
+    ap.add_argument("--out", help="output folder (default exposure/network/out/<run_id>)")
+    for k, v in PARAMS.items():
+        ap.add_argument("--" + k.replace("_", "-"), type=type(v), default=v)
+    a = ap.parse_args()
+    params = {k: getattr(a, k) for k in PARAMS}
+    run = a.run.rstrip("/")
+    run_id = os.path.basename(run)
+    out = a.out or os.path.join(HERE, "out", run_id)
+
+    m = Model(run, params)
+    p_now, p_base, truth, first, top, metrics = run_all(m, params)
+    p_ever = m.p_ever
 
     os.makedirs(out, exist_ok=True)
     data = {
@@ -570,15 +591,7 @@ def main():
         f.write(";\n")
 
     print(f"\nwrote {os.path.relpath(os.path.join(out, 'data.js'))}")
-    if metrics:
-        print("\n                         contacts + reports   |  reports only")
-        print("day  sum P  infected   AUC  AUC-unrep  top50  |  AUC  AUC-unrep  top50  (random 50)")
-        per_day = int(24 / params["dt_h"])
-        f = lambda v: "  -  " if v is None else f"{v:.3f}"
-        for x in metrics[per_day - 1::per_day]:
-            print(f"{(x['n'] + 1) // per_day:>3}  {x['expected']:>5.0f}  {x['actual']:>8}  {f(x['auc'])}  "
-                  f"{f(x['auc_unreported']):>9}  {x['top50_hits']:>5}  |  {f(x['base_auc'])}  "
-                  f"{f(x['base_auc_unreported']):>9}  {x['base_top50_hits']:>5}  ({x['random50']})")
+    print_metrics(metrics, params)
 
 
 if __name__ == "__main__":

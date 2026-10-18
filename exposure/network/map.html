@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flu Campus Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same tokens as index.html. Agents are dots on the sim's campus, coloured by their live
+   P(flu) on the blue sequential ramp; a dark ring marks sim truth (hidden from the model). */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --fg: #17202b; --muted: #5d6b7a; --line: #d5dce4;
+  --accent: #1f5fbf; --accent-soft: #dce7f7;
+  --s1: #2a78d6; --s2: #eb6834; --truth: #17202b; --grid: #e6eaef;
+  --map: #f6f4ef; --bld: #e3dfd6; --bld-edge: #cbc5b8; --path: #dcd7cc;
+  --seq0: #bcd3ee; --seq1: #b7d3f6; --seq2: #6da7ec; --seq3: #2a78d6; --seq4: #1c5cab; --seq5: #0d366b;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --panel: #18202a; --fg: #e6ebf1; --muted: #93a1b0; --line: #2a3542;
+    --accent: #6fa3f2; --accent-soft: #1d2d45; --s1: #3987e5; --s2: #d95926; --truth: #f4f6f8; --grid: #222c37;
+    --map: #141a21; --bld: #232c37; --bld-edge: #313c49; --path: #222a34;
+    --seq0: #2a3a4f; --seq1: #1c5cab; --seq2: #3987e5; --seq3: #6da7ec; --seq4: #b7d3f6; --seq5: #eaf2fd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --panel: #18202a; --fg: #e6ebf1; --muted: #93a1b0; --line: #2a3542;
+  --accent: #6fa3f2; --accent-soft: #1d2d45; --s1: #3987e5; --s2: #d95926; --truth: #f4f6f8; --grid: #222c37;
+  --map: #141a21; --bld: #232c37; --bld-edge: #313c49; --path: #222a34;
+  --seq0: #2a3a4f; --seq1: #1c5cab; --seq2: #3987e5; --seq3: #6da7ec; --seq4: #b7d3f6; --seq5: #eaf2fd;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.45;
+  display: grid; grid-template-rows: auto 1fr; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px max(16px, env(safe-area-inset-left)) 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+h1 { font-family: var(--font-display); font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+header a { color: var(--accent); font-size: 13px; }
+.ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; flex: 1 1 520px; }
+.ctl input[type=range] { flex: 1 1 220px; accent-color: var(--accent); }
+button, select { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--accent-soft); color: var(--fg); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+select { font-weight: 500; background: var(--panel); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.clock { font-family: var(--font-mono); font-size: 13px; min-width: 25ch; }
+label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); grid-template-rows: 62vh auto; } }
+#mapwrap { position: relative; min-height: 0; background: var(--map); overflow: hidden; }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+#map.drag { cursor: grabbing; }
+.overlay { position: absolute; left: 12px; bottom: 12px; background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+.ramp { display: inline-flex; height: 9px; width: 120px; border-radius: 3px; overflow: hidden; vertical-align: middle; margin: 0 6px; }
+.ramp span { flex: 1; }
+.ring { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--truth); vertical-align: middle; margin-right: 6px; }
+.zoom { position: absolute; right: 12px; top: 12px; display: grid; gap: 6px; }
+.zoom button { width: 34px; height: 34px; padding: 0; }
+aside { border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding: 14px 16px 24px; display: grid; gap: 14px; align-content: start; }
+@media (max-width: 900px) { aside { border-left: 0; border-top: 1px solid var(--line); } }
+h2 { font-family: var(--font-display); font-size: 16px; margin: 0; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.tile .k { color: var(--muted); font-size: 12px; }
+.tile .v { font-family: var(--font-display); font-size: 24px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.tile .d { color: var(--muted); font-size: 12px; }
+.big { font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.note { color: var(--muted); font-size: 12px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); font-size: 10px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.meet { display: grid; gap: 6px; }
+.m { border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 12.5px; cursor: pointer; }
+.m:hover { border-color: var(--accent); }
+.m .h { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+.m .vars { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: 11.5px; border: 1px solid var(--line); margin: 2px 4px 2px 0; }
+.tip { position: fixed; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 12.5px; box-shadow: 0 4px 16px rgba(0,0,0,.14); z-index: 20; display: none; max-width: 260px; }
+#loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Flu on the move</h1>
+  <div class="ctl">
+    <button id="play">▶ Play</button>
+    <select id="speed" aria-label="Playback speed">
+      <option value="5">5 min / s</option>
+      <option value="30" selected>30 min / s</option>
+      <option value="120">2 h / s</option>
+      <option value="480">8 h / s</option>
+    </select>
+    <input id="t" type="range" min="0" step="0.05" value="0" aria-label="Time">
+    <span class="clock" id="clock"></span>
+    <label class="chk"><input type="checkbox" id="showTruth" checked> truly sick</label>
+    <label class="chk"><input type="checkbox" id="follow"> follow</label>
+  </div>
+  <a href="index.html">Charts and method →</a>
+</header>
+<main>
+  <div id="mapwrap">
+    <canvas id="map" aria-label="Campus map with students coloured by probability of flu"></canvas>
+    <div id="loading">Loading the run…</div>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit campus" title="Fit">⤢</button></div>
+    <div class="overlay">
+      <div>P(flu)<span class="ramp" id="ramp"></span>0 → ≥ 40%</div>
+      <div><span class="ring"></span>truly infected (sim truth, hidden from the model)</div>
+      <div class="note">Drag to pan, scroll to zoom, click a student.</div>
+    </div>
+  </div>
+  <aside>
+    <div>
+      <h2>Campus right now</h2>
+      <p class="note" style="margin:2px 0 8px">Each student's P(flu) updates hourly from the meetings their movement produces: shared room air, or within 5 m outdoors. It uses Baker et al.'s mean-field method (PNAS 2021).</p>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <div id="person">
+      <h2 id="pTitle">Pick a student</h2>
+      <p class="note" id="pWhere"></p>
+    </div>
+  </aside>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+(function () {
+  const run = new URLSearchParams(location.search).get('run') || 'influenza_none_n1000_d14_s42_25fe957a';
+  const s = document.createElement('script');
+  s.src = 'out/' + encodeURIComponent(run) + '/move.js';
+  s.onload = () => { document.getElementById('loading').remove(); main(window.MOVE); };
+  s.onerror = () => { document.getElementById('loading').textContent = 'No movement data for ' + run + '. Run: uv run exposure/network/movement.py sim/runs/' + run; };
+  document.head.appendChild(s);
+})();
+
+function main(D) {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const dec = (b64, Type) => { const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Type(u8.buffer); };
+  const N = D.ids.length, T = D.T, NS = D.n_steps, stepMin = D.step_min, dtH = D.dt_h;
+  const tr = { start: D.track.start, t: dec(D.track.t, Uint16Array), x: dec(D.track.x, Int16Array), y: dec(D.track.y, Int16Array),
+    loc: dec(D.track.loc, Int16Array), act: dec(D.track.act, Int8Array), indoor: dec(D.track.indoor, Uint8Array) };
+  const P = dec(D.p, Uint16Array), PB = dec(D.p_base, Uint16Array);
+  const truthB = D.truth ? dec(D.truth, Uint8Array) : null, rowB = Math.ceil(N / 8);
+  const pAt = (n, i) => P[n * N + i] / 10000, pbAt = (n, i) => PB[n * N + i] / 10000;
+  const sick = (n, i) => truthB ? (truthB[n * rowB + (i >> 3)] >> (7 - (i & 7))) & 1 : 0;
+  const start = new Date(D.start);
+  const hourOf = tau => Math.max(0, Math.min(NS - 1, Math.floor(tau * stepMin / 60 / dtH)));
+  const fmtPct = p => p >= 0.995 ? '>99%' : p < 0.001 ? '<0.1%' : (p * 100 < 10 ? (p * 100).toFixed(1) : Math.round(p * 100)) + '%';
+  const clockOf = tau => { const d = new Date(start.getTime() + tau * stepMin * 60e3);
+    return `Day ${Math.floor(tau * stepMin / 1440) + 1} · ` + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+
+  // ---------------------------------------------------------------- colours
+  const seq = ['--seq0', '--seq1', '--seq2', '--seq3', '--seq4', '--seq5'].map(css);
+  document.getElementById('ramp').innerHTML = seq.map(c => `<span style="background:${c}"></span>`).join('');
+  const rgb = seq.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  const colorOf = p => { const x = Math.min(1, Math.sqrt(Math.max(p, 0) / 0.4)) * (rgb.length - 1);
+    const i = Math.min(rgb.length - 2, Math.floor(x)), f = x - i;
+    return `rgb(${rgb[i].map((v, k) => Math.round(v + (rgb[i + 1][k] - v) * f))})`; };
+
+  // ---------------------------------------------------------------- view
+  const cv = document.getElementById('map'), ctx = cv.getContext('2d');
+  const bl = D.campus.buildings;
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  for (let i = 0; i < tr.x.length; i++) if (tr.x[i] !== -32768) { const x = tr.x[i] / 2, y = tr.y[i] / 2;
+    if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+  let view = { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, s: 1 };
+  let W = 0, H = 0, dpr = 1, base = null;
+  const fit = () => { view.cx = (minX + maxX) / 2; view.cy = (minY + maxY) / 2; view.s = Math.min(W / (maxX - minX + 80), H / (maxY - minY + 80)); };
+  const toS = (x, y) => [W / 2 + (x - view.cx) * view.s, H / 2 - (y - view.cy) * view.s];
+  const toW = (sx, sy) => [view.cx + (sx - W / 2) / view.s, view.cy - (sy - H / 2) / view.s];
+  function resize() { const r = cv.getBoundingClientRect(); dpr = devicePixelRatio || 1; W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); if (!view.fitted) { fit(); view.fitted = true; } base = null; draw(); }
+  function drawBase() {
+    base = document.createElement('canvas'); base.width = cv.width; base.height = cv.height;
+    const b = base.getContext('2d'); b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    b.fillStyle = css('--map'); b.fillRect(0, 0, W, H);
+    b.strokeStyle = css('--path'); b.lineWidth = Math.max(0.6, Math.min(2.5, view.s * 1.6)); b.lineCap = 'round';
+    b.beginPath();
+    for (const p of D.campus.paths) { for (let k = 0; k < p.length; k += 2) { const [x, y] = toS(p[k], p[k + 1]); k ? b.lineTo(x, y) : b.moveTo(x, y); } }
+    b.stroke();
+    b.fillStyle = css('--bld'); b.strokeStyle = css('--bld-edge'); b.lineWidth = 1;
+    for (const g of bl) { b.beginPath(); for (let k = 0; k < g.p.length; k += 2) { const [x, y] = toS(g.p[k], g.p[k + 1]); k ? b.lineTo(x, y) : b.moveTo(x, y); } b.closePath(); b.fill(); b.stroke(); }
+    if (view.s > 1.6) { b.fillStyle = css('--muted'); b.font = '11px ' + css('--font-body'); b.textAlign = 'center';
+      for (const g of bl) { if (!g.name || g.name.startsWith('bld_')) continue; let sx = 0, sy = 0, n = g.p.length / 2;
+        for (let k = 0; k < g.p.length; k += 2) { sx += g.p[k]; sy += g.p[k + 1]; } const [x, y] = toS(sx / n, sy / n);
+        if (x > -50 && x < W + 50 && y > -20 && y < H + 20) b.fillText(g.name, x, y); } }
+  }
+
+  // ---------------------------------------------------------------- agents
+  const pos = new Float32Array(N * 2), vis = new Uint8Array(N), kf = new Int32Array(N);
+  function place(tau) {
+    for (let i = 0; i < N; i++) {
+      let lo = tr.start[i], hi = tr.start[i + 1] - 1;
+      if (hi < lo || tr.t[lo] > tau) { vis[i] = 0; continue; }
+      while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (tr.t[mid] <= tau) lo = mid; else hi = mid - 1; }
+      kf[i] = lo;
+      if (tr.x[lo] === -32768) { vis[i] = 0; continue; }
+      let x = tr.x[lo] / 2, y = tr.y[lo] / 2;
+      const nx = lo + 1;   // while walking there is a row every step: glide between them
+      if (nx < tr.start[i + 1] && tr.x[nx] !== -32768 && tr.t[nx] - tr.t[lo] === 1) {
+        const f = tau - tr.t[lo]; x += (tr.x[nx] / 2 - x) * f; y += (tr.y[nx] / 2 - y) * f;
+      }
+      pos[2 * i] = x; pos[2 * i + 1] = y; vis[i] = 1;
+    }
+  }
+
+  let tau = Math.round(3 * 1440 / stepMin) + Math.round(10 * 60 / stepMin);     // day 4, 10:00
+  let selected = null;
+  const showTruth = document.getElementById('showTruth'), follow = document.getElementById('follow');
+  const order = new Int32Array(N);
+  function draw() {
+    if (!W) return;
+    if (!base) drawBase();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(base, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    place(tau);
+    const n = hourOf(tau);
+    if (selected !== null && follow.checked && vis[selected]) { view.cx = pos[2 * selected]; view.cy = pos[2 * selected + 1]; base = null; drawBase();
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(base, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    const r = Math.max(3, Math.min(6, view.s * 1.1));
+    // draw low P first so high-risk dots stay on top
+    for (let i = 0; i < N; i++) order[i] = i;
+    order.sort((a, b) => P[n * N + a] - P[n * N + b]);
+    const ink = css('--truth'), bg = css('--map');
+    for (const i of order) { if (!vis[i]) continue;
+      const [x, y] = toS(pos[2 * i], pos[2 * i + 1]); if (x < -10 || y < -10 || x > W + 10 || y > H + 10) continue;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = colorOf(pAt(n, i)); ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = bg; ctx.stroke();
+      if (showTruth.checked && sick(n, i)) { ctx.beginPath(); ctx.arc(x, y, r + 1.8, 0, 7); ctx.lineWidth = 1.5; ctx.strokeStyle = ink; ctx.stroke(); } }
+    if (selected !== null && vis[selected]) {
+      const [x, y] = toS(pos[2 * selected], pos[2 * selected + 1]);
+      // who they are sharing air with right now
+      const near = sharing(selected);
+      ctx.strokeStyle = css('--accent'); ctx.lineWidth = 1; ctx.globalAlpha = 0.5;
+      for (const j of near) { const [a, b] = toS(pos[2 * j], pos[2 * j + 1]); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(a, b); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(x, y, r + 5, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = css('--accent'); ctx.stroke();
+    }
+    document.getElementById('clock').textContent = clockOf(tau);
+    slider.value = tau;
+    if (n !== lastHour) { lastHour = n; drawTiles(n); if (selected !== null) drawPerson(); }
+    else if (selected !== null) drawWhere();
+  }
+  // co-located now: same building indoors (the room-level match is done in movement.py), or within 5 m outdoors
+  function sharing(i) {
+    const out = []; if (!vis[i]) return out;
+    const k = kf[i], li = tr.loc[k], ind = tr.indoor[k];
+    for (let j = 0; j < N; j++) { if (j === i || !vis[j]) continue; const kj = kf[j];
+      const dx = pos[2 * i] - pos[2 * j], dy = pos[2 * i + 1] - pos[2 * j + 1], d = Math.hypot(dx, dy);
+      if (ind && tr.indoor[kj] && tr.loc[kj] === li && d < 12) out.push(j);
+      else if (!ind && !tr.indoor[kj] && d < 5) out.push(j); }
+    return out;
+  }
+
+  // ---------------------------------------------------------------- side panel
+  let lastHour = -1;
+  const M = D.metrics;
+  function drawTiles(n) { const m = M[n] || {}; const f = v => v == null ? '–' : v.toFixed(2);
+    let onMap = 0; for (let i = 0; i < N; i++) onMap += vis[i];
+    document.getElementById('tiles').innerHTML = `
+      <div class="tile"><div class="k">Expected sick (Σ P)</div><div class="v">${Math.round(m.expected)}</div><div class="d">truly sick: ${m.actual}</div></div>
+      <div class="tile"><div class="k">On campus now</div><div class="v">${onMap}</div><div class="d">of ${N} students</div></div>
+      <div class="tile"><div class="k">Sick in top 50 by P</div><div class="v">${m.top50_hits}</div><div class="d">random 50: ${m.random50}</div></div>
+      <div class="tile"><div class="k">AUC, no reports yet</div><div class="v">${f(m.auc_unreported)}</div><div class="d">0.50 = coin flip</div></div>`; }
+
+  const kindName = { pos: 'positive test', neg: 'negative test', sym: 'says might be sick', rec: 'says recovered', other: 'reported by someone else' };
+  function drawWhere() {
+    const i = selected, el = document.getElementById('pWhere'); if (!el) return;
+    if (!vis[i]) { el.textContent = 'Off campus right now.'; return; }
+    const k = kf[i], loc = tr.loc[k] >= 0 ? D.locs[tr.loc[k]] : null, act = tr.act[k] >= 0 ? D.acts[tr.act[k]] : '';
+    const near = sharing(i).length;
+    el.innerHTML = `${act ? act.replace(/_/g, ' ') : ''}${loc ? ' · ' + loc : ' · outdoors'} · ${tr.indoor[k] ? 'indoors' : 'outdoors'} · <b>${near}</b> ${near === 1 ? 'person' : 'people'} close by`;
+  }
+  function drawPerson() {
+    const i = selected, n = hourOf(tau), id = D.ids[i];
+    const inf = D.infected_at[id];
+    const ev = D.evidence[id] || [];
+    const evStep = e => Math.floor(e.t * stepMin / 60 / dtH);
+    // P(flu) over the run
+    const Wc = 360, Hc = 120, L = 30, R = 6, Tp = 6, B = 18, w = Wc - L - R, h = Hc - Tp - B;
+    let ymax = 0.1; for (let k = 0; k < NS; k++) ymax = Math.max(ymax, pAt(k, i), pbAt(k, i));
+    ymax = Math.min(1, Math.ceil(ymax * 1.05 * 4) / 4);
+    const X = k => L + k / (NS - 1) * w, Y = v => Tp + h - v / ymax * h;
+    let g = '';
+    for (let q = 0; q <= 4; q++) { const v = ymax * q / 4; g += `<line x1="${L}" x2="${Wc - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/><text x="${L - 4}" y="${Y(v) + 3}" text-anchor="end">${Math.round(v * 100)}%</text>`; }
+    for (let d = 0; d < NS * dtH / 24; d += 2) g += `<text x="${X(d * 24 / dtH)}" y="${Hc - 4}" text-anchor="middle">d${d + 1}</text>`;
+    if (truthB) { let a = null; for (let k = 0; k <= NS; k++) { const on = k < NS && sick(k, i);
+      if (on && a === null) a = k; if (!on && a !== null) { g += `<rect x="${X(a)}" y="${Tp}" width="${Math.max(1, X(k - 1) - X(a))}" height="${h}" fill="var(--truth)" opacity="0.09"/>`; a = null; } } }
+    const line = (f, c) => { let d = ''; for (let k = 0; k < NS; k++) d += (k ? 'L' : 'M') + X(k).toFixed(1) + ',' + Y(f(k, i)).toFixed(1);
+      return `<path d="${d}" fill="none" stroke="var(${c})" stroke-width="2" stroke-linejoin="round"/>`; };
+    g += line(pbAt, '--s2') + line(pAt, '--s1');
+    for (const e of ev) g += `<line x1="${X(evStep(e))}" x2="${X(evStep(e))}" y1="${Tp + h}" y2="${Tp + h - 8}" stroke="var(--fg)" stroke-width="2"/>`;
+    g += `<line x1="${X(n)}" x2="${X(n)}" y1="${Tp}" y2="${Tp + h}" stroke="var(--accent)" stroke-width="1.5"/>`;
+    const rows = (D.top[i] || []).filter(r => r.n <= n).slice(0, 8);
+    const stageTxt = s => s == null ? '–' : (s < 0 ? `${(-s).toFixed(1)} d before symptoms` : `day ${s.toFixed(1)} of symptoms`);
+    const whenH = k => clockOf(k * dtH * 60 / stepMin).replace(/:\d\d$/, ':00');
+    document.getElementById('person').innerHTML = `
+      <h2>${id}</h2>
+      <p class="note" id="pWhere"></p>
+      <div><span class="big">${fmtPct(pAt(n, i))}</span> <span class="muted">P(flu) now · reports only ${fmtPct(pbAt(n, i))}</span></div>
+      <p class="note" style="margin:6px 0 0">Sim truth (hidden from the model): ${inf ? `infected ${clockOf(inf[0]).replace(/^Day \d+ · /, '')}, ${inf[2] === 'IMPORT' ? (inf[1] === 'seed' ? 'a starting case' : 'off campus') : 'by ' + inf[2] + ' (' + inf[1] + ')'}` : 'never infected'}${truthB && sick(n, i) ? ' · <b>infected now</b>' : ''}.</p>
+      <svg viewBox="0 0 ${Wc} ${Hc}" role="img" aria-label="P(flu) over the run">${g}</svg>
+      <div class="legend"><span><span class="sw" style="background:var(--s1)"></span>contacts + reports</span><span><span class="sw" style="background:var(--s2)"></span>reports only</span><span><span class="sw" style="height:9px;background:var(--truth);opacity:.2"></span>truly infected</span></div>
+      <div>${ev.length ? ev.map(e => `<span class="pill">${clockOf(e.t).replace(/^Day (\d+) · .*? .*? \d+ /, 'd$1 ')}: ${kindName[e.kind]}</span>`).join('') : '<span class="note">No reports or tests about them.</span>'}</div>
+      <h2 style="margin-top:4px">Meetings that raised their risk most</h2>
+      <p class="note" style="margin:0">Up to now. Added risk = P(${id} still healthy) × P(other has flu) × λ. Click one to jump there.</p>
+      <div class="meet">${rows.length ? rows.map(r => {
+        const out = r.outdoor_min > r.min / 2, ago = (n - r.n) * dtH / 24;
+        return `<div class="m" data-n="${r.n}" data-other="${r.other}"><div class="h"><span>${whenH(r.n).replace(/^Day (\d+) · /, 'd$1 ')} · ${r.other}</span><span>+${fmtPct(r.contrib)}</span></div>
+          <div class="vars">P(${r.other}) ${fmtPct(r.p_other)} · P(${id} healthy) ${fmtPct(r.p_self_s)} · ${Math.round(r.min)} min · ${r.dist.toFixed(1)} m ·
+          ${out ? 'outdoors' : (r.room_m3 ? Math.round(r.room_m3) + ' m³ room, ' + r.ach + ' ACH' : 'indoors')} · humidity ${r.rh_out}% out${out ? '' : ' → ' + r.rh_in + '% in'} ·
+          their stage: ${stageTxt(r.stage)} · λ ${(r.lam * 100).toFixed(2)}% · ${ago.toFixed(1)} d ago</div></div>`; }).join('') : '<span class="note">No meeting so far added more than 0.01%.</span>'}</div>`;
+    drawWhere();
+    document.querySelectorAll('.m').forEach(el => el.addEventListener('click', () => {
+      setTau(+el.dataset.n * dtH * 60 / stepMin); }));
+  }
+  function select(i) { selected = i; lastHour = -1; draw(); }
+
+  // ---------------------------------------------------------------- interaction
+  const tip = document.getElementById('tip');
+  const nearest = (sx, sy) => { let best = null, bd = 12 * 12; for (let i = 0; i < N; i++) { if (!vis[i]) continue;
+    const [x, y] = toS(pos[2 * i], pos[2 * i + 1]), d = (x - sx) ** 2 + (y - sy) ** 2; if (d < bd) { bd = d; best = i; } } return best; };
+  let drag = null;
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    const b = cv.getBoundingClientRect();
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) { drag.moved = true; cv.classList.add('drag'); follow.checked = false; }
+      if (drag.moved) { view.cx = drag.cx - dx / view.s; view.cy = drag.cy + dy / view.s; base = null; draw(); } return; }
+    const i = nearest(e.clientX - b.left, e.clientY - b.top), n = hourOf(tau);
+    if (i === null) { tip.style.display = 'none'; return; }
+    const k = kf[i], loc = tr.loc[k] >= 0 ? D.locs[tr.loc[k]] : 'outdoors';
+    tip.innerHTML = `<b>${D.ids[i]}</b> · ${loc}<br>P(flu) <b>${fmtPct(pAt(n, i))}</b>${truthB ? (sick(n, i) ? ' · truly infected' : '') : ''}`;
+    tip.style.display = 'block'; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+  });
+  cv.addEventListener('pointerup', e => { const b = cv.getBoundingClientRect(); cv.classList.remove('drag');
+    if (drag && !drag.moved) { const i = nearest(e.clientX - b.left, e.clientY - b.top); if (i !== null) select(i); } drag = null; });
+  cv.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+  const zoomAt = (f, sx = W / 2, sy = H / 2) => { const [wx, wy] = toW(sx, sy); view.s *= f; const [nx, ny] = toW(sx, sy);
+    view.cx += wx - nx; view.cy += wy - ny; base = null; draw(); };
+  cv.addEventListener('wheel', e => { e.preventDefault(); const b = cv.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - b.left, e.clientY - b.top); }, { passive: false });
+  document.getElementById('zin').onclick = () => zoomAt(1.5);
+  document.getElementById('zout').onclick = () => zoomAt(1 / 1.5);
+  document.getElementById('zfit').onclick = () => { follow.checked = false; fit(); base = null; draw(); };
+  showTruth.onchange = draw;
+  follow.onchange = () => { if (follow.checked && selected !== null) zoomAt(Math.max(1, 3 / view.s)); draw(); };
+
+  const slider = document.getElementById('t'); slider.max = T - 1;
+  const setTau = v => { tau = Math.max(0, Math.min(T - 1, v)); draw(); };
+  slider.addEventListener('input', () => setTau(+slider.value));
+  let playing = false, last = 0;
+  const playBtn = document.getElementById('play'), speed = document.getElementById('speed');
+  playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? '❚❚ Pause' : '▶ Play'; last = performance.now(); if (playing) requestAnimationFrame(tick); };
+  function tick(now) { if (!playing) return; const dtS = Math.min(0.1, (now - last) / 1000); last = now;
+    tau += dtS * (+speed.value) / stepMin; if (tau >= T - 1) { tau = T - 1; playBtn.click(); } draw(); requestAnimationFrame(tick); }
+  addEventListener('resize', resize);
+  resize();
+  // start on the student whose risk the contacts raised most
+  let best = 0, gap = -1;
+  for (let i = 0; i < N; i++) for (let k = 0; k < NS; k += 6) { const g = pAt(k, i) - pbAt(k, i); if (g > gap) { gap = g; best = i; } }
+  select(best);
+}
+</script>
+</body>
+</html>
