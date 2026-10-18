@@ -45,8 +45,8 @@ export const MF_DEFAULTS = {
   tauSymDays: 2.5,        // "might be sick": infected this long before the report (onset now)
   lrSym: 20,              // likelihood ratio of a symptom self-report
   lrOther: 4,             // ... of a report by someone else
-  fnr: 0.3,               // negative test: infected mass x false-negative rate
-  detectDays: 1,          // a test only sees infections at least this old
+  negDays: 3,             // negative test: P_S = 1 from this long before it up to the result (the paper: all t <= t_obs;
+                          //   the online pass can rerun this far back)
   lambdaScale: 0.836,     // dose multiplier, fitted by meanfield-cli.mjs --calibrate on influenza_none_n1000_d14_s42_25fe957a
                           //   (0.135 with legacyDose)
   // Near field. infer.js's plume, 1/(30 m^3/h * d^2), made a 1 m contact 5x and a 0.5 m one 20x a dorm room's
@@ -196,7 +196,11 @@ export function meanFieldRisk(input, params = {}) {
   // ---------- dynamics ----------
   const q = R.quantaPeak * P.lambdaScale;
   const hImp = -Math.log1p(-P.importPerDay * dtDays);
-  const kDet = Math.round(P.detectDays / dtDays);
+  const negBack = Math.round(P.negDays / dtDays);
+  // One illness: a repeated report of the same kind, or a symptom report after a positive, within this many steps of
+  // the clamp already applied says nothing new (the paper's observations are about one infection).
+  const episode = Math.round(P.illnessDays / dtDays);
+  const lastPos = new Int32Array(N).fill(-1e9), lastSym = new Int32Array(N).fill(-1e9), lastOther = new Int32Array(N).fill(-1e9);
   const fresh = () => {
     const S = new Float64Array(N).fill(1 - P.prior), A = new Float64Array(N * K).fill(P.prior / K), Rr = new Float64Array(N);
     for (const id of input.seeds || []) { // calibration only: known cases, just infected at the start
@@ -220,34 +224,42 @@ export function meanFieldRisk(input, params = {}) {
 
   function applyClamp(c, st) {
     const { S, A, R: Rr } = st, i = c[1], o = i * K;
-    if (c[0] === 'infect') { // (1 - w) * current + w * infected at age k0
-      const k0 = c[2], wgt = c[3];
-      S[i] *= 1 - wgt; Rr[i] *= 1 - wgt;
-      for (let k = 0; k < K; k++) A[o + k] *= 1 - wgt;
-      if (k0 < K) A[o + k0] += wgt; else Rr[i] += wgt;
-    } else if (c[0] === 'neg') { // likelihood of a negative test
-      for (let k = kDet; k < K; k++) A[o + k] *= P.fnr;
-      let z = S[i] + Rr[i];
-      for (let k = 0; k < K; k++) z += A[o + k];
-      S[i] /= z; Rr[i] /= z;
-      for (let k = 0; k < K; k++) A[o + k] /= z;
-    } else if (c[0] === 'rec') { // P_R = 1 from now on
-      for (let k = 0; k < K; k++) { Rr[i] += A[o + k]; A[o + k] = 0; }
+    if (c[0] === 'infect') { // P_I = w exactly (the posterior), dated at age k0; S and R share the rest pro rata
+      const k0 = c[2], wgt = c[3], rest = S[i] + Rr[i], f = rest > 0 ? (1 - wgt) / rest : 0;
+      S[i] = rest > 0 ? S[i] * f : 1 - wgt; Rr[i] *= f;
+      A.fill(0, o, o + K);
+      if (k0 < K) A[o + k0] = wgt; else Rr[i] += wgt;
+    } else if (c[0] === 'sus') { // negative test (SI eq. 4): P_S = 1 at this step, so nothing was caught or passed on
+      S[i] = 1; Rr[i] = 0; A.fill(0, o, o + K);
+    } else if (c[0] === 'rec') { // recovered (SI eq. 6): P_R = 1, no longer susceptible
+      S[i] = 0; A.fill(0, o, o + K); Rr[i] = 1;
     }
   }
 
-  // An observation learned in step n -> [effect step, clamp].
-  function clampFor(kind, i, n, st) {
-    if (kind === 'neg' || kind === 'rec') return [n, [kind, i]];
+  // An observation learned in step n -> a list of [effect step, clamp] (empty: nothing new).
+  function clampsFor(kind, i, n, st) {
+    if (kind === 'rec') return [[n, ['rec', i]]];
+    if (kind === 'neg') { // P_S = 1 at every step from negBack before the result up to it
+      const out = [];
+      for (let s = Math.max(0, n - negBack); s <= n; s++) out.push([s, ['sus', i]]);
+      return out;
+    }
+    // One illness, one dating: a positive isn't re-dated by a later positive or report, nor a report by its repeat.
+    if (n - lastPos[i] < episode) return [];
+    if (kind === 'sym' && n - lastSym[i] < episode) return [];
+    if (kind === 'other' && n - Math.max(lastSym[i], lastOther[i]) < episode) return [];
+    (kind === 'pos' ? lastPos : kind === 'sym' ? lastSym : lastOther)[i] = n;
     const back = Math.round((kind === 'pos' ? P.tauPosDays : P.tauSymDays) / dtDays);
     let sEff = n - back, k0 = 0;
     if (sEff < 0) { k0 = -sEff; sEff = 0; }
+    if (kind === 'pos') // a positive outweighs an earlier negative: drop that negative's P_S = 1 from the dating on
+      for (const [s, list] of clamps) if (s >= sEff) clamps.set(s, list.filter((c) => !(c[0] === 'sus' && c[1] === i)));
     let wgt = 1;
-    if (kind !== 'pos') {
-      const lr = kind === 'sym' ? P.lrSym : P.lrOther, p = Math.max(1 - st.S[i] - st.R[i], P.prior);
+    if (kind !== 'pos') { // Bayes: the posterior P(infected | report) from the model's current P_I
+      const lr = kind === 'sym' ? P.lrSym : P.lrOther, p = Math.min(1, Math.max(0, 1 - st.S[i] - st.R[i]));
       wgt = (lr * p) / (lr * p + 1 - p);
     }
-    return [sEff, ['infect', i, k0, wgt]];
+    return [[sEff, ['infect', i, k0, wgt]]];
   }
 
   // One MF step, in place: clamps, then P_S <- P_S * prod_j (1 - T_{j->i}) * exp(-import), then ageing.
@@ -308,7 +320,7 @@ export function meanFieldRisk(input, params = {}) {
   // Rows of pNow/shed are what the app would show at the end of each step.
   const pNow = new Float32Array(nSteps * N), shed = new Float32Array(nSteps * N);
   const clamps = new Map(), ckpt = new Map(), CK = P.checkpointSteps;
-  const keepBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays) / dtDays) + CK;
+  const keepBack = Math.round(Math.max(P.tauPosDays, P.tauSymDays, P.negDays) / dtDays) + CK;
   let st = fresh();
   for (let n = 0; n < nSteps; n++) {
     if (n % CK === 0) {
@@ -317,10 +329,11 @@ export function meanFieldRisk(input, params = {}) {
     }
     let earliest = n;
     for (const [kind, i] of obs[n]) {
-      const [sEff, c] = clampFor(kind, i, n, st);
-      if (!clamps.has(sEff)) clamps.set(sEff, []);
-      clamps.get(sEff).push(c);
-      if (sEff < earliest) earliest = sEff;
+      for (const [sEff, c] of clampsFor(kind, i, n, st)) {
+        if (!clamps.has(sEff)) clamps.set(sEff, []);
+        clamps.get(sEff).push(c);
+        if (sEff < earliest) earliest = sEff;
+      }
     }
     if (earliest < n) { // rerun from the checkpoint at or before the earliest step touched
       const c0 = Math.floor(earliest / CK) * CK;

@@ -33,5 +33,37 @@ check('indoors beats outdoors', pB(), pB({ indoor: false }));
 check('outdoor humidity: dry (20%) beats humid (90%): dry indoor air keeps the virus alive longer', pB({ rh: 20, dist: 4 }), pB({ rh: 90, dist: 4 }));
 check('stage: meeting j at symptom onset beats meeting j the day after they caught it', pB({ meetH: 47 }), pB({ meetH: 2 }));
 check('time since meeting: an infection caught shows as P(flu), then the illness ends', pB({ readH: 72 }), pB({ readH: 47 + 24 * 11 }));
+
+// Observations as in the paper (SI: positive, negative, recovered clamps), one illness per dating.
+// run(reports, contacts) -> the model; meet(h, a, b) = an hour together, 1 m apart, in the small room.
+const meet = (h, a = 'A', b = 'B') => Array.from({ length: 12 }, (_, k) => ({ t: h * H + k, agent_a: a, agent_b: b, distance_m: 1, duration_s: 300, room_id: 'small', indoor: 'True' }));
+const rep = (h, who, event, value) => ({ t: h * H, agent_id: who, event, value });
+const run = (reports, contacts = []) => meanFieldRisk({ contacts, reports, rooms, agentIds: ['A', 'B'], stepMin, startMs, days: 14 });
+const at = (m, id, h) => m.pAt(id, startMs + h * 3600000);
+{ // 1. a symptom report sets P_I to the posterior once; repeating it the next day adds nothing
+  const once = at(run([rep(48, 'A', 'self_report', 'might_be_sick')]), 'A', 60);
+  const twice = at(run([rep(48, 'A', 'self_report', 'might_be_sick'), rep(72, 'A', 'self_report', 'might_be_sick')]), 'A', 84);
+  const onceLater = at(run([rep(48, 'A', 'self_report', 'might_be_sick')]), 'A', 84);
+  check('symptom report: a repeat within the illness adds nothing (|twice - once| < 1e-6)', 1e-6, Math.abs(twice - onceLater));
+  check('symptom report: P_I is the posterior, well below certainty', 0.9, once);
+}
+{ // 2. recovered: no longer susceptible, a later meeting with a case can't infect
+  const contacts = meet(100);
+  const recB = at(run([rep(60, 'B', 'self_report', 'recovered'), rep(110, 'A', 'test_result', 'positive')], contacts), 'B', 130);
+  check('recovered: a later meeting with a case leaves P(flu) at 0', 1e-9, recB);
+}
+{ // 3. negative test: P_S = 1 back to 3 days before it, so what A "passed on" then is gone
+  const contacts = meet(40);
+  const exposed = at(run([rep(46, 'A', 'self_report', 'might_be_sick')], contacts), 'B', 60);
+  const cleared = at(run([rep(46, 'A', 'self_report', 'might_be_sick'), rep(50, 'A', 'test_result', 'negative')], contacts), 'B', 60);
+  const alone = at(run([]), 'B', 60);
+  check('negative test: clears the meeting\'s risk back to baseline', exposed - alone, 10 * Math.abs(cleared - alone));
+}
+{ // 4. a self-reported positive after the test result doesn't re-date the infection
+  const contacts = meet(90);
+  const one = at(run([rep(100, 'A', 'test_result', 'positive')], contacts), 'B', 140);
+  const both = at(run([rep(100, 'A', 'test_result', 'positive'), rep(110, 'A', 'self_report', 'tested_positive')], contacts), 'B', 140);
+  check('duplicate positive: same P for the contact (|diff| < 1e-9)', 1e-9, Math.abs(both - one));
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

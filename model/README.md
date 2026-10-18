@@ -207,9 +207,23 @@ hour by hour, with every agent carrying a distribution over infection age. It is
 | Time since the meeting | infections age one bin per hour: latent → infectious → over (R) after 10 days |
 | Outdoor humidity | that day's weather in `config.json` → indoor RH → virus decay (Noti et al. 2013) |
 
-Reports constrain the marginals as in the paper (a positive test sets P = 1 from 3 days before it,
-symptom reports by likelihood ratio, negative tests by the false-negative rate) and reach back in time,
-so the model reruns from the earliest hour a report touches. It also returns each agent's expected
+Reports constrain the marginals as in the paper's SI and reach back in time, so the model reruns from the
+earliest hour a report touches:
+
+- positive test: P_I = 1, dated 3 days before the result (the paper's τ);
+- symptom report (or one about someone else): P_I set to the Bayesian posterior w = LR·p / (LR·p + 1 − p)
+  from the model's current P_I = p, dated 2.5 days back; not stacked on the old infected mass;
+- negative test (SI eq. 4): P_S = 1 at every hour from 3 days before the result up to it, which also removes
+  what the person was assumed to pass on in that window (the paper: all t ≤ t_obs; the online pass reruns 3 days);
+  a later positive overrides it;
+- recovered (SI eq. 6): P_R = 1, no longer susceptible;
+- one illness, one dating: within 10 days, a repeated report of the same kind, or any report after a positive,
+  adds nothing (they describe the same infection, not independent evidence).
+
+On the sim these strict rules cost some ranking in week 2 (day-14 AUC 0.75 → 0.71 on 25fe957a): every negative
+test in that run was a false negative (the sim's test has 70% sensitivity), and 5 of 26 "recovered" claims came
+from people still infected. The soft negative (infected mass × 0.3 at the result) scores 0.74. The day-14 Σ P
+moved from 175 to 156 (136 infected in the last 10 days, the scorer's label). It also returns each agent's expected
 infectiousness `shed = Σ_a P(a) · stage(a)`, which the heat map's "Chance of catching flu here" view draws.
 
 ```
