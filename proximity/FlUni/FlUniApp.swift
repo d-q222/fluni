@@ -12,6 +12,8 @@ struct FlUniApp: App {
     @StateObject private var router = AppRouter.shared
     @StateObject private var reportStore = SelfReportStore()
     @Environment(\.scenePhase) private var phase
+    /// Lisa's opening animation; off for UI tests and unit-test hosts so they never wait on it.
+    @State private var showIntro = true
 
     init() {
         #if DEBUG
@@ -36,6 +38,7 @@ struct FlUniApp: App {
                 }
             }
         }
+        _showIntro = State(initialValue: !skipRadios && !LaunchMode.isUnitTestHost)
     }
     private let skipRadios: Bool  // test-only: UI tests never broadcast
 
@@ -75,6 +78,8 @@ struct FlUniApp: App {
                     }
                 }
             }
+            // Lisa's opening animation over whatever the first screen is (design pass).
+            .overlay { if showIntro { LaunchIntro { showIntro = false } } }
             // Forced light: the campfire palette is only defined and contrast-checked on warm paper.
             .preferredColorScheme(.light)
             // Sheets, Done / Cancel and links use ink, not system blue (blue on paper is only 3.8:1).
