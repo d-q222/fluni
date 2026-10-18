@@ -36,8 +36,14 @@ struct TissueAlert: View {
                     .offset(y: h - UIScreen.main.bounds.height)
                     .onTapGesture {}   // swallow taps behind the sheet
             }
+            // Popped: only the tissue wiggles, about its base; the box rim it pokes out of is a separate, still layer
+            // (rotating one layer that held both shook the back of the box).
+            if isPopped {
+                Image("TissueAlertPull0Rim").resizable().frame(width: w, height: h)
+                    .allowsHitTesting(false).accessibilityHidden(true)
+            }
             Image(art).resizable().frame(width: w, height: h)
-                .rotationEffect(.degrees(isPopped && wiggle && !reduceMotion ? 1.4 : 0), anchor: UnitPoint(x: 0.5, y: 0.74))
+                .rotationEffect(.degrees(isPopped && wiggle && !reduceMotion ? 1.6 : 0), anchor: UnitPoint(x: 0.5, y: 0.88))
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             if isPopped { popButton(w, h) }
@@ -57,7 +63,7 @@ struct TissueAlert: View {
     private var isPopped: Bool { if case .popped = phase { return true }; return false }
     private var art: String {
         switch phase {
-        case .hidden, .popped: return "TissueAlertPull0"
+        case .hidden, .popped: return "TissueAlertPull0Tissue"
         case .pulling(let i): return "TissueAlertPull\(i)"
         case .open: return "TissueAlertSheet"
         }
