@@ -354,6 +354,7 @@ const CanvasLayer = L.Layer.extend({
   },
   onAdd(map) {
     map.getPane('overlayPane').appendChild(this.canvas);
+    if (this.fade) this.canvas.after(this.fade.canvas);
     map.on('zoomanim', this.animate, this);
     map.on('zoom', this.follow, this);
     map.on('moveend viewreset resize', this.draw, this);
@@ -361,6 +362,7 @@ const CanvasLayer = L.Layer.extend({
   },
   onRemove(map) {
     this.canvas.remove();
+    this.fade?.canvas.remove();
     map.off('zoomanim', this.animate, this);
     map.off('zoom', this.follow, this);
     map.off('moveend viewreset resize', this.draw, this);
@@ -417,6 +419,7 @@ const CanvasLayer = L.Layer.extend({
       c.style.width = `${w}px`; c.style.height = `${h}px`;
     }
     L.DomUtil.setPosition(c, min);
+    this.placeFade(map.getZoom(), map.getCenter());
     this.zoom = map.getZoom();
     this.view = L.latLngBounds(map.layerPointToLatLng(min), map.layerPointToLatLng(min.add([w, h])));
     const ctx = c.getContext('2d');
@@ -463,6 +466,33 @@ const CanvasLayer = L.Layer.extend({
     const scale = this._map.getZoomScale(e.zoom, this.zoom);
     const offset = this._map._latLngBoundsToNewLayerBounds(this.view, e.zoom, e.center).min;
     L.DomUtil.setTransform(this.canvas, offset, scale);
+    this.placeFade(e.zoom, e.center);
+  },
+  // Crossfade: the heat on screen now, kept on a canvas above, fading out over the heat drawn next (after a
+  // zoom the new spread and grid would otherwise replace the stretched old image in one frame).
+  fadeOut(ms = 280) {
+    const c = this.canvas;
+    if (!this._map || !this.view || c.style.display === 'none') return;
+    if (!this.fade) {
+      this.fade = { canvas: L.DomUtil.create('canvas', 'heat-fade leaflet-zoom-animated') };
+      this.fade.canvas.style.pointerEvents = 'none';
+      c.after(this.fade.canvas);
+    }
+    const f = this.fade, fc = f.canvas;
+    fc.width = c.width; fc.height = c.height;
+    fc.style.width = c.style.width; fc.style.height = c.style.height;
+    fc.getContext('2d').drawImage(c, 0, 0);
+    Object.assign(f, { view: this.view, zoom: this.zoom });
+    fc.style.transform = c.style.transform;
+    fc.style.display = '';
+    f.anim?.cancel();
+    f.anim = fc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' });
+    f.anim.onfinish = () => { fc.style.display = 'none'; };
+  },
+  placeFade(zoom, center) {
+    const f = this.fade;
+    if (!f || f.canvas.style.display === 'none') return;
+    L.DomUtil.setTransform(f.canvas, this._map._latLngBoundsToNewLayerBounds(f.view, zoom, center).min, this._map.getZoomScale(zoom, f.zoom));
   },
 });
 
@@ -1096,6 +1126,8 @@ async function main() {
       const next = sigmaForZoom(), nextFine = map.getZoom() >= FINE_ZOOM;
       if (next !== sigmaM || nextFine !== fine) { sigmaM = next; fine = nextFine; renderLegend(); }
       heatDirty = true;
+      heatLayer.fadeOut(); // the new heat fades in under the old
+      outdoorLayer?.fadeOut();
       if (!playing) render(performance.now()); // playing: the next frame does it
     }, SETTLE_MS);
   });
