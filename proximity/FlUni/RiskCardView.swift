@@ -149,7 +149,10 @@ private struct PretendSection: View {
                     Text(monitor.pretend.flatMap { heat.heat?.buildings[$0]?.name } ?? "Real location").foregroundStyle(Theme.ink2)
                 }
             }
-        } footer: { Text("Changes the walk-in warning only. Nothing else uses it.").foregroundStyle(Theme.ink2) }
+            Button("Reset warnings") { monitor.resetCooldowns() }
+                .frame(minHeight: 44)
+                .accessibilityHint("Lets every building warn again, so a rehearsal doesn't silence the live demo")
+        } footer: { Text("Changes the walk-in warning only. Nothing else uses it. Reset warnings clears the 2-hour wait between warnings for each building.").foregroundStyle(Theme.ink2) }
     }
 }
 

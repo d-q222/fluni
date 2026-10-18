@@ -184,10 +184,13 @@ final class ProximityModel: ObservableObject {
 
     /// After "Delete my data": back to a fresh install's state (the caller has cleared the files and defaults).
     func forgetEverything() {
-        if isPaused { resume() }
+        pause(.untilResumed)  // radios stay off until onboarding's "Turn on" calls resume()
+        UserDefaults.standard.removeObject(forKey: "pauseState")  // a relaunch starts fresh, not paused
         myRisk = .none
         statusSetAt = nil
         resetExposure()
+        exposureHistory.reset()
+        lastFix = nil
     }
 
     func resetExposure() {
@@ -410,10 +413,9 @@ final class ProximityModel: ObservableObject {
         exposureHistory.record(simSeconds: dt * speed, contacts: ps.map { ($0.pClose, $0.risk) }, at: now)
         if e != exposure { exposure = e }  // unchanged ticks don't republish
         if exposure.level != before { log("ALERT \(exposure.level) minutes=\(fmt(exposure.minutes))") }
-        if exposure.level > notifiedLevel {
-            notifiedLevel = exposure.level
-            notify(exposure.level)
-        }
+        let next = AlertNotifier.next(level: exposure.level, notified: notifiedLevel)
+        notifiedLevel = next.notified
+        if let level = next.notify { notify(level) }
         if now.timeIntervalSince(lastSummary) >= 5 { lastSummary = now; logSummary() }
 
         // Ease GPS off while any enabled UWB reading was fresh in the last 15 s (hysteresis vs flapping).
