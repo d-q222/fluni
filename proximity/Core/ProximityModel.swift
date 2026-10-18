@@ -719,8 +719,9 @@ final class ProximityModel: ObservableObject {
             last = now
             var e = self.exposure
             let before = e.level
-            ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
-                             accrues: true, accrual: &self.demoAccrual, exposure: &e, room: self.currentRoom(now))
+            let fed = ExposureTick.run(guarded: [peer], fresh: [peer.id], now: now, wall: wall, speed: self.speed,
+                                       accrues: true, accrual: &self.demoAccrual, exposure: &e, room: self.currentRoom(now))
+            if let fed { self.exposureHistory.record(simSeconds: wall * self.speed, contacts: fed, at: now) }  // Today's timeline
             self.setExposure(e)
             self.tickOwnScore()
             self.riskStore.saveIfDue(e, gate: self.alertGate, now: now, levelChanged: e.level != before)  // flu-persist
