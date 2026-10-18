@@ -13,7 +13,7 @@ import { BuildingTotalsLayer, BuildingShadeLayer } from './buildings.js';
 import { addLandmarks } from './landmarks.js';
 import { initNightMode } from './theme.js';
 import { loadPSick, loadTotals, loadMeanField } from './precomputed.js';
-import { meanFieldRisk, initialPrevalence } from '../model/meanfield.js';
+import { meanFieldOnline } from '../model/meanfield.js';
 import { wktGeometry, cleanFootprints } from './footprints.js';
 import { MIN_PEOPLE, userScale } from './userscale.js';
 import { rampCss, fmt as fmtSick } from './userstyle.js';
@@ -62,9 +62,10 @@ const roomNames = new Map();       // room_id -> registrar room name, when the r
 // same scenario and seed, only longer; a big run (BIG_AGENT_DAYS), so it reads the precomputed model/out/ and heatmap/out/ files.
 const DEFAULT_RUN = 'influenza_none_n1000_d4_s42_73b8452c';
 const PARAMS = new URLSearchParams(location.search);
-// ?model=meanfield: people's P(sick) from Baker et al.'s mean-field (model/meanfield.js) instead of infer.js.
-// No "Why this %?" panel then (meanfield.js has no explain()).
-const MEAN_FIELD = PARAMS.get('model') === 'meanfield';
+// People's P(sick): Baker et al.'s mean-field (model/meanfield.js), self-calibrated online from the reports seen so far
+// (meanFieldOnline; precomputed in model/out/<run>/meanfield.csv by node model/meanfield-cli.mjs sim/runs/<run>).
+// ?model=infer: the older single-pass estimate (model/infer.js), which also has the "Why this %?" panel (explain()).
+const MEAN_FIELD = PARAMS.get('model') !== 'infer';
 // ?embed=app: the Swift app's heat map tab. Only the user-facing map fills the screen: no presenter
 // controls, no people. Styled from here so index.html stays the design pass's.
 const EMBED = PARAMS.get('embed') === 'app';
@@ -268,11 +269,10 @@ async function loadModel(dataUrl, agentIds) {
     const config = await fetch(new URL('config.json', base)).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
     bigRun = agentIds.length >= BIG_RUN || agentIds.length * (config.days || 1) >= BIG_AGENT_DAYS;
     if (bigRun) { // no "Why this %?" and no contact-based phone alerts then
-      let risk = await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
-      // ?model=meanfield: Baker et al.'s mean-field (model/meanfield.js), precomputed by model/meanfield-cli.mjs
+      // the mean-field (default), precomputed; infer.js's p_sick.csv with ?model=infer or when it's missing
       const mf = MEAN_FIELD ? await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base)) : null;
       if (MEAN_FIELD && !mf) console.warn(`No model/out/${config.run_id}/meanfield.csv (node model/meanfield-cli.mjs sim/runs/${config.run_id}): using infer.js.`);
-      if (mf) risk = mf;
+      const risk = mf || await loadPSick(new URL(`../../../model/out/${config.run_id}/p_sick.csv`, base));
       if (risk) return { risk, mf: mf && (() => mf), contacts: [], startMs: Date.parse(config.start), stepMs: config.step_min * 60000, traits: new Map() };
       console.warn(`No model/out/${config.run_id}/p_sick.csv: running the model in the page (slow on big runs).`);
     }
@@ -286,13 +286,16 @@ async function loadModel(dataUrl, agentIds) {
     roomNames.clear(); // registrar names (ExploreCourses runs) for the people tooltips
     for (const [id, r] of rooms || []) if (r.room_name) roomNames.set(id, r.room_name);
     const startMs = Date.parse(config.start), stepMs = config.step_min * 60000;
-    let risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
-    // ?model=meanfield: Baker et al.'s mean-field over the same contacts and reports colours people (and so the
-    // buildings) instead. Computed on first use (~3 s for 1,000 agents over 4 days), so only then.
-    let mfRisk = null;
-    const mf = () => (mfRisk ||= meanFieldRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
-      weather: config.params?.weather, days: config.days, initialPrevalence: initialPrevalence(config) }));
-    if (MEAN_FIELD) risk = mf();
+    // The mean-field from its precomputed file; if the run has none, computed here (refits every 2 days: slower).
+    // ?model=infer: infer.js.
+    let risk = null, mf = null;
+    if (MEAN_FIELD) {
+      const pre = await loadMeanField(new URL(`../../../model/out/${config.run_id}/meanfield.csv`, base));
+      const m = pre || meanFieldOnline({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs,
+        weather: config.params?.weather, days: config.days }, { priorAge: 'new' }, { checkpointDays: Array.from({ length: Math.floor((config.days || 14) / 2) }, (_, k) => 2 * (k + 1)) });
+      if (!pre) console.info(`No model/out/${config.run_id}/meanfield.csv: computed the mean-field in the page.`);
+      risk = m; mf = () => m;
+    } else risk = inferRisk({ contacts: contacts.data, reports: reports.data, rooms, agentIds, stepMin: config.step_min, startMs });
     // Sim truth about each person (honesty, compliance, ...), shown to the presenter only.
     const traits = await loadCsv(new URL('agents_static.csv', base), ['agent_id', 'archetype', 'honesty', 'compliance', 'has_app', 'shares_location', 'sickness_behavior_profile'])
       .then((r) => new Map(r.data.map((a) => [a.agent_id, a])), () => new Map());

@@ -14,7 +14,11 @@
 // The forecast is forecast.js reimplemented on streamed per-agent counts: it needs frames for every
 // step at once, which is too big at full scale. Same method, same numbers (see the check script).
 //
-// Usage: node heatmap/tools/precompute.mjs sim/runs/<run> --out <dir>
+// The totals' P(sick) is the map's default model: model/out/<run>/meanfield.csv (the online self-calibrated mean-field,
+// node model/meanfield-cli.mjs sim/runs/<run>) when it exists; --model infer (or no such file) uses infer.js.
+// p_sick.csv is always infer.js's (docs/p-sick-format.md, which the phone reads).
+//
+// Usage: node heatmap/tools/precompute.mjs sim/runs/<run> --out <dir> [--model meanfield|infer]
 
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createGunzip, createGzip, gzipSync } from 'node:zlib';
@@ -41,6 +45,8 @@ const TRUE = new Set(['1', 'true', 'True', 'TRUE']); // as app.js
 const args = process.argv.slice(2);
 const oi = args.indexOf('--out');
 const outDir = oi >= 0 ? args.splice(oi, 2)[1] : null;
+const mi = args.indexOf('--model');
+const modelChoice = mi >= 0 ? args.splice(mi, 2)[1] : 'meanfield';
 const runDir = args[0];
 if (!runDir || !outDir) { console.error('usage: node heatmap/tools/precompute.mjs <run_dir> --out <dir>'); process.exit(1); }
 mkdirSync(outDir, { recursive: true });
@@ -189,6 +195,17 @@ if (modelFiles.every((f) => existsSync(join(runDir, f)))) {
   const lines = ['agent_id,t_iso,p_sick'];
   for (const [id, cs] of risk.changes) for (const c of cs) lines.push(`${id},${iso(c.tMs)},${c.p.toFixed(4)}`);
   writeFileSync(join(outDir, 'p_sick.csv'), lines.join('\n') + '\n');
+  // The totals follow the map's default model: the mean-field's change points, if it has been run.
+  const mfFile = resolve(new URL('../../model/out/', import.meta.url).pathname, basename(resolve(runDir)), 'meanfield.csv');
+  if (modelChoice === 'meanfield' && existsSync(mfFile)) {
+    const changes = new Map();
+    for (const r of parseCsv(readFileSync(mfFile, 'utf8'))) {
+      if (!changes.has(r.agent_id)) changes.set(r.agent_id, []);
+      changes.get(r.agent_id).push({ tMs: Date.parse(r.t_iso), p: Number(r.p_sick) });
+    }
+    risk = { changes, params: { ...risk.params } }; // the baseline prior etc. stay infer.js's (MODEL.prior)
+    console.log(`totals: P(sick) from ${mfFile.replace(process.cwd() + '/', '')} (mean-field)`);
+  } else if (modelChoice === 'meanfield') console.warn(`No ${mfFile}: totals use infer.js (node model/meanfield-cli.mjs ${runDir} first).`);
 } else {
   console.warn(`Missing ${modelFiles.filter((f) => !existsSync(join(runDir, f))).join(', ')}: using the appBelief fallback for P(sick).`);
 }

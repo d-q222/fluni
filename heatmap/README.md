@@ -29,7 +29,7 @@ screen; it never falls back silently to mock or fake data (use `?run=mock_boring
 
 The 2-week run is a big run (see "Big runs"), so it has no "Why this %?" panel and no contact-based phone
 alerts. It reads the precomputed `model/out/<run>/p_sick.csv`,
-`model/out/<run>/meanfield.csv` (`?model=meanfield`) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
+`model/out/<run>/meanfield.csv` (the default P) and `heatmap/out/<run>/totals.json.gz`, all in the repo.
 After a change to `model/` or the user map's totals, regenerate them (commands under "Big runs").
 
 URL options, which can be combined:
@@ -50,9 +50,13 @@ URL options, which can be combined:
 - `?zoom=19` (with `?agent=`): open close up on that person. Useful with
   `?view=airflow`, e.g. `?view=airflow&color=truth&at=4200&agent=A0002&zoom=19` to watch a sick
   roommate's air fill a Branner dorm room and leak into the corridor.
-- `?model=meanfield`: people's P(sick) from Baker et al.'s mean-field (`model/meanfield.js`) instead of
-  `model/infer.js`, for the dots and so also the building shading. No "Why this %?" panel then. Big runs need
-  `node model/meanfield-cli.mjs sim/runs/<run>` first.
+- People's P(sick), for the dots, the phone and so also the building shading and the user map, is Baker et al.'s
+  mean-field (`model/meanfield.js`), self-calibrated online: from the reports seen so far it estimates the starting
+  prevalence and `lambdaScale` (no seed count, no ground truth) and refits each day, as the app would
+  (`meanFieldOnline`; scores in `model/MEANFIELD_EVAL.md`). It is precomputed in `model/out/<run>/meanfield.csv` by
+  `node model/meanfield-cli.mjs sim/runs/<run>`; a run without the file computes it in the page (slower). It has no
+  explain(), so no "Why this %?" panel.
+- `?model=infer`: the older single-pass estimate (`model/infer.js`) instead, with the "Why this %?" panel.
 - `?color=truth`: dots *and* the building shading follow the sim's true status instead of the app's
   estimate (a building's shade is then the number of people in it actually infected). This is the same as
   choosing "Color: true status (sim)".
@@ -72,7 +76,7 @@ Demo scenes on the sim's mock run:
   anyone who reported symptoms), You, the report sheet with her stickers and "How is this calculated?"; `phone.css` styles it with the
   app's fonts (`assets/fonts/`, OFL). Campus is the user map. The risk number on Today (and its Low/Elevated/High
   tier, the advice line, Lisa's mood and "How is this calculated?") is the campus model's P for that person, `model.risk.pAt(id, now)`
-  (infer.js, or the mean-field with `?model=meanfield`): the same number as the dot's tooltip, the building card's list and the presenter
+  (the mean-field, or infer.js with `?model=infer`): the same number as the dot's tooltip, the building card's list and the presenter
   bar. The on-device estimate (`phoneEstimate`, doseModel over the last 24 h, mirrored by `proximity/`) is no longer shown; it stays as
   `window.fluni.phoneScore` for proximity's cross-check. Taps are visual only.
 - **"What users see"** is drawn exactly as FlUni's map is: `userscale.js` (scale rule, MIN_PEOPLE) and `userstyle.js`
@@ -136,8 +140,8 @@ Dots move continuously, with no jumps between CSV rows (`motion.js`):
   label is a quarter of its maximum.
 - **"Expected infected per building"** (the presenter's default view, `BuildingShadeLayer` in `buildings.js`): no
   heat. Each building is shaded by the expected number of infected people in it right now, Σ P(infected) over
-  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: `model/infer.js`, or the mean-field
-  with `?model=meanfield`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
+  everyone inside, using the same per-person P as the dots (`model.risk.pAt`: the mean-field, or `model/infer.js`
+  with `?model=infer`), counting only risk above the 2% baseline (Σ max(0, P − 2%)), divided by the building's
   floor space: footprint area (its outline) × floors. Floors come from `data/building-floors.json` for the 70 busiest
   buildings (88% of indoor time), researched from Stanford's Campus Access Guide (maps.stanford.edu/ada), the 2018
   General Use Permit historic-resources appendix, R&DE housing pages and OSM, each with its source, confidence and a
@@ -236,7 +240,8 @@ took 52 s and a 4 GB JS heap to open.
 ```bash
 node --max-old-space-size=12000 heatmap/tools/precompute.mjs sim/runs/<run> --out heatmap/out/<run>
 mkdir -p model/out/<run> && mv heatmap/out/<run>/p_sick.csv model/out/<run>/
-node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # for ?model=meanfield
+node --max-old-space-size=8000 model/meanfield-cli.mjs sim/runs/<run>   # the default P; run it before precompute.mjs,
+                                                                         # whose totals use it (--model infer: infer.js)
 ```
 
 `precompute.mjs` reads whole `timeline.csv.gz` and `contacts.csv.gz` files. For a run the sim split into

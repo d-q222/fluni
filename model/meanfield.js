@@ -136,6 +136,7 @@ export function initialPrevalence(config) {
 //   Kept at the default until 3 true-ish reports beyond the false-report background and 4 days of data.
 // Returns { prior, lambdaScale, reports: count used }.
 export function calibrateFromReports(input, params = {}, untilMs = Infinity) {
+  input = input.prep ? input : { ...input, prep: {} }; // every call below changes only prior / lambdaScale / reports
   const P = { ...MF_DEFAULTS, ...params }, N = input.agentIds.length, stepMs = input.stepMin * 60000, DAYMS = 86400000;
   const firsts = new Map();
   for (const r of input.reports || []) {
@@ -186,6 +187,7 @@ export function calibrateFromReports(input, params = {}, untilMs = Infinity) {
 // input, params as meanFieldRisk; untilMs: use reports up to then (the fit and the model). Returns the model with
 // everAt replaced, plus the fit.
 export function meanFieldCalibrated(input, params = {}, untilMs = Infinity) {
+  input = input.prep ? input : { ...input, prep: {} };
   const cal = calibrateFromReports(input, params, untilMs);
   const reports = (input.reports || []).filter((r) => input.startMs + Number(r.t) * input.stepMin * 60000 <= untilMs);
   const m = meanFieldRisk({ ...input, reports, initialPrevalence: cal.prior }, { ...params, prior: cal.prior, lambdaScale: cal.lambdaScale });
@@ -198,14 +200,36 @@ export function meanFieldCalibrated(input, params = {}, untilMs = Infinity) {
     const target = cal.expectedEver[n] - rep;
     scale[n] = rest > 0 && target > 0 ? Math.min(1 / Math.max(1e-9, rest / ids.length), target / rest) : rest > 0 ? 0 : 1;
   }
-  const idx = m.index, raw = m.everAt;
-  m.everAt = (id, tMs) => {
-    const i = idx.get(id), n = m.stepOf(tMs), p = raw(id, tMs);
+  const idx = m.index, raw = m.everAt, rawP = m.pAt, rawShed = m.shedAt;
+  // The same factor on P(ever infected), P(infected now) and shed, for everyone not reported by then.
+  const scaled = (f) => (id, tMs) => {
+    const i = idx.get(id), n = m.stepOf(tMs), p = f(id, tMs);
     if (i === undefined || n < 0 || firstMs[i] <= tMs) return p;
     return Math.min(1, p * scale[n]);
   };
+  m.everAt = scaled(raw); m.pAt = scaled(rawP); m.shedAt = scaled(rawShed);
   m.fit = cal;
   return m;
+}
+
+// What the app would show at each moment: refit (meanFieldCalibrated) from the reports seen so far at every
+// checkpoint (days since the start), and at time t use the latest fit made by then; before the first, the
+// uncalibrated model from priorMean. Returns { pAt, everAt, shedAt, fits, params, explain: null, flags: [] }.
+export function meanFieldOnline(input, params = {}, { checkpointDays = null } = {}) {
+  const DAYMS = 86400000, days = input.days || 14;
+  const cps = (checkpointDays || Array.from({ length: days }, (_, k) => k + 1)).filter((d) => d <= days);
+  input = input.prep ? input : { ...input, prep: {} };
+  const first = meanFieldRisk({ ...input, initialPrevalence: params.priorMean ?? MF_DEFAULTS.priorMean }, params);
+  const models = [first], starts = [-Infinity], fits = [];
+  for (const d of cps) {
+    const m = meanFieldCalibrated(input, params, input.startMs + d * DAYMS);
+    models.push(m); starts.push(input.startMs + d * DAYMS); fits.push({ day: d, prior: m.fit.prior, lambdaScale: m.fit.lambdaScale, reports: m.fit.reports });
+  }
+  const pick = (tMs) => { let k = 0; while (k + 1 < starts.length && starts[k + 1] <= tMs) k++; return models[k]; };
+  return {
+    pAt: (id, t) => pick(t).pAt(id, t), everAt: (id, t) => pick(t).everAt(id, t), shedAt: (id, t) => pick(t).shedAt(id, t),
+    fits, params: { ...models.at(-1).params, method: 'meanfield-online' }, explain: null, flags: [], models, starts,
+  };
 }
 
 // input: { contacts, reports, rooms, agentIds, stepMin, startMs, weather?, days?, initialPrevalence? } (as inferRisk;
