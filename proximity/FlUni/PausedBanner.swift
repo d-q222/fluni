@@ -34,7 +34,7 @@ struct PausedBanner: View {
                 }
             }
             .foregroundStyle(Theme.ink)
-            .card(fill: Theme.sun.opacity(0.5))
+            .card(fill: Theme.sunWash)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("banner.paused")
         }

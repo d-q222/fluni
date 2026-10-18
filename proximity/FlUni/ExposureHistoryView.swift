@@ -41,7 +41,7 @@ struct ExposureHistoryView: View {
                     Text(e.summary).font(.fluni(.subheadline))
                         .foregroundStyle(e.isCloseContact ? Theme.fireInk : Theme.ink)
                         .accessibilityLabel(e.spoken)
-                        .card(fill: e.isCloseContact ? Theme.fire.opacity(0.18) : Theme.surface)
+                        .card(fill: e.isCloseContact ? Theme.fireWash : Theme.surface)
                 }
                 Text("Kept on this phone only, and removed after 14 days. It never leaves your phone.")
                     .font(.fluni(.footnote)).foregroundStyle(Theme.ink2)

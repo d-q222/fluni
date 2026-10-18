@@ -30,6 +30,7 @@ put('vendor/fonts', join(hm, 'vendor/fonts'));   // Nunito + Fredoka (design pas
 // (the illustrated assets/trace/campus_trace.webp is no longer bundled: the vector layers read better and save 0.37 MB)
 put('assets/trace/campus_trace_bounds.json', join(hm, 'assets/trace/campus_trace_bounds.json'));
 put('assets/containers/box-paper.png', join(hm, 'assets/containers/box-paper.png'));
+put('assets/night/containers/box-paper.png', join(hm, 'assets/night/containers/box-paper.png'));  // night legend box
 put('data/context.geojson', join(hm, 'data/context.geojson'));
 // The app shows "now" and "in 1 hour", so 15-minute steps are enough (as building_heat.csv): a
 // 14-day run at 5-minute steps was 6.1 MB of JSON. The presenter keeps the full-resolution file.

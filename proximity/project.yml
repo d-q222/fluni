@@ -14,7 +14,6 @@ settings:
 # Both apps use the radios, so they share these Info.plist keys. The Bonjour service is the same,
 # so FlUni and harness phones see each other.
 x-radio-info: &radioInfo
-  UIUserInterfaceStyle: Light
   UILaunchScreen: {}
   UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
   NSBluetoothAlwaysUsageDescription: Detects nearby FlUni phones by Bluetooth to estimate distance.

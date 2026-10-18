@@ -12,6 +12,7 @@ struct SettingsView: View {
     @AppStorage(NotificationPrefs.key(.nearby)) private var notifyNearby = true
     @AppStorage(NotificationPrefs.key(.closeContact)) private var notifyCloseContact = true
     @AppStorage(NotificationPrefs.key(.building)) private var notifyBuildings = true
+    @AppStorage(AppearanceChoice.key) private var appearance = AppearanceChoice.system.rawValue
     @State private var notificationStatus: UNAuthorizationStatus?
     @State private var confirmDelete = false
     @State private var choosePause = false
@@ -22,6 +23,7 @@ struct SettingsView: View {
         Form {
             detectionSection
             sharedSection
+            appearanceSection
             notificationsSection
             closedSection
             BackgroundWarningsSection()
@@ -165,6 +167,23 @@ struct SettingsView: View {
 
     private func refreshNotifications() async {
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    // MARK: Appearance
+
+    private var appearanceSection: some View {
+        Section {
+            Picker("Appearance", selection: $appearance) {
+                ForEach(AppearanceChoice.allCases) { Text($0.title).tag($0.rawValue) }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("settings.appearance")
+        } header: {
+            Text("Appearance").foregroundStyle(Theme.ink2)
+        } footer: {
+            Text("System follows your phone's Light or Dark setting.").foregroundStyle(Theme.ink2)
+        }
+        .listRowBackground(Theme.surface)
     }
 
     // MARK: Map (Debug)

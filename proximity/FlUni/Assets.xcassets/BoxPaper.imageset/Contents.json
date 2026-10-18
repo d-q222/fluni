@@ -1,1 +1,1 @@
-{"images":[{"filename":"box-paper.png","idiom":"universal"}],"info":{"author":"xcode","version":1}}
+{"images":[{"filename":"box-paper.png","idiom":"universal"},{"filename":"box-paper-night.png","idiom":"universal","appearances":[{"appearance":"luminosity","value":"dark"}]}],"info":{"author":"xcode","version":1}}

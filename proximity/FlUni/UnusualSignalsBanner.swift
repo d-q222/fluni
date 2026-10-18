@@ -13,7 +13,7 @@ struct UnusualSignalsBanner: View {
                 Spacer(minLength: 0)
             }
             .foregroundStyle(Theme.ink)
-            .card(fill: Theme.sun.opacity(0.5))
+            .card(fill: Theme.sunWash)
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("banner.unusualSignals")
         }

@@ -65,6 +65,17 @@
   #status { position: absolute; z-index: 600; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px;
     background: var(--paper); color: var(--ink-2); }
   #status[hidden] { display: none; }
+
+  /* Night (Lisa's phone-mock night palette). Follows the web view's appearance. */
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #221a17; --surface: #2c231e; --surface-2: #382c25; --surface-3: #42342c;
+      --ink: #f1e2c6; --ink-2: #d2bc9f; --ink-3: #b8a287; --fire-ink: #f09a7e; --hairline: rgba(241, 226, 198, 0.14); color-scheme: dark; }
+    #map { background: #2a211c; }
+    .legend { border-image-source: url("assets/night/containers/box-paper.png"); }
+    .leaflet-popup-content-wrapper, .chip { box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.5); }
+    .lbl span { text-shadow: 0 0 3px #221a17, 0 0 3px #221a17; }
+    .lbl-g span { color: #b3c28c; }
+  }
 </style>
 </head>
 <body>
