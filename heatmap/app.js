@@ -529,30 +529,46 @@ function scaleMax(heatAt, times) {
 function* asPoints(states, truth, indoorOnly = false) {
   for (const s of states) {
     if (indoorOnly && !s.buildingId) continue;
-    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId) };
+    yield { lat: s.lat, lon: s.lon, p: truth ? Number(s.infectious) || 0 : Math.max(0, s.p - MODEL.prior), indoor: Boolean(s.buildingId), building: s.buildingId };
   }
 }
 
-// The heat grid's building mask: cells whose centre is inside an outline (masks.js), plus the cells an
-// outline's corners fall in (a small building on a coarse grid had no cell, and the normalisation moved
-// its heat into other buildings), grown by one cell, so heat reaches every outline's edge and the canvas
-// clip (CanvasLayer) cuts it exactly on the drawn line.
-function heatMask(outlines, grid) {
-  const inside = rasterizeBuildings(outlines, grid).inside, { nx, ny, cellM, bounds } = grid;
-  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM;
-  for (const f of outlines.features) {
-    const g = f.geometry, polys = g?.type === 'Polygon' ? [g.coordinates] : g?.type === 'MultiPolygon' ? g.coordinates : [];
+// The heat grid's buildings: each cell labelled with the one building it belongs to (diffuse.js keeps each
+// building's heat in its own cells). Cells whose centre is inside an outline (masks.js), plus the cells an
+// outline's corners fall in (a building smaller than a coarse cell still gets one), grown by one cell so
+// heat reaches every outline's edge and the canvas clip (CanvasLayer) cuts it exactly on the drawn line.
+// A cell next to two buildings isn't grown at all: one building's edge heat would show through the other's
+// outline (a short connector between two halls).
+// Outlines drawn twice (a hand-placed place on a real building, footprints.js) share one label.
+function heatLabels(outlines, grid) {
+  const { building, ids, byFeature } = rasterizeBuildings(outlines, grid), { nx, ny, cellM, bounds } = grid;
+  const kx = grid.mPerDegLon / cellM, ky = 110574 / cellM, label = building;
+  const labelOf = new Map(), byGeom = new Map();
+  outlines.features.forEach((f, fi) => { if (byFeature[fi] >= 0) byGeom.set(JSON.stringify(f.geometry.coordinates), byFeature[fi]); });
+  outlines.features.forEach((f, fi) => {
+    if (byFeature[fi] < 0) return;
+    const b = byGeom.get(JSON.stringify(f.geometry.coordinates)); // the copy rasterised last owns the cells
+    labelOf.set(ids[byFeature[fi]], b);
+    const g = f.geometry, polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
     for (const poly of polys) for (const [lon, lat] of poly[0]) {
       const x = Math.floor((lon - bounds.west) * kx), y = Math.floor((bounds.north - lat) * ky);
-      if (x >= 0 && y >= 0 && x < nx && y < ny) inside[y * nx + x] = 1;
+      if (x >= 0 && y >= 0 && x < nx && y < ny && label[y * nx + x] < 0) label[y * nx + x] = b;
     }
-  }
-  const out = new Uint8Array(inside.length);
+  });
+  const grown = Int32Array.from(label);
+  const near = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
   for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
-    if (!inside[y * nx + x]) continue;
-    for (let v = Math.max(0, y - 1); v <= Math.min(ny - 1, y + 1); v++) out.fill(1, v * nx + Math.max(0, x - 1), v * nx + Math.min(nx - 1, x + 1) + 1);
+    if (label[y * nx + x] >= 0) continue;
+    let only = -1;
+    for (const [dx, dy] of near) {
+      const u = x + dx, v = y + dy, l = u >= 0 && v >= 0 && u < nx && v < ny ? label[v * nx + u] : -1;
+      if (l < 0 || l === only) continue;
+      if (only >= 0) { only = -2; break; } // two buildings meet here
+      only = l;
+    }
+    if (only >= 0) grown[y * nx + x] = only;
   }
-  return out;
+  return { label: grown, labelOf, count: ids.length };
 }
 
 const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + t * (b[i] - v))).join(',')})`;
@@ -722,16 +738,14 @@ async function main() {
 
   // Room-level demo heat: deposit people over the last hour, then diffuse within building outlines.
   const probe = new DiffusionField(bounds, DEMO.cellM);
-  const mask = outlines ? heatMask(outlines, probe) : null;
-  const field = new DiffusionField(bounds, DEMO.cellM, { mask });
+  const field = new DiffusionField(bounds, DEMO.cellM, { labels: outlines ? heatLabels(outlines, probe) : null });
   // Zoomed out, the spread grows to 120 m: 40 cells of 3 m per σ, where ~5 look the same and cost far
   // less (the blur's cost is the grid's). So big spreads use a coarser grid (and its own building mask).
   const fields = new Map([[DEMO.cellM, field]]);
   const fieldFor = (sigma) => {
     const cell = DEMO.cellM * Math.max(1, Math.round(sigma / (6 * DEMO.cellM)));
     if (!fields.has(cell)) {
-      const m = outlines ? heatMask(outlines, new DiffusionField(bounds, cell)) : null;
-      fields.set(cell, new DiffusionField(bounds, cell, { mask: m }));
+      fields.set(cell, new DiffusionField(bounds, cell, { labels: outlines ? heatLabels(outlines, new DiffusionField(bounds, cell)) : null }));
     }
     return fields.get(cell);
   };
